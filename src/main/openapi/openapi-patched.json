@@ -7908,9 +7908,21 @@
                         "type": "boolean",
                         "example": true
                       },
+                      "productgroup_parent": {
+                        "type": "integer",
+                        "example": 2
+                      },
                       "productgroup_sortIndex": {
                         "type": "integer",
                         "example": -1
+                      },
+                      "productgroup_accountingCode": {
+                        "type": "string",
+                        "example": "1000123"
+                      },
+                      "productgroup_type_id": {
+                        "type": "integer",
+                        "example": 2
                       },
                       "productgroup_created_at": {
                         "type": "string",
@@ -7919,10 +7931,6 @@
                       "productgroup_updated_at": {
                         "type": "string",
                         "example": "2019-07-29 08:26:18"
-                      },
-                      "productgroup_type_id": {
-                        "type": "integer",
-                        "example": 2
                       }
                     }
                   }
@@ -7973,9 +7981,21 @@
                       "type": "boolean",
                       "example": true
                     },
+                    "productgroup_parent": {
+                      "type": "integer",
+                      "example": 2
+                    },
                     "productgroup_sortIndex": {
                       "type": "integer",
                       "example": -1
+                    },
+                    "productgroup_accountingCode": {
+                      "type": "string",
+                      "example": "1000123"
+                    },
+                    "productgroup_type_id": {
+                      "type": "integer",
+                      "example": 2
                     },
                     "productgroup_created_at": {
                       "type": "string",
@@ -7984,10 +8004,6 @@
                     "productgroup_updated_at": {
                       "type": "string",
                       "example": "2019-07-29 08:26:18"
-                    },
-                    "productgroup_type_id": {
-                      "type": "integer",
-                      "example": 2
                     }
                   }
                 }
@@ -8047,9 +8063,21 @@
                       "type": "boolean",
                       "example": true
                     },
+                    "productgroup_parent": {
+                      "type": "integer",
+                      "example": 2
+                    },
                     "productgroup_sortIndex": {
                       "type": "integer",
                       "example": -1
+                    },
+                    "productgroup_accountingCode": {
+                      "type": "string",
+                      "example": "1000123"
+                    },
+                    "productgroup_type_id": {
+                      "type": "integer",
+                      "example": 2
                     },
                     "productgroup_created_at": {
                       "type": "string",
@@ -8058,10 +8086,6 @@
                     "productgroup_updated_at": {
                       "type": "string",
                       "example": "2019-07-29 08:26:18"
-                    },
-                    "productgroup_type_id": {
-                      "type": "integer",
-                      "example": 2
                     }
                   }
                 }
@@ -8122,9 +8146,21 @@
                       "type": "boolean",
                       "example": true
                     },
+                    "productgroup_parent": {
+                      "type": "integer",
+                      "example": 2
+                    },
                     "productgroup_sortIndex": {
                       "type": "integer",
                       "example": -1
+                    },
+                    "productgroup_accountingCode": {
+                      "type": "string",
+                      "example": "1000123"
+                    },
+                    "productgroup_type_id": {
+                      "type": "integer",
+                      "example": 2
                     },
                     "productgroup_created_at": {
                       "type": "string",
@@ -8133,10 +8169,6 @@
                     "productgroup_updated_at": {
                       "type": "string",
                       "example": "2019-07-29 08:26:18"
-                    },
-                    "productgroup_type_id": {
-                      "type": "integer",
-                      "example": 2
                     }
                   }
                 }
@@ -8532,6 +8564,10 @@
                         "type": "integer",
                         "example": 5
                       },
+                      "product_active": {
+                        "type": "boolean",
+                        "example": true
+                      },
                       "product_soldOut": {
                         "type": "boolean",
                         "example": true
@@ -8551,10 +8587,6 @@
                       "product_colorClass": {
                         "type": "string",
                         "example": "bgGreenYellow"
-                      },
-                      "productgroup_id": {
-                        "type": "integer",
-                        "example": 1
                       },
                       "product_type_id": {
                         "type": "integer",
@@ -8580,6 +8612,14 @@
                         "type": "string",
                         "example": "yyy cola"
                       },
+                      "product_base_id": {
+                        "type": "integer",
+                        "example": 2
+                      },
+                      "productgroup_id": {
+                        "type": "integer",
+                        "example": 1
+                      },
                       "productgroup": {
                         "properties": {
                           "productgroup_id": {
@@ -8599,9 +8639,17 @@
                             "type": "boolean",
                             "example": false
                           },
+                          "productgroup_parent": {
+                            "type": "integer",
+                            "example": 2
+                          },
                           "productgroup_sortIndex": {
                             "type": "integer",
                             "example": 9999
+                          },
+                          "productgroup_accountingCode": {
+                            "type": "string",
+                            "example": "1000123"
                           },
                           "productgroup_created_at": {
                             "type": "string"
@@ -8892,6 +8940,10 @@
                       "type": "integer",
                       "example": 5
                     },
+                    "product_active": {
+                      "type": "boolean",
+                      "example": true
+                    },
                     "product_soldOut": {
                       "type": "boolean",
                       "example": true
@@ -8911,10 +8963,6 @@
                     "product_colorClass": {
                       "type": "string",
                       "example": "bgGreenYellow"
-                    },
-                    "productgroup_id": {
-                      "type": "integer",
-                      "example": 1
                     },
                     "product_type_id": {
                       "type": "integer",
@@ -8940,6 +8988,14 @@
                       "type": "string",
                       "example": "yyy cola"
                     },
+                    "product_base_id": {
+                      "type": "integer",
+                      "example": 2
+                    },
+                    "productgroup_id": {
+                      "type": "integer",
+                      "example": 1
+                    },
                     "productgroup": {
                       "properties": {
                         "productgroup_id": {
@@ -8959,9 +9015,17 @@
                           "type": "boolean",
                           "example": false
                         },
+                        "productgroup_parent": {
+                          "type": "integer",
+                          "example": 2
+                        },
                         "productgroup_sortIndex": {
                           "type": "integer",
                           "example": 9999
+                        },
+                        "productgroup_accountingCode": {
+                          "type": "string",
+                          "example": "1000123"
                         },
                         "productgroup_created_at": {
                           "type": "string"
@@ -9168,6 +9232,10 @@
                       "type": "integer",
                       "example": 5
                     },
+                    "product_active": {
+                      "type": "boolean",
+                      "example": true
+                    },
                     "product_soldOut": {
                       "type": "boolean",
                       "example": true
@@ -9187,10 +9255,6 @@
                     "product_colorClass": {
                       "type": "string",
                       "example": "bgGreenYellow"
-                    },
-                    "productgroup_id": {
-                      "type": "integer",
-                      "example": 1
                     },
                     "product_type_id": {
                       "type": "integer",
@@ -9216,6 +9280,14 @@
                       "type": "string",
                       "example": "yyy cola"
                     },
+                    "product_base_id": {
+                      "type": "integer",
+                      "example": 2
+                    },
+                    "productgroup_id": {
+                      "type": "integer",
+                      "example": 1
+                    },
                     "productgroup": {
                       "properties": {
                         "productgroup_id": {
@@ -9235,9 +9307,17 @@
                           "type": "boolean",
                           "example": false
                         },
+                        "productgroup_parent": {
+                          "type": "integer",
+                          "example": 2
+                        },
                         "productgroup_sortIndex": {
                           "type": "integer",
                           "example": 9999
+                        },
+                        "productgroup_accountingCode": {
+                          "type": "string",
+                          "example": "1000123"
                         },
                         "productgroup_created_at": {
                           "type": "string"
@@ -9538,6 +9618,10 @@
                       "type": "integer",
                       "example": 5
                     },
+                    "product_active": {
+                      "type": "boolean",
+                      "example": true
+                    },
                     "product_soldOut": {
                       "type": "boolean",
                       "example": true
@@ -9557,10 +9641,6 @@
                     "product_colorClass": {
                       "type": "string",
                       "example": "bgGreenYellow"
-                    },
-                    "productgroup_id": {
-                      "type": "integer",
-                      "example": 1
                     },
                     "product_type_id": {
                       "type": "integer",
@@ -9586,6 +9666,14 @@
                       "type": "string",
                       "example": "yyy cola"
                     },
+                    "product_base_id": {
+                      "type": "integer",
+                      "example": 2
+                    },
+                    "productgroup_id": {
+                      "type": "integer",
+                      "example": 1
+                    },
                     "productgroup": {
                       "properties": {
                         "productgroup_id": {
@@ -9605,9 +9693,17 @@
                           "type": "boolean",
                           "example": false
                         },
+                        "productgroup_parent": {
+                          "type": "integer",
+                          "example": 2
+                        },
                         "productgroup_sortIndex": {
                           "type": "integer",
                           "example": 9999
+                        },
+                        "productgroup_accountingCode": {
+                          "type": "string",
+                          "example": "1000123"
                         },
                         "productgroup_created_at": {
                           "type": "string"

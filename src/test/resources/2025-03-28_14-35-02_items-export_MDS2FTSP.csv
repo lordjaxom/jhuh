@@ -1,0 +1,878 @@
+Item name,Variations,Option set 1,Option 1,Option set 2,Option 2,Option set 3,Option 3,Option set 4,Option 4,Is variation visible? (Yes/No),Price,On sale in Online Store?,Regular price (before sale),Tax rate (%),Unit,Track inventory? (Yes/No),Quantity,Low stock threshold,SKU,Barcode,Description (Online Store and Invoices only),Category,Display colour in POS checkout,Image 1,Image 2,Image 3,Image 4,Image 5,Image 6,Image 7,Display item in Online Store? (Yes/No),SEO title (Online Store only),SEO description (Online Store only),Shipping weight [kg] (Online Store only),Item id (Do not change),Variant id (Do not change)
+"2001 Mäppchen klein, dunkel (S.F.)",,,,,,,,,,Yes,6.90,No,,0.00,each.each,No,0,0,,,<p>Der schönste Weg führt zum Meer</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"2001 Mäppchen klein, dunkel (S.F.)",,,36b1c66e-84bc-4d0f-9194-e613c322a4c3,0ef735e2-aae0-4a27-a8cc-824b208115f9
+"2002 Mäppchen klein, dunkel (S.F.)",,,,,,,,,,Yes,6.90,No,,0.00,each.each,No,0,0,,,<p>Blume mit Schmetterling</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"2002 Mäppchen klein, dunkel (S.F.)",,,c665ede5-1614-4e0e-8631-8f15593c630b,e0102e27-42d2-46d7-937c-d70227d64353
+"2002 Mäppchen klein, hell (S.F.)",,,,,,,,,,Yes,6.90,No,,0.00,each.each,No,0,0,,,<p>Der schönste Weg führt zum Meer</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"2002 Mäppchen klein, hell (S.F.)",,,7dfb059e-db34-4d8b-a833-a881f8f6bcb9,f81a7615-32b3-48aa-aa44-370a6cc0aec3
+"2003 Mäppchen klein, dunkel (S.F.)",,,,,,,,,,Yes,6.90,No,,0.00,each.each,No,0,0,,,<p>Blume mit Schmetterling</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"2003 Mäppchen klein, dunkel (S.F.)",,,1108c987-e114-4346-a3b5-bcaf03df383f,2325c25b-21eb-4439-a8d7-f74c74b86904
+"2004 Mäppchen klein, hell (S.F.)",,,,,,,,,,Yes,6.90,No,,0.00,each.each,No,0,0,,,<p>Blume mit Schmetterling</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"2004 Mäppchen klein, hell (S.F.)",,,97ea13d7-2216-4221-b355-1a9561e45146,faebafca-c912-426b-beee-bbb3d9ef764c
+"2010 Mäppchen klein, hell (S.F.)",,,,,,,,,,Yes,6.90,No,,0.00,each.each,No,0,0,,,<p>Anker hellblau</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"2010 Mäppchen klein, hell (S.F.)",,,a195998d-6c30-480d-b582-50219925d071,c219af2d-5b1a-4040-9d1f-4c5dadf1708d
+"2011 Mäppchen klein, hell (S.F.)",,,,,,,,,,Yes,6.90,No,,0.00,each.each,No,0,0,,,<p>lila Schmetterling</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"2011 Mäppchen klein, hell (S.F.)",,,6f8eb354-9ab0-4938-acd6-ec1a6fe0bbd3,a94a9fbe-01f7-4faa-9ed5-7fa24d56e1c1
+"2012 Mäppchen klein, hell (S.F.)",,,,,,,,,,Yes,6.90,No,,0.00,each.each,No,0,0,,,<p>lila Schmetterling</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"2012 Mäppchen klein, hell (S.F.)",,,3a44ad81-c689-4e20-bb05-5079f01be557,69a2d093-4e9b-4399-984c-eced1a4825f0
+"2013 Mäppchen klein, dunkel (S.F.)",,,,,,,,,,Yes,6.90,No,,0.00,each.each,No,0,0,,,<p>rote Katze im Kreis</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"2013 Mäppchen klein, dunkel (S.F.)",,,e08e3237-cf5a-408b-9269-3f3ec0aaca7c,8eb65591-7185-4e59-8f94-9dffddc40a1e
+"2014 Mäppchen klein, hell (S.F.)",,,,,,,,,,Yes,6.90,No,,0.00,each.each,No,0,0,,,<p>rote Katze im Kreis</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"2014 Mäppchen klein, hell (S.F.)",,,8e814202-cbe8-4b18-84d4-b5ab3fccc039,ba08aaa3-437e-4e21-8c98-123263e8b623
+"2016 Mäppchen klein, dunkel (S.F.)",,,,,,,,,,Yes,6.90,No,,0.00,each.each,No,0,0,,,<p>Mädelskram magenta</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"2016 Mäppchen klein, dunkel (S.F.)",,,400d40d8-2574-413c-808d-c7665adc82bc,0b42f049-0b82-43b3-89cb-35b659503da0
+"2018 Mäppchen klein, hell (S.F.)",,,,,,,,,,Yes,6.90,No,,0.00,each.each,No,0,0,,,<p>Lieblingsmensch</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"2018 Mäppchen klein, hell (S.F.)",,,73313e35-2943-4f80-96e6-c5b861cc399d,1200f865-d462-40b8-bc50-251678fd9a59
+"2019 Mäppchen klein, dunkel (S.F.)",,,,,,,,,,Yes,6.90,No,,0.00,each.each,No,0,0,,,<p>Blumenschmetterling weiß</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"2019 Mäppchen klein, dunkel (S.F.)",,,48d4bbf3-49e2-4f78-b84a-cf5f8cb418b1,fac300a9-5b91-49d3-b4f0-4360ebbec0bc
+"2020 Mäppchen klein, hell (S.F.)",,,,,,,,,,Yes,6.90,No,,0.00,each.each,No,0,0,,,<p>Blumenschmetterling regenbogen</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"2020 Mäppchen klein, hell (S.F.)",,,418301ac-93bb-4d69-bfd1-c291a6214bed,57cfb23c-1938-43f8-bee4-36167825707f
+"2021 Mäppchen klein, dunkel (S.F.)",,,,,,,,,,Yes,6.90,No,,0.00,each.each,No,0,0,,,<p>Boho Love weiß</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"2021 Mäppchen klein, dunkel (S.F.)",,,60d9e56a-aa8f-4bd1-900c-cf2097780016,e3227b8b-6a29-4410-8d6c-948d25b883f7
+"2022 Mäppchen klein, hell (S.F.)",,,,,,,,,,Yes,6.90,No,,0.00,each.each,No,0,0,,,<p>Boho Love regenbogen</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"2022 Mäppchen klein, hell (S.F.)",,,3b930df6-b541-446b-89b1-dda279b90f42,42f1486d-b29a-4a0d-811f-a2aedafa1a6f
+"2023 Mäppchen klein, dunkel (S.F.)",,,,,,,,,,Yes,6.90,No,,0.00,each.each,No,0,0,,,<p>Feder weiß</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"2023 Mäppchen klein, dunkel (S.F.)",,,a1ebdb4b-c208-4af5-8e15-eeaf5de19010,c276ff74-b408-4dc8-9a83-7320055082ee
+"2024 Mäppchen klein, hell (S.F.)",,,,,,,,,,Yes,6.90,No,,0.00,each.each,No,0,0,,,<p>Feder schwarz</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"2024 Mäppchen klein, hell (S.F.)",,,c2aef1f6-4391-4edb-a52d-4b7635dad032,558bbb0f-c81c-4b2a-ba94-32bc92ae45c4
+"2025 Mäppchen klein, dunkel (S.F.)",,,,,,,,,,Yes,6.90,No,,0.00,each.each,No,0,0,,,<p>Feder sunshine</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"2025 Mäppchen klein, dunkel (S.F.)",,,c12dcfe9-23d1-416b-a6a1-69982e8822e5,2a4f9a30-3ef2-49a7-9335-544101dc01ce
+"2026 Mäppchen klein, hell (S.F.)",,,,,,,,,,Yes,6.90,No,,0.00,each.each,No,0,0,,,<p>Feder blau glitzer</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"2026 Mäppchen klein, hell (S.F.)",,,12f7e312-815d-4bd5-bba4-eaf28efaf136,ca92e1e1-15e3-4217-8c73-4b29336f4338
+"2027 Mäppchen klein, dunkel (S.F.)",,,,,,,,,,Yes,6.90,No,,0.00,each.each,No,0,0,,,<p>Du bist mir wichtelig</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"2027 Mäppchen klein, dunkel (S.F.)",,,c1aa4509-cb14-45df-af0a-e0a8e7c49ca3,7d3f5579-c515-412b-a22d-e474f87d77ef
+"2029 Mäppchen klein, dunkel (S.F.)",,,,,,,,,,Yes,6.90,No,,0.00,each.each,No,0,0,,,<p>sei ein Einhorn</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"2029 Mäppchen klein, dunkel (S.F.)",,,7bc43ee1-c2dd-44f8-9ed6-a573e0c72663,f12f6757-ecf2-4d82-b6c2-2b4a54e65498
+"2030 Mäppchen klein, hell (S.F.)",,,,,,,,,,Yes,6.90,No,,0.00,each.each,No,0,0,,,<p>sei ein Einhorn</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"2030 Mäppchen klein, hell (S.F.)",,,15c4183b-5639-4ba2-90cb-9795aa354cb7,2393ad33-7c04-4d81-a260-1c24681836c8
+"3001 Mäppchen groß, dunkel (S.F.)",,,,,,,,,,Yes,9.90,No,,0.00,each.each,No,0,0,,,<p>Die schönsten Wege führen zum Meer</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"3001 Mäppchen groß, dunkel (S.F.)",,,31c965c6-d180-4fd0-b79e-41fc53845751,1084e585-906a-44a7-93e9-052c9d87b40a
+"3002 Mäppchen groß, hell (S.F.)",,,,,,,,,,Yes,9.90,No,,0.00,each.each,No,0,0,,,<p>Die schönsten Wege führen zum Meer</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"3002 Mäppchen groß, hell (S.F.)",,,22f33b55-94bb-4819-8a6e-503db252740d,ab306808-3c44-483e-b604-6bdb9ec860b8
+"3003 Mäppchen groß, dunkel (S.F.)",,,,,,,,,,Yes,9.90,No,,0.00,each.each,No,0,0,,,<p>Blume mit Schmetterling</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"3003 Mäppchen groß, dunkel (S.F.)",,,941276f4-199e-4b2a-9874-9b57209c80be,db63f734-4300-437b-8667-d723c1ae0934
+"3004 Mäppchen groß, hell (S.F.)",,,,,,,,,,Yes,9.90,No,,0.00,each.each,No,0,0,,,<p>Blume mit Schmetterling</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"3004 Mäppchen groß, hell (S.F.)",,,a9b080d9-3b10-4c99-8a0e-b196e8064b88,190f0ed3-b3cb-4839-8a01-5a87a4bcadb4
+"3009 Mäppchen groß, dunkel (S.F.)",,,,,,,,,,Yes,9.90,No,,0.00,each.each,No,0,0,,,<p>Anker hellblau</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"3009 Mäppchen groß, dunkel (S.F.)",,,03f27297-764f-48eb-bd76-38390cb85b3e,c6fc5d5d-f67e-4401-b9c8-97cc1947cee0
+"3010 Mäppchen groß, hell (S.F.)",,,,,,,,,,Yes,9.90,No,,0.00,each.each,No,0,0,,,<p>Anker hellblau</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"3010 Mäppchen groß, hell (S.F.)",,,0a7868c3-d240-4707-b347-d13056f91ffb,2ec8a034-6407-462d-84c5-3f600255e500
+"3011 Mäppchen groß, dunkel (S.F.)",,,,,,,,,,Yes,9.90,No,,0.00,each.each,No,0,0,,,<p>lila Schmetterling</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"3011 Mäppchen groß, dunkel (S.F.)",,,62d751d7-04bb-442a-ad3e-af5e33db4ba6,78ccefe6-b508-4a24-96e8-7089af04fba9
+"3012 Mäppchen groß, hell (S.F.)",,,,,,,,,,Yes,9.90,No,,0.00,each.each,No,0,0,,,<p>lila Schmetterling</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"3012 Mäppchen groß, hell (S.F.)",,,0765f941-f991-47bd-9238-e900c22719fc,ad1f8759-0f2a-4992-a315-cac045a4bc26
+"3013 Mäppchen groß, dunkel (S.F.)",,,,,,,,,,Yes,9.90,No,,0.00,each.each,No,0,0,,,<p>rote Katze im Kreis</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"3013 Mäppchen groß, dunkel (S.F.)",,,3fb9e435-a662-4468-8583-9ff609e374fe,0de8e1f0-6056-40d9-b7b2-3ef70b221798
+"3014 Mäppchen groß, hell (S.F.)",,,,,,,,,,Yes,9.90,No,,0.00,each.each,No,0,0,,,"<p>rote Katze im Kreis, hell</p>",Simone Friedhoff,Light red,,,,,,,,Yes,"3014 Mäppchen groß, hell (S.F.)",,,d6681c86-72ef-4800-855a-03943be3ee97,9107ce51-8ab7-4c16-86e6-34386169a7fb
+"3016 Mäppchen groß, dunkel (S.F.)",,,,,,,,,,Yes,9.90,No,,0.00,each.each,No,0,0,,,<p>Madelskram magenta</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"3016 Mäppchen groß, dunkel (S.F.)",,,1e7aec00-d9c6-4bab-89fb-931747a198c6,2eccf93b-bc5e-476a-9e2e-50417fe5ebcd
+"3018 Mäppchen groß, hell (S.F.)",,,,,,,,,,Yes,9.90,No,,0.00,each.each,No,0,0,,,<p>Lieblingsmensch</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"3018 Mäppchen groß, hell (S.F.)",,,f96f9ca7-d1ed-48eb-b95c-e2630bca3854,7365d309-3778-457e-a59f-10e321e5b7cb
+"3019 Mäppchen groß, dunkel (S.F.)",,,,,,,,,,Yes,9.90,No,,0.00,each.each,No,0,0,,,<p>Blumenschmetterling weiß</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"3019 Mäppchen groß, dunkel (S.F.)",,,36705ad7-10c7-4e33-90e3-4b5601fb3036,ea4b58e1-1ac9-48ec-815d-3398340c8688
+"3020 Mäppchen groß, hell (S.F.)",,,,,,,,,,Yes,9.90,No,,0.00,each.each,No,0,0,,,<p>Blumenschmetterling regenbogen</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"3020 Mäppchen groß, hell (S.F.)",,,693990cd-2815-442d-b0b8-d4d788e738fe,2857aa5b-d01e-485d-94ec-db79f416338b
+"3021 Mäppchen groß, dunkel (S.F.)",,,,,,,,,,Yes,9.90,No,,0.00,each.each,No,0,0,,,<p>Boho Love weiß</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"3021 Mäppchen groß, dunkel (S.F.)",,,e6d2af98-514d-426b-825e-46d117f27b08,4378ca7c-e3cb-40d7-b521-9d2e525d5d7c
+"3022 Mäppchen groß, hell (S.F.)",,,,,,,,,,Yes,9.90,No,,0.00,each.each,No,0,0,,,<p>Boho Love regenbogen</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"3022 Mäppchen groß, hell (S.F.)",,,59e6bb3e-04be-4063-8a20-ab757952a523,a8dae7dd-0bac-47ce-bf89-9ecec3c55caa
+"3023 Mäppchen groß, dunkel (S.F.)",,,,,,,,,,Yes,9.90,No,,0.00,each.each,No,0,0,,,<p>Feder weiß</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"3023 Mäppchen groß, dunkel (S.F.)",,,c0708e26-8ea1-4b10-875a-53fb16b1b4ff,37224105-3f22-4d3f-b75e-fa1e44d9be7b
+"3024 Mäppchen groß, hell(S.F.)",,,,,,,,,,Yes,9.90,No,,0.00,each.each,No,0,0,,,<p>Feder schwarz</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"3024 Mäppchen groß, hell(S.F.)",,,3a695b94-53f2-4fca-b823-8a590ff14625,51cd8be4-8098-480e-995a-c060ce5b92be
+"3025 Mäppchen groß, dunkel (S.F.)",,,,,,,,,,Yes,9.90,No,,0.00,each.each,No,0,0,,,<p>Feder sunshine</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"3025 Mäppchen groß, dunkel (S.F.)",,,907367ab-44e0-4709-af84-957f5c3c4b02,0c01c03c-6eae-4e75-8f31-f3bdd13ecc3c
+"3026 Mäppchen groß, hell (S.F.)",,,,,,,,,,Yes,9.90,No,,0.00,each.each,No,0,0,,,<p>Feder blau glitzer</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"3026 Mäppchen groß, hell (S.F.)",,,d0b15eb7-33d5-43d1-b311-2f3c2ed415a6,b1f73266-eb6b-4ac0-b79a-37752f51e9d4
+"3027 Mäppchen groß, dunkel (S.F.)",,,,,,,,,,Yes,9.90,No,,0.00,each.each,No,0,0,,,<p>Du bist mir wichtelig</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"3027 Mäppchen groß, dunkel (S.F.)",,,a36b4d4c-c2c8-4c5e-8c3f-10cb5fdb0105,42ecfabc-e142-472f-b5a6-4cc22fd95ccc
+"3028 Mäppchen groß, hell(S.F.)",,,,,,,,,,Yes,9.90,No,,0.00,each.each,No,0,0,,,<p>Du bist mir wichtelig</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"3028 Mäppchen groß, hell(S.F.)",,,ddc3045d-e4a1-4518-9abf-d21f0264a971,8b449a3d-7887-4d02-91bc-5b8ab5de4a59
+"3029 Mäppchen groß, dunkel (S.F.)",,,,,,,,,,Yes,9.90,No,,0.00,each.each,No,0,0,,,<p>Sei ein Einhorn</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"3029 Mäppchen groß, dunkel (S.F.)",,,6fc57953-15b6-49d9-a620-75df0eea21d6,5d735727-9606-4a13-bf26-af03ed595455
+"3030 Mäppchen groß, hell (S.F.)",,,,,,,,,,Yes,9.90,No,,0.00,each.each,No,0,0,,,<p>sei ein Einhorn</p>,Simone Friedhoff,Light red,,,,,,,,Yes,"3030 Mäppchen groß, hell (S.F.)",,,45d6dd6e-e274-4e33-babf-620a6d9596a6,4a4d04fa-46e5-4f8f-9fa6-153ad54677eb
+3D-Druck Drache,,,,,,,,,,,,No,,19.00,each.each,No,,,,,,3D-Druck,Light red,,,,,,,,Yes,3D-Druck Drache,,,0aff2003-b568-49ab-9bbf-c23bc816e1a5,
+,"einfach ",,,,,,,,,Yes,15.00,,,,,,0,0,,,,,,,,,,,,,,,,,,a22078c3-b221-4b00-823c-adc0bfda1843
+,Water-Dragon,,,,,,,,,Yes,17.00,,,,,,0,0,,,,,,,,,,,,,,,,,,a372260e-2a24-4c1b-89d1-6264732218f5
+,Bone-Dragon,,,,,,,,,Yes,19.00,,,,,,0,0,,,,,,,,,,,,,,,,,,4608fe1b-41b3-452b-a1ad-caeaffa84dc8
+3D-Glimmereffekt-Folie,,,,,,,,,,Yes,4.79,No,,19.00,each.each,Yes,29,0,23092000,4006166412899,,Rayher,Grey,,,,,,,,Yes,,,,9133de12-5fba-42b9-ac19-2d966247f3b8,5543b514-e6ea-41f2-9b0e-f485cd68ee47
+Acryl-Klötzchen,,,,,,,,,,,,No,,19.00,each.each,No,,,,,,Klötzchen,Light red,,,,,,,,Yes,Acryl-Klötzchen,,,25f91563-fad5-4cbe-843c-d39525173f6b,
+,4mm satiniert,,,,,,,,,Yes,1.50,,,,,,0,0,,,,,,,,,,,,,,,,,,377dcbec-976e-4b74-9597-2f9c396390af
+,8mm satiniert,,,,,,,,,Yes,2.50,,,,,,0,0,,,,,,,,,,,,,,,,,,f86beafc-3f56-4a2b-9e56-26d302a53b8d
+Acryl Reagenzglas. 20mm ø,,,,,,,,,,Yes,5.99,No,,19.00,each.each,Yes,10,0,88587000,4006166044816,,Rayher,Grey,,,,,,,,Yes,,,,50448683-2b7b-4bb9-bbf7-563b80add734,71b7da90-c3ca-4b72-8a0b-d0e408378fc9
+"Adventskalender - Teelichter, (M.F.)",,,,,,,,,,Yes,30.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,,,,,,,,Yes,"Adventskalender - Teelichter, (M.F.)",,,cbe2fc23-e26d-425a-868f-1986d58b9ea9,12224081-271f-45a5-ae55-97bd14093ef6
+"Adventskerzen, Vase",,,,,,,,,,Yes,16.00,No,,0.00,each.each,No,0,0,,,,Ingrid Schiffmann,Light red,https://images.sumup.com/img_707XE35K878DGVZ6NCZB5RSVSZ,,,,,,,Yes,,,,d2c989fc-d362-454f-a1a9-ff987a1ad358,52664a36-a447-4df5-a4d4-d3f133d8a1c9
+Adventsring mit Gnom  (Ing.S),,,,,,,,,,Yes,24.00,No,,0.00,each.each,No,0,0,,,,Ingrid Schiffmann,Light red,https://images.sumup.com/img_6ECXMSDPNP9AHVG6VKET9FWP5F,,,,,,,Yes,,,,0138be96-a950-4d8b-90ca-ea67a399952b,5dbba38c-647a-46da-b41e-0d8944e7b1ed
+"Arielle little Mermaid, Duftkerze (M.F.)",,,,,,,,,,Yes,16.50,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_0MPRQGN4PX8YGRVK0M1XCZ13QF,,,,,,,Yes,"Arielle little Mermaid, Duftkerze (M.F.)",,,6ac2a843-148b-4182-89c6-11520b49d88b,9c7433b5-049b-4ad7-a7c8-fe9276b1f8f5
+ASLAN CA23 rosegold,,,,,,,,,,Yes,1.79,No,,19.00,each.each,Yes,0,0,,9583321310108,,Vinylfolien Bunt,Light red,,,,,,,,Yes,,,,f9be73b2-d09e-49d1-b9f8-7b41eb5536ac,118aea55-ae7d-4200-a44b-b24393ca4c9e
+Atzolott (Y.S.),,,,,,,,,,Yes,17.00,No,,0.00,each.each,No,0,0,,,,Yvonne Schwarz,Light blue,,,,,,,,Yes,,,,026de0b7-c375-4ac8-903c-1b94a9a1c837,64263694-3773-4f8f-8ec0-fa2613892f97
+Aufhänger z. Eingießen,,,,,,,,,,Yes,2.79,No,,19.00,each.each,Yes,5,0,3680000,4006166995804,"Aufhänger z. Eingießen, SB-Btl. 10 Stück",Rayher,Grey,,,,,,,,Yes,,,,5cd7a830-802b-43fc-bf0a-208269818013,f563a52b-9e19-4206-8f9a-d108e4e9afb4
+"Aufkleber A4, Druck + Schnitt",,,,,,,,,,Yes,5.00,No,,19.00,each.each,No,0,0,,,,Dienstleistungen,Light red,,,,,,,,Yes,"Aufkleber A4, Druck + Schnitt",,,d972ec81-88f1-4ea1-82a8-0deefd78a21e,8b7b0dff-53bd-42b5-b3ea-df8d93f00771
+"Aufkleber A4, Druck + Schnitt (einfach)",,,,,,,,,,Yes,4.50,No,,19.00,each.each,No,0,0,,,,Dienstleistungen,Light red,,,,,,,,Yes,"Aufkleber A4, Druck + Schnitt (einfach)",,,8f360671-ef80-4c31-a717-b5953d3b7540,9b8d4919-a817-42cc-ace0-c5868bb29315
+Bade-Urlauberin. Liegestuhl,,,,,,,,,,Yes,5.50,No,,19.00,each.each,Yes,7,0,3870 393,4036159495240,,HobbyFun,Light blue,https://images.sumup.com/img_09AN45XSM19WBAY7PAHNY0QFGY,,,,,,,Yes,,,,391eb313-e116-4e4c-a628-5924d6d0aaaa,bb4b7940-d0dc-4592-b64d-1daf7ba6b91e
+Bade-Urlauber. Liegestuhl,,,,,,,,,,Yes,5.50,No,,19.00,each.each,Yes,8,0,3870 394,4036159495257,,HobbyFun,Light blue,https://images.sumup.com/img_5FVDNFVZD081JVSBM3JG9F7ZJ8,,,,,,,Yes,,,,43980438-d333-4f47-ad07-89f36bbea28e,b939bb6d-a721-4155-9485-2e1b4e58453f
+"Bänderdisplay ""Natural Life""",,,,,,,,,,Yes,3.49,No,,19.00,each.each,Yes,25,0,55955000,4006166817953,,Rayher,Grey,,,,,,,,Yes,,,,a532e35a-c906-4b69-9afb-0e3f6b456a0b,ffc07050-6d30-4d56-b7f3-c6679b945bd5
+Bastelhölzer. FSC 100%,,,,,,,,,,Yes,2.29,No,,19.00,each.each,Yes,7,0,64582505,4006166494222,,Rayher,Grey,,,,,,,,Yes,,,,30a70bd9-3403-42e6-988d-bdca29ba950f,74f433cb-e501-4da7-8889-6bf29c387a94
+"Bee my Honey, Duftkerze (M.F.)",,,,,,,,,,Yes,16.50,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_0GXC9S3GZA9N98BSTZ95WTAW9E,,,,,,,Yes,"Bee my Honey, Duftkerze (M.F.)",,,6e9f82b5-327e-4a92-93c1-7adb97d8604f,4f1c8fe4-79a0-42bd-8b45-914683380272
+Beerenzweig,,,,,,,,,,Yes,1.19,No,,19.00,each.each,Yes,10,0,55956000,4006166819384,"Beerenzweig, 19cm, rot",Rayher,Grey,,,,,,,,Yes,,,,28ad7362-27b0-4926-84f5-02f48c92a707,52dbd87d-ef76-4488-aee9-6c82dedfd73b
+Bekleben,,,,,,,,,,Yes,10.00,No,,19.00,each.each,No,0,0,,,,Dienstleistungen,Yellow,,,,,,,,Yes,,,,8b1a1737-d5a3-4efc-880c-0dcf5616c5b1,1ff4973b-2591-4299-bb6b-669c0d681184
+"Belle, Duftkerze (M.F.)",,,,,,,,,,Yes,16.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_2PF3RYJ7RD9YJS8NCACR5WT76D,,,,,,,Yes,"Belle, Duftkerze (M.F.)",,,91e5b6da-dfa2-43ae-80dd-996e375493f1,9cd0bb31-6677-425e-bf8b-d5c5f6d8bd8f
+Biene (Y.S.),,,,,,,,,,Yes,9.00,No,,0.00,each.each,No,0,0,,,,Yvonne Schwarz,Purple,,,,,,,,Yes,,,,cc3a6af0-8b61-4682-a8d6-a2d5cd7c437b,4e560ec8-4eea-482d-8c82-176960833c0c
+"Bierglas ca. 1,5 cm, Btl. à 2 St.",,,,,,,,,,Yes,2.25,No,,19.00,each.each,Yes,4,0,3481 009,4036159534994,,HobbyFun,Light red,https://images.sumup.com/img_69JX3Z46DY85AAPHC5KH30NRA6,,,,,,,Yes,"Bierglas ca. 1,5 cm, Btl. à 2 St.",,,8f0a1dcb-b522-4e11-aef1-1ccf678aa760,ec89b6f5-140c-4f1d-bef4-0e0ecde7aacd
+Bierkrug matt,,,,,,,,,,,,No,,19.00,each.each,No,,,,,,"Subli Tassen, Gläser, Flaschen",Purple,,,,,,,,Yes,,,,d8f84083-1fde-412f-838e-754d686b9fc5,
+,,,,,,,,,,Yes,5.95,,,,,,0,0,,,,,,,,,,,,,,,,,,215797ab-147e-4109-b6de-67b10abff53c
+,plus Sublimation,,,,,,,,,Yes,17.95,,,,,,0,0,,,,,,,,,,,,,,,,,,b40eb17e-a455-492a-bd63-20aba3d32609
+"Bierkrug, sublimiert",,,,,,,,,,Yes,15.00,No,,19.00,each.each,No,0,0,,,,Marktstand,Light green,,,,,,,,Yes,"Bierkrug, sublimiert",,,9e447cda-54bd-4683-8442-bcde6c026873,52b21398-5c97-4d1b-8e9a-32004163df4a
+Bindedraht,,,,,,,,,,Yes,1.49,No,,19.00,each.each,No,0,0,,8716525302575,,Diverses,Light red,,,,,,,,Yes,,,,0d384313-1971-4715-a245-7c661f74d9d0,aafd9fc5-0057-4b93-a644-434af5a34c5b
+Blumenpresse. FSC Mix Credit,,,,,,,,,,Yes,18.99,No,,19.00,each.each,Yes,3,0,27000505,4006166376047,,Rayher,Grey,,,,,,,,Yes,,,,2b8b0dc6-311d-4827-bbcc-864d058b10ba,a6bf74a9-901d-4d7e-bd53-ed25d8ba11c0
+Blumentopf auf Holz,,,,,,,,,,Yes,12.00,No,,19.00,each.each,No,0,0,,,,Dienstleistungen,Pink,https://images.sumup.com/img_0WYR5GKTFN8VAVJ4HNKR8E9Z1R,,,,,,,Yes,Blumentopf auf Holz,,,6fe69412-777e-4b00-8081-0e87e40500ca,822409ba-87d9-49ce-92d7-9deb187edecb
+"BP: Abdruck Set ""keeping memories""",,,,,,,,,,Yes,10.99,No,,19.00,each.each,Yes,4,0,34444000,4006166481765,,Rayher,Grey,,,,,,,,Yes,,,,ab054b3e-c359-4f0b-a27f-3997e5df62f9,51920916-9f5d-4388-ba6c-1508ba289b40
+BP Deko Ringe +Holzboard. FSC Mix Credit,,,,,,,,,,Yes,12.99,No,,19.00,each.each,Yes,0,0,64621000,4006166937910,,Rayher,Grey,,,,,,,,Yes,,,,031fa7e3-48a6-4c93-ba36-6a166170a8a8,9c2d8029-318c-46e7-b694-047e0696eb2c
+BP Deko Ring +Holzboard. FSC Mix Credit,,,,,,,,,,Yes,12.99,No,,19.00,each.each,Yes,4,0,64620000,4006166937903,,Rayher,Grey,,,,,,,,Yes,,,,44c69a08-8a0b-456b-bf92-78661c126189,809d898a-df4c-421b-9452-1a5e5ce407ec
+BP DIY Traumfänger. 18cm ø,,,,,,,,,,Yes,9.99,No,,19.00,each.each,Yes,6,0,66077000,4006166493980,,Rayher,Grey,,,,,,,,Yes,,,,885f093b-d43d-4b12-9e49-ba3492d2d8e2,f3ac7e72-de97-45c9-879f-3fdf5fbd692a
+BP: Gipsabdruck Babybauch,,,,,,,,,,Yes,25.99,No,,19.00,each.each,Yes,2,0,34440000,4006166349546,,Rayher,Grey,,,,,,,,Yes,,,,305014b2-4783-48c2-8920-c2c2f9ec8942,72ab50c3-cef5-4c78-b92a-4769046cd64b
+BP: Raysin Deko-Anhänger,,,,,,,,,,Yes,14.99,No,,19.00,each.each,Yes,3,0,34416000,4006166533808,,Rayher,Grey,,,,,,,,Yes,,,,f1a29956-e8ca-45a2-a4ab-2db2061fe1ec,ae4cb96d-dc80-4e4e-9fca-45e22a288937
+BP Raysin Terrazzo-Untersetzer,,,,,,,,,,Yes,18.99,No,,19.00,each.each,Yes,2,0,34473000,4006166817984,,Rayher,Grey,,,,,,,,Yes,,,,13b114ca-335c-4ee0-af3e-bbf5df5e35a9,459f4945-ea42-4b73-87a1-c952e8a69a72
+"BP: Seife-Gießen ""handmade with love""",,,,,,,,,,Yes,19.99,No,,19.00,each.each,Yes,3,0,34286000,4006166479236,,Rayher,Grey,,,,,,,,Yes,,,,dba9c1cb-2536-4a54-9942-df088fbebf66,5fdcbffb-7a05-4659-a7ca-c1fe13d62436
+"BP Seife ""honey bee""",,,,,,,,,,Yes,19.99,No,,19.00,each.each,Yes,3,0,34469000,4006166239076,,Rayher,Grey,,,,,,,,Yes,,,,6a8dc26b-1c6e-41f9-8690-662398045765,6c269233-b5b7-4f37-bc2d-f962883fde01
+"Brettchen, Lasergravur",,,,,,,,,,Yes,10.00,No,,19.00,each.each,No,0,0,,,,Marktstand,Light green,,,,,,,,Yes,"Brettchen, Lasergravur",,,7992fc4f-a722-4e3b-8374-45b4b2e3d208,4571281d-fd28-4e5c-a260-3b1a1e9d0cc9
+Brillenetui,,,,,,,,,,Yes,4.95,No,,19.00,each.each,Yes,8,0,,,,Subli Sonstiges,Light red,,,,,,,,Yes,,,,eb16ad91-ea2c-48f2-baff-b90fcab2c27f,7408ef5a-f82b-4492-addd-6db2a323dfc3
+"Bubble Kerzen, Silikon Gießform",,,,,,,,,,Yes,21.99,No,,19.00,each.each,Yes,5,1,36163000,4006166490514,,"Rayher, Silikonformen",Light red,,,,,,,,Yes,"Bubble Kerzen, Silikon Gießform",,,4dd11db9-71ce-40ae-9d5e-1523a93f50bb,da07b448-0a3c-4662-bc53-71a49e0af0eb
+Buntleuchtende Party Kerzen. 5mm ø,,,,,,,,,,Yes,5.99,No,,19.00,each.each,Yes,22,0,31587000,4006166776113,,Rayher,Grey,,,,,,,,Yes,,,,635627a6-3f16-4b65-9ed3-0917db6899a3,45720671-401b-4050-9629-54598d2745f6
+"Butter Beer, Duftkerze (M.F.)",,,,,,,,,,Yes,25.50,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_3RQCFXM8T39M1SJ55WYG201T15,,,,,,,Yes,"Butter Beer, Duftkerze (M.F.)",,,7168770c-a573-4f35-bf0a-9cc24449c776,706cecee-57dd-44d3-a659-5ea6831558ab
+Café Latte,,,,,,,,,,Yes,6.90,No,,19.00,each.each,No,0,0,PAP2001,5400573014513,,Papier,Black,,,,,,,,Yes,,,,3766b207-fc82-42ef-a13b-beb42cd4ae8e,51a50c32-2602-46b2-ba93-92fa245e5e75
+"Candy, Duftkerze (M.F.)",,,,,,,,,,Yes,16.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_6XGD0QVY2F98DBMWDB4WB53036,,,,,,,Yes,"Candy, Duftkerze (M.F.)",,,c1d1c23b-affe-4fce-b362-6603a80ae931,77aea428-148d-46ea-90f6-8cce1fa12569
+"Candy, Vanille-Toffee, Duftkerze (M.F.)",,,,,,,,,,Yes,16.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_42QX2TFA8P9XFAGCV839RY6SAB,,,,,,,Yes,"Candy, Vanille-Toffee, Duftkerze (M.F.)",,,8cff2aeb-c654-40ff-9939-ed99737de446,b6ba5bda-943d-4ac4-abeb-06b8c6a8fbfa
+Chalky Set,,,,,,,,,,Yes,12.99,No,,19.00,each.each,Yes,2,0,35049258,4006166792021,,Rayher,Grey,,,,,,,,Yes,,,,433d1c9b-be76-47e7-b1ae-1808d5ff818b,8cf75fb0-1808-4faa-8499-ce178c354e88
+Chalky Set,,,,,,,,,,Yes,12.99,No,,19.00,each.each,Yes,2,0,35049990,4006166792014,,Rayher,Grey,,,,,,,,Yes,,,,07acd8b3-5736-4083-a653-693eb5785327,26f11827-7131-4eac-ab97-b273926646f8
+"Cherry Kiss, Duftkerze (M.F.)",,,,,,,,,,Yes,16.50,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_59W2925QYS8GVS8MEH2PGZJGQ7,,,,,,,Yes,"Cherry Kiss, Duftkerze (M.F.)",,,43a6a859-3ffd-496d-a71b-375d33ae3c08,6d34ea64-3f7f-4ad8-bfe9-f249833ea06f
+"Cherry Lady, Duftkerze (M.F.)",,,,,,,,,,Yes,16.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_2NH51JT7MK904RE6C5T47DC86E,,,,,,,Yes,"Cherry Lady, Duftkerze (M.F.)",,,5f2eb55a-236d-444f-95c8-2c9796588e91,5ba339e8-59ed-48a6-aa23-500af72b1189
+"Cocktailgläser 0,6 x 1,2 cm Btl. à 2 St.",,,,,,,,,,Yes,2.95,No,,19.00,each.each,Yes,4,0,3481 076,4036159545723,,HobbyFun,Light red,https://images.sumup.com/img_499FADY4F89BQ9HB30VV14MA7M,,,,,,,Yes,"Cocktailgläser 0,6 x 1,2 cm Btl. à 2 St.",,,607ed175-b73a-4c21-8682-e6ba2b16ae76,9ee87c95-4fbe-4723-96ad-a5f63bf211c8
+"Coconut Macaron, Duftkerze (M.F.)",,,,,,,,,,Yes,16.50,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_6VE7AJXBD69AWVCD6RV5TSRHM9,,,,,,,Yes,"Coconut Macaron, Duftkerze (M.F.)",,,976e72f6-8c46-44ff-ba7f-a6e354ac4bba,7727870c-0035-4b1f-bb6d-774e6d500727
+"Cookie Monster, Duftkerze (M.F.)",,,,,,,,,,Yes,16.50,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_7PCF0YWGSS8VQB5528Y7X7FD5D,,,,,,,Yes,"Cookie Monster, Duftkerze (M.F.)",,,a30d5958-6569-4561-9662-fbcfb9d0c68f,92364806-95d7-4880-bae2-ae6e71ffbca6
+craftcut® BlingBling Vinylfolie DIN A4,,,,,,,,,,,,No,,19.00,each.each,No,,,,,,Vinylfolien Glitzer,Light red,,,,,,,,Yes,craftcut® BlingBling Vinylfolie DIN A4,,,fb05f1f6-03fe-4522-987e-77a6f40d9164,
+,black,Farbe,black,,,,,,,Yes,2.89,,,,,,0,0,40463-blk,9940463404018,,,,,,,,,,,,,,,,96e9182f-00bc-445a-8590-7929bbad7975
+,white,Farbe,white,,,,,,,Yes,2.89,,,,,,0,0,,9940463404025,,,,,,,,,,,,,,,,1aa7304b-6605-44dc-8012-4ed5013217a8
+,red,Farbe,red,,,,,,,Yes,2.89,,,,,,0,0,,9940463404032,,,,,,,,,,,,,,,,e1a1316b-d5f1-4b68-a5a1-0164b5f4ed1b
+,blue,Farbe,blue,,,,,,,Yes,2.89,,,,,,0,0,,9940463404049,,,,,,,,,,,,,,,,8e1526df-04e4-48cc-9213-f211a4c81b01
+,bright-blue,Farbe,bright-blue,,,,,,,Yes,2.89,,,,,,0,0,,9940463404056,,,,,,,,,,,,,,,,e21fad70-743b-4a7a-a650-515738c51b16
+,bright-pink,Farbe,bright-pink,,,,,,,Yes,2.89,,,,,,0,0,,9940463404063,,,,,,,,,,,,,,,,ff953aaa-f398-4ee4-8115-254557b26735
+craftcut® PUFF Flexfolie,,,,,,,,,,,,No,,19.00,each.each,Yes,,,,,"<p>craftcut® PUFF Flexfolie, 20 cm x 30 cm</p>",Flexfolien,Pink,,,,,,,,Yes,,,,a3b92149-65ff-4067-8e1e-b75211597a69,
+,White,Farbe,White,,,,,,,Yes,2.95,,,,,,6,0,,4251148237278,,,,,,,,,,,,,,,,e072a368-5238-409a-ba58-b6fd99d877bd
+,Green,Farbe,Green,,,,,,,Yes,2.95,,,,,,4,0,41393-Puf009,4251148237346,,,,,,,,,,,,,,,,de1fd187-3148-4711-ac01-a1ef06c57a7c
+,Purple,Farbe,Purple,,,,,,,Yes,2.95,,,,,,3,0,41393-Puf011,425114823736,,,,,,,,,,,,,,,,4812e40c-de77-4332-81b3-66dbd295457a
+,Neon Yellow,Farbe,Neon Yellow,,,,,,,Yes,2.95,,,,,,5,0,41393-Puf010,4251148237353,,,,,,,,,,,,,,,,d49c0697-5570-4da0-a04f-d5acc854c8ff
+,Royal Blue,Farbe,Royal Blue,,,,,,,Yes,2.95,,,,,,3,0,41393-Puf005,4251148237315,,,,,,,,,,,,,,,,285b7fe9-2f9c-46bb-af86-7369160c69ab
+,Yellow,Farbe,Yellow,,,,,,,Yes,2.95,,,,,,3,0,41393-Puf004,4251148237308,,,,,,,,,,,,,,,,3ea7b17b-f63e-4080-94dd-876472246e4d
+,Red,Farbe,Red,,,,,,,Yes,2.95,,,,,,4,0,41393-Puf003,4251148237292,,,,,,,,,,,,,,,,b23583f8-86a6-4a0d-9245-0e5089048699
+,Schwarz,Farbe,Schwarz,,,,,,,Yes,2.95,,,,,,9,0,,4251148237285,,,,,,,,,,,,,,,,b6c76220-812a-4c4c-987f-a8a7a1640400
+craftcut® Übertragungsfolie für selbstklebende Vinylfolie,,,,,,,,,,Yes,0.79,No,,19.00,each.each,Yes,84,0,,4251148232921,"craftcut® Übertragungsfolie für selbstklebende Vinylfolie, 21 cm x 29.7 cm",Vinylfolien Uni,Light green,,,,,,,,Yes,,,,87c770a1-d95e-4e24-acee-8792279c0ee5,f72a2715-fc22-487e-a762-acd86c6e8c50
+craftcut® Vinylfolie glänzend,,,,,,,,,,,,No,,19.00,each.each,Yes,,,,,"craftcut® Vinylfolie glänzend, 21 cm x 29,7 cm",Vinylfolien Uni,Light green,,,,,,,,No,,,,7119ee71-f474-48fb-b5e5-f608fc4a27b3,
+,Apple Green,Farbe,Apple Green,,,,,,,Yes,0.79,,,,,,25,0,G40,4251148225459,,,,,,,,,,,,,,,,3569a250-d085-4cc2-b2b1-f7f48c22aefb
+,Aqua Green,Farbe,Aqua Green,,,,,,,Yes,0.79,,,,,,24,0,G39,4251148225442,,,,,,,,,,,,,,,,d32a74d2-f463-4d2e-a430-2dfbe6d0c7c8
+,Beige,Farbe,Beige,,,,,,,Yes,0.79,,,,,,23,0,G03,4251148225183,,,,,,,,,,,,,,,,2437bfff-c659-4386-b4ee-f8bb8e2aab59
+,Black,Farbe,Black,,,,,,,Yes,0.79,,,,,,20,0,G01,4251148225169,,,,,,,,,,,,,,,,8d49ea43-f666-415a-b63f-d579a407fef4
+,Blue,Farbe,Blue,,,,,,,Yes,0.79,,,,,,24,0,G33,4251148225381,,,,,,,,,,,,,,,,4e0768d8-2f7f-448e-8257-8455f33d0192
+,Bright Yellow,Farbe,Bright Yellow,,,,,,,Yes,0.79,,,,,,24,0,G15,4251148225268,,,,,,,,,,,,,,,,6d79612a-4343-40cd-9727-b619a6ec1e07
+,Brown,Farbe,Brown,,,,,,,Yes,0.79,,,,,,24,0,G07,4251148225213,,,,,,,,,,,,,,,,54111760-e69f-4a24-a98d-779ded2d97ed
+,Burgundy,Farbe,Burgundy,,,,,,,Yes,0.99,,,,,,8,0,G28,4251148225343,,,,,,,,,,,,,,,,eb7285a7-ea50-4f1f-afe6-7d16425bbe5b
+,Cherry Red,Farbe,Cherry Red,,,,,,,Yes,0.79,,,,,,25,0,G21,4251148225299,,,,,,,,,,,,,,,,4d0188d8-f39c-45f7-8a5f-bf2926408f93
+,Cranberry Metallic,Farbe,Cranberry Metallic,,,,,,,Yes,1.09,,,,,,8,0,G70,4251148225565,,,,,,,,,,,,,,,,8b15b499-62a1-43ec-8eae-f8176602cab3
+,Dark Grey,Farbe,Dark Grey,,,,,,,Yes,0.79,,,,,,20,0,G50,4251148225503,,,,,,,,,,,,,,,,83f9e79a-89ab-40a9-8c14-aa8136abbced
+,Dark Red,Farbe,Dark Red,,,,,,,Yes,0.79,,,,,,25,0,G26,4251148225336,,,,,,,,,,,,,,,,8521fbe0-546b-4de1-8a49-11565cc387d7
+,Dark Yellow,Farbe,Dark Yellow,,,,,,,Yes,0.79,,,,,,25,0,G14,4251148225251,,,,,,,,,,,,,,,,ad8849a7-dd41-4923-9f5f-144265532e90
+,Forest Green,Farbe,Forest Green,,,,,,,Yes,0.79,,,,,,23,0,G42,4251148225473,,,,,,,,,,,,,,,,c4d2d7d5-aee3-4cfb-8ead-092daf1fa04e
+,Gold Metallic,Farbe,Gold Metallic,,,,,,,Yes,1.09,,,,,,10,0,G02,4251148225176,,,,,,,,,,,,,,,,9641ac56-41bd-47d5-81f7-3a1a761aefdd
+,Green,Farbe,Green,,,,,,,Yes,0.79,,,,,,50,0,G41,4251148225466,,,,,,,,,,,,,,,,7b07a07b-e55e-4edb-bb76-a0762be176cb
+,Grey White,Farbe,Grey White,,,,,,,Yes,0.79,,,,,,25,0,G52,4251148225527,,,,,,,,,,,,,,,,d7d22f99-c66d-4baa-b579-a9748549c350
+,Light Green,Farbe,Light Green,,,,,,,Yes,0.79,,,,,,25,0,G44,4251148225480,,,,,,,,,,,,,,,,c2d91757-3398-4db7-9a38-4ef793046e28
+,Light Grey,Farbe,Light Grey,,,,,,,Yes,0.79,,,,,,24,0,G51,4251148225510,,,,,,,,,,,,,,,,b1da5147-4a12-4b8e-8c36-0ed3bf615106
+,Magenta,Farbe,Magenta,,,,,,,Yes,0.79,,,,,,24,0,G04,4251148225190,,,,,,,,,,,,,,,,bddd6f18-50fe-4c98-a8f6-2e6ddbda2e93
+,Medium Blue,Farbe,Medium Blue,,,,,,,Yes,0.79,,,,,,25,0,G36,4251148225411,,,,,,,,,,,,,,,,956665f3-06c1-4e73-b1a7-897ccffeb553
+,Medium Light Yellow,Farbe,Medium Light Yellow,,,,,,,Yes,0.79,,,,,,25,0,G11,4251148225244,,,,,,,,,,,,,,,,93d898b6-47e0-4474-acc7-3a528974b1c9
+,Medium Red,Farbe,Medium Red,,,,,,,Yes,0.79,,,,,,25,0,G22,4251148225305,,,,,,,,,,,,,,,,2c47c246-27ff-4cf3-9f0d-88ba89ed410b
+,Orange,Farbe,Orange,,,,,,,Yes,0.79,,,,,,25,0,G18,4251148225275,,,,,,,,,,,,,,,,b568d7d5-7a12-4335-8edf-5c213c2624ef
+,Pastel Blue,Farbe,Pastel Blue,,,,,,,Yes,0.79,,,,,,24,0,G29,4251148225589,,,,,,,,,,,,,,,,42dd5e31-9859-4797-9090-dacc10fe21b2
+,Pink,Farbe,Pink,,,,,,,Yes,0.79,,,,,,24,0,G17,4251148225558,,,,,,,,,,,,,,,,8d041bc9-ea44-4746-af98-d6c22ec02b95
+,Rose Gold Metallic,Farbe,Rose Gold Metallic,,,,,,,Yes,1.09,,,,,,24,0,G09,4251148225541,,,,,,,,,,,,,,,,e053121f-bf4a-4123-977a-a2130a2467ab
+,Silver Metallic,Farbe,Silver Metallic,,,,,,,Yes,1.09,,,,,,25,0,G08,4251148225220,,,,,,,,,,,,,,,,ea7e39e8-b17a-45fc-8794-4b8a9a6c6dfd
+,Tomato Red,Farbe,Tomato Red,,,,,,,Yes,0.79,,,,,,25,0,G25,4251148225329,,,,,,,,,,,,,,,,6a8125b7-996f-4056-8eff-63eec14cabfa
+,Turquiose,Farbe,Turquiose,,,,,,,Yes,0.79,,,,,,25,0,G38,4251148225435,,,,,,,,,,,,,,,,f89a5e21-c8bb-4329-87e2-0395adfaf11e
+,Ultramarine,Farbe,Ultramarine,,,,,,,Yes,0.79,,,,,,25,0,G34,4251148225398,,,,,,,,,,,,,,,,4509b2c4-9009-42ba-99eb-19804c167411
+,Violet,Farbe,Violet,,,,,,,Yes,0.79,,,,,,25,0,G06,4251148225206,,,,,,,,,,,,,,,,67ccc787-b2ed-452c-871a-1c8108c5a54a
+,White,Farbe,White,,,,,,,Yes,0.79,,,,,,12,0,G00,4251148225152,,,,,,,,,,,,,,,,8d66c9d6-7714-4c3d-b406-37afce99e75e
+"Crazy Gingerbread, Duftkerze (M.F.)",,,,,,,,,,Yes,16.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_0EPCGFKC7B9EBT6WN7MGB0E6ZW,,,,,,,Yes,,,,5ef6d681-d86b-4cce-9685-113b909cdfa5,86d3f546-fa2c-4731-93bf-5cbb908a4809
+"Cricut Weeder ",,,,,,,,,,Yes,7.95,No,,19.00,each.each,Yes,2,0,,093573079016,,Diverses,Light red,,,,,,,,Yes,,,,dddaec1a-ddd4-4b6c-937b-e01c5ddb4a70,b53274c8-c204-4cbf-afc3-e9f962d058ee
+Deco-late Bildtransferlack 250 ml glänzend,,,,,,,,,,Yes,9.90,No,,19.00,each.each,Yes,3,0,78 022.99,4025765094084,,Creartec,Light blue,,,,,,,,Yes,Deco-late Bildtransferlack 250 ml glänzend,,,31725581-e198-40a3-b036-a1ed18fb6718,d86071a9-8b27-4b7d-862d-77ec5a004368
+Deco-late Bildtransferlack 250 ml seidenmatt,,,,,,,,,,Yes,9.90,No,,19.00,each.each,Yes,3,0,78 022.98,4025765094060,,Creartec,Light blue,,,,,,,,Yes,Deco-late Bildtransferlack 250 ml seidenmatt,,,c1678b3a-fc3c-4210-b9a8-a1e110dd20fd,3efff93a-5c56-44c7-8357-59b87ec32efc
+Deco-Late Bildtransferlack glänzend 100ml,,,,,,,,,,Yes,5.80,No,,19.00,each.each,Yes,6,0,78 021.99,4025765094077,,Creartec,Light blue,,,,,,,,Yes,Deco-Late Bildtransferlack glänzend 100ml,,,6347681c-d716-4384-b144-9a60836e9ce8,781f2631-9875-4a7b-b8bc-f4028590e8c1
+Deco-Late Bildtransferlack seidenmatt 100ml,,,,,,,,,,Yes,5.80,No,,19.00,each.each,Yes,6,0,78 021.98,4025765094053,,Creartec,Light blue,,,,,,,,Yes,Deco-Late Bildtransferlack seidenmatt 100ml,,,7eeecfa5-60e5-47c0-808c-a07d3a40e25e,74285b6b-80a1-46ea-a487-5e86ad55e3ef
+"Decoupage Kleber & Lack matt, Flasche 236ml",,,,,,,,,,Yes,6.99,No,,19.00,each.each,Yes,1,0,38827000,4006166144868,,Rayher,Light red,https://images.sumup.com/img_69B494G7768YCB6CVE2RYHNT5E,,,,,,,Yes,"Decoupage Kleber & Lack matt, Flasche 236ml",,,06910b9e-d009-48b9-949e-b1e8e0f6f4e6,76f4870e-9e0a-4b76-883e-2c9e8dcfe241
+"Dekoband Fisch I/Zur Konfirmation 15 mm, weiss",,,,,,,,,,Yes,1.50,No,,19.00,length.metre,No,0,0,3823 567,4036159494625,,3D-Druck,Light red,https://images.sumup.com/img_2FATKSZGXA80WVW97E2DZADXBE,,,,,,,Yes,"Dekoband Fisch I/Zur Konfirmation 15 mm, weiss",,,a4224b9b-7972-490e-a6d4-6278e931614a,82d7e428-8d0c-4b66-85cc-d8d167bf45ac
+Deko-Liegestuhl blau,,,,,,,,,,Yes,2.95,No,,19.00,each.each,Yes,6,0,3270 179,4036159490412,,HobbyFun,Light blue,https://images.sumup.com/img_1KJK2Y74WS87MSFSRQC0TAW5X6,,,,,,,Yes,,,,96b208a4-d736-4e58-a957-379325396935,61dec880-1022-4660-9f0b-a42655cc11d1
+Deko-Liegestuhl grün,,,,,,,,,,Yes,2.95,No,,19.00,each.each,Yes,5,0,3270 180,4036159490429,,HobbyFun,Light blue,https://images.sumup.com/img_395S0ZDG1V8W2A1YNB97Y1JB1R,,,,,,,Yes,,,,f8ee525c-0a33-4b9a-af64-66e1a21eec23,a6903bd8-fdf4-4802-b742-f36373cd7804
+"Dino, (Y S.)",,,,,,,,,,Yes,14.00,No,,0.00,each.each,No,0,0,,,,Yvonne Schwarz,Light red,,,,,,,,Yes,,,,5218534e-7749-405f-bebc-b2086aedbe75,c1dd1993-2ea8-4453-9583-0c59ec316630
+Dolce Vita,,,,,,,,,,Yes,5.50,No,,19.00,each.each,No,0,0,PAP0245,5400573044176,,Papier,Black,,,,,,,,Yes,,,,40fcc678-5c33-4d54-9213-74ac99e0cb9b,bc2e826a-ff8d-485a-884e-776e6651d5cc
+Dornröschen,,,,,,,,,,Yes,16.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_79CP6CX1QJ9FVBS0V8D13XBTC1,,,,,,,Yes,Dornröschen,,,c6612e83-b397-4833-947c-889b2a2022a3,3b490d89-6838-40de-8b23-36a9ea125deb
+"Dose mit Deckel, 10, x 8, Silikonform",,,,,,,,,,Yes,14.95,No,,19.00,each.each,Yes,2,1,2007633,4036159549721,,HobbyFun,Light red,https://images.sumup.com/img_14J977QTYF8DCV91XY37CKXNK3,,,,,,,Yes,,,,a35e8753-bf13-4e5c-b584-60a1bf23883e,10831983-3607-4f36-8c39-c21f56532fe8
+"Dose mit Deckel, 5,5 x 3, Silikonform",,,,,,,,,,Yes,8.94,No,,19.00,each.each,Yes,3,1,2007629,4036159549684,,HobbyFun,Light red,https://images.sumup.com/img_21P10TM4ZS9FBTAXZS8P7BSAH5,,,,,,,Yes,,,,26d36640-905a-4871-bf6c-853ada8bb561,b021429d-cec9-45c9-a1bf-981294d14e8b
+"Duftkerze ""beste Freundin""  (M.F.)",,,,,,,,,,Yes,10.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_2AN0SWHWBX8V49P5WD4WHWZXBH,https://images.sumup.com/img_5Q4YHKCK508QA8CBJMRJVCTNBZ,,,,,,Yes,"Duftkerze ""beste Freundin""  (M.F.)",,,61562e71-68ac-426d-a21c-9f48775d30be,8456d1f5-79e1-4f0a-a6d9-c31f4a2adb82
+"Duftkerze ""Christmas Dream"" (M.F.)",,,,,,,,,,Yes,10.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_2X83MX4XVD9FVTXMYMJEXN4HB7,,,,,,,Yes,"Duftkerze ""Christmas Dream"" (M.F.)",,,7899430b-72de-4438-8cae-74dcf0ad81fd,2a4e8e70-dbca-4b4b-8780-947069fc0306
+"Duftkerze ""Holiday"", (M.F.)",,,,,,,,,,Yes,16.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_2BHW3PHA2J8B48J9TF25H3Q1XC,,,,,,,Yes,"Duftkerze ""Holiday"", (M.F.)",,,d9a51361-9a3a-437e-bff5-e7012010cb26,3917189c-03fc-491b-b02e-3166e92edbec
+Duftkerze Merry Christmas,,,,,,,,,,Yes,10.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_1KA57MVNAD88BSA2RKKVAVEYW7,,,,,,,Yes,Duftkerze Merry Christmas,,,87183b3c-95a2-4023-af9e-95f68d27e998,eb38df76-8c29-44bf-9585-2da6a5ebb900
+"Duftkerze ""Orangensorbet"" (M.F.)",,,,,,,,,,Yes,16.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_7RMVN0D97M8Z4A8MT4671X9TVG,,,,,,,Yes,"Duftkerze ""Orangensorbet"" (M.F.)",,,8b48a7da-7ff7-462a-a002-2f9a1a09a955,ff46ca2d-51ba-4cf0-864a-48dad641dcab
+"Duftkerze ""Pumpkin Pie"" (M.F.)",,,,,,,,,,Yes,12.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_0HG758BPSA86DVMQTS07E4139W,,,,,,,Yes,"Duftkerze ""Pumpkin Pie"" (M.F.)",,,76c00610-5b1f-42b7-b481-145cb8bde335,a720b7cf-4f79-43a8-9703-18129a364ce1
+"Duftkerze ""Verführung"" (M.F.)",,,,,,,,,,Yes,10.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_226QBNG0S18TPVD8QFKC7EDHVG,,,,,,,Yes,"Duftkerze ""Verführung"" (M.F.)",,,0249a1d2-e169-4ff8-9a16-b97e3cb7219d,987fe1d1-b715-4cf1-96e0-02b477047ecc
+"Duftkerze Wonderland, (M.F.)",,,,,,,,,,Yes,25.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,,,,,,,,Yes,,,,dccdee56-554a-42de-a185-2634ce272074,4df6f8ad-630f-415f-9f16-289ba5e3f3f2
+Duftwachs Coffee Caramel,,,,,,,,,,Yes,5.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,,,,,,,,Yes,,,,45097387-287c-4a9a-8fed-89eb6e273bce,abe7d72c-9411-4be8-90da-3a3de93dd384
+Duftwachs Erdbeere (M.F.),,,,,,,,,,Yes,5.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_0QSE0PWJYB97R8D6RYEPPBX13R,,,,,,,Yes,Duftwachs Raspberry (M.F.),,,88ef706c-0133-493b-aa9c-b4cc0f25adf2,e1332964-f845-40f9-a2cd-c4d0396cd02a
+Duftwachs Haferflocken Honig(M.F.),,,,,,,,,,Yes,5.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_7F8HTD3VVN9PKB3HWSYK589PRM,,,,,,,Yes,Duftwachs Lemongras (M.F.),,,032c2f80-d375-4931-aede-98aef14b41bf,3756f8b6-71df-4319-b88f-df1d484f0449
+"Duftwachs, Iced Coffee Karamell(M.F.)",,,,,,,,,,Yes,5.50,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_78NMD713NE8BFVMTPPHP62BJTK,,,,,,,Yes,Duftwachs Kaffee (M.F.),,,bccf9cb7-f075-4c0a-b1eb-db3d19abe17d,edc6c188-1e54-4c6b-b767-72943a7bb4b7
+Duftwachs Rose Quarz (M.F.),,,,,,,,,,Yes,5.50,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_0CASX4QESB8Z7TXX2J0H5ZMG3V,,,,,,,Yes,Duftwachs Rose Quarz (M.F.),,,419a2b9a-6771-4fda-8d67-4a45f5d90b45,4ace5e7d-67c0-4a45-b9a7-d9a571870e93
+Einfaches Täschchen mit Wunschname,,,,,,,,,,Yes,6.00,No,,19.00,each.each,No,0,0,,,,Dienstleistungen,Pink,,,,,,,,Yes,Einfaches Täschchen mit Wunschname,,,254e2eeb-ae9d-47a6-ac3c-8262cab4ff74,dbcf0c7a-62db-484a-9de3-29997bdaf733
+Elefant (Y.S.),,,,,,,,,,Yes,8.00,No,,0.00,each.each,No,0,0,,,,Yvonne Schwarz,Light red,,,,,,,,Yes,Elefant (Y.S.),,,fa584d01-9659-46e5-922b-a7a2ecc9e093,76f66bb4-844b-449c-b2aa-535490c3d10b
+Enchanted Forest,,,,,,,,,,Yes,16.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_6NWG16WM3V8QW8F5MV5GTNNHEZ,,,,,,,Yes,Enchanted Forest,,,165f3a17-9ebd-4b66-bb53-6e45b70c563b,7c734baa-f027-4c7f-bdde-44afadba2c31
+"Engel + Flügel, Silikon Gießform",,,,,,,,,,Yes,11.49,No,,19.00,each.each,Yes,5,1,36115000,4006166788789,,"Rayher, Silikonformen",Light red,,,,,,,,Yes,"Engel + Flügel, Silikon Gießform",,,7825b9d8-df5a-48a1-8749-f34ab1ef7f0c,2d24ca0e-82fd-4d7f-8671-443dd1f26e3d
+Engel Mädchen (Ing.S.),,,,,,,,,,Yes,12.00,No,,0.00,each.each,No,0,0,,,,Ingrid Schiffmann,Light red,https://images.sumup.com/img_3Q9J2ZD93084JR1VBYQC2PBHC1,,,,,,,Yes,,,,717ee695-f2c9-470c-8ebd-129298991c5e,2abc955b-54bc-47d2-9927-d931df66f223
+"Erdbeerdessert, Duftkerze (M.F.)",,,,,,,,,,Yes,12.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_6XN2YXPAPP8AESKETQREMHHYQ4,,,,,,,Yes,"Erdbeerdessert, Duftkerze (M.F.)",,,5afec451-8c16-4895-93b5-a60a487ed4e6,d68e8eef-8125-420d-bc09-723f3447fba4
+Erstellung Plotterdatei,,,,,,,,,,Yes,20.00,No,,19.00,each.each,No,0,0,,,,Dienstleistungen,Yellow,,,,,,,,Yes,,,,831270f8-aae7-4cf1-9056-61763bc31c65,9067b005-6e1c-483d-8c15-8e674632f988
+Essentiel Beige,,,,,,,,,,Yes,5.50,No,,19.00,each.each,No,0,0,,5400573013578,,Papier,Black,,,,,,,,Yes,,,,1f3216a3-dc51-4583-8b95-e83cf5fae1b4,627ba99f-6588-463f-a9cf-4da69501bc7f
+Essentiel Bleu Grise,,,,,,,,,,Yes,5.50,No,,19.00,each.each,No,0,0,PAP0079,5400573019679,,Papier,Black,,,,,,,,Yes,,,,28a7ae35-cdd2-42d0-8ecf-fd81fe01205f,e3a6f6a8-88aa-489a-971c-b5a140ef8fb4
+Essentiel Caramel,,,,,,,,,,Yes,5.50,No,,19.00,each.each,No,0,0,PAP0097,5400573022785,,Papier,Black,,,,,,,,Yes,,,,39e06839-5ec4-4761-8082-bf99a6bda709,97468750-9a94-4321-a882-395bd1747ff1
+Essentiel Orchidee,,,,,,,,,,Yes,5.50,No,,19.00,each.each,No,0,0,PAP0206,5400573030100,,Papier,Black,,,,,,,,Yes,,,,d7e133f8-40aa-4a14-925c-b0f202eb268a,a4fb5848-2f97-4c5a-a2eb-7445161f8927
+Essentiel Sakura,,,,,,,,,,Yes,5.50,No,,19.00,each.each,No,0,0,PAP0093,5400573022372,,Papier,Black,,,,,,,,Yes,,,,3303dcb2-3494-4c1e-a288-61a34a0935c4,d1ff0918-962b-4e7c-b5e6-74d3d42bd4f5
+Fairytale,,,,,,,,,,Yes,10.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_24WDGGRR4V9NEBSNQ0565QD2K5,,,,,,,Yes,Fairytale,,,28a1d622-73a9-4483-a8c4-4b363e8e065d,576648a9-9e2f-407f-b84c-189638a844da
+Farbpigment,,,,,,,,,,Yes,4.29,No,,19.00,each.each,Yes,2,0,35016430,4006166823961,,Rayher,Grey,,,,,,,,Yes,,,,761d0c9b-da8b-4b7f-8a1e-e1afd5c9c9b1,5a99f9c2-a6c2-4a21-8c9b-03c80173bc85
+Farbpigment,,,,,,,,,,Yes,4.29,No,,19.00,each.each,Yes,2,0,35016312,4006166782350,,Rayher,Grey,,,,,,,,Yes,,,,eade1e74-2800-488e-b0ce-dccb1d6b5673,fc41f71d-780c-4cf5-80b6-50da225e4160
+Farbpigment,,,,,,,,,,Yes,4.29,No,,19.00,each.each,Yes,3,0,35016276,4006166782343,,Rayher,Grey,,,,,,,,Yes,,,,c01a8ff6-1121-42b3-b830-1d6a54d18340,030a46c1-3c3a-4887-8db1-0587a51fd6dc
+Farbpigment,,,,,,,,,,Yes,4.29,No,,19.00,each.each,Yes,4,0,35016385,4006166782374,,Rayher,Grey,,,,,,,,Yes,,,,b9cda703-8ac1-4be4-af1c-f512a724a1e0,ebb6b6f4-459c-47e3-afb4-cee672f0f554
+Farbpigment,,,,,,,,,,Yes,4.29,No,,19.00,each.each,Yes,2,0,35016390,4006166782367,,Rayher,Grey,,,,,,,,Yes,,,,22fa52c8-b88a-4acd-bfb0-4bb40a2046fd,8edc7f50-b7b2-4b5c-b258-f13b1a087336
+Farbpigment,,,,,,,,,,Yes,4.29,No,,19.00,each.each,Yes,4,0,35016162,4006166782329,,Rayher,Grey,,,,,,,,Yes,,,,82c4afec-928c-49b5-9692-adb99a1c5b6a,a0a80e04-fd92-434e-9127-a72121e715f2
+Farbpigment,,,,,,,,,,Yes,4.29,No,,19.00,each.each,Yes,4,0,35016414,4006166823978,,Rayher,Grey,,,,,,,,Yes,,,,fa295032-b6aa-405d-96fd-0755feb1a43d,0baa5b18-e612-4d98-86ac-645710a17fc3
+Farbpigmente für Wachs,,,,,,,,,,Yes,4.99,No,,19.00,each.each,Yes,4,0,31640990,4006166802652,,Rayher,Grey,,,,,,,,Yes,,,,cc09a567-0021-4851-b91c-b7471e4ffa86,076072a3-977c-4fb0-910b-9e72b0865f10
+Farbtabletten für Wachs und Kerzengel,,,,,,,,,,Yes,3.79,No,,19.00,each.each,Yes,5,0,3130549,4006166618758,,Rayher,Grey,,,,,,,,Yes,,,,2159fbd6-f1f2-4a39-a162-25d5532d0b2f,ba75275c-59d7-4d3c-b210-24f30dd082aa
+"Federn m. Goldfarbe, ca. 17 cm, Btl. à 4 St.",,,,,,,,,,Yes,2.95,No,,19.00,each.each,Yes,4,0,3190 070,4036159514750,,HobbyFun,Light red,https://images.sumup.com/img_7CN0KCXJ1J8FRSX4QXQ17QRV38,,,,,,,Yes,"Federn m. Goldfarbe, ca. 17 cm, Btl. à 4 St.",,,d212683c-0fa3-4ac4-a96c-25d5d7cde96e,4ec11c9c-c7fd-4a50-ac0e-aa31a81e9319
+"Federn m. Silberfarbe, ca. 17 cm, Btl. à 4 St.",,,,,,,,,,Yes,2.95,No,,19.00,each.each,Yes,4,0,3190 071,4036159514767,,HobbyFun,Light red,https://images.sumup.com/img_42J1R7CA0P93VBV5YH3WQG1P92,,,,,,,Yes,"Federn m. Silberfarbe, ca. 17 cm, Btl. à 4 St.",,,dc2314e0-ada3-4aa3-ba30-20ecbd277cff,361d7529-e81e-4aae-a19c-965b55a3e27d
+Fidget,,,,,,,,,,Yes,10.00,No,,19.00,each.each,No,0,0,,,,3D-Druck,Light red,,,,,,,,Yes,Fidget,,,362b97dd-8bac-400e-ba86-d1e6efc4a396,5c2ffb3e-bd91-42bd-a2c1-7d8a0bd22874
+"Fische, Silikon Gießform",,,,,,,,,,Yes,11.99,No,,19.00,each.each,Yes,3,0,36-173-000,4006166830068,,"Rayher, Silikonformen",Light red,,,,,,,,Yes,"Fische, Silikon Gießform",,,207da1f4-243c-4a20-bd93-27d7474b7e3f,3208e5dc-4d60-4ae8-9ca3-f13d13478815
+Flachdocht. FD19,,,,,,,,,,Yes,1.69,No,,19.00,each.each,Yes,10,0,31589000,4006166824074,,Rayher,Grey,,,,,,,,Yes,,,,d7c9e60f-70c3-499c-8c37-12541c976763,bdc46152-4871-4e90-9d88-f76557d1cd89
+Flip-Flops. grün m. Punkten,,,,,,,,,,Yes,2.75,No,,19.00,each.each,Yes,5,0,3861 405,4036159488495,,HobbyFun,Light blue,https://images.sumup.com/img_4P8FTWG973801BBZAGYQZBBVX7,,,,,,,Yes,,,,de282718-42b4-41cb-bd98-f1f8d6b51788,c406cf6c-b965-4d16-80e8-4ec57c7185ca
+Flip-Flops mit Blumen. blau,,,,,,,,,,Yes,2.25,No,,19.00,each.each,Yes,5,0,3861 401,4036159488457,,HobbyFun,Light blue,https://images.sumup.com/img_1JAVBQXBWV8V6VXV0SD5V0QSCP,,,,,,,Yes,,,,d223f0fd-0d1e-4065-abf2-8ecbf112c185,74cd51c1-4f8b-456c-859b-19af44438ea5
+Flip-Flops mit Blumen. rosa,,,,,,,,,,Yes,2.75,No,,19.00,each.each,Yes,5,0,3861 403,4036159488471,,HobbyFun,Light blue,https://images.sumup.com/img_4Y9R7122FD91DBFNDD4CNMMEYF,,,,,,,Yes,,,,fa41d09c-d422-4164-9e12-c40f0552dc38,9dcecd94-9fd9-40db-b582-9581ff273db4
+Foret Tropicale,,,,,,,,,,Yes,5.50,No,,19.00,each.each,No,0,0,PAP0244,5400573044169,,Papier,Black,,,,,,,,Yes,,,,b03246d6-7c64-4ca8-8abe-d6bbed16cea0,57eeef3d-a3c5-47bf-b1cb-9e8166fc5b2f
+"Frappuchino, Duftkerze (M.F.)",,,,,,,,,,Yes,16.50,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_7CKRY7GH2Y9YRTPPG00K09XPZ9,,,,,,,Yes,"Frappuchino, Duftkerze (M.F.)",,,b025bd4d-7561-42d4-a9b5-ec32e02b474c,435b2f70-816f-4459-be87-5802787f1bdf
+"Frohe Ostern, Duftkerze (M.F.)",,,,,,,,,,Yes,16.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_2M2141323V8SK9T1JF0M6PE3TF,,,,,,,Yes,"Frohe Ostern, Duftkerze (M.F.)",,,df73819d-593c-4173-9c23-ddf3b3594dd9,7a32259e-0496-4f0b-9207-316aadd017c8
+Frost-Effektfarbe,,,,,,,,,,Yes,8.99,No,,19.00,each.each,Yes,11,0,35087102,4006166827099,"Frost-Effektfarbe, weiß, Flasche 100ml",Rayher,Grey,,,,,,,,Yes,,,,2c1831b0-7b33-49c4-b3cb-27a9e41f35a9,662fd3e0-8d57-4914-8c4a-66535cf4ccc1
+Furnierholz Lichthäuser,,,,,,,,,,Yes,4.49,No,,19.00,each.each,Yes,8,0,46752505,4006166823565,"Furnierholz Lichthäuser, natur, 5,5-10cm, Stärke 1mm, SB-Btl. 8Stück",Rayher,Grey,,,,,,,,Yes,,,,c241fd85-3e25-46b6-8a5d-ef36a081f4e0,b04c5193-69e7-4a06-8b54-0f5748e2cd46
+Futterkiste,,,,,,,,,,Yes,15.00,No,,19.00,each.each,No,0,0,,,,Holz,Yellow,,,,,,,,Yes,,,,2bac94a0-9d61-405c-be0a-4b8bf4bd2d54,60b54b2c-5a1e-4e89-a620-2d984af63c4d
+"Geschenkbox 2er Muffin, (M.F.)",,,,,,,,,,Yes,14.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,,,,,,,,Yes,,,,c69acdee-c32a-447b-869e-cb492e9b7bc9,1245388d-73e9-4c23-884f-8ecb73f86d72
+"Geschenktüte, klein, bunt",,,,,,,,,,Yes,0.50,No,,19.00,each.each,No,0,0,,,,Diverses,Light red,,,,,,,,Yes,,,,2e1000c4-30cb-4a9a-93ae-18edcc649287,3048523f-1ce7-42e1-bdca-a080e3ba0a55
+Giessform Halbkugel 95 mm Ø - 125 ml,,,,,,,,,,Yes,4.75,No,,19.00,each.each,Yes,2,0,52 412,4025765013030,,Creartec,Light blue,,,,,,,,Yes,Giessform Halbkugel 95 mm Ø - 125 ml,,,8d29fc2c-fc12-4230-99aa-a8cd6a2db5bd,03dda2f2-0ea4-44b0-8d71-6142be4a611d
+"Gießpulver ""Raysin"" 100 - 1kg",,,,,,,,,,Yes,6.99,No,,19.00,each.each,Yes,14,0,3410302,4006166589782,"Gießpulver ""Raysin"" 100. weiß. Beutel 1 kg",Rayher,Grey,,,,,,,,Yes,,,,51ecec13-1108-48a5-8d4d-02e6b94dbe22,89a7d9f2-58c3-4172-9f82-8dfabd0f53e8
+"Gießpulver ""Raysin"" 100 - 4kg",,,,,,,,,,Yes,21.95,No,,19.00,each.each,Yes,3,0,34409102,4006166825644,"Gießpulver ""Raysin"" 100. weiß. Beutel 4kg",Rayher,Grey,,,,,,,,Yes,,,,c4d1b61c-2a24-4e2e-8a13-553bbe4b0bb5,0d9ca4fd-d841-4b49-b878-01995988163b
+"Gießpulver ""Raysin"" 200",,,,,,,,,,Yes,129.95,No,,19.00,each.each,Yes,1,0,34477102,4006166807817,"Gießpulver ""Raysin"" 200, weiß, Karton 25kg",Rayher,Grey,,,,,,,,Yes,,,,ffb2853a-2f20-499f-a4a4-18d96b4d56f4,6ce311fd-2297-43a6-aff4-a2b64593fb7e
+"Gießpulver ""Raysin"" 200 - 10kg",,,,,,,,,,Yes,52.95,No,,19.00,each.each,Yes,0,0,34475102,4006166807541,"Gießpulver ""Raysin"" 200. weiß. Beutel 10kg",Rayher,Grey,,,,,,,,Yes,,,,80ba2fc9-0f5a-4503-8f2d-bb42b2789e40,01347405-fc2e-40cc-b0f9-9f4a325950eb
+"Gießpulver ""Raysin"" 200 - 1kg",,,,,,,,,,Yes,7.99,No,,19.00,each.each,Yes,5,0,3699000,4006166996276,"Gießpulver ""Raysin"" 200. Beutel 1 kg",Rayher,Grey,,,,,,,,Yes,,,,53f2901e-6eec-45e7-b440-748bca563539,4cb9e3f5-0c76-4260-a049-2ef92f146940
+"Gießpulver ""Raysin"" 200 - 4kg",,,,,,,,,,Yes,24.95,No,,19.00,each.each,Yes,-3,0,34410102,4006166825651,"Gießpulver ""Raysin"" 200. weiß. Beutel 4kg",Rayher,Grey,,,,,,,,Yes,,,,b02536bc-7131-41c3-aed7-990b0b3223ad,ea008939-a201-4671-a1b7-742ab5b16fa4
+"Gießpulver ""Raysin"" 250 - 1kg",,,,,,,,,,Yes,9.99,No,,19.00,each.each,Yes,1,0,34479576,4006166898389,"Gießpulver ""Raysin"" 250. schwarz. Btl 1kg",Rayher,Grey,,,,,,,,Yes,,,,6c24038d-42d9-41d9-a43a-a6d317d71aa2,e4feff9c-981b-4522-bc61-c2e328947913
+Gipsdicht 100 ml,,,,,,,,,,Yes,4.20,No,,19.00,each.each,Yes,6,0,78 521,4025765006087,,Creartec,Light blue,,,,,,,,Yes,Gipsdicht 100 ml,,,3e1b0c36-722b-4599-b61c-0f0bb3cc4505,d712bed7-a76d-47f6-a1c0-ac1c63a1b758
+Gipsdicht 250 ml,,,,,,,,,,Yes,9.95,No,,19.00,each.each,Yes,4,0,78 522,4025765006094,,Creartec,Light blue,,,,,,,,Yes,Gipsdicht 250 ml,,,cf0dc56c-6f68-4665-9511-3f2410353c28,2ba7a6e2-ec49-40d6-9c70-7f4d83ee9d3f
+Gipsfigurenkleber 100g,,,,,,,,,,Yes,5.90,No,,19.00,each.each,Yes,6,0,56 832,4025765049275,,Creartec,Light blue,,,,,,,,Yes,Gipsfigurenkleber 100g,,,c6c78b27-7aa2-4daf-84b0-bb3a912dce08,4f770f25-103f-405a-8820-ae178235947e
+Glasdekorfolie frosted rosé,rose,,,,,,,,,Yes,1.95,No,,19.00,each.each,Yes,3,0,,9910354123458,,Vinylfolie Glasdekor,Light red,,,,,,,,Yes,Glasdekorfolie frosted rosé,,,3d7e3669-feb9-4211-9b1e-dddcda12e817,7717852e-cbfa-4565-859d-2b620f3afebc
+Glasröhre mit Stopper. 2.5cm ø,,,,,,,,,,Yes,1.79,No,,19.00,each.each,Yes,16,0,46242000,4006166825446,,Rayher,Grey,,,,,,,,Yes,,,,2b78608e-5948-4967-97aa-5358876f18d5,08bc3524-0bdd-4dd9-865c-68e29e62bbdf
+Glasvase m. Trockenblumen + Kerzenhalter,,,,,,,,,,Yes,7.99,No,,19.00,each.each,Yes,8,0,46697000,4006166817847,,Rayher,Grey,,,,,,,,Yes,,,,ecf1e427-50fa-4f59-b364-1998c7d9821a,6dee9d10-4be5-43fc-ba0f-7cf8f0fe5860
+Glitzertasse Pink,,,,,,,,,,,,No,,19.00,each.each,No,,,,,,"Subli Tassen, Gläser, Flaschen",Purple,,,,,,,,Yes,,,,35a27c04-0b04-4eed-9d3b-cb2663e92978,
+,Standard,,,,,,,,,Yes,3.90,,,,,,0,0,,,,,,,,,,,,,,,,,,aac5910e-19c1-49bc-916f-bbb653fbfebb
+,sublimiert,,,,,,,,,Yes,10.90,,,,,,0,0,,,,,,,,,,,,,,,,,,f5249c17-af4d-45c3-8c5e-515b2cc156d1
+Glitzertasse Pink 2er,,,,,,,,,,Yes,7.00,No,,19.00,each.each,No,0,0,,,,"Subli Tassen, Gläser, Flaschen",Purple,,,,,,,,Yes,,,,c6bc6fd8-9ab3-4d64-9932-251993873b5f,f03582c5-67a2-4f6d-87b3-35314456fd18
+Glitzertasse Purple,,,,,,,,,,,,No,,19.00,each.each,No,,,,,,"Subli Tassen, Gläser, Flaschen",Purple,,,,,,,,Yes,,,,1da66b98-9a8e-4751-a710-bf045b69eb7d,
+,Standard,,,,,,,,,Yes,3.90,,,,,,0,0,,,,,,,,,,,,,,,,,,7fdadd4f-d6e9-49a7-9dd8-dbd43c5d446d
+,sublimiert,,,,,,,,,Yes,10.90,,,,,,0,0,,,,,,,,,,,,,,,,,,9f1b8acb-ad70-4ae9-8c3e-6bcb1766c4b8
+Glitzertasse Purple 2er,,,,,,,,,,Yes,7.00,No,,19.00,each.each,No,0,0,,,,"Subli Tassen, Gläser, Flaschen",Purple,,,,,,,,Yes,,,,4c54f985-2fac-40c2-b072-47717cb1fbd4,58c7525b-c17f-43de-a5ea-7ac8fb92a65a
+Glitzertasse Rainbow,,,,,,,,,,,,No,,19.00,each.each,No,,,,,,"Subli Tassen, Gläser, Flaschen",Purple,,,,,,,,Yes,,,,96a4b7e8-6325-4560-9a7e-9e94faa1cdd8,
+,Standard,,,,,,,,,Yes,3.90,,,,,,0,0,,,,,,,,,,,,,,,,,,8e5831c2-398a-4a18-b1fb-c8b353acddac
+,sublimiert,,,,,,,,,Yes,10.90,,,,,,0,0,,,,,,,,,,,,,,,,,,79024513-32fa-46c6-b216-6e5db6c207f6
+Glitzertasse Rainbow 2er,,,,,,,,,,Yes,7.00,No,,19.00,each.each,No,0,0,,,,"Subli Tassen, Gläser, Flaschen",Purple,,,,,,,,Yes,,,,a126f9db-b7a5-4dea-95ad-3a781baeb539,3735571b-83c6-4141-a7fa-0eeaaef8b079
+Glücksbärchen (Ing.S.),,,,,,,,,,Yes,10.00,No,,0.00,each.each,No,0,0,,,,Ingrid Schiffmann,Dark blue,,,,,,,,Yes,Glücksbärchen (Ing.S.),,,979e037d-3ee9-436a-b85d-605b83f09e7f,0aec2338-cebf-4873-ab83-ea804488c86d
+Glücksbärchi (Y.S.),,,,,,,,,,Yes,15.00,No,,0.00,each.each,No,0,0,,,,Yvonne Schwarz,Light blue,,,,,,,,Yes,,,,4bc71ede-f4ba-4d24-ac6d-1adfe01283b2,e2dc6443-4fc2-4a40-8ac3-668dad3ce813
+"Glücksschwein, Raysin",,,,,,,,,,Yes,7.00,No,,19.00,each.each,No,0,0,,,,Dienstleistungen,Light red,https://images.sumup.com/img_4TA0QDQS759SV9YE3NJ5212FS7,,,,,,,Yes,"Glücksschwein, Raysin",,,2fe4abb7-a6e3-4418-9105-741df5722459,572a89f5-8cb8-4607-b36c-1dd3786ac124
+Glühweintasse,,,,,,,,,,Yes,8.00,No,,19.00,each.each,No,0,0,,,,Marktstand,Light red,,,,,,,,Yes,,,,13d6b376-cb5f-4867-b8bb-9840ae97a56b,344368ff-e754-423d-aebc-2dfaefd3c3a3
+Gnom (Y.S.),,,,,,,,,,Yes,6.00,No,,0.00,each.each,No,0,0,,,,Yvonne Schwarz,Light blue,,,,,,,,Yes,,,,870a74d6-0d4c-4559-97e2-57620c782001,cca57106-dada-43c1-8cd8-4f7a45e323ca
+Gras-Matte,,,,,,,,,,Yes,3.25,No,,19.00,each.each,Yes,5,0,3865 444,4036159521321,,HobbyFun,Light blue,https://images.sumup.com/img_6EK036Z48C9TSVJNQWG9BSDT19,,,,,,,Yes,,,,3e087abf-7f6b-4f07-983e-d9956e2cbac8,2272686c-2293-4c69-aef8-b6d79d78ce4a
+Grece,,,,,,,,,,Yes,5.50,No,,19.00,each.each,No,0,0,PAP0230,5400573042134,,Papier,Black,,,,,,,,Yes,,,,304296ca-876e-4754-80dd-db1f859397c8,ceff0767-48c3-4e6a-8cce-feec919e3a49
+Gründl Cotton Fun Wolle,,,,,,,,,,,,No,,19.00,each.each,Yes,,,,,"<p>Gründl Cotton Fun Wolle, 50g, 100% Baumwolle</p>",Gründl,Light red,,,,,,,,Yes,Gründl Cotton Fun Wolle,,,8d719c3e-4745-48d4-9b5b-12a6ad8e630d,
+,schwarz,Farbe,schwarz,,,,,,,Yes,1.95,,,,,,10,0,762-16,4036014004723,,,,,,,,,,,,,,,,f4aa118c-03f8-47af-a772-e834fde8c5dd
+,weiß,Farbe,weiß,,,,,,,Yes,1.95,,,,,,9,0,762-01,4036014004785,,,,,,,,,,,,,,,,fd8f0880-5fc8-41ea-a238-20faa24c70b4
+,creme,Farbe,creme,,,,,,,Yes,1.95,,,,,,5,0,762-02,4036014004716,,,,,,,,,,,,,,,,cfe32c80-96c7-4b62-ba03-718f08b0b771
+,pastellgelb,Farbe,pastellgelb,,,,,,,Yes,1.95,,,,,,8,0,762-22,4036014015675,,,,,,,,,,,,,,,,0b0d6485-b422-4902-8777-d489a62707eb
+,hellgrau,Farbe,hellgrau,,,,,,,Yes,1.95,,,,,,9,0,762-27,4036014147789,,,,,,,,,,,,,,,,dba23484-10dd-4195-b05e-1565249fb62e
+,nougat,Farbe,nougat,,,,,,,Yes,1.95,,,,,,10,0,762-14,4036014004730,,,,,,,,,,,,,,,,86d34632-37a2-4680-8d32-d7a102c1d62b
+,anthrazit,Farbe,anthrazit,,,,,,,Yes,1.95,,,,,,9,0,762-25,4036014088976,,,,,,,,,,,,,,,,067fd4e6-4ecf-4e5c-93e7-845a5c4dd61d
+,orchidee,Farbe,orchidee,,,,,,,Yes,1.95,,,,,,0,0,762-37,4036014230887,,,,,,,,,,,,,,,,fefd6266-21ba-4b03-a748-2e2d8535953a
+,mint,Farbe,mint,,,,,,,Yes,1.95,,,,,,0,0,762-34,,,,,,,,,,,,,,,,,ba1dee9d-8d2a-4247-8859-78f67af5dba0
+,babyblau,Farbe,babyblau,,,,,,,Yes,1.95,,,,,,10,0,762-36,4036014230856,,,,,,,,,,,,,,,,56ef80b1-cec7-46e5-acc0-b17c59c3d0c4
+"Gründl, Dejavu",,,,,,,,,,Yes,29.90,No,,19.00,each.each,Yes,2,0,6265-05,4036014289090,,Gründl,Light red,,,,,,,,Yes,"Gründl, Dejavu",,,b344ae6f-e3cc-4039-972d-c1ea132edc88,5ff339a2-ae95-470f-b70c-6245d7252454
+Gründl - Funny Mini 15g,,,,,,,,,,,,No,,19.00,each.each,Yes,,,,,,Gründl,Light red,,,,,,,,Yes,Gründl - Funny Mini 15g,,,1b31aa3d-bd2b-408e-8520-bd6c5a1d22cf,
+,pastellgelb,Farben,pastellgelb,,,,,,,Yes,1.00,,,,,,7,0,6147-11,4036014276717,,,,,,,,,,,,,,0.015,,77d8f467-2453-4af6-89e5-6c09a0ca15da
+,lila,Farben,lila,,,,,,,Yes,1.00,,,,,,7,0,6147-19,403601427695,,,,,,,,,,,,,,0.015,,55656abe-284d-4789-9648-bd7d184db71b
+,feuerrot,Farben,feuerrot,,,,,,,Yes,1.00,,,,,,7,0,6147-14,40360142768,,,,,,,,,,,,,,0.015,,3a8d5b5c-3e0b-4701-ba98-b4e03ba962ce
+,rot,Farben,rot,,,,,,,Yes,1.00,,,,,,7,0,6147-15,4036014276830,,,,,,,,,,,,,,0.015,,57546a81-9d1e-489b-bdfa-d7630cf0a329
+,ultramarin,Farben,ultramarin,,,,,,,Yes,1.00,,,,,,7,0,6147-23,4036014277073,,,,,,,,,,,,,,0.015,,87f6f0d6-fc75-4b8f-aaf5-4aa24af989e3
+,beige,Farben,beige,,,,,,,Yes,1.00,,,,,,7,0,6147-06,4036014276564,,,,,,,,,,,,,,0.015,,c4ff37a1-4755-4c35-9d99-a2241ce6e73f
+,apricot,Farben,apricot,,,,,,,Yes,1.00,,,,,,7,0,6147-07,4036014276595,,,,,,,,,,,,,,0.015,,b4021b23-1270-42e4-9e45-f180a81b47ee
+,puder,Farben,puder,,,,,,,Yes,1.00,,,,,,7,0,6247-03,4036014276472,,,,,,,,,,,,,,0.015,,eb802fd8-b717-4178-8d2a-4faf1fa35589
+,kupfer,Farben,kupfer,,,,,,,Yes,1.00,,,,,,7,0,6147-08,4036014276625,,,,,,,,,,,,,,0.015,,858eccaa-297b-473a-abfe-13421c7aa1b2
+,grün,Farben,grün,,,,,,,Yes,1.00,,,,,,7,0,6147-16,4036014276861,,,,,,,,,,,,,,0.015,,13eb3ed9-9ca1-48c2-8327-6e92603730d0
+,flaschengrün,Farben,flaschengrün,,,,,,,Yes,1.00,,,,,,7,0,6147-18,4036014276922,,,,,,,,,,,,,,0.015,,d27ced97-1577-4648-93e1-d1c1c3bde90b
+Gründl - Hot Socks uni 50,weiß,,,,,,,,,Yes,2.95,No,,19.00,each.each,No,0,0,770-29,4036014023366,,Gründl,Light red,,,,,,,,Yes,Gründl - Hot Socks uni 50,,0.05,eb782e3d-f477-4d16-81c5-2ff5e54ef7fa,806ba75b-8fa2-4ddc-a0f2-87a36725a4ce
+"Gründl, Luminosa, türkis-jeans-violettrot",,,,,,,,,,Yes,17.99,No,,19.00,each.each,Yes,3,1,6292-04,4036014292540,,Gründl,Light red,,,,,,,,Yes,"Gründl, Luminosa, türkis-jeans-violettrot",,,fab44222-504a-4a1d-9e0a-408093525471,36404ea2-9f00-4432-a092-e46213102c43
+Hase weiß (Y.S.),,,,,,,,,,Yes,12.00,No,,0.00,each.each,No,0,0,,,,Yvonne Schwarz,Light blue,,,,,,,,Yes,,,,af54655b-9d18-4880-a1f1-a39dd7fecc65,e2186ef6-0a86-43dd-bfc1-81cf94f4d003
+Häuserkreis - (Ing.S.),,,,,,,,,,Yes,19.00,No,,0.00,each.each,No,0,0,,,,Ingrid Schiffmann,Dark blue,,,,,,,,Yes,Häuserkranz - (Ing.S.),,,681175a3-56fd-4ea9-a516-af436536a154,015671de-5d6d-4aa2-906a-394913a7d2a2
+"Haus ""Home"", Raysin",,,,,,,,,,Yes,16.00,No,,19.00,each.each,No,0,0,,,,Dienstleistungen,Pink,https://images.sumup.com/img_7J1P54YMRS9YRVB5NZ19THP4X7,,,,,,,Yes,"Haus ""Home"", Raysin",,,0390cd21-0a34-41c6-ae42-6c314ed0fe12,8361a0b7-f787-4f21-9a56-2d69177e642f
+"Haus, Silikonform",,,,,,,,,,Yes,7.95,No,,19.00,each.each,Yes,5,1,2007648,4036159549974,,HobbyFun,Light red,https://images.sumup.com/img_5S47TX3VNY951RZC6GRFJPP6TG,,,,,,,Yes,,,,846001af-5d70-45e7-b73d-bd3b8f30e411,7f65f329-cfae-4456-b453-0745aae95663
+Henkelglas klar,,,,,,,,,,Yes,4.95,No,,19.00,each.each,Yes,34,0,,,,"Subli Tassen, Gläser, Flaschen",Purple,,,,,,,,Yes,,,,2763988f-550b-4bd7-b42c-f8036f2dd34b,955e4fde-db25-42a7-b0ca-b87990d5931a
+Henkelglas matt,,,,,,,,,,Yes,4.95,No,,19.00,each.each,Yes,32,0,,,,"Subli Tassen, Gläser, Flaschen",Purple,,,,,,,,Yes,,,,1e9daae5-fb04-46fd-940e-705435328cad,50bd487d-4b52-4273-aadb-90e8275d6571
+"Henkelglas, sublimiert",,,,,,,,,,Yes,7.00,No,,19.00,each.each,No,0,0,,,,Marktstand,Light green,,,,,,,,Yes,"Henkelglas, sublimiert",,,a89981c1-4bb3-4527-86fd-978581cbd15f,a04a92ff-cf99-407a-baf2-2fcbeb98c28e
+"Herzen m. Glimmer, ca. 2,5 cm weiss, Btl. à 6 St.",,,,,,,,,,Yes,1.95,No,,19.00,each.each,No,0,0,3864 010,4036159511438,,HobbyFun,Light red,https://images.sumup.com/img_2ZPW7JDYV9956SDX0FSV0G4TSK,,,,,,,Yes,"Herzen m. Glimmer, ca. 2,5 cm weiss, Btl. à 6 St.",,,8d10a7eb-ddc2-44d6-95e1-9505462a0999,bc039ed8-29a9-4916-852f-296416907c33
+"Herzen m. Klammer ""25"" ca. 2,5 cm, Btl. à 4 St.",,,,,,,,,,Yes,3.25,No,,19.00,each.each,Yes,4,0,3870 572,4036159512367,,HobbyFun,Light red,https://images.sumup.com/img_7X3Z4BYX7T9YAV89N6HNMS0BEA,,,,,,,Yes,"Herzen m. Klammer ""25"" ca. 2,5 cm, Btl. à 4 St.",,,449130a4-fdae-492f-a286-c4136320b6f3,0cfd13e4-7736-4d52-93db-e142356279f5
+HOBBY-Design Sticker Zum Schulanfang,,,,,,,,,,Yes,2.95,No,,19.00,each.each,Yes,14,0,3452 403,4036159466332,,HobbyFun,Light red,https://images.sumup.com/img_02X7EBYDSW8F0RF8SYE6RF054B,,,,,,,Yes,HOBBY-Design Sticker Zum Schulanfang,,,e8eb7171-7764-452e-9cc2-dc9254aaf495,0448801c-2d63-4123-973f-59c6c60ba6f0
+HOBBY-Design Sticker Zur Einschulung,,,,,,,,,,Yes,2.95,No,,19.00,each.each,Yes,14,0,3452 404,4036159466349,,HobbyFun,Light red,https://images.sumup.com/img_080BWPFV0E9S3SR3E1CB091EX6,,,,,,,Yes,HOBBY-Design Sticker Zur Einschulung,,,7cc500cf-581c-4c5d-a60a-462270ccf3ee,11891e06-11a8-4ee4-8c49-bf0f08786498
+Holzaufsteller für Ringe. FSC 100%,,,,,,,,,,Yes,5.99,No,,19.00,each.each,Yes,6,0,64524000,4006166817564,,Rayher,Grey,,,,,,,,Yes,,,,1a998ab8-ac26-4233-b2ff-c94ae4f76804,c84ca83c-a864-4ca9-ae1d-afa5392084db
+Holz Deko Vase. mini,,,,,,,,,,Yes,5.99,No,,19.00,each.each,Yes,9,0,46686505,4006166802720,,Rayher,Grey,,,,,,,,Yes,,,,99c165c4-f352-4343-bba0-477baca0bab3,d69e2b19-1c67-4bd2-af37-292b11619a38
+Holzhalter m.Reagenzglas. FSC Mix Credit,,,,,,,,,,Yes,9.99,No,,19.00,each.each,Yes,15,0,64615000,4006166923234,,Rayher,Grey,,,,,,,,Yes,,,,4f975efe-3398-449a-b613-afc2b78a175c,c4cdfdf6-ba17-4009-a3e9-fbbd8d852098
+Holzherz,,,,,,,,,,Yes,4.99,No,,19.00,each.each,Yes,8,0,62931505,4006166172939,,Rayher,Grey,,,,,,,,Yes,,,,4832d2f8-81f5-4747-83b2-a8fd2e53ee64,a1b4cc71-21b0-47d6-82ca-3577f7ffe745
+Holz Lattenrahmen. FSC Mix Credit,,,,,,,,,,Yes,9.99,No,,19.00,each.each,Yes,6,0,62865505,4006166119897,,Rayher,Grey,,,,,,,,Yes,,,,533b618a-0f4c-4d10-b8f8-2caf47d666d3,14780643-dce5-46d2-8c78-7fe2d0f97b57
+Holz-Lattenrahmen. FSC Mix Credit,,,,,,,,,,Yes,8.49,No,,19.00,each.each,Yes,7,0,62615000,4006166473791,,Rayher,Grey,,,,,,,,Yes,,,,fc3a0885-720b-49ab-873c-ce0d46ef5df6,36ac763e-d86d-4f6a-9a79-22047c7930a5
+"Holzschrift ""Lieblingsmensch"". FSC 100%",,,,,,,,,,Yes,5.49,No,,19.00,each.each,Yes,7,0,46420505,4006166172427,,Rayher,Grey,,,,,,,,Yes,,,,edd9d1bf-42e2-4074-a3ff-4c500f76684b,6624b94d-c42d-4667-8ea5-c853c0aeab3d
+Holztablett Basic. weiß,,,,,,,,,,Yes,6.95,No,,19.00,each.each,Yes,1,0,3273 005,4036159518178,,HobbyFun,Light blue,https://images.sumup.com/img_4PPMS3G3S59GNRGK32SX1QR5Y8,,,,,,,Yes,,,,7052ac81-5ef9-462f-a179-009ccb4de0e2,9ffb1425-f293-48f5-b9c5-7a6b5b3a5105
+Holztablett Basic. weiß,,,,,,,,,,Yes,5.95,No,,19.00,each.each,Yes,3,0,3273 003,4036159518154,,HobbyFun,Light blue,https://images.sumup.com/img_1MKGQYPST28M3VR4YYP93C1KK3,,,,,,,Yes,,,,b0fcf0ac-b324-436f-9029-a7a48276edb6,991ec89c-048c-48f8-ac1d-47aa98dc421f
+Infinity-Herz (Raysin) mit Wunschnamen,,,,,,,,,,Yes,5.50,No,,19.00,each.each,No,0,0,,,,Moni,Light red,,,,,,,,Yes,,,,c821d3f5-ec63-48ed-8f2d-6838c6d16552,c4a32867-4f7d-4acc-bdd4-7adb37fcd72f
+"Irish Pub, Duftkerze (M.F.)",,,,,,,,,,Yes,16.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_6RNFN30YBZ98HT2EMSCPT9J65C,,,,,,,Yes,"Irish Pub, Duftkerze (M.F.)",,,da9f8729-6d76-468c-95c6-8a88846232d7,f89f7bee-7f2b-42c4-a617-23af29d15530
+"Islandmoos, grün, Btl. à 20 gr.",,,,,,,,,,Yes,3.25,No,,19.00,each.each,No,0,0,3865 358,4036159515306,,HobbyFun,Light red,https://images.sumup.com/img_3F59JJF8R89T8TYJ70KYJTWGF5,,,,,,,Yes,"Islandmoos, grün, Btl. à 20 gr.",,,43792531-94f9-42e9-a3d7-1aa4c506ed1b,649add2e-5eb6-4719-ba45-ffa6acdf07c1
+Jardin en Fleur,,,,,,,,,,Yes,5.50,No,,19.00,each.each,No,0,0,KDO323,5400573050290,,Papier,Black,,,,,,,,Yes,,,,dfd3e1ca-8dca-4cd7-a02a-037cc9bab2a6,e3ef9255-b5b4-423a-af54-aead8ea8c024
+Kaltglasurharz-Verdünner 50 ml,,,,,,,,,,Yes,5.20,No,,19.00,each.each,No,0,0,50 106,4025765090673,,Creartec,Light blue,,,,,,,,Yes,Kaltglasurharz-Verdünner 50 ml,,,44b6d3d8-46f7-4eb3-99fc-ff54e0e0ee0a,eaeb2a68-8d9c-42e1-9f6e-790765933660
+Kaltglasur-Set II 200 ml,,,,,,,,,,Yes,22.90,No,,19.00,each.each,Yes,3,0,50 101,4025765090710,,Creartec,Light blue,,,,,,,,Yes,Kaltglasur-Set II 200 ml,,,b509c14d-9fc3-4bde-86d9-0beeccfea8e0,bcbb6c59-3393-42f2-b15c-bb92b5b3d7a5
+"Karten, groß (Ing.S.)",,,,,,,,,,Yes,4.00,No,,0.00,each.each,No,0,0,,,,Ingrid Schiffmann,Dark blue,,,,,,,,Yes,"Karten, groß (Ing.S.)",,,bd95a58c-d051-4eb6-a0ee-6319cd1decd8,9019b1aa-14fa-4ddd-a9d7-963a4e0bcb96
+"Karten, klein (Ing.S.)",,,,,,,,,,Yes,3.00,No,,0.00,each.each,No,0,0,,,,Ingrid Schiffmann,Dark blue,,,,,,,,Yes,"Karten, klein (Ing.S.)",,,58f9fa42-64b0-4572-a696-018050d62c5d,cb559452-3d3d-41f8-b619-0506e63a52ee
+Keraflott Gießmasse 1kg,,,,,,,,,,Yes,6.99,No,,19.00,each.each,Yes,18,0,1000 001,4036159100014,,HobbyFun,Light blue,https://images.sumup.com/img_2S5M9518FV848V80MK1XWDXFTA,,,,,,,Yes,,,,bed64c38-ec66-4f92-8079-df7ea44581ef,60605096-9aa8-424e-8c78-b75ce90bbdec
+Kerzendocht 100 mm - gewachst,,,,,,,,,,Yes,1.99,No,,19.00,each.each,Yes,9,0,3101800,4006166561603,,Rayher,Grey,,,,,,,,Yes,,,,13418f42-6472-4087-a0a5-b279405fcb38,f3d6f149-edc7-4f5b-b1bc-1ed7a2ecd27f
+Kerzenduftöl,,,,,,,,,,Yes,2.99,No,,19.00,each.each,Yes,6,0,3131400,4006166627347,,Rayher,Grey,,,,,,,,Yes,,,,cc5dbf7f-f4fc-49ad-bdd9-bd854057ecab,77734087-0a2e-4be9-b63e-99dab06cb5ce
+Kerzen-Gel,,,,,,,,,,Yes,8.99,No,,19.00,each.each,Yes,8,0,3130000,4006166617324,,Rayher,Grey,,,,,,,,Yes,,,,70902175-75e2-4fc9-95cc-307266307a02,1391dd62-7d60-4faa-9f0c-6c357d829b55
+Kerzen-Gel,,,,,,,,,,Yes,44.99,No,,19.00,each.each,Yes,1,0,3130300,4006166642944,,Rayher,Grey,,,,,,,,Yes,,,,a93fab8f-c5ed-4acd-b24e-ee352f285eea,70bd59e6-37b1-4c1a-bc9e-63794da6fd75
+Kerzengeschenk (Ing.S.),,,,,,,,,,Yes,10.00,No,,0.00,each.each,No,0,0,,,,Ingrid Schiffmann,Light red,https://images.sumup.com/img_5GBC12T5HQ9MABJ1JV2C9Y1WY3,,,,,,,Yes,,,,0fdd500e-4698-4337-89d7-4ad0627236c9,732ce90d-e5de-4f36-9131-570412a6d5bc
+"Kerzengießform Stabkerze, 2,5cm ø, 27cm",,,,,,,,,,Yes,11.99,No,,19.00,each.each,Yes,5,1,31642000,4006166817908,,Rayher,Light red,,,,,,,,Yes,"Kerzengießform Stabkerze, 2,5cm ø, 27cm",,,fcac211d-6e32-4097-a34a-e201355b1b14,4931af12-df80-420b-9e8d-a82eabb1a8de
+Kerzenglanzlack,,,,,,,,,,Yes,4.99,No,,19.00,each.each,Yes,6,0,3115900,4006166584572,,Rayher,Grey,,,,,,,,Yes,,,,18444ac1-aa33-43b1-b2f3-ffda5eb25920,297d40a2-f341-4dad-b762-6389fe9677b7
+"Kerzenhalter Herz, Silikonform",,,,,,,,,,Yes,7.95,No,,19.00,each.each,Yes,5,1,2007617,4036159549561,,HobbyFun,Light red,https://images.sumup.com/img_0AZXHF7DRF9TZBR07NTK6DBV11,,,,,,,Yes,,,,7213f01c-f3ec-4d50-97b1-f1704f3e4677,33d81322-110b-4aff-ab3b-b5bf8944ae27
+"Kerzenhalter rund, 4,5 x 2,5, Silikonform",,,,,,,,,,Yes,7.95,No,,19.00,each.each,Yes,5,1,2007616,4036159549554,,HobbyFun,Light red,https://images.sumup.com/img_16TDPGP5358H1SD6FWD03HTSKH,,,,,,,Yes,,,,5314e691-44a3-40e3-aec1-ba03179065ae,1bd4dafa-b80f-4f0f-ac1b-eea34f376407
+"Kerzenhalter, Silikon Gießform",,,,,,,,,,Yes,6.49,No,,19.00,each.each,Yes,3,0,36124000,4006166817281,Silikon Gießform Kerzenhalter. für Teelichter und Stabkerzen. ø52xH71mm,"Rayher, Silikonformen",Light green,,,,,,,,Yes,,,,d2829541-7da8-40e6-b76e-64c4844601d4,93f54328-c322-4076-8e87-d1b6b25fe9a1
+Kerzenmalmedium für Acrylfarben,,,,,,,,,,Yes,7.49,No,,19.00,each.each,Yes,6,0,38437000,4006166621635,"Kerzenmalmedium für Acrylfarben, Flasche 59 ml",Rayher,Grey,,,,,,,,Yes,Kerzenmalmedium für Acrylfarben,"Kerzenmalmedium für Acrylfarben, Flasche 59 ml",,b8b821ff-06f9-4cfd-804e-97eb93810a63,373f7205-f175-4bc7-81e3-9b87b43c1962
+Kerzen-Mattlack 50ml,,,,,,,,,,Yes,4.75,No,,19.00,each.each,Yes,6,0,80 591.98,4025765091670,,Creartec,Light blue,,,,,,,,Yes,Kerzen-Mattlack 50ml,,,7a9a3042-55c4-458a-a25a-cbb3225c92b8,730e4d48-dc5c-4fab-9eac-582527fa7c3f
+"Kerzenständer Oval, Silikon Gießform",,,,,,,,,,Yes,12.99,No,,19.00,each.each,Yes,7,0,36165000,4006166823466,"Silikon Gießform Kerzenständer Oval, 18,5x10,3x2,5cm, inkl. 3x5 Schablonen","Rayher, Silikonformen",Grey,,,,,,,,Yes,,,,d259097b-2bbd-448b-8229-5fe36280ac28,86c5c99c-3559-4914-933f-e97615739884
+"Kissen ",,,,,,,,,,Yes,20.00,No,,19.00,each.each,No,0,0,,,,Marktstand,Light red,,,,,,,,Yes,,,,512ca758-16cd-4e29-b982-3afd08b11c8a,0848a93f-9f71-497e-9aa2-9e4bb92f417a
+"Kissen, genäht",,,,,,,,,,Yes,20.00,No,,19.00,each.each,No,0,0,,,,Dienstleistungen,Pink,https://images.sumup.com/img_4RDBBWBQP29KGAKYN4RHKFHYHW,,,,,,,Yes,"Kissen, genäht",,,0d8d1d65-c4f1-4741-a27c-a111998f630c,a9ba4650-ccdc-4817-97da-65e16cc14465
+Klarlack lebensmittelecht 50 ml,,,,,,,,,,Yes,11.80,No,,19.00,each.each,Yes,6,0,78 532,4025765047318,,Creartec,Light blue,,,,,,,,Yes,Klarlack lebensmittelecht 50 ml,,,163bd6a2-7a6a-49d6-b36e-561c1768c958,5e3bab94-ae95-4006-a8a6-f6a83550676e
+Klebefix-Pen,,,,,,,,,,Yes,4.29,No,,19.00,each.each,Yes,12,0,33487000,4006166309137,"Klebefix-Pen, Flasche 30g",Rayher,Grey,,,,,,,,Yes,,,,7601de81-a9eb-492d-b40a-3f23a41b57ed,791ee782-43cc-40c8-9b59-97c0a05892cc
+Klebewachsplättchen,,,,,,,,,,Yes,2.99,No,,19.00,each.each,Yes,5,0,3107000,4006166039607,,Rayher,Grey,,,,,,,,Yes,,,,cb9fcebf-bfb7-4edb-bfd2-8a30c8d68190,855e5716-97b0-4ba6-b524-dbedf1e1c4b0
+"Klötzchen, 10 Stück",,,,,,,,,,,,No,,19.00,each.each,No,,,,,,Klötzchen,Light red,,,,,,,,Yes,"Klötzchen, 10 Stück",,,41140986-328d-4992-aece-330bfa5754eb,
+,Esche,,,,,,,,,Yes,2.00,,,,,,0,0,,,,,,,,,,,,,,,,,,f987beb8-f2f1-44c1-aa75-c282c4f1cf11
+,Buche,,,,,,,,,Yes,2.50,,,,,,0,0,,,,,,,,,,,,,,,,,,3b6e8def-5d83-4490-acd3-004531913978
+,Schokoeiche,,,,,,,,,Yes,2.50,,,,,,0,0,,,,,,,,,,,,,,,,,,204659af-7d64-4ea2-8c89-445e8e414e76
+,Eiche rustikal,,,,,,,,,Yes,3.00,,,,,,0,0,,,,,,,,,,,,,,,,,,070022b6-656d-4a8c-9899-7a2420c9a2ca
+"Klötzchen, einzeln",,,,,,,,,,,,No,,19.00,each.each,No,,,,,,Klötzchen,Light red,,,,,,,,Yes,"Klötzchen, einzeln",,,4a8082ea-549d-448f-8fc7-5fb76c376bdf,
+,Esche,,,,,,,,,Yes,0.25,,,,,,0,0,,,,,,,,,,,,,,,,,,ec81d43e-161e-43e6-b264-76faa92b62ad
+,Buche,,,,,,,,,Yes,0.30,,,,,,0,0,,,,,,,,,,,,,,,,,,58605362-60ae-4f75-af25-685e95c8ce5b
+,Schokoeiche,,,,,,,,,Yes,0.30,,,,,,0,0,,,,,,,,,,,,,,,,,,fc4c1123-d2ee-4d8e-98ac-90d1d9b2b5c1
+,Eiche rustikal,,,,,,,,,Yes,0.35,,,,,,0,0,,,,,,,,,,,,,,,,,,88edf6e7-1ed9-4a11-b273-5e19c5c8db5b
+"Korken für Glas 301/302, 20 mm, Btl. à 6 St.",,,,,,,,,,Yes,3.25,No,,19.00,each.each,Yes,5,0,3749 301,4036159452748,,HobbyFun,Light red,https://images.sumup.com/img_7SZD531AT89RHR4A6HZPBDPFH9,,,,,,,Yes,"Korken für Glas 301/302, 20 mm, Btl. à 6 St.",,,616721d5-dd00-484b-b486-8d33affe059c,3ca8d064-61e6-4811-844f-dedadb165224
+Kork-Untersetzer quadratisch,,,,,,,,,,Yes,2.79,No,,19.00,each.each,Yes,7,0,69064000,4006166431609,Kork-Untersetzer quadratisch. 10x10x0.3cm. SB-Btl 4Stück,Rayher,Grey,,,,,,,,Yes,,,,4853c424-dafb-4430-a2c4-a0110cedd7d4,b316a07d-3ace-4feb-9651-82d7393e0184
+Kork-Untersetzer rund. 10cm ø,,,,,,,,,,Yes,2.79,No,,19.00,each.each,Yes,6,0,69065000,4006166431616,Kork-Untersetzer rund. 10cm ø. 0.3cm. SB-Btl 4Stück,Rayher,Grey,,,,,,,,Yes,,,,4a93064d-1a1c-4ce0-8164-ffdc171a345d,4c916bb3-d756-4be6-af88-87e7c0768dba
+"Krippe, Dose rund (Ing.S.)",,,,,,,,,,Yes,22.00,No,,0.00,each.each,No,0,0,,,,Ingrid Schiffmann,Light red,https://images.sumup.com/img_79FVK4F7YT91FAPHE5E5M835EA,,,,,,,Yes,,,,b6a2937a-d913-4b43-b3ce-17c017629ad2,c9332234-caf8-4140-a521-5157fb68aaeb
+"Krippe fest, (Ing.S.)",,,,,,,,,,Yes,22.00,No,,0.00,each.each,No,0,0,,,,Ingrid Schiffmann,Light red,https://images.sumup.com/img_6CQ2RYBB938KB90B2CREERFPFJ,,,,,,,Yes,,,,00294f20-9c4c-417a-865f-0fdf6904240b,db4c4e25-1e57-48ee-a654-37abfb45bf7f
+"Krippe, lose (Ing.S.)",,,,,,,,,,Yes,20.00,No,,0.00,each.each,No,0,0,,,,Ingrid Schiffmann,Light red,https://images.sumup.com/img_6KTHEVRF4J8HSS1JNG8SBF6RRH,,,,,,,Yes,,,,c9331b24-125a-4d05-8de8-95c7109ec8bc,6b4ca5ea-534a-42cc-beb8-56a4f672b140
+"Krippe, lose, Rahmen (Ing.S.)",,,,,,,,,,Yes,18.00,No,,0.00,each.each,No,0,0,,,,Ingrid Schiffmann,Light red,https://images.sumup.com/img_6AV9TSGB908S38A85BBET9XZ2D,,,,,,,Yes,,,,476ac312-5481-44bb-a3aa-c3a1c10c2d44,3b899f3e-7279-4e3e-a7ed-1e0b35d1ee8f
+"Krümelmonster, Duftkerze (M.F.)",,,,,,,,,,Yes,16.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_05N5TV61458EVVQFRAHSD0E6EY,,,,,,,Yes,"Krümelmonster, Duftkerze (M.F.)",,,6301e6f0-7896-41f9-bf06-a064ab38d24c,42760745-bbd7-4971-b3d6-4a0a31f6df9a
+"Kuh, lila",,,,,,,,,,Yes,22.00,No,,0.00,each.each,No,0,0,,,,Yvonne Schwarz,Light red,,,,,,,,Yes,,,,d78058f9-7429-4b2a-89e4-cc0d575cbb29,94812d88-96ea-4b68-acab-d3c911f5e86d
+Kunststoff Spatel,,,,,,,,,,Yes,3.79,No,,19.00,each.each,Yes,9,0,34460102,4006166813825,,Rayher,Grey,,,,,,,,Yes,,,,12c0ef38-f62f-4991-838b-492931ef3fbb,d6d57bf4-79b7-4f6e-b88e-eac0128fdfb6
+"Kürbis. Pilz. Blatt, Silikon Gießform",,,,,,,,,,Yes,11.49,No,,19.00,each.each,Yes,4,0,36123000,4006166358166,Silikon Gießform Kürbis. Pilz. Blatt. 14.5x26x1cm. 7 Formen. Box 1Stück,"Rayher, Silikonformen",Grey,,,,,,,,Yes,,,,4a92586c-ccfe-47e3-8894-9d78389b1d79,b6a4a013-c85d-4f66-b002-7f4f60b14ea8
+Kürbis Schnitz - Set,,,,,,,,,,Yes,6.99,No,,19.00,each.each,Yes,8,0,69160000,4006166248658,"Kürbis Schnitz - Set, SB-Karte 5Stück",Rayher,Grey,,,,,,,,Yes,,,,f972bb0a-87ed-44b7-b396-8918b5e3f1c0,2b12fed1-26bc-4070-b7e9-a337c0d9cffa
+Kursgebühr Korbflechten,,,,,,,,,,Yes,40.00,No,,19.00,each.each,No,0,0,,,,Dienstleistungen,Light red,,,,,,,,Yes,Kursgebühr Korbflechten,,,0b6fe407-3708-4655-99b0-99bb0fb90c28,8340899b-c612-4250-b877-c3861155428d
+"Lama + Schild, Raysin",,,,,,,,,,Yes,6.00,No,,19.00,each.each,No,0,0,,,,Dienstleistungen,Pink,https://images.sumup.com/img_1B1JP3Y60C856VX8X941M3ZJ52,,,,,,,Yes,"Lama + Schild, Raysin",,,5b41da05-3446-4767-ace6-021b111acba2,22305640-173f-4231-8553-3b0940626b5b
+Lärchenzapfenzweig,,,,,,,,,,Yes,1.99,No,,19.00,each.each,Yes,7,0,55915000,4006166497759,"Lärchenzapfenzweig, 26cm",Rayher,Grey,,,,,,,,Yes,,,,bfd40806-eef5-402f-b978-6b99e50a8b71,9ddc40a1-a07a-4ca5-b5ea-9dd823eb064d
+"Lavendeltraum, Duftkerze (M.F.)",,,,,,,,,,Yes,16.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_7RTXP17WBP9038N7YTHW9F57B1,,,,,,,Yes,"Lavendeltraum, Duftkerze (M.F.)",,,fcf1131f-29bc-49a5-bbbb-50c3beaf9134,61fa676b-43f5-4573-be43-c6eda9ca3f6a
+LDPE Gießform: Buchstaben/Zahlen,,,,,,,,,,Yes,7.99,No,,19.00,each.each,Yes,4,0,36014000,4006166836046,,Rayher,Grey,,,,,,,,Yes,,,,72683f82-094c-492e-9992-2e1755c9c913,19eda893-ee8c-41b7-b1c1-3e9c8e6da182
+LDPE Gießform: Teelichthalter Yin Yang,,,,,,,,,,Yes,7.49,No,,19.00,each.each,Yes,1,0,3672900,4006166140853,LDPE Gießform: Teelichthalter Yin Yang. 12x8cm. 2 Motive,Rayher,Grey,,,,,,,,Yes,,,,a56f5484-ab4c-45af-99b1-6321b56a0e0f,5e14be96-3f5c-46a6-bba0-3c1fc72f9ccb
+"Lemonjuice, Duftkerze (M.F.)",,,,,,,,,,Yes,16.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_08JZPRBGN396R9E3NT0HBNJXV3,,,,,,,Yes,,,,d33bb5db-33a9-4bb8-918b-23151ef2ea96,c088f097-2370-46a7-ba8a-6720ed31189a
+"Lesehilfe, personalisiert",,,,,,,,,,Yes,5.90,No,,19.00,each.each,No,0,0,,,,Holz,Yellow,,,,,,,,Yes,,,,a343c735-0136-40c2-a9e7-2dff1e925701,29455786-cd1e-4200-8a20-0d8fddc21b6e
+"Leuchttürme, Silikon Gießform",,,,,,,,,,Yes,11.99,No,,19.00,each.each,Yes,2,0,36-177-000,4006166830259,,"Rayher, Silikonformen",Light red,,,,,,,,Yes,"Leuchttürme, Silikon Gießform",,,dba19536-b907-49e4-80b5-0daed8e2e73e,6a5e45f4-e5e5-4679-8011-38fdc6fdf220
+"Lichthäuser, Silikon Gießform",,,,,,,,,,Yes,11.49,No,,19.00,each.each,Yes,8,0,36132000,4006166399565,Silikon Gießform Lichthäuser. 14.5x26x1.7cm. 4 Formen. Box 1Stück,"Rayher, Silikonformen",Grey,,,,,,,,Yes,,,,322850aa-db3b-47de-ab59-eeaccc25a338,ae619e22-351a-4b58-b6dc-e0637a4a0cb8
+"Liebe ist..., Duftkerze (M.F.)",,,,,,,,,,Yes,10.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_5571GCQ8WV8ZV968X7RS4EWCMP,,,,,,,Yes,"Liebe ist..., Duftkerze (M.F.)",,,71d58e0e-f767-4673-a612-afe63dbbbb96,632dbb5a-81ea-485b-aabf-19de93b8a1e1
+"Lieblingsplatz, Duftkerze (M.F.)",,,,,,,,,,Yes,16.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_49S7M8377N9KCB396WMYD0RYPY,,,,,,,Yes,"Lieblingsplatz, Duftkerze (M.F.)",,,f2cd89bd-e67b-45f9-ad6c-dd5ee6f2fd14,ebc69d37-469f-4372-bffa-ff68fad24958
+Lotus Kerze (Ing.S.),,,,,,,,,,Yes,4.00,No,,0.00,each.each,No,0,0,,,,Ingrid Schiffmann,Dark blue,,,,,,,,Yes,Lotus Kerze (Ing.S.),,,c7fc1e58-a80a-4973-bb9d-8228bd9a4205,414835dd-984c-4a4c-b903-4b509ac44d5a
+"Luftballons 1,6 x 2,4 cm, farbig sort., Set à 6 St.",,,,,,,,,,Yes,2.50,No,,19.00,each.each,Yes,4,0,3481 199,4036159548342,,HobbyFun,Light red,https://images.sumup.com/img_25G1ZSBC7E9MJSTBX9JTEXWGTA,,,,,,,Yes,"Luftballons 1,6 x 2,4 cm, farbig sort., Set à 6 St.",,,e1fabe00-deeb-4d70-92e7-2c05a1178f71,2ebaca34-8c0b-4864-bfa0-e8f435de1a86
+"Magic Glitzertasse ""wow"" Rot",,,,,,,,,,,,No,,19.00,each.each,No,,,,,,"Subli Tassen, Gläser, Flaschen",Purple,,,,,,,,Yes,,,,93291b94-5688-4ed3-a175-9006cf51130d,
+,Standard,,,,,,,,,Yes,4.90,,,,,,0,0,,,,,,,,,,,,,,,,,,559fc8f0-7de0-4457-bbf3-3e573697a3ea
+,sublimiert,,,,,,,,,Yes,12.90,,,,,,0,0,,,,,,,,,,,,,,,,,,10d8d426-737b-401b-9ca2-56db9310fa55
+"Magic Glitzertasse ""wow"" Schwarz",,,,,,,,,,,,No,,19.00,each.each,No,,,,,,"Subli Tassen, Gläser, Flaschen",Purple,,,,,,,,Yes,,,,2e74005a-ad94-4f33-b570-cadc196c3b28,
+,Standard,,,,,,,,,Yes,4.90,,,,,,0,0,,,,,,,,,,,,,,,,,,69fc74fa-3093-43eb-b38f-83ea18ce8d80
+,sublimiert,,,,,,,,,Yes,12.90,,,,,,0,0,,,,,,,,,,,,,,,,,,10e3dff0-8212-4674-901a-69e2cd523836
+Maschenmarkierer,,,,,,,,,,Yes,3.79,No,,19.00,each.each,Yes,3,0,ZUMB0011,4251260505194,,MyBoshi,Dark red,,,,,,,,Yes,Maschenmarkierer,,,77cf8355-311f-4ab0-bed8-40b40b041a61,3e9bbeb8-25f3-42f5-9bdd-5e0b3fc34b2f
+Messbecher 500ml. 90mm ø,,,,,,,,,,Yes,4.49,No,,19.00,each.each,Yes,10,0,34458000,4006166813764,,Rayher,Grey,,,,,,,,Yes,,,,b3514eab-7313-40e2-ac7d-4e8d61ea30fd,2e6a6cb0-9bba-4881-b9d7-bd1c931a3aae
+"Metall-Ring 15 cm, schwarz beschichtet ",,,,,,,,,,Yes,1.25,No,,19.00,each.each,Yes,5,0,3471 250,4036159543354,,HobbyFun,Light red,https://images.sumup.com/img_3AGDYVSFCK9HCRC71TP8XA7KHZ,,,,,,,Yes,"Metall-Ring 15 cm, schwarz beschichtet ",,,a5fdd2dc-ec9e-4fa3-941d-253de3ed8f01,ab3ab5d6-c147-4f5e-9d5a-506e9ac90401
+"Metall-Ring 30 cm, schwarz beschichtet ",,,,,,,,,,Yes,2.49,No,,19.00,each.each,Yes,5,0,3471 253,4036159543385,,HobbyFun,Light red,https://images.sumup.com/img_5QZ3M6BGEJ9BH8WT6VC5AQP01V,,,,,,,Yes,"Metall-Ring 30 cm, schwarz beschichtet ",,,06169adc-e760-45d0-a1e6-189f747f4f5f,74131eff-2cba-41e8-b096-151760ee6893
+Metallringe beschichtet. 20cm ø,,,,,,,,,,Yes,1.99,No,,19.00,each.each,Yes,10,1,2505201,4006166230813,,Rayher,Grey,,,,,,,,Yes,,,,11e81f86-904c-4993-b787-722325afc9f4,1d75c693-ff9a-4840-9c3b-dd7ff7475c22
+"Metallringe beschichtet, 25cm ø",,,,,,,,,,Yes,2.49,No,,19.00,each.each,Yes,8,0,2505301,4006166230820,"Metallringe beschichtet, 25cm ø, schwarz",Rayher,Grey,,,,,,,,Yes,,,,d6381a7e-2024-4b36-8c83-6b7834d0779b,8a2a2048-ef26-47e3-9178-ee8a431100b5
+Metallringe. beschichtet. 30cm ø,,,,,,,,,,Yes,2.49,No,,19.00,each.each,Yes,6,0,2505400,4006166035548,,Rayher,Grey,,,,,,,,Yes,,,,6050a84b-aa2a-40ce-9112-e32cc7529ea7,734fc29d-65a9-42a7-8180-e4abfb857178
+Metallringe sortiert,,,,,,,,,,Yes,10.99,No,,19.00,each.each,Yes,9,0,25216576,4006166301407,,Rayher,Grey,,,,,,,,Yes,,,,016b8f20-80d2-4853-aa80-3feb6ce5b8a3,1c294d26-7a17-4c07-a5b0-d6dddff6f95f
+"Mini-Dekoformen ""Xmas"", Silikon Gießform",,,,,,,,,,Yes,11.49,No,,19.00,each.each,Yes,3,1,36160000,4006166490170,,"Rayher, Silikonformen",Light red,,,,,,,,Yes,"Mini-Dekoformen ""Xmas"", Silikon Gießform",,,1f958c41-57b7-42b0-a257-e5093ca944ea,25723990-67a9-43ec-96db-7a4826785adf
+Mini-Efeugirlande,,,,,,,,,,Yes,1.69,No,,19.00,each.each,Yes,22,0,5111200,4006166687969,"Mini-Efeugirlande, Rolle 7,5m",Rayher,Grey,,,,,,,,Yes,,,,0ad111b4-6e45-4b60-9f0f-90858b096c1c,67199b5a-08b2-49ab-9a8e-f3f93e7c1325
+Mini-Gräser,,,,,,,,,,Yes,2.25,No,,19.00,each.each,Yes,5,0,3865 442,4036159521307,,HobbyFun,Light blue,https://images.sumup.com/img_0VG5FFQFSF834S3G85ZEZ43BAR,,,,,,,Yes,,,,bd74e288-0c82-446a-9d7e-24ea2cb71aaf,00f41b76-f444-42ce-a76c-5987dce5764f
+"Mini Häuser, Silikon Gießform",,,,,,,,,,Yes,11.49,No,,19.00,each.each,Yes,5,0,36156000,4006166489969,"Silikon Gießform Mini Häuser, 14,5x26x1,5cm, 15 Formen, Box 1Stück","Rayher, Silikonformen",Grey,,,,,,,,Yes,,,,d17e533c-f475-4d89-97e8-4fa28b020814,fb0feb8f-cad8-4aa0-ab1b-d0ed3e45b420
+"Mini Krippe, Silikon Gießform",,,,,,,,,,Yes,11.49,No,,19.00,each.each,Yes,3,0,36164000,4006166444104,"Silikon Gießform Mini Krippe, 14,5x26x1cm, 12 Formen, SB-Box 1Stück","Rayher, Silikonformen",Grey,,,,,,,,Yes,,,,a330c2a9-0476-4436-a1a6-6d1dd5039510,03316562-059b-4d1b-8ce6-d2d44176bbbe
+Mini-LED Lichterkette m.Draht/Timer,,,,,,,,,,Yes,12.49,No,,19.00,each.each,Yes,5,0,69259159,4006166290442,,Rayher,Grey,,,,,,,,Yes,,,,a76998ab-753c-43fc-b162-e55e618490d6,08829363-1566-4eb6-a1bb-22d39d5328d4
+Mini Trockenblumen,,,,,,,,,,Yes,3.99,No,,19.00,each.each,Yes,9,0,85489254,4006166817946,,Rayher,Grey,,,,,,,,Yes,,,,68bf59af-0fea-4cc5-bbee-da09140c474b,def291d0-c240-4e8c-ab6c-339cb5ba130f
+Mistelzweig,,,,,,,,,,Yes,2.79,No,,19.00,each.each,Yes,12,0,55924000,4006166811838,"Mistelzweig, 12x16cm",Rayher,Grey,,,,,,,,Yes,,,,6822196f-c7c1-4a07-a637-1207f0a5f823,b1157e56-b69a-4300-8d25-34e1dc310803
+Moments Precieux,,,,,,,,,,Yes,5.50,No,,19.00,each.each,No,0,0,PAP0266,5400573050276,,Papier,Black,,,,,,,,Yes,,,,944624e7-244b-4ad0-aec3-ca67c0974637,05b92aeb-c497-410b-9521-a8b24baf625f
+"Muffin, Duftkerze (M.F.)",,,,,,,,,,Yes,9.50,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_2HF1FBS0HD8S8VNRYW6022BX93,,,,,,,Yes,"Muffin, Duftkerze (M.F.)",,,caccf9e6-6b39-4458-885f-b7102c16bbfd,230bbbca-31b8-4fc5-abc6-cb9d9d1428f4
+"Muffin Geschenkbox, groß, Duftkerze (M.F.)",,,,,,,,,,Yes,14.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_7E9K9Y1PEE9XDRY4D5XW3BRN20,,,,,,,Yes,"Muffin Geschenkbox, groß, Duftkerze (M.F.)",,,bbcc7357-0953-4e5a-982e-d03213f02706,b7aedf7f-c9ab-4c41-a4ab-f0f159c3fe22
+"Muffin Geschenkbox, klein, Duftkerze (M.F.)",,,,,,,,,,Yes,9.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_70VEWX08R196Y9QSFVC12JXGX5,,,,,,,Yes,"Muffin Geschenkbox, klein, Duftkerze (M.F.)",,,f4cbc710-5702-4a6c-9bfe-865e8b853331,5c8903cc-f0d2-4ea1-bf0b-a6a0215f2218
+Multi-Kleber,,,,,,,,,,Yes,3.99,No,,19.00,each.each,Yes,6,0,3338300,4006166598180,,Rayher,Grey,,,,,,,,Yes,,,,12446ba7-5131-41e7-adf0-f88221346f16,6c3568b9-bc7c-48ae-a46f-b904299c688a
+"Muschelkerze, Raysin",,,,,,,,,,Yes,10.00,No,,19.00,each.each,No,0,0,,,,Dienstleistungen,Light red,https://images.sumup.com/img_3TX852E43S8XMA1E57BQ7G0Y10,,,,,,,Yes,"Muschelkerze, Raysin",,,39e94f48-6e3c-4e21-a6f2-5504f05bcd87,20d8eeac-c762-40dc-9e38-ebe5cde28bf3
+myboshi Fellino Wolle,,,,,,,,,,,,No,,19.00,each.each,Yes,,,,,"myboshi Fellino Wolle, 100g, 100% Polyester",MyBoshi,Dark red,,,,,,,,Yes,"Fellino, myboshi",,,a6a9d9f4-94b6-4f8f-b579-e1b27ba4a2a8,
+,Standard,,,,,,,,,Yes,6.49,,,,,,0,0,,,,,,,,,,,,,,,,,,8fac527e-650f-4124-9da6-7ed4ae501116
+,Shiro,,,,,,,,,Yes,6.49,,,,,,2,0,WF891,4251260515520,,,,,,,,,,,,,,,,63097272-f333-45ed-969a-38ada9f7608f
+,Pinku,,,,,,,,,Yes,6.49,,,,,,3,0,WF895,4251260515513,,,,,,,,,,,,,,,,05fd0714-453f-4bd2-a273-667c6955cac7
+,Chairo,,,,,,,,,Yes,6.49,,,,,,3,0,WF894,4251260515261,,,,,,,,,,,,,,,,9f04d925-14ac-4221-a4f1-136c405d90ba
+,AO,,,,,,,,,Yes,6.49,,,,,,4,0,WF851,4251260515537,,,,,,,,,,,,,,,,d92690cf-6dc2-4055-ac5c-b1fa108b487d
+myboshi Füllwatte,,,,,,,,,,,,No,,19.00,each.each,Yes,,,,,"myboshi Füllwatte, 150g, 100% Polyester",MyBoshi,Dark red,,,,,,,,Yes,myboshi Füllwatte,,,95379615-e7fe-4a28-9696-13e32daf1160,
+,"150g ",,,,,,,,,Yes,3.99,,,,,,5,2,ZUMB0008,4251260503893,,,,,,,,,,,,,,,,5ac05c54-bd2a-476b-a6ec-cbd4c07cde7f
+,500g,,,,,,,,,Yes,7.99,,,,,,6,0,ZUMB0028,4251260505101,,,,,,,,,,,,,,,,7d3ea2c8-a477-431f-94a1-d9d094168a7f
+myboshi Häkelnadel,,,,,,,,,,,,No,,19.00,each.each,Yes,,,,,myboshi Häkelnadel,MyBoshi,Dark red,,,,,,,,Yes,myboshi Häkelnadel,,,f416098a-9cf3-4085-9584-bd5b533db149,
+,"3,0 mm",Größe,"3,0 mm",,,,,,,Yes,3.49,,,,,,3,0,NH30,4251260504715,,,,,,,,,,,,,,,,0d4dd595-4a3a-4812-89b3-79be339b40aa
+,"3,5 mm",Größe,"3,5 mm",,,,,,,Yes,3.49,,,,,,1,0,NH35,4251260504722,,,,,,,,,,,,,,,,e4a919fe-8883-4dba-8f64-e4d67c549a98
+,"2,5 mm",Größe,"2,5 mm",,,,,,,Yes,3.49,,,,,,1,0,NH25,4251260505408,,,,,,,,,,,,,,,,31c969eb-8bf6-43d9-b9ec-c0c391206e5f
+,"4,0 mm",Größe,"4,0 mm",,,,,,,Yes,3.99,,,,,,2,0,NH40,4251260504739,,,,,,,,,,,,,,,,754c6c77-1131-4a1f-bbda-f3c62aeeffa3
+,"4,5 mm",Größe,"4,5 mm",,,,,,,Yes,3.99,,,,,,2,0,NH45,4251260504746,,,,,,,,,,,,,,,,03dc3e0d-8a1e-430f-9ebd-91d773117ff4
+,"5,0 mm",Größe,"5,0 mm",,,,,,,Yes,3.99,,,,,,1,0,NH50,4251260504753,,,,,,,,,,,,,,,,4311db46-e995-433f-ba11-c5ea13f60d65
+,"5,5 mm",Größe,"5,5 mm",,,,,,,Yes,3.99,,,,,,0,0,NH55,4251260504760,,,,,,,,,,,,,,,,e263eb29-ef76-429e-9ecb-ac694d6b1f16
+,"6,0 mm",Größe,"6,0 mm",,,,,,,Yes,4.49,,,,,,1,0,NH60,4251260504777,,,,,,,,,,,,,,,,9e82a4e9-16aa-4044-bfb4-855cc7eae4a9
+,"7,0 mm",Größe,"7,0 mm",,,,,,,Yes,4.49,,,,,,0,0,NH70,4251260504784,,,,,,,,,,,,,,,,d4c01ba4-11b6-4f34-93e2-d12091753c48
+,"8,0 mm",Größe,"8,0 mm",,,,,,,Yes,4.49,,,,,,1,0,NH80,4251260504791,,,,,,,,,,,,,,,,6391021c-6b81-44bd-8e26-d88201e945e3
+,"9,0 mm",Größe,"9,0 mm",,,,,,,Yes,4.49,,,,,,1,0,NH90,4251260504807,,,,,,,,,,,,,,,,6d2654bf-bf34-490d-bf9a-b1ad31687a14
+myboshi No.1,,,,,,,,,,,,No,,19.00,each.each,Yes,,,,,,MyBoshi,Light red,,,,,,,,Yes,myboshi No.1,,,d41e895d-53e2-4e8f-9180-16c9c185b51d,
+,Standard,,,,,,,,,Yes,3.99,,,,,,0,0,,,,,,,,,,,,,,,,,,f152de6e-77b3-400e-91e8-82a00f910ac7
+,signalrot,,,,,,,,,Yes,3.99,,,,,,8,0,W132,4251260501257,,,,,,,,,,,,,,,,aa105657-18d8-4b8b-a15d-9c260cc9d78d
+myboshi No.2 Wolle,,,,,,,,,,,,No,,19.00,each.each,Yes,,,,,"myboshi No.2 Wolle, 50g, 85% Baumwolle 15% Kapok",MyBoshi,Pink,,,,,,,,Yes,,,,1deb994c-3650-48f1-b9b1-7824595abb45,
+,agave,Farbe,agave,,,,,,,Yes,2.99,,,,,,9,0,,4251260500243,,,,,,,,,,,,,,,,d963b52a-4720-4565-8aef-1bf7a6b3e91a
+,aprikose,Farbe,aprikose,,,,,,,Yes,2.99,,,,,,12,0,,4251260500083,,,,,,,,,,,,,,,,c0df8b77-6de0-43c3-9316-d8c5c4d32bb6
+,blaubeere,Farbe,blaubeere,,,,,,,Yes,2.99,,,,,,11,0,,4251260500168,,,,,,,,,,,,,,,,079b2857-ab3c-4213-9e82-399bd581a31e
+,candy purpur,Farbe,candy purpur,,,,,,,Yes,2.99,,,,,,10,0,,4251260500120,,,,,,,,,,,,,,,,7f3ab987-f510-4c4f-adfe-d23b3df359c3
+,chilirot,Farbe,chilirot,,,,,,,Yes,2.99,,,,,,9,0,,4251260500106,,,,,,,,,,,,,,,,55016def-fb36-4e71-bf50-df866fa889ba
+,elfenbein,Farbe,elfenbein,,,,,,,Yes,2.99,,,,,,6,0,,4251260500250,,,,,,,,,,,,,,,,417a4d32-2ce5-4527-9d46-e51cfdbae079
+,fuchsia,Farbe,fuchsia,,,,,,,Yes,2.99,,,,,,9,0,,4251260503930,,,,,,,,,,,,,,,,48fc8cef-3a2c-49a8-84ea-00bd98372ed3
+,hautfarbe,Farbe,hautfarbe,,,,,,,Yes,2.99,,,,,,10,0,,4251260500069,,,,,,,,,,,,,,,,8a993279-bc73-4fb3-b131-ab3ab36aeeeb
+,himmelblau,Farbe,himmelblau,,,,,,,Yes,2.99,,,,,,12,0,,4251260503176,,,,,,,,,,,,,,,,ab749b00-888d-4419-aa9b-49ecd0790be8
+,kakao,Farbe,kakao,,,,,,,Yes,2.99,,,,,,10,0,,4251260503145,,,,,,,,,,,,,,,,6024b0a8-5f51-452a-a872-70d677b7d300
+,kaktus,Farbe,kaktus,,,,,,,Yes,2.99,,,,,,7,0,,4251260500236,,,,,,,,,,,,,,,,355a9752-d9ec-4f71-bd65-e4a33bfa571e
+,karamell,Farbe,karamell,,,,,,,Yes,2.99,,,,,,10,0,,4251260503923,,,,,,,,,,,,,,,,5a384402-e77b-40f5-a93d-50ce4a16e064
+,limettengrün,Farbe,limettengrün,,,,,,,Yes,2.99,,,,,,11,0,,4251260500205,,,,,,,,,,,,,,,,7da9b65b-73a4-462d-bdfc-432ef9f7ed59
+,löwenzahn,Farbe,löwenzahn,,,,,,,Yes,2.99,,,,,,10,0,,4251260500076,,,,,,,,,,,,,,,,0760af8a-724e-40fe-8d58-fa67e819e7aa
+,magenta,Farbe,magenta,,,,,,,Yes,2.99,,,,,,10,0,,4251260500113,,,,,,,,,,,,,,,,3561340b-e236-4e44-9f6e-11203e33856c
+,magnolie,Farbe,magnolie,,,,,,,Yes,2.99,,,,,,11,0,,4251260503169,,,,,,,,,,,,,,,,b0e8155c-c030-450b-b629-b4d0935f1577
+,marine,Farbe,marine,,,,,,,Yes,2.99,,,,,,12,0,,4251260500175,,,,,,,,,,,,,,,,aead7b38-fce8-4bfc-aa0d-76522bdbe0ce
+,meerblau,Farbe,meerblau,,,,,,,Yes,2.99,,,,,,10,0,,4251260500151,,,,,,,,,,,,,,,,e64e3d3d-4b59-45f6-bdcd-79c6ad1230dd
+,minze,Farbe,minze,,,,,,,Yes,2.99,,,,,,7,0,,4251260500229,,,,,,,,,,,,,,,,2879951b-ec77-4bae-831e-2a40fb1ab99f
+,ocker,Farbe,ocker,,,,,,,Yes,2.99,,,,,,9,0,,4251260500267,,,,,,,,,,,,,,,,6a0e5f5e-6475-4bd4-9fc2-8f8847483ac0
+,petrol,Farbe,petrol,,,,,,,Yes,2.99,,,,,,2,0,,4251260503916,,,,,,,,,,,,,,,,d28cfc21-d7bb-43d5-aadb-d82282a16fcd
+,rouge,Farbe,rouge,,,,,,,Yes,2.99,,,,,,11,0,,4251260500144,,,,,,,,,,,,,,,,76b1d8fa-6f76-4b33-a0c6-aa24790f3af1
+,saphir,Farbe,saphir,,,,,,,Yes,2.99,,,,,,10,0,,4251260500199,,,,,,,,,,,,,,,,8089863d-a05e-437e-bbe0-208e4cb4a9ca
+,schwarz,Farbe,schwarz,,,,,,,Yes,2.99,,,,,,10,0,,4251260500311,,,,,,,,,,,,,,,,2347c943-5c8b-413e-828b-af73f898b832
+,silber,Farbe,silber,,,,,,,Yes,2.99,,,,,,7,0,,4251260500298,,,,,,,,,,,,,,,,0a03b2ac-261d-4dc4-9c47-4fd3466e3a70
+,smaragd,Farbe,smaragd,,,,,,,Yes,2.99,,,,,,6,0,,4251260503947,,,,,,,,,,,,,,,,a2e3036b-6703-49d0-8a85-e334830477e0
+,titangrau,Farbe,titangrau,,,,,,,Yes,2.99,,,,,,9,0,,4251260500304,,,,,,,,,,,,,,,,8d93a6f9-5be2-4819-8817-fc7af997a153
+,tomate,Farbe,tomate,,,,,,,Yes,2.99,,,,,,10,0,,4251260500090,,,,,,,,,,,,,,,,7f72a5b8-b0bb-47a7-b810-2cab036538b4
+,türkis,Farbe,türkis,,,,,,,Yes,2.99,,,,,,12,0,,4251260500212,,,,,,,,,,,,,,,,9fee22dd-ab81-45eb-91e6-5153f35e5049
+,weiß,Farbe,weiß,,,,,,,Yes,2.99,,,,,,7,0,,4251260500281,,,,,,,,,,,,,,,,4d0e247f-b3ee-4ac7-9144-9cacd0e5632b
+myboshi Samt Wolle,,,,,,,,,,,,No,,19.00,each.each,Yes,,,,,"myboshi Samt Wolle, 100g, 100% Polyester",MyBoshi,Dark red,,,,,,,,Yes,,,,29a639a3-cd6e-4e04-857a-8aede3f9426e,
+,Ara,Farbe,Ara,,,,,,,Yes,4.99,,,,,,7,0,W834,4251260504050,,,,,,,,,,,,,,,,fd022bcd-c40e-41e9-9659-8d8e433db579
+,Biber,Farbe,Biber,,,,,,,Yes,4.99,,,,,,4,0,W892,4251260503596,,,,,,,,,,,,,,,,c9eb60de-cff3-4eed-a1a5-9952a533fc15
+,Delfin,Farbe,Delfin,,,,,,,Yes,4.99,,,,,,5,0,W894,4251260503671,,,,,,,,,,,,,,,,bcda00cf-1ef1-4c9d-8179-59ccad351cb6
+,Dino,Farbe,Dino,,,,,,,Yes,4.99,,,,,,7,0,W854,4251260515179,,,,,,,,,,,,,,,,918de867-c5d4-42f8-a410-f60a61eed98a
+,Einhorn,Farbe,Einhorn,,,,,,,Yes,4.99,,,,,,6,0,W861,4251260503640,,,,,,,,,,,,,,,,ace3dbb0-81a0-4347-a4d5-ab2d6304fb4d
+,Eisbär,Farbe,Eisbär,,,,,,,Yes,4.99,,,,,,7,0,W891,4251260503626,,,,,,,,,,,,,,,,88fd05cf-6880-4f20-a8a3-5ecb228c5927
+,Elefant,Farbe,Elefant,,,,,,,Yes,4.99,,,,,,6,0,W851,4251260503589,,,,,,,,,,,,,,,,b82f8649-4f64-4bb8-8b94-4ec073ab92c8
+,Ferkel,Farbe,Ferkel,,,,,,,Yes,4.99,,,,,,7,0,W895,4251260503619,,,,,,,,,,,,,,,,903c74f1-a654-4317-a622-9692fecf38c4
+,Flamingo,Farbe,Flamingo,,,,,,,Yes,4.99,,,,,,6,0,W831,4251260515162,,,,,,,,,,,,,,,,a6295bc0-28af-4be9-8114-fd1b9cd7ba3a
+,Frosch,Farbe,Frosch,,,,,,,Yes,4.99,,,,,,5,0,W827,4251260503633,,,,,,,,,,,,,,,,1115141f-b553-4b26-a7b9-697f47286e85
+,Hase,Farbe,Hase,,,,,,,Yes,4.99,,,,,,4,0,W842,4251260503565,,,,,,,,,,,,,,,,43a974f4-af63-4c44-b243-8e115fcb1d6d
+,Krokodil,Farbe,Krokodil,,,,,,,Yes,4.99,,,,,,6,0,W822,4251260504043,,,,,,,,,,,,,,,,cf8f3eea-4b87-43e3-9b5f-fb4038939110
+,Lama,Farbe,Lama,,,,,,,Yes,4.99,,,,,,6,0,W872,4251260503657,,,,,,,,,,,,,,,,25898fbd-d1f8-4218-bdb3-e24d75ea4671
+,Oktopus,Farbe,Oktopus,,,,,,,Yes,4.99,,,,,,5,0,W864,4251260515186,,,,,,,,,,,,,,,,ae7b55e9-3802-4384-9aa7-f04d5c903432
+,Pfau,Farbe,Pfau,,,,,,,Yes,4.99,,,,,,5,0,W855,4251260504029,,,,,,,,,,,,,,,,7b581bb9-bd86-4cab-9ee5-38f04c1a1508
+,Rabe,Farbe,Rabe,,,,,,,Yes,4.99,,,,,,6,0,W896,4251260504036,,,,,,,,,,,,,,,,9b474dff-c306-4b75-a151-f578653062cf
+,Robbe,Farbe,Robbe,,,,,,,Yes,4.99,,,,,,3,0,W893,4251260503664,,,,,,,,,,,,,,,,29919f85-8cdd-4b8f-88a6-5163f21f089b
+,Seestern,Farbe,Seestern,,,,,,,Yes,4.99,,,,,,4,0,W876,4251260503602,,,,,,,,,,,,,,,,ec5585ab-9eec-4343-8e88-5f037961542b
+,Löwe,Farbe,Löwe,,,,,,,Yes,4.99,,,,,,6,0,W813,4251260504067,,,,,,,,,,,,,,,,d79e45bc-a029-49df-81ae-5f0ed66e9174
+,Maus,Farbe,Maus,,,,,,,Yes,4.99,,,,,,4,0,W862,4251260503572,,,,,,,,,,,,,,,,ab504871-dcec-45e1-b910-b8e24fada644
+myboshi Samt XL Wolle,,,,,,,,,,,,No,,19.00,each.each,Yes,,,,,"myboshi Samt XL Wolle, 100g, 100% Polyester",MyBoshi,Light red,,,,,,,,Yes,myboshi Samt XL Wolle,,,41f90da7-8fb2-4a8e-806e-7bdce3baafb7,
+,Hortensie,Farbe,Hortensie,,,,,,,Yes,5.99,,,,,,2,0,WX851,4251260515841,,,,,,,,,,,,,,,,ca9629cd-0387-4902-89c6-24b4814648f0
+,Eukalyptus,Farbe,Eukalyptus,,,,,,,Yes,5.99,,,,,,3,0,WX827,4251260515803,,,,,,,,,,,,,,,,25e0f2e4-5a0b-4818-8972-e0c82e604ac8
+,Magnolie,Farbe,Magnolie,,,,,,,Yes,5.99,,,,,,4,0,WX837,4251260515827,,,,,,,,,,,,,,,,675bde96-b214-46b6-a2c0-050760ceaac6
+,Bernstein,Farbe,Bernstein,,,,,,,Yes,5.99,,,,,,5,0,WX813,4251260515797,,,,,,,,,,,,,,,,9797f7b0-a798-4289-adc2-3f4ed2b52cf2
+,Rost,Farbe,Rost,,,,,,,Yes,5.99,,,,,,5,0,WX834,4251260515810,,,,,,,,,,,,,,,,bae262bd-1f19-46d4-acc9-013c6b93060c
+,Seerose,Farbe,Seerose,,,,,,,Yes,5.99,,,,,,11,0,WX842,4251260515834,,,,,,,,,,,,,,,,293e3544-a04f-4a68-92b4-28f45ad7c6df
+,Sand,Farbe,Sand,,,,,,,Yes,5.99,,,,,,9,0,WX872,4251260515858,,,,,,,,,,,,,,,,5b7299cf-dc11-425e-8de7-5628276504b0
+,Stein,Farbe,Stein,,,,,,,Yes,5.99,,,,,,1,0,WX894,4251260515865,,,,,,,,,,,,,,,,9f7d6d33-f345-4882-8651-deb762272b73
+,Vulkan,Farbe,Vulkan,,,,,,,Yes,5.99,,,,,,5,0,WX896,4251260515872,,,,,,,,,,,,,,,,632516e9-5fea-4f3a-a2e0-691a8a3ec5fd
+Nadelspiel 20cm/ 3mm,,,,,,,,,,Yes,7.99,No,,19.00,each.each,Yes,1,0,NNS30200,4251260504944,,MyBoshi,Light red,,,,,,,,Yes,Nadelspiel 20cm/ 3mm,,,b4228b28-6d62-4dce-9e2b-09db851cee4c,70c1ad80-cd12-4f70-b985-7a8d63f3426b
+"""Nature X-Mas"", Bänder/Kordeln",,,,,,,,,,Yes,3.49,No,,19.00,each.each,No,0,0,,4006166807640,,Rayher,Light red,,,,,,,,Yes,"""Nature X-Mas"", Bänder/Kordeln",,,7792657c-5fcf-4900-9d02-e4c797b76ddb,60668a5c-0231-490d-9e01-b5b1f9ec7443
+Nupsi Platzhalter Ostereier,,,,,,,,,,Yes,4.99,No,,19.00,each.each,Yes,6,0,30241000,4006166810374,"Nupsi Platzhalter Ostereier, sortiert, SB-Btl. 16Stück",Rayher,Grey,,,,,,,,Yes,,,,a2eca30e-ef1b-4b56-8f91-12dd721463db,a3b99466-e736-4e8e-b13e-352c75033fbe
+Nupsi Platzhalter Osterhasen,,,,,,,,,,Yes,4.99,No,,19.00,each.each,Yes,6,0,30242000,4006166810411,"Nupsi Platzhalter Osterhasen, 2 Designs, sortiert, SB-Btl. 16Stück",Rayher,Grey,,,,,,,,Yes,,,,f772b84d-fd0c-418c-b99d-375e58630b55,61de198c-6063-44bb-9724-46026ef9b666
+"Nussknacker, Duftkerze (M.F.)",,,,,,,,,,Yes,16.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_632TTJ13628H6TN708DXPK1Y5S,,,,,,,Yes,,,,f1cd835f-509b-4899-b850-7606129f9f6e,0a6b3a66-2fa5-4cb2-b18c-d064aa92d4ee
+"Obstdessert, Duftkerze (M.F.)",,,,,,,,,,Yes,10.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_5YRVEG85RM8WSSBB168X5MX8AF,,,,,,,Yes,"Obstdessert, Duftkerze (M.F.)",,,c01c1a3a-863b-4081-b530-bff1868391f0,50b78060-e0df-464b-b340-f22b5354dc50
+"Oracal 621 glänzend, transparent ",,,,,,,,,,Yes,0.79,No,,19.00,each.each,Yes,3,0,,9958332621008,,Vinylfolien Uni,Light red,,,,,,,,Yes,,,,e33c56dd-b1ee-4daa-a3c0-2c3a153e943a,64a6745b-15ee-42e6-be30-27de28b8b73c
+Oracal 631 matt,,,,,,,,,,,,No,,19.00,each.each,Yes,,,,,,Vinylfolien Uni,Light red,,,,,,,,Yes,,,,f66993d4-5e18-4794-8c3b-820aefbb6b41,
+,transparent,,,,,,,,,Yes,0.79,,,,,,7,0,,9958332623002,,,,,,,,,,,,,,,,c59fc4ff-891d-41ee-81b6-7cdf69a329f3
+,"weiß ",,,,,,,,,Yes,0.79,,,,,,6,0,,9958332631014,,,,,,,,,,,,,,,,c7e93e5a-8bbe-4941-978d-66a9efbe1f33
+,schwarz,,,,,,,,,Yes,0.79,,,,,,14,0,,9583326310707,,,,,,,,,,,,,,,,ee7392ae-ddbf-40dc-ae45-4d4dcb519abf
+,gold,,,,,,,,,Yes,0.99,,,,,,11,0,,9583326310912,,,,,,,,,,,,,,,,3193f0d4-1184-4ae1-9d2b-a056f147d9e3
+,kupfer,,,,,,,,,Yes,0.99,,,,,,9,0,,9583326310929,,,,,,,,,,,,,,,,a9fc115a-2b98-43d5-bce5-ab014897da01
+Orangenscheiben,,,,,,,,,,Yes,3.79,No,,19.00,each.each,Yes,4,0,8504100,4006166979606,"Orangenscheiben, getrocknet, SB-Btl. 25 g",Rayher,Grey,,,,,,,,Yes,,,,dfa4ade1-63a3-47ee-a365-b3a4225c3b44,1d3352d3-872c-4d24-84f3-e89ab784534b
+Otter (Y.S.),,,,,,,,,,Yes,11.00,No,,0.00,each.each,No,0,0,,,,Yvonne Schwarz,Light blue,,,,,,,,Yes,,,,94bcceb9-2bbd-4405-827d-8aed197857a3,4ec860a4-3703-4c32-9e14-864e6008814c
+Palme 10cm,,,,,,,,,,Yes,5.50,No,,19.00,each.each,Yes,7,0,3870 364,4036159487856,,HobbyFun,Light blue,https://images.sumup.com/img_7QECT0RAQ4822R984Q3W9APS0Z,,,,,,,Yes,,,,98c18a2a-85d3-4027-bc6b-654d0c7e6709,78e131f2-0b39-4d4d-8fde-0313f84442ff
+Panda (Y.S.),,,,,,,,,,Yes,11.00,No,,0.00,each.each,No,0,0,,,,Yvonne Schwarz,Light blue,,,,,,,,Yes,Panda (Y.S.),,,79a09747-2549-41da-aa50-392021741c19,7eeadc77-cb41-48a9-82e2-7d2f9a1c7339
+Papiertüte,,,,,,,,,,Yes,0.20,No,,19.00,each.each,No,0,0,,,,Verpackungen,Light red,,,,,,,,Yes,Papiertüte,,,d2673083-1aeb-4d67-a0d0-0120b8f6fbc9,f1cce28e-d2c2-4fd1-890a-5926f9091914
+PET Gießform Eier,,,,,,,,,,Yes,8.99,No,,19.00,each.each,Yes,6,0,36179000,4006166830280,"PET Gießform Eier, Motive:6,3x8cm, 8,3x10,5cm/Tiefe bis 3cm",Rayher,Grey,,,,,,,,Yes,,,,d2603709-7293-465f-ad38-6e025681bad9,59e9fc4c-4fee-4376-b25e-281bf4480da9
+"Pfeifenputzer, schwarz",,,,,,,,,,Yes,1.99,No,,19.00,each.each,No,0,0,,4016299001365,,Diverses,Light red,,,,,,,,Yes,,,,63791c28-ad1a-48f9-9234-b35ff9c4fa36,44f3d183-1f7b-415e-998f-db74133d1069
+"Pfoten-Dose, Raysin",,,,,,,,,,Yes,9.00,No,,19.00,each.each,No,0,0,,,,Dienstleistungen,Light red,https://images.sumup.com/img_7TTPKBCRMB9EMA9W6X2RWVQP8H,,,,,,,Yes,"Pfoten-Dose, Raysin",,,86bbec06-dc92-4720-a63d-f8f024867bb5,02346b20-2f2a-4996-82a3-c4c6baa85807
+"Plotterdatei, Datum auf Schuhe",,,,,,,,,,Yes,5.00,No,,19.00,each.each,No,0,0,,,,Dienstleistungen,Light red,,,,,,,,Yes,"Plotterdatei, Datum auf Schuhe",,,36442e6e-471e-4973-924e-98ccce1cfbd3,2603b0c1-b256-4f66-9bfc-5f6b8344211b
+POLI-FLEX® IMAGE Luminous Flexfolie,,,,,,,,,,Yes,4.49,No,,19.00,each.each,Yes,7,0,,479050015026,"POLI-FLEX® IMAGE Luminous Flexfolie, 21 cm x 29.7 cm",Flexfolien,Pink,,,,,,,,Yes,,,,8848db45-27fc-4839-bccc-781f1b21992b,e1b76fb4-35c3-43c6-9096-10866d7a1d94
+POLI-FLEX® PEARL GLITTER Flexfolie,,,,,,,,,,,,No,,19.00,each.each,Yes,,,,,"POLI-FLEX® PEARL GLITTER Flexfolie, 21 cm x 29,7 cm",Flexfolien Glitter,Light red,,,,,,,,No,,,,f16b48fc-936c-4605-941c-75250b5932e4,
+,Black,Farbe,Black,,,,,,,Yes,3.09,,,,,,9,0,458,425114821486,,,,,,,,,,,,,,,,9aa7639e-9a49-4f29-be09-8067aa89594e
+,Blue,Farbe,Blue,,,,,,,Yes,3.09,,,,,,10,0,454,4251148214903,,,,,,,,,,,,,,,,d0331e14-51b9-4393-91cd-168c829c1467
+,Bronze,Farbe,Bronze,,,,,,,Yes,3.19,,,,,,15,0,452,452300312017,,,,,,,,,,,,,,,,0f980ac9-c57f-45bd-9a34-156a770d676e
+,Burgundy,Farbe,Burgundy,,,,,,,Yes,3.09,,,,,,10,0,422,4251148214859,,,,,,,,,,,,,,,,dedf8761-8f08-46ff-be6b-cf2ddf327f9f
+,Champagne,Farbe,Champagne,,,,,,,Yes,3.09,,,,,,8,0,490,4251148214743,,,,,,,,,,,,,,,,9525898c-0c90-4171-8f1d-10dd666ec923
+,Copper,Farbe,Copper,,,,,,,Yes,3.19,,,,,,10,0,426,426300312238,,,,,,,,,,,,,,,,6958ba86-a703-462d-bd82-415a2457b3e5
+,Coral,Farbe,Coral,,,,,,,Yes,3.09,,,,,,7,0,487,4251148214774,,,,,,,,,,,,,,,,49623c03-802f-42d2-980b-99e0005ecef8
+,Emerald,Farbe,Emerald,,,,,,,Yes,3.19,,,,,,11,0,427,427300312273,,,,,,,,,,,,,,,,7765bc97-843c-4867-843e-05f9e6efa5bc
+,Gold,Farbe,Gold,,,,,,,Yes,3.09,,,,,,10,0,451,4251148214934,,,,,,,,,,,,,,,,f6c95d08-a36b-4d59-a909-d76e7fec95f6
+,Green,Farbe,Green,,,,,,,Yes,3.09,,,,,,9,0,455,4251148214897,,,,,,,,,,,,,,,,34ba2cd7-e065-4101-a1ac-77785b6c6742
+,Grey,Farbe,Grey,,,,,,,Yes,3.09,,,,,,9,0,459,4251148214842,,,,,,,,,,,,,,,,cc796a68-0ea4-4420-b2d5-489bec5adff8
+,Hot Pink,Farbe,Hot Pink,,,,,,,Yes,3.09,,,,,,8,0,432,4251148215016,,,,,,,,,,,,,,,,64045b3c-e79d-4c1c-b2d3-26cbc0684d77
+,Jade,Farbe,Jade,,,,,,,Yes,3.09,,,,,,6,0,482,4251148214804,,,,,,,,,,,,,,,,c067c5ac-1eff-44d3-a266-e5e7fd2edb70
+,Lavendel,Farbe,Lavendel,,,,,,,Yes,3.09,,,,,,8,0,428,4251148215030,,,,,,,,,,,,,,,,18338997-8ee1-455b-a72d-e1802ba756e2
+,Light Gold,Farbe,Light Gold,,,,,,,Yes,3.09,,,,,,6,0,425,4251148215061,,,,,,,,,,,,,,,,bc236fa4-24ee-49db-b7ec-8a20ce436398
+,Light Green,Farbe,Light Green,,,,,,,Yes,3.09,,,,,,5,0,483,4251148214798,,,,,,,,,,,,,,,,3898c163-6395-4381-8275-7358b6f28cf0
+,Multicolor,Farbe,Multicolor,,,,,,,Yes,3.09,,,,,,6,0,453,4251148214910,,,,,,,,,,,,,,,,d3049ffc-7722-4183-928a-69e272e1db08
+,Neon Blue,Farbe,Neon Blue,,,,,,,Yes,3.29,,,,,,7,0,481,4251148214811,,,,,,,,,,,,,,,,42278b74-a033-4828-ad65-336a16d0cfaf
+,Neon Green,Farbe,Neon Green,,,,,,,Yes,3.49,,,,,,15,0,447,447300312172,,,,,,,,,,,,,,,,66c7c2a6-98e8-44f4-ae18-ca533008073f
+,Neon Orange,Farbe,Neon Orange,,,,,,,Yes,3.49,,,,,,12,0,449,449300312198,,,,,,,,,,,,,,,,5fe0b022-0c6b-4b1b-93da-86a1faab9d29
+,Neon Pink,Farbe,Neon Pink,,,,,,,Yes,3.29,,,,,,9,0,448,425114821496,,,,,,,,,,,,,,,,9e76c996-9561-4b01-a96d-70c545f3f828
+,Neon Purple,Farbe,Neon Purple,,,,,,,Yes,3.29,,,,,,6,0,480,4251148214828,,,,,,,,,,,,,,,,fdcfbd45-ff6b-43bb-81ba-bcdcb25145b1
+,Neon Yellow,Farbe,Neon Yellow,,,,,,,Yes,3.49,,,,,,15,0,446,446300312213,,,,,,,,,,,,,,,,ec14cb12-058b-46f2-bd08-14aa98ee38ea
+,Pink,Farbe,Pink,,,,,,,Yes,3.09,,,,,,6,0,457,4251148214873,,,,,,,,,,,,,,,,09aef143-b2c7-486e-877a-674317b9a5a4
+,Pure White,Farbe,Pure White,,,,,,,Yes,3.09,,,,,,8,0,684,4251148227798,,,,,,,,,,,,,,,,c12382f4-2524-4287-b73a-b05234bb0290
+,Purple,Farbe,Purple,,,,,,,Yes,3.09,,,,,,9,0,424,4251148215078,,,,,,,,,,,,,,,,aab32139-1950-40a0-8a3a-9832c7f49e45
+,Rainbow White,Farbe,Rainbow White,,,,,,,Yes,3.09,,,,,,8,0,488,4251148214767,,,,,,,,,,,,,,,,3a16c61b-9686-40bf-a9d5-c8a7a25f5f4f
+,Red,Farbe,Red,,,,,,,Yes,3.09,,,,,,6,0,456,4251148214880,,,,,,,,,,,,,,,,930776b6-e8cf-42d6-b898-36c591e20833
+,Royal Blue,Farbe,Royal Blue,,,,,,,Yes,3.19,,,,,,14,0,489,489300312867,,,,,,,,,,,,,,,,16c0bafb-b213-4653-82ca-01bf7e5b4ffd
+,Silver,Farbe,Silver,,,,,,,Yes,3.09,,,,,,10,0,450,4251148214941,,,,,,,,,,,,,,,,65cdf72b-f12c-4654-a04e-3e6c3b12d084
+,Sky Blue,Farbe,Sky Blue,,,,,,,Yes,3.09,,,,,,9,0,445,425114821499,,,,,,,,,,,,,,,,0dc4a07e-1476-4802-90e8-d07a5611435b
+,White,Farbe,White,,,,,,,Yes,3.09,,,,,,8,0,444,4251148215009,,,,,,,,,,,,,,,,69176acd-2664-41bb-9ea7-714cf1bfd9c6
+,"Test ",Farbe,"Test ",,,,,,,Yes,1.99,,,,,,0,0,,426300312230,,,,,,,,,,,,,,,,e0f32d73-57f9-4c1a-a245-e4e429489fb2
+POLI-FLEX® TURBO Flexfolie,,,,,,,,,,,,No,,19.00,each.each,Yes,,,,,"POLI-FLEX® TURBO Flexfolie, 21 cm x 29,7 cm",Flexfolien,Pink,,,,,,,,Yes,,,,25a4352e-b98c-4bb2-8c10-33acc337edbd,
+,Anthracite,Farbe,Anthracite,,,,,,,Yes,2.09,,,,,,7,0,6989,4251148233416,,,,,,,,,,,,,,,,62344b37-5c92-4046-b58f-43911adcca2f
+,Apple Green,Farbe,Apple Green,,,,,,,Yes,2.09,,,,,,9,0,4967,4251148208919,,,,,,,,,,,,,,,,19d166e8-0f7e-4caf-9e09-f2a9edeb5e56
+,Aqua Green,Farbe,Aqua Green,,,,,,,Yes,2.09,,,,,,6,0,4968,4251148214330,,,,,,,,,,,,,,,,5db658da-2796-43ca-a22a-d7a9b339630d
+,Baby Pink,Farbe,Baby Pink,,,,,,,Yes,2.09,,,,,,15,0,4961,4251148214323,,,,,,,,,,,,,,,,a08c8232-dfa3-433a-952a-16acbd65cd3e
+,Beige,Farbe,Beige,,,,,,,Yes,2.09,,,,,,9,0,4917,4251148214217,,,,,,,,,,,,,,,,ebc80989-f226-409b-a422-39009da6934d
+,Black,Farbe,Black,,,,,,,Yes,2.09,,,,,,25,0,4902,4251148208742,,,,,,,,,,,,,,,,3e71c16f-0072-46f5-9d3f-98556993602f
+,Bordeaux,Farbe,Bordeaux,,,,,,,Yes,2.09,,,,,,7,0,4909,4251148208797,,,,,,,,,,,,,,,,65bff3a4-f901-419a-9b25-5a58ecb766c5
+,Bright Blue,Farbe,Bright Blue,,,,,,,Yes,2.49,,,,,,8,0,4927,4251148214279,,,,,,,,,,,,,,,,f21eecca-3b07-4289-8d1f-68fef2417aaa
+,Bright Copper,Farbe,Bright Copper,,,,,,,Yes,2.49,,,,,,7,0,4924,4251148214248,,,,,,,,,,,,,,,,7db64e62-8bc5-45cd-9361-2d1e5120e2ba
+,Bright Gold,Farbe,Bright Gold,,,,,,,Yes,2.49,,,,,,5,0,4921,4251148214224,,,,,,,,,,,,,,,,eb324464-38af-4cb8-a84b-ea863fcc09d6
+,Bright Lavender,Farbe,Bright Lavender,,,,,,,Yes,2.49,,,,,,8,0,4928,4251148214286,,,,,,,,,,,,,,,,fecbf9aa-eea5-4b53-b267-1e2cbeb91ce9
+,Bright Lime,Farbe,Bright Lime,,,,,,,Yes,2.49,,,,,,8,0,4933,4251148223769,,,,,,,,,,,,,,,,e652e4dc-3b3f-4946-8bd3-0e9a5e742f39
+,Bright Pink,Farbe,Bright Pink,,,,,,,Yes,2.49,,,,,,8,0,4925,4251148214255,,,,,,,,,,,,,,,,af381880-eff9-45fe-96c7-5a471b353bc2
+,Bright Red,Farbe,Bright Red,,,,,,,Yes,2.49,,,,,,14,0,4926,4251148214262,,,,,,,,,,,,,,,,13717e89-e621-4126-b0ce-dac71d719f83
+,Bright Silver,Farbe,Bright Silver,,,,,,,Yes,2.49,,,,,,10,0,4931,4251148214309,,,,,,,,,,,,,,,,993fb30f-0644-4e84-ac25-567b572ffd32
+,Bright Violet,Farbe,Bright Violet,,,,,,,Yes,2.49,,,,,,14,0,4932,4251148223752,,,,,,,,,,,,,,,,91272b8f-c515-4199-9bd7-8a331d18045c
+,Bright Yellow,Farbe,Bright Yellow,,,,,,,Yes,2.49,,,,,,10,0,4934,4251148223776,,,,,,,,,,,,,,,,dd8e89cd-4868-4716-8013-a595d81398a8
+,Bronze Metallic,Farbe,Bronze Metallic,,,,,,,Yes,2.49,,,,,,7,0,4956,4251148215160,,,,,,,,,,,,,,,,2870cc50-c53d-4cb0-a3e7-88ac79a0bdae
+,Brown,Farbe,Brown,,,,,,,Yes,2.09,,,,,,9,0,4916,4251148208841,,,,,,,,,,,,,,,,b8ad8d42-fc85-4015-b47a-ea6d6e61d7a1
+,Champagne Metallic,Farbe,Champagne Metallic,,,,,,,Yes,2.49,,,,,,12,0,4957,4251148215177,,,,,,,,,,,,,,,,598f608d-8abc-4944-8ebc-143b306ae8be
+,Classic Blue,Farbe,Classic Blue,,,,,,,Yes,2.09,,,,,,9,0,4979,4251148215139,,,,,,,,,,,,,,,,fa01fd08-eaa4-4ed5-b8a5-be8f33bab2f6
+,Coffee,Farbe,Coffee,,,,,,,Yes,2.09,,,,,,6,0,6998,4251148219403,,,,,,,,,,,,,,,,4bd2f11d-9f80-4186-b4e1-a147c815f393
+,Coral,Farbe,Coral,,,,,,,Yes,2.09,,,,,,10,0,4929,4251148214293,,,,,,,,,,,,,,,,6bcf1f86-08a8-4d84-8064-4366f4ad0b98
+,Flame Red,Farbe,Flame Red,,,,,,,Yes,2.09,,,,,,9,0,4973,4251148214347,,,,,,,,,,,,,,,,c1f99259-e691-4f7c-998f-f9ed7d865a6b
+,Flamingo Metallic,Farbe,Flamingo Metallic,,,,,,,Yes,2.49,,,,,,6,0,6996,4251148219380,,,,,,,,,,,,,,,,b7a57130-47e2-4237-8826-877cbb334486
+,Frog Green,Farbe,Frog Green,,,,,,,Yes,2.09,,,,,,9,0,4952,4251148215146,,,,,,,,,,,,,,,,78bac65d-fa05-45a8-b42e-33f24db6815d
+,Fuchsia,Farbe,Fuchsia,,,,,,,Yes,2.09,,,,,,6,0,4962,4251148208896,,,,,,,,,,,,,,,,8eb4ccca-fb9a-46fe-8b50-0e81d1dfe2f9
+,Gold Metallic,Farbe,Gold Metallic,,,,,,,Yes,2.49,,,,,,8,0,4920,4251148208872,,,,,,,,,,,,,,,,de0380d1-31d6-4bcc-b63d-2dab3958ac09
+,Green,Farbe,Green,,,,,,,Yes,2.09,,,,,,6,0,4904,4251148208759,,,,,,,,,,,,,,,,49aaa1a8-65cd-4c8a-93aa-b7ece91020b6
+,Grey,Farbe,Grey,,,,,,,Yes,2.09,,,,,,10,0,4912,4251148208810,,,,,,,,,,,,,,,,84b4aea5-064e-44fe-a55f-f128829a4cb5
+,Ice Blue,Farbe,Ice Blue,,,,,,,Yes,2.09,,,,,,2,0,4975,4251148237407,,,,,,,,,,,,,,,,3c0070de-7a7a-4d5d-9b40-bc1891615436
+,Lemon Yellow,Farbe,Lemon Yellow,,,,,,,Yes,2.09,,,,,,8,0,4919,4251148208865,,,,,,,,,,,,,,,,b2bd3098-a60b-4df5-a09b-71c8229b449a
+,Light Apricot,Farbe,Light Apricot,,,,,,,Yes,2.09,,,,,,7,0,6997,4251148219397,,,,,,,,,,,,,,,,044c4a25-6426-4159-bbd5-9864e3f642a7
+,Light Berry,Farbe,Light Berry,,,,,,,Yes,2.09,,,,,,6,0,4953,4251148215122,,,,,,,,,,,,,,,,23b7d6f7-faae-4758-b390-22e9ab0e0eac
+,Light Grey,Farbe,Light Grey,,,,,,,Yes,2.09,,,,,,9,0,4951,4251148215153,,,,,,,,,,,,,,,,c61d0c01-3b15-4e62-a294-287414590c05
+,Medium Yellow,Farbe,Medium Yellow,,,,,,,Yes,2.09,,,,,,10,0,4918,4251148208858,,,,,,,,,,,,,,,,902be442-40f9-44c5-b876-c71d3a6c7c8d
+,Mint,Farbe,Mint,,,,,,,Yes,2.09,,,,,,6,0,4977,4251148214354,,,,,,,,,,,,,,,,f6f728a0-c91c-4f01-9031-2e4cd5341209
+,Navy Blue,Farbe,Navy Blue,,,,,,,Yes,2.09,,,,,,5,0,4905,4251148208766,,,,,,,,,,,,,,,,a5701ee1-cb34-4e58-af12-6935f1117939
+,Neon Berry,Farbe,Neon Berry,,,,,,,Yes,2.29,,,,,,10,0,4987,4251148214361,,,,,,,,,,,,,,,,b269e477-8bfb-4adb-9877-13fc8cb689de
+,Neon Blue,Farbe,Neon Blue,,,,,,,Yes,2.29,,,,,,8,0,4903,4251148208926,,,,,,,,,,,,,,,,f3d19fe2-9bdc-499b-bd6b-0b8a46a9dba0
+,Neon Dark Pink,Farbe,Neon Dark Pink,,,,,,,Yes,2.29,,,,,,10,0,4945,4251148215184,,,,,,,,,,,,,,,,aae89bb9-7815-4444-b57f-f96da5331abc
+,Neon Green,Farbe,Neon Green,,,,,,,Yes,2.29,,,,,,8,0,4941,4251148208940,,,,,,,,,,,,,,,,087186b2-4c6a-4786-b531-a51c1a77ce50
+,Neon Orange,Farbe,Neon Orange,,,,,,,Yes,2.29,,,,,,8,0,4942,4251148208957,,,,,,,,,,,,,,,,4542e202-18a3-4400-a567-944e794b4bb8
+,Neon Pink,Farbe,Neon Pink,,,,,,,Yes,2.29,,,,,,9,0,4943,4251148208964,,,,,,,,,,,,,,,,57e2c153-044d-49b7-a5bc-af70b61a9385
+,Neon Red,Farbe,Neon Red,,,,,,,Yes,2.29,,,,,,10,0,4944,4251148214316,,,,,,,,,,,,,,,,61217f36-e448-4a98-b502-8797c4cec47d
+,Neon Yellow,Farbe,Neon Yellow,,,,,,,Yes,2.29,,,,,,7,0,4940,4251148208933,,,,,,,,,,,,,,,,1efbb7a7-7842-43aa-8409-b5173a62d58a
+,Olive,Farbe,Olive,,,,,,,Yes,2.09,,,,,,8,0,6995,4251148219373,,,,,,,,,,,,,,,,385e602f-a39a-401f-9e7e-2c2e8dcba957
+,Orange,Farbe,Orange,,,,,,,Yes,2.09,,,,,,7,0,4915,4251148208834,,,,,,,,,,,,,,,,a0c810dd-7672-49f7-bfdf-d34584e66fb5
+,Pastel Yellow,Farbe,Pastel Yellow,,,,,,,Yes,2.09,,,,,,7,0,4958,4251148215108,,,,,,,,,,,,,,,,5e01298e-1b83-4f55-bc39-f20415ef4961
+,Peach Fuzz,Farbe,Peach Fuzz,,,,,,,Yes,2.09,,,,,,10,0,6978,4251148237711,,,,,,,,,,,,,,,,11060a1a-37ad-4d1c-8378-4da7970ec1e3
+,Peri,Farbe,Peri,,,,,,,Yes,2.09,,,,,,10,0,6985,4251148223783,,,,,,,,,,,,,,,,719e659b-1d38-42b5-9043-6a49b4c39cba
+,Purple,Farbe,Purple,,,,,,,Yes,2.09,,,,,,9,0,4914,4251148208827,,,,,,,,,,,,,,,,01cc2059-f0cc-4ab9-9719-4a01cea040f8
+,Red,Farbe,Red,,,,,,,Yes,2.09,,,,,,6,0,4908,4251148208780,,,,,,,,,,,,,,,,13aec08e-34ea-4e01-96ea-e80068431962
+,Rose Gold Metallic,Farbe,Rose Gold Metallic,,,,,,,Yes,2.49,,,,,,10,0,4922,4251148214231,,,,,,,,,,,,,,,,a358915b-1e07-4f75-b46e-2971874d7a25
+,Royal Blue,Farbe,Royal Blue,,,,,,,Yes,2.09,,,,,,9,0,4906,4251148208773,,,,,,,,,,,,,,,,4088c618-4787-4644-8f54-6f4210b65127
+,Sage Green,Farbe,Sage Green,,,,,,,Yes,2.09,,,,,,0,0,6988,4251148237704,,,,,,,,,,,,,,,,9acd4c07-ed9e-4377-8484-dd0b8f3332d9
+,Sand Beige,Farbe,Sand Beige,,,,,,,Yes,2.09,,,,,,6,0,4954,4251148215092,,,,,,,,,,,,,,,,7871ad90-d5a6-4625-ad26-7cf2696d4566
+,Silver Metallic,Farbe,Silver Metallic,,,,,,,Yes,2.49,,,,,,7,0,4930,4251148208889,,,,,,,,,,,,,,,,77c84be6-4fe9-4701-8ce4-d9bd4e11e0cf
+,Sky Blue,Farbe,Sky Blue,,,,,,,Yes,2.09,,,,,,6,0,4965,4251148208902,,,,,,,,,,,,,,,,6bed8814-afcf-4499-9a0e-165be9a42458
+,Violet,Farbe,Violet,,,,,,,Yes,2.09,,,,,,7,0,4955,4251148215115,,,,,,,,,,,,,,,,a87d933d-6a8a-4eba-a157-2c02d3f6891a
+,Viva Magenta,Farbe,Viva Magenta,,,,,,,Yes,2.09,,,,,,10,0,6986,4251148233478,,,,,,,,,,,,,,,,e1997cb1-e17b-439d-80d9-eb5bcb7c8cfd
+,White,Farbe,White,,,,,,,Yes,2.09,,,,,,21,0,4901,4251148208735,,,,,,,,,,,,,,,,64b1a521-0381-45bf-b024-7a6e57806ace
+,Yellow,Farbe,Yellow,,,,,,,Yes,2.09,,,,,,9,0,4910,4251148208803,,,,,,,,,,,,,,,,ae0ff5ba-1b60-407c-b841-248ce030e0c5
+POLI-TACK 8031 PET Transferfolie,Standard,,,,,,,,,Yes,2.49,No,,19.00,each.each,Yes,99,0,TACK8031,4251148233461,"POLI-TACK 8031 PET Transferfolie, 21 cm x 29.7 cm",Flexfolien,Pink,,,,,,,,Yes,,,,6C7A593E-D535-4611-9CAB-6FD3D5D68F9F,12ED4AA8-B6F1-4160-8E7D-B59D60519DEE
+POLI-TACK 870 Universal Thermotransferfolie,Standard,,,,,,,,,Yes,1.49,No,,19.00,each.each,Yes,100,0,TACK870,4251148223240,"POLI-TACK 870 Universal Thermotransferfolie, 21 cm x 29.7 cm",Flexfolien,Pink,,,,,,,,Yes,,,,1D8691F7-C871-44E8-897A-3D069D6F1571,0C65DC45-5BA7-41DE-AC36-5A773127F529
+POLI-TAPE OMA PLOTT Flexfolie,,,,,,,,,,,,No,,19.00,each.each,Yes,,,,,"POLI-TAPE OMA PLOTT Flexfolie, 21 cm x 29,7 cm",Flexfolien,Pink,,,,,,,,Yes,,,,fc598477-e4ec-4506-8123-7c3db9b69ddb,
+,Flow Pink,Farbe,Flow Pink,,,,,,,Yes,3.69,,,,,,10,0,S3-A4-17,9583329990913,,,,,,,,,,,,,,,,a5419db2-c49d-4294-b600-329adcb42f2b
+,Flow Yellow Light,Farbe,Flow Yellow Light,,,,,,,Yes,3.69,,,,,,10,0,S3-A4-13,958332999092,,,,,,,,,,,,,,,,65e496a6-0cef-4725-ade5-d99e8abfe6cc
+POLI-TAPE TUBITHERM® Flockfolie,,,,,,,,,,,,No,,19.00,each.each,Yes,,,,,"POLI-TAPE TUBITHERM® Flockfolie, 21 cm x 29,7 cm",Flockfolien,Light red,,,,,,,,Yes,,,,45077326-2782-4baf-8689-8bc10e4792ad,
+,Black,Farbe,Black,,,,,,,Yes,2.59,,,,,,4,0,PLT 700,4251148219311,,,,,,,,,,,,,,,,c26ef70e-f050-4567-9e39-9f7dee258cbe
+,Blue,Farbe,Blue,,,,,,,Yes,2.59,,,,,,10,0,PLT 300,4251148219205,,,,,,,,,,,,,,,,f4b9437b-2a1b-442a-930f-377960c45bbc
+,Gras Green,Farbe,Gras Green,,,,,,,Yes,2.59,,,,,,9,0,PLT 410,4251148219281,,,,,,,,,,,,,,,,0b099f03-5bad-4c3e-8410-c687403f482a
+,Green,Farbe,Green,,,,,,,Yes,2.59,,,,,,9,0,PLT 400,4251148219267,,,,,,,,,,,,,,,,074a6d8e-3bbb-428c-9c99-e2a8b2e737f8
+,Grey,Farbe,Grey,,,,,,,Yes,2.59,,,,,,9,0,PLT 730,425114821932,,,,,,,,,,,,,,,,981a5ae1-95af-439e-b0b3-89bd36f915a6
+,Honey Yellow,Farbe,Honey Yellow,,,,,,,Yes,2.69,,,,,,10,0,PLT 105,4251148219076,,,,,,,,,,,,,,,,6c915dc9-c240-4a58-a81e-4b2ae8a3b72f
+,Light Rose,Farbe,Light Rose,,,,,,,Yes,2.59,,,,,,6,0,PLT 240,4251148219144,,,,,,,,,,,,,,,,09e7a1a5-66b5-4125-9e75-67afecf823ff
+,Magenta,Farbe,Magenta,,,,,,,Yes,2.59,,,,,,9,0,PLT 250,4251148219168,,,,,,,,,,,,,,,,3099f627-1c49-4856-b6f9-a79593f0df71
+,Navy Blue,Farbe,Navy Blue,,,,,,,Yes,2.59,,,,,,9,0,PLT 350,4251148219243,,,,,,,,,,,,,,,,ed951ddc-73ae-460e-a9c2-a73c7bf75f00
+,Neon Blue,Farbe,Neon Blue,,,,,,,Yes,2.99,,,,,,9,0,PLT 301,425114821927,,,,,,,,,,,,,,,,5a43198e-e662-4a22-9c70-c8f4d883d6bf
+,Neon Green,Farbe,Neon Green,,,,,,,Yes,2.99,,,,,,9,0,PLT 401,4251148219274,,,,,,,,,,,,,,,,f5090f17-d121-4226-a228-fba18c65bd89
+,Neon Orange,Farbe,Neon Orange,,,,,,,Yes,2.99,,,,,,10,0,PLT 181,4251148219106,,,,,,,,,,,,,,,,d9f4f8f9-ebbd-4c5f-898b-038113331dfe
+,Neon Pink,Farbe,Neon Pink,,,,,,,Yes,2.99,,,,,,3,0,PLT 241,4251148219151,,,,,,,,,,,,,,,,51596f54-214c-4433-b894-3adc467194b7
+,Neon Red,Farbe,Neon Red,,,,,,,Yes,2.99,,,,,,9,0,PLT 201,4251148219120,,,,,,,,,,,,,,,,de57f2e5-cf97-4087-8ab0-47e914e7ad30
+,Neon Yellow,Farbe,Neon Yellow,,,,,,,Yes,2.99,,,,,,9,0,PLT 101,4251148219069,,,,,,,,,,,,,,,,6f76e9e6-b48e-4ac3-96bb-eae3ad5a1b1a
+,Orange,Farbe,Orange,,,,,,,Yes,2.59,,,,,,10,0,PLT 180,4251148219090,,,,,,,,,,,,,,,,d6dbc62b-b05f-4525-892b-bc603a53b11f
+,Pink,Farbe,Pink,,,,,,,Yes,2.59,,,,,,9,0,PLT 280,4251148219199,,,,,,,,,,,,,,,,9d95b3ad-621f-4db5-9f75-f1631ade04a1
+,Red,Farbe,Red,,,,,,,Yes,2.59,,,,,,9,0,PLT 200,4251148219113,,,,,,,,,,,,,,,,52d084fd-9ea0-4b25-887f-2fe154be8835
+,Sky Blue,Farbe,Sky Blue,,,,,,,Yes,2.59,,,,,,9,0,PLT 320,4251148219236,,,,,,,,,,,,,,,,52bae013-49ff-4540-ae21-000eb1fc23e2
+,Turquoise,Farbe,Turquoise,,,,,,,Yes,2.59,,,,,,10,0,PLT 380,4251148227859,,,,,,,,,,,,,,,,6a4805ce-19d2-434b-9fdd-7255638e2c35
+,Yellow,Farbe,Yellow,,,,,,,Yes,2.59,,,,,,10,0,PLT 110,4251148219083,,,,,,,,,,,,,,,,6895ac1c-e8a7-42a7-80fb-2de242ad1000
+,White,Farbe,White,,,,,,,Yes,2.59,,,,,,1,0,PLT 001,4251148200111,,,,,,,,,,,,,,,,63804aef-2b29-492a-8a6a-68f87db697d8
+,Ice Blue,Farbe,Ice Blue,,,,,,,Yes,2.59,,,,,,7,0,PLT 310,4251148200319,,,,,,,,,,,,,,,,cfa8e3bf-87f3-4176-8ad1-fe643e229284
+,Berry,Farbe,Berry,,,,,,,Yes,2.59,,,,,,8,0,PLT260,4251148200265,,,,,,,,,,,,,,,,d2519974-7ff3-4f42-8eed-0fb7268460bc
+Pompons. 1-3cm ø,,,,,,,,,,Yes,5.99,No,,19.00,each.each,Yes,6,0,76016999,4006166212031,,Rayher,Grey,,,,,,,,Yes,,,,25ae4e09-2a09-41eb-be32-cf2e88b2921b,f3b15a15-cf6b-4dd7-b034-9b26af591a78
+Qualle (Y.S.),,,,,,,,,,Yes,12.00,No,,0.00,each.each,No,0,0,,,,Yvonne Schwarz,Light red,,,,,,,,Yes,Qualle (Y.S.),,,1c989452-60d4-4e8b-995a-590a49cfe6df,beb66675-230d-4255-8129-66bf943c40e1
+Reagenzglas,,,,,,,,,,Yes,1.79,No,,19.00,each.each,Yes,18,0,8801200,4006166616198,,Rayher,Grey,,,,,,,,Yes,,,,55542c7e-0adf-42e0-b17e-0743d1d41d1c,a82b4bd5-1d37-4d29-9072-55cc7036a887
+Reagenzglas. 16mm ø,,,,,,,,,,Yes,1.29,No,,19.00,each.each,Yes,25,0,5610700,4006166242854,,Rayher,Grey,,,,,,,,Yes,,,,bc87a90d-961b-4243-8c56-568ac63e1483,33614de2-2bbc-4ad3-b0db-57a089871fc1
+Reagenzglas m. Flachboden 20x65 mm,,,,,,,,,,Yes,0.75,No,,19.00,each.each,Yes,10,0,3750305,4036159550987,,HobbyFun,Light red,https://images.sumup.com/img_5DXF4PWRA68RFSG5M9FHH3TRBE,,,,,,,Yes,Reagenzglas m. Flachboden 20x65 mm,,,038b064b-0208-456c-a46e-57946f8378e6,24149409-69f5-47e1-a206-ef9997866dbd
+Reagenzglas mit Flachboden Ø 20 mm x 110 mm,,,,,,,,,,Yes,0.85,No,,19.00,each.each,Yes,10,0,3750 301,4036159436922,,HobbyFun,Light red,https://images.sumup.com/img_46H4ECA5BY8YNAKHK37JN1VFE9,,,,,,,Yes,Reagenzglas mit Flachboden Ø 20 mm x 110 mm,,,ed50ebee-ee40-4812-ab62-35c64bb07baa,d6b959e1-e22d-43f4-a52d-8eb72869b5eb
+"Reagenzglas - Wunscherfüller, (Ing.S.)",,,,,,,,,,Yes,2.50,No,,0.00,each.each,No,0,0,,,,Ingrid Schiffmann,Dark blue,,,,,,,,Yes,"Reagenzglas - Wunscherfüller, (Ing.S.)",,,a623a2d4-dcfd-4921-9990-0f13deec34cb,fc7369b2-1f49-4c58-ba55-7cf846e5cf4d
+"Regenbogen, Silikon Gießform",,,,,,,,,,Yes,8.99,No,,19.00,each.each,Yes,4,0,36149000,4006166898310,Silikon Gießform Regenbogen. 7.8x4x6cm. Box 1Stück,"Rayher, Silikonformen",Grey,,,,,,,,Yes,,,,09fe1377-7662-419e-870e-fab0e26b9d53,c8fd95c9-b2e8-4b72-9228-77c07fb8d689
+"Rentierfreunde, Silikon Gießform",,,,,,,,,,Yes,11.49,No,,19.00,each.each,Yes,4,1,36133000,4006166399572,,Rayher,Light red,,,,,,,,Yes,"Rentierfreunde, Silikon Gießform",,,65127b31-3688-4ab8-9b1c-f6770604e3ab,9bf9cee5-deb5-4534-b521-23e7579700d5
+Rentier Lindt,,,,,,,,,,Yes,4.00,No,,0.00,each.each,No,0,0,,,,Ingrid Schiffmann,Light red,https://images.sumup.com/img_0F8MHG771E8GP9SJ99CQ8CBC7K,,,,,,,Yes,,,,4a402de1-c361-4310-ae90-9352b5feafc5,d672022e-96f8-4019-864a-9344b68f03b8
+Ricorumi Häkelset,,,,,,,,,,,,No,,19.00,each.each,No,,,,,,Rico Design,Black,,,,,,,,Yes,Ricorumi Häkelset,,,55a8a162-fb0d-4529-8f47-417ae5c70b0a,
+,Standard,,,,,,,,,Yes,14.99,,,,,,0,0,,,,,,,,,,,,,,,,,,c6ebc0c3-5380-4a43-831c-cd3b2b50ce91
+,"""Baby Booties"" Hase",,,,,,,,,Yes,14.99,,,,,,0,0,400027.026,4065166075572,,,,,,,,,,,,,,,,1551dc1e-5178-429e-bb6b-1f2dcebd2cde
+,"""Baby Blankies - Biene""",,,,,,,,,Yes,17.99,,,,,,0,0,400027.015,4065166035613,,,,,,,,,,,,,,,,7a3bda39-1b30-4c23-9888-a9b5b5cfe06a
+,"""Baby Booties"" Biene",,,,,,,,,Yes,14.99,,,,,,0,0,400027.028,4065166075596,,,,,,,,,,,,,,,,3d245bc2-42db-44e8-83bf-f2c522ead61d
+Ricorumi Nilli Nilli,,,,,,,,,,,,No,,19.00,each.each,Yes,,,,,,Rico Design,Light red,,,,,,,,Yes,Ricorumi Nilli Nilli,,,f86995d3-38bd-4bd5-8e41-3608b9096a08,
+,weiß,Farbe,weiß,,,,,,,Yes,1.69,,,,,,10,0,RI-Ni 001,4065166039376,,,,,,,,,,,,,,,,11c3ebba-a884-4ae1-a034-2a68ad6c9385
+,creme,Farbe,creme,,,,,,,Yes,1.69,,,,,,3,0,RI-Ni 002,4065166039383,,,,,,,,,,,,,,,,9025750c-f71e-4cf6-bc4c-2073651d8744
+,gelb,Farbe,gelb,,,,,,,Yes,1.69,,,,,,3,0,RI-Ni 003,4065166039390,,,,,,,,,,,,,,,,7fa36f17-9927-4b3b-ad09-9e1422ac9017
+,senf,Farbe,senf,,,,,,,Yes,1.69,,,,,,4,0,RI-Ni 004,4065166039406,,,,,,,,,,,,,,,,5574649f-7550-4584-84c9-fb9b4e883e8d
+,puder,Farbe,puder,,,,,,,Yes,1.69,,,,,,4,0,RI-Ni 005,4065166039413,,,,,,,,,,,,,,,,af50fd87-4768-4f9b-a86c-229db1789552
+,rosa,Farbe,rosa,,,,,,,Yes,1.69,,,,,,3,0,RI-Ni 006,4065166039420,,,,,,,,,,,,,,,,051c1d86-54a4-452e-bd41-3c031396ef03
+,lachs,Farbe,lachs,,,,,,,Yes,1.69,,,,,,4,0,RI-Ni 007,4065166039437,,,,,,,,,,,,,,,,253a53ff-f851-4e0a-af8c-bde8e3834199
+,pink,Farbe,pink,,,,,,,Yes,1.69,,,,,,3,0,RI-Ni 008,4065166039444,,,,,,,,,,,,,,,,d2b9283c-6b94-4ad5-941a-74c32cd0efde
+,rot,Farbe,rot,,,,,,,Yes,1.69,,,,,,4,0,RI-Ni 009,4065166039451,,,,,,,,,,,,,,,,447c20f5-b972-44f1-9d07-fb82c6eb412e
+,beere,Farbe,beere,,,,,,,Yes,1.69,,,,,,4,0,RI-Ni 010,4065166039468,,,,,,,,,,,,,,,,71ad6ed3-5aa8-4cba-87b2-312a1ac74088
+,flieder,Farbe,flieder,,,,,,,Yes,1.69,,,,,,3,0,RI-Ni 011,4065166039475,,,,,,,,,,,,,,,,4e9bdaff-9392-43b8-89c5-8847a22323fc
+,lila,Farbe,lila,,,,,,,Yes,1.69,,,,,,4,0,RI-Ni 012,4065166039482,,,,,,,,,,,,,,,,74019cef-1076-41f1-8c37-3b1b01f057b0
+,blau,Farbe,blau,,,,,,,Yes,1.69,,,,,,3,0,RI-Ni 013,4065166039499,,,,,,,,,,,,,,,,a4beba07-fa00-43cb-9ce5-6c251674d627
+,hellblau,Farbe,hellblau,,,,,,,Yes,1.69,,,,,,4,0,RI-Ni 014,4065166039505,,,,,,,,,,,,,,,,b73ef82d-d0d8-4c15-99c7-4d46bf0d872a
+,eisblau,Farbe,eisblau,,,,,,,Yes,1.69,,,,,,3,0,RI-Ni 015,4065166039512,,,,,,,,,,,,,,,,f8dc7cfe-7335-463b-990f-80a5f419831d
+,aqua,Farbe,aqua,,,,,,,Yes,1.69,,,,,,4,0,RI-Ni 016,4065166039529,,,,,,,,,,,,,,,,ae6804a3-bca1-405a-937a-e8b74d299b40
+,türkis,Farbe,türkis,,,,,,,Yes,1.69,,,,,,4,0,RI-Ni 017,4065166039536,,,,,,,,,,,,,,,,93c79fef-520d-4e09-9fc1-d8cd21073097
+,mint,Farbe,mint,,,,,,,Yes,1.69,,,,,,3,0,RI-Ni 018,4065166039543,,,,,,,,,,,,,,,,56c09bd5-c994-4284-adda-62f7fd68a655
+,grün,Farbe,grün,,,,,,,Yes,1.69,,,,,,4,0,RI-Ni 019,4065166039550,,,,,,,,,,,,,,,,fc7da739-b0a6-493d-9165-625968c1f6e6
+,oliv,Farbe,oliv,,,,,,,Yes,1.69,,,,,,4,0,RI-Ni 020,4065166039567,,,,,,,,,,,,,,,,84476656-747d-4641-bf4c-d11f211d4d31
+,natur,Farbe,natur,,,,,,,Yes,1.69,,,,,,4,0,RI-Ni 021,4065166039574,,,,,,,,,,,,,,,,d2ab63d4-8350-4064-be9c-5a109874b0a3
+,beige,Farbe,beige,,,,,,,Yes,1.69,,,,,,4,0,RI-Ni 022,4065166039581,,,,,,,,,,,,,,,,ee81ec98-f171-408a-9ab5-e32019269ab8
+,nougat,Farbe,nougat,,,,,,,Yes,1.69,,,,,,4,0,RI-Ni 023,4065166039598,,,,,,,,,,,,,,,,a5cdbafe-df69-4d2a-89c0-c7b72e868b6a
+,schokolade,Farbe,schokolade,,,,,,,Yes,1.69,,,,,,4,0,RI-Ni 024,4065166039604,,,,,,,,,,,,,,,,eb955919-302a-4945-ace4-ce693af5576c
+,silbergrau,Farbe,silbergrau,,,,,,,Yes,1.69,,,,,,4,0,RI-Ni 025,4065166039611,,,,,,,,,,,,,,,,62e1df75-7030-402c-a5d3-6d73e63762de
+,grau,Farbe,grau,,,,,,,Yes,1.69,,,,,,4,0,RI-Ni 026,4065166039628,,,,,,,,,,,,,,,,6845fd23-ab8d-4ef7-85e8-22217b9cda19
+,schwarz,Farbe,schwarz,,,,,,,Yes,1.69,,,,,,10,0,RI-Ni 027,4065166039635,,,,,,,,,,,,,,,,07de09d0-d5da-4c5f-b7e0-870832c04bf1
+,neon pink,Farbe,neon pink,,,,,,,Yes,1.69,,,,,,3,0,RI-Ni 028,4065166039642,,,,,,,,,,,,,,,,b51d2d0f-a11a-4358-9725-44ea19f4a78e
+,neon orange,Farbe,neon orange,,,,,,,Yes,1.69,,,,,,4,0,RI-Ni 029,4065166039659,,,,,,,,,,,,,,,,89ece070-4def-44d0-a46a-1391332369b7
+,neon grün,Farbe,neon grün,,,,,,,Yes,1.69,,,,,,4,0,RI-Ni 030,4065166039666,,,,,,,,,,,,,,,,4d058d47-5ba4-410b-8531-2491764754eb
+Ricorumi Nilli Nilli Set 30 Farben 25g,,,,,,,,,,Yes,44.99,No,,19.00,each.each,No,0,0,400025.014,4065166045148,,Rico Design,Light red,,,,,,,,Yes,Ricorumi Nilli Nilli Set 30 Farben 25g,,,a43f105e-cafa-4a0e-97d4-09b9824c222e,93f3c9b4-1b6e-48bd-9b27-f5609e4a804c
+Ricorumi Underwater World,,,,,,,,,,Yes,3.99,No,,19.00,each.each,Yes,3,0,901011.00.00,4065166046589,,Rico Design,Light red,,,,,,,,Yes,Ricorumi Underwater World,,,57d3ce80-87b4-45c4-8062-4c09521b976e,77079dda-3965-472e-8534-c6ce8e324c60
+"Ritrama, Vinyl - transparent",,,,,,,,,,Yes,0.89,No,,19.00,each.each,Yes,50,0,RI199,9199300692037,,Vinylfolien Uni,Light red,,,,,,,,Yes,"Ritrama, Vinyl - transparent",,,ec1f0f16-a156-44ed-a8e6-8bc30c39a6ce,543aedd4-a000-4eb9-ac28-fc3265fcc08f
+"Ruhestandskissen, Wunschanfertigung",,,,,,,,,,Yes,25.00,No,,19.00,each.each,No,0,0,,,,Dienstleistungen,Light red,,,,,,,,Yes,"Ruhestandskissen, Wunschanfertigung",,,76e12bc4-72d5-48db-8178-725b40cbf5c0,291ec187-f4b7-44a9-ad16-cc82033dbb47
+"Rundstricknadeln 14cm/ 3,5mm",,,,,,,,,,Yes,13.29,No,,19.00,each.each,Yes,1,0,NRS35140800,4251260505040,,MyBoshi,Light red,,,,,,,,Yes,"Rundstricknadeln 14cm/ 3,5mm",,,d092f7f5-a6d7-4734-9f24-e24009030416,d2933b2b-c887-4619-8480-34d448b985ff
+Samtige Kuschelfreunde häkeln,,,,,,,,,,Yes,19.99,No,,19.00,each.each,Yes,0,0,B0021,9783841067791,,MyBoshi,Light red,,,,,,,,Yes,Samtige Kuschelfreunde häkeln,,,f762cdd7-24f4-47a1-85ae-2f9ac4f9329b,66b44b30-4874-4346-8325-4c6b928f63c5
+Samtwichtel,,,,,,,,,,Yes,1.59,No,,19.00,each.each,Yes,15,0,46616000,4006166301582,"Samtwichtel, 12x2,5cm, sortiert",Rayher,Grey,,,,,,,,Yes,,,,29017934-52d8-4b2c-8438-cd96eff13d6c,a3445b75-7074-44d7-9d0f-f1f516959ff3
+"Schale geriffelt, Silikon Gießform",,,,,,,,,,Yes,12.99,No,,19.00,each.each,Yes,5,0,36155000,4006166898372,Silikon Gießform Schale geriffelt. ø 11cm. Höhe 6.5cm. Box 1Stück,"Rayher, Silikonformen",Grey,,,,,,,,Yes,,,,dacbe000-d000-4e46-8f3a-b599862c2f03,8d713476-8760-4531-a301-451fccae821e
+"Schale Lotusblüte, Silikon Gießform",,,,,,,,,,Yes,8.99,No,,19.00,each.each,Yes,5,0,36145000,4006166923142,Silikon Gießform Schale Lotusblüte. ø 8cm. Höhe 3.5cm. Box 1Stück,"Rayher, Silikonformen",Grey,,,,,,,,Yes,,,,ab16d0d3-ca4a-42b1-9125-4f50685440e7,d7845b75-92d7-4165-8c98-b3074f08fe3f
+Schiefer-Herz,,,,,,,,,,Yes,5.49,No,,19.00,each.each,Yes,12,0,5622800,4006166800658,,Rayher,Grey,,,,,,,,Yes,,,,e489b15a-c783-466f-811c-f9fffb0c3a60,7e7396ce-f325-4c6d-b217-13789dbbc259
+Schildkröte (Y.S.),,,,,,,,,,Yes,8.00,No,,0.00,each.each,No,0,0,,,,Yvonne Schwarz,Light blue,,,,,,,,Yes,,,,f442d9c7-0aa4-443a-8b5c-2a514ac33b1c,3916b48d-ca23-4016-8b5f-bbc01af93387
+Schleifpapier-Set. sortiert,,,,,,,,,,Yes,11.99,No,,19.00,each.each,Yes,5,0,8947600,4006166237096,,Rayher,Grey,,,,,,,,Yes,,,,e977d94b-e8ba-4f87-8bf4-f3e947116e26,4c9b0689-db29-4966-b2ca-2c12ebfebc92
+Schlüsselanhänger,,,,,,,,,,Yes,5.00,No,,19.00,each.each,No,0,0,,4045289164544,,Diverses,Dark red,,,,,,,,Yes,,,,cf830f0f-9a2d-4b4f-9883-18d8c3db60a7,311ee443-7684-46ac-9dcf-f973cd4e0582
+Schlüsselanhänger,,,,,,,,,,Yes,5.00,No,,19.00,each.each,No,0,0,,4045289119841,,Diverses,Dark red,,,,,,,,Yes,,,,6a8b7835-2a65-4914-814c-396685b7bc35,7fe3835b-80ff-4152-b5b7-e1f351569bd7
+"Schlüsselanhänger, Epoxid mit Namen (3D-Druck)",,,,,,,,,,Yes,8.00,No,,19.00,each.each,No,0,0,,,,Dienstleistungen,Light red,,,,,,,,Yes,"Schlüsselanhänger, Epoxid mit Namen (3D-Druck)",,,6132c72b-6213-4cdd-ab49-e5d9161c2120,ece12a99-becb-4858-b5e0-d81e914a3f8e
+"Schlüsselanhänger, Holzstäbchen, lasergraviert",,,,,,,,,,Yes,8.00,No,,19.00,each.each,No,0,0,,,,Dienstleistungen,Light red,,,,,,,,Yes,"Schlüsselanhänger, Holzstäbchen, lasergraviert",,,7b711eb5-a52a-4b22-a91e-2d436ff625f1,9d2f6a4f-af65-4e70-a753-0060b26c4d3e
+"Schlüsselanhänger, klein",,,,,,,,,,,,No,,19.00,each.each,No,,,,,,Subli Sonstiges,Purple,,,,,,,,Yes,,,,71839fe9-ebe8-4841-addf-e0e0d774d2e7,
+,Standard,,,,,,,,,Yes,2.95,,,,,,0,0,,,,,,,,,,,,,,,,,,d0a1f69e-e8b8-4a82-9eda-5e2175dcaa75
+,sublimiert,,,,,,,,,Yes,7.95,,,,,,0,0,,,,,,,,,,,,,,,,,,113ad933-6373-4f7c-9f91-f6ccb6a4825f
+Schlüsselanhänger mit Öffner,,,,,,,,,,,,No,,19.00,each.each,No,,,,,,Subli Sonstiges,Purple,,,,,,,,Yes,,,,1816a419-4a7a-4225-98bc-85207a8d4216,
+,Standard,,,,,,,,,Yes,3.45,,,,,,0,0,,,,,,,,,,,,,,,,,,070eb43e-3c54-40d4-90e0-0e0b9c5500ee
+,"Schlüsselanhänger m. Öffner, sublimiert",,,,,,,,,Yes,8.95,,,,,,0,0,,,,,,,,,,,,,,,,,,552566c0-c75f-47d4-b799-311d43efa679
+"Schneeflöckchen, Duftkerze (M.F.)",,,,,,,,,,Yes,16.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_4F0ZCG0YT28FNSJBRBYJ6GKN3G,,,,,,,Yes,"Schneeflöckchen, Duftkerze (M.F.)",,,f21c30cd-1769-43f8-aabc-b38caef34fdf,3c637d83-dc5b-42b7-97cd-96420aa08ba9
+"Schneeflöckchen-Tasse, Duftkerze (M.F.)",,,,,,,,,,Yes,14.50,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_75AX9M5N8J8AFB35TYCG985476,,,,,,,Yes,"Schneeflöckchen-Tasse, Duftkerze (M.F.)",,,111bb2e8-6c56-4e8d-a61b-7284e0da60ee,ef536ceb-c1aa-4949-ae55-0566d36cdf37
+Schriftzug 4x läuft,,,,,,,,,,Yes,5.51,No,,19.00,each.each,No,0,0,,,,Moni,Pink,,,,,,,,Yes,,,,53c753b1-9ee1-4552-8298-8cfbff91ffd7,81c6a2bf-a7cf-4bc6-9955-4276393cd75a
+Schutzengel Holzaufsteller (Ing.S.),,,,,,,,,,Yes,12.00,No,,0.00,each.each,No,0,0,,,,Ingrid Schiffmann,Dark blue,,,,,,,,Yes,Schutzengel Holzaufsteller (Ing.S.),,,5062444e-3379-44ec-9e85-71a48045787b,b0c9159e-77b4-4372-a2ff-9f0172e6a28f
+"Schutzengel, (Ing.S.)",,,,,,,,,,Yes,18.00,No,,0.00,each.each,No,0,0,,,,Ingrid Schiffmann,Light red,https://images.sumup.com/img_53RKW3NTEG807TPND9NCVGGAMT,,,,,,,Yes,,,,9ff47c18-50d0-4372-81ef-5473d4a89a41,cc387e34-b506-4117-9d1b-e3c2feb026da
+Schwammpinsel,,,,,,,,,,Yes,1.69,No,,19.00,each.each,Yes,7,0,3843100,4006166545108,Schwammpinsel. 5.0 cm,Rayher,Grey,,,,,,,,Yes,,,,da7e12bc-cd86-41be-bd0b-8e4758eca41e,9d932b90-97f0-4bbf-90b9-8014425c966e
+Schwammpinsel,,,,,,,,,,Yes,1.59,No,,19.00,each.each,Yes,6,0,3843000,4006166545092,Schwammpinsel. 2.5 cm,Rayher,Grey,,,,,,,,Yes,,,,1254507a-1e21-4574-8dd2-7fd8885d47b6,fb2e66e1-1c07-49b4-b700-073e586f298c
+Schwanenpaar,,,,,,,,,,Yes,17.00,No,,19.00,each.each,No,0,0,,,,Dienstleistungen,Pink,https://images.sumup.com/img_6JNVWM75NV872SHN6YRAFAKBGF,,,,,,,Yes,Schwanenpaar,,,2c051ccb-0820-4191-af9d-953b913ebe7f,b1ebfed2-73ab-4bf2-b1e6-eb65e725b845
+"Serviettenkleber, Flasche 59 ml",,,,,,,,,,Yes,2.49,No,,19.00,each.each,Yes,2,0,38061000,4006166061585,,Rayher,Light red,https://images.sumup.com/img_2W3BM565788Q7RJ7CMX0BCE1QS,,,,,,,Yes,"Serviettenkleber, Flasche 59 ml",,,0798b230-1059-4f47-907b-c3e7d92b6bb2,3aa51019-efb1-41a6-bf44-f588da348950
+"Sicherheitsaugen 10mm ø, Kunststoff",,,,,,,,,,Yes,1.59,No,,19.00,each.each,Yes,6,1,69255576,4006166301216,,Rayher,Light red,,,,,,,,Yes,"Sicherheitsaugen 10mm ø, Kunststoff",,,ae3ebedd-dbac-4523-b33a-be754810962f,afe1eb70-a721-40a9-8fe7-da378ae59fbb
+"Sicherheitsaugen 12 mm, 6 Stk, Rico Design",,,,,,,,,,Yes,4.99,No,,19.00,each.each,Yes,11,0,500808,4065166072694,,Rico Design,Black,,,,,,,,Yes,"Sicherheitsaugen 12 mm, Rico Design","Sicherheitsaugen 6 Stk, 12 mm, mit 6 Farben zur Auswahl",,f6b9acd7-c7d5-4270-a99f-cb8a55064f83,11f857a7-e484-4d0d-9358-324d51f0e159
+"Sicherheitsaugen 6mm ø, Kunststoff",,,,,,,,,,Yes,1.49,No,,19.00,each.each,Yes,7,2,69257576,4006166301254,,Rayher,Light red,,,,,,,,Yes,"Sicherheitsaugen 6mm ø, Kunststoff",,,0732681e-561f-4f4b-8bd6-8d5302877178,dbe059d6-3ebe-4b3d-9959-2db5b718542e
+"Sicherheitsaugen 8mm ø, Kunststoff",,,,,,,,,,Yes,1.59,No,,19.00,each.each,Yes,5,0,69256576,4006166301230,,Rayher,Light red,,,,,,,,Yes,"Sicherheitsaugen 8mm ø, Kunststoff",,,2128d9c4-6204-4142-a8f1-6608542f6db4,9ea3cd45-efba-43e7-8933-a77779b57a52
+Silhouette Cam3 Auto Blade,,,,,,,,,,Yes,19.95,No,,19.00,each.each,Yes,2,0,SILH-BLADE-AUTO,814792022269,"Silhouette Auto Blade für Cameo 3, Portrait 2",Silhouette,Purple,,,,,,,,Yes,,,,53a84669-db92-47f0-a76d-27536830a9d7,334bc6ba-b35b-4054-a9a1-7eca4be2309f
+Silhouette Cam4+5 Auto Blade,,,,,,,,,,Yes,14.90,No,,19.00,each.each,Yes,0,0,SILH-BLADE-AUTO-2,819177021486,"Automatisches Messer für Cameo 4+5, Cameo Plus/Pro, Portrait 3",Diverses,Light red,,,,,,,,Yes,,,,f0544c2e-9314-4435-a882-b40bbbbd8d92,c8380d3a-00da-4a2c-8b00-71d38a4172ac
+"Silhouette Schneidematte 12"" x 12""",,,,,,,,,,Yes,16.99,No,,19.00,each.each,Yes,2,0,CUT-MAT-12-3T,814792012086,Silhouette Schneidematte normale Klebekraft,Diverses,Light red,,,,,,,,Yes,,,,aa75afd9-c4f4-4d02-90b0-2d442ac9656b,6af55ed3-74b7-4864-8779-332b98b5ccbe
+"Silikonform, Deko-Design-Halter",,,,,,,,,,Yes,12.95,No,,19.00,each.each,Yes,3,0,2007662,4036159551120,,HobbyFun,Light red,https://images.sumup.com/img_6JY600N4ER9B0VG7P72FA1WNV6,,,,,,,Yes,"Silikonform, Deko-Design-Halter",,,9acf0dae-6fb3-4524-9d3e-b55752c0920d,8121d403-e7b2-45bd-949a-ac0198726b69
+Silikonform Herzenhalter Stern,,,,,,,,,,Yes,12.95,No,,19.00,each.each,Yes,3,0,2007606,4036159549097,,HobbyFun,Light blue,https://images.sumup.com/img_330HBCNMB0802B0MEETNKVXK2H,,,,,,,Yes,,,,3a7ca09e-f4ad-4d13-9bfd-539669cc9a47,eee0c4cf-505a-47d3-bb06-43d2163d35cd
+" Silikonform Kerzenhalter, ca. 11 x 2,5 cm",,,,,,,,,,Yes,8.95,No,,19.00,each.each,Yes,3,0,2007 636,4036159549752,,HobbyFun,Light red,https://images.sumup.com/img_0RE0SWVJM584E8QJQM7EG9FX3V,,,,,,,Yes," Silikonform Kerzenhalter, ca. 11 x 2,5 cm",,,fb8c60ad-805a-41a1-b017-9b28c3f1db5d,ab7bf31e-e65f-4645-b898-9fd3351e0ea2
+"Silikonform, Kerzenhalter rund",,,,,,,,,,Yes,9.95,No,,19.00,each.each,Yes,1,1,2007 637,4036159549769,,HobbyFun,Light red,https://images.sumup.com/img_760TYPEQQ78MDASBW9K95DYW0M,,,,,,,Yes,,,,5ab2300e-3de7-493e-a039-1be7b653c4aa,b9570fbc-af85-47a4-84e7-4dcfdc64616f
+Silikon Gießform ABC,,,,,,,,,,Yes,21.99,No,,19.00,each.each,Yes,2,0,36130000,4006166817939,"Silikon Gießform ABC, 2teilige Form mit 26 Buchstaben, Box",Rayher,Grey,,,,,,,,Yes,,,,d22add66-17bf-4b21-995c-f546d784db9f,a6bc750d-1637-4964-9b75-5eb6e7028663
+Silikon-Gießform Anhänger,,,,,,,,,,Yes,11.49,No,,19.00,each.each,Yes,5,0,36109000,4006166815300,"Silikon-Gießform Anhänger, 14,5x26x1cm, 11 Formen, Box 1Stück",Rayher,Grey,,,,,,,,Yes,,,,0f4b7e39-1650-443d-94c3-0b2eb149855d,fb8c5226-0d48-4d73-9474-eb5446ccdb5f
+Silikon Gießform Dekoschale geriffelt,,,,,,,,,,Yes,9.99,No,,19.00,each.each,Yes,5,0,36185000,4006166830358,"Silikon Gießform Dekoschale geriffelt, ø 9cm, Höhe 6cm, Box 1Stück",Rayher,Grey,,,,,,,,Yes,,,,197adc13-2cb4-441a-a89f-666d70a09a89,d2ac3175-5b0a-431a-8c76-1bbf5262aca6
+Silikon Gießform Eier + Hasen Anhänger,,,,,,,,,,Yes,11.99,No,,19.00,each.each,Yes,4,0,36174000,4006166830075,"Silikon Gießform Eier + Hasen Anhänger, 14,5x26x1,5cm, 6 Formen, Box 1Stück",Rayher,Grey,,,,,,,,Yes,,,,90e0c52d-1f27-46fd-928e-2d82e7bc5c0e,76e94ed6-c932-4eac-b627-e8554613a2fd
+Silikon Gießformen Set Mini Töpfchen,,,,,,,,,,Yes,12.99,No,,19.00,each.each,Yes,6,0,36183000,4006166830327,"Silikon Gießformen Set Mini Töpfchen, 3tlg., 3 Designs, 5x5cm",Rayher,Grey,,,,,,,,Yes,,,,6e908eae-8803-48c0-87b0-704af989e0f1,4ed2e9dc-32b6-4a49-80c6-43149e5709be
+Silikon Gießformen Set Origami Boote,,,,,,,,,,Yes,14.99,No,,19.00,each.each,Yes,5,0,36181000,4006166830303,"Silikon Gießformen Set Origami Boote, 3tlg., 8x4x2,9cm/12x6x4,3cm/16x8x5,6cm",Rayher,Grey,,,,,,,,Yes,,,,6081ed3b-7aef-474d-8633-fe4573df44fb,d9fc4599-c4b7-4339-b91e-4543e62b8b6e
+Silikon Gießformen Set Seestern+Muscheln,,,,,,,,,,Yes,16.99,No,,19.00,each.each,Yes,5,0,36187000,4006166830372,"Silikon Gießformen Set Seestern+Muscheln, Dekoschalen, 3tlg.",Rayher,Grey,,,,,,,,Yes,,,,3b3e6d33-6c69-4376-9503-7608964585b2,9c94f73a-9cc2-435b-94c9-f8f8dc416246
+Silikon Gießformen Set Töpfchen,,,,,,,,,,Yes,14.99,No,,19.00,each.each,Yes,4,0,36184000,4006166830334,"Silikon Gießformen Set Töpfchen, 3tlg., 3 Designs, 7x5,5cm",Rayher,Grey,,,,,,,,Yes,,,,cf8fed0b-ffd5-492d-ab3e-2d7dd80dfad4,67ed5870-7a7b-487a-a0d7-17032ec433d0
+Silikon Gießformen Set Vasen Wellenrand,,,,,,,,,,Yes,16.99,No,,19.00,each.each,Yes,5,0,36182000,4006166830310,"Silikon Gießformen Set Vasen Wellenrand, 3tlg., 5x4,2cm/7,2x6cm/9,5x7,8cm",Rayher,Grey,,,,,,,,Yes,,,,81038b9f-dd3d-4e1c-9274-dacbf320d192,0c9ff8e2-b076-4531-8ebd-d8a6cb203338
+"Silikon Gießform ""Happy Egg""",,,,,,,,,,Yes,11.49,No,,19.00,each.each,Yes,5,0,36136000,4006166044847,"Silikon Gießform ""Happy Egg"", 14,5x26x2cm, 4 Formen, Box 1Stück",Rayher,Grey,,,,,,,,Yes,,,,f6367b83-752c-493d-93ef-50f8625006eb,c1b80e3d-405a-4464-a68f-ae53cded3d97
+Silikon Gießform Kerzenständer Stern,,,,,,,,,,Yes,12.99,No,,19.00,each.each,Yes,4,0,36168000,4006166823497,"Silikon Gießform Kerzenständer Stern, 18,5x18,5x2,5cm, inkl. 3x5 Schablonen",Rayher,Grey,,,,,,,,Yes,,,,367923c3-e47a-45a8-b2fa-caf9e4be4052,1d166690-abb6-4b28-842c-7338a080b650
+Silikon Gießform Mini ABC,,,,,,,,,,Yes,11.49,No,,19.00,each.each,Yes,5,0,36158000,4006166490156,"Silikon Gießform Mini ABC, 14,5x26x1cm, 27 Formen, Box 1Stück",Rayher,Grey,,,,,,,,Yes,,,,84b71a6b-2017-4ec7-bb22-be412b133c91,0be25c48-de36-4d44-9e73-0280edc58a5c
+Silikon Gießform Mini-Anhänger,,,,,,,,,,Yes,11.49,No,,19.00,each.each,Yes,5,0,36159000,4006166490163,"Silikon Gießform Mini-Anhänger, 14,5x26x1cm, 15 Formen, Box 1Stück",Rayher,Grey,,,,,,,,Yes,,,,3f374c89-1955-43b1-a92e-0d8da31c5578,44859680-28f1-470f-8eb5-a8dbeeef94a1
+Silikon Gießform Osterfreunde + Biene,,,,,,,,,,Yes,11.49,No,,19.00,each.each,Yes,5,0,36114000,4006166788772,"Silikon Gießform Osterfreunde + Biene, 26x14,5x1cm, 6 Formen, Box 1Stück",Rayher,Grey,,,,,,,,Yes,,,,392ea8f4-8635-4c99-826f-27062f6fa819,4d1c1644-7261-4839-869b-36007a0716f1
+Silikon Gießform Schale Schneckenmuschel,,,,,,,,,,Yes,9.99,No,,19.00,each.each,Yes,6,0,36188000,4006166830525,"Silikon Gießform Schale Schneckenmuschel, 14,8x10x6,3cm",Rayher,Grey,,,,,,,,Yes,,,,d71ef406-938e-415e-aa27-53816c102351,c1daaa2c-630f-45b7-aaa2-f3f9e7bce73a
+Siser® EasyPatterns Plus,,,,,,,,,,,,No,,19.00,each.each,No,,,,,,Flexfolien spezial,Light red,,,,,,,,Yes,Siser® EasyPatterns Plus,,,8ea6f123-fa5c-4657-aa25-11365018ce3b,
+,Watercolor-Rainbow,,,,,,,,,Yes,2.99,,,,,,0,0,,,,,,,,,,,,,,,,,,7d8b5534-456d-43c9-bdb1-40e0c014ccf7
+,Zebra,,,,,,,,,Yes,2.99,,,,,,0,0,,,,,,,,,,,,,,,,,,50064916-b494-4063-821f-6928bf7d0ce5
+,Wild Leopard,,,,,,,,,Yes,2.99,,,,,,0,0,,,,,,,,,,,,,,,,,,67147584-ac9e-4094-9a4c-7b6716763dbf
+,Infinite-Galaxy,,,,,,,,,Yes,2.99,,,,,,0,0,,,,,,,,,,,,,,,,,,eab10a3f-ac94-4d3e-91b4-2a4073212815
+Siser® Easy Puff,,,,,,,,,,,,No,,19.00,each.each,No,,,,,"<p>Siser® Easy Puff, aufschäumende 3D Effekt Flexfolie PU für Textilien - Baumwolle und Polyester, Formatware 20x30 cm</p>",Flexfolien spezial,Light red,,,,,,,,Yes,Siser® Easy Puff,,,4e7fc752-7567-49b0-a406-6a90dc82a12f,
+,Gold-metallic,,,,,,,,,Yes,3.19,,,,,,0,0,,,,,,,,,,,,,,,,,,15a522c6-a9e5-4bb7-b079-1b477ae9b2e9
+,Silber-metallic,,,,,,,,,Yes,3.19,,,,,,0,0,,,,,,,,,,,,,,,,,,bad8364f-d3bf-4509-8498-6919008e34e9
+,weiß,,,,,,,,,Yes,2.95,,,,,,0,0,,,,,,,,,,,,,,,,,,d07d32ef-bcf9-4fa3-990f-d6a7f2dc6d08
+"Siser® Sparkle ",,,,,,,,,,,,No,,19.00,each.each,No,,,,,,Flexfolien spezial,Light red,,,,,,,,Yes,"Siser® Sparkle ",,,0458736d-c39c-4990-a11b-5f62df96f013,
+,Pink-Lemonade,,,,,,,,,Yes,2.49,,,,,,0,0,,,,,,,,,,,,,,,,,,f79a34d7-85f9-4f32-95af-9244dbb3b489
+,Snowstorm-white,,,,,,,,,Yes,2.49,,,,,,0,0,,,,,,,,,,,,,,,,,,8641e81a-6768-4389-b1b3-2c26d68d6392
+,Cornflower-Blue,,,,,,,,,Yes,2.49,,,,,,0,0,,,,,,,,,,,,,,,,,,11a6a108-253a-4a67-8cb7-e36d601296b3
+,Buttercup-Yellow,,,,,,,,,Yes,2.49,,,,,,0,0,,,,,,,,,,,,,,,,,,64a2645c-766f-476f-8c81-98feb386150f
+Sitzbank (Ing.S.),,,,,,,,,,Yes,10.00,No,,0.00,each.each,No,0,0,,,,Ingrid Schiffmann,Dark blue,,,,,,,,Yes,,,,a7fb2546-f253-42d5-879f-87c66de9ff9c,52413956-edd8-41c8-baeb-3379dbbc19ab
+Spezial-Befestigungsschraube,,,,,,,,,,Yes,2.49,No,,19.00,each.each,Yes,10,0,25185616,4006166120190,,Rayher,Grey,,,,,,,,Yes,,,,731c8356-f6a6-4b81-926a-a978382918e5,eb16ccbc-9d0c-4ef7-bf94-b31a94cd5605
+Spezial-Befestigungsschraube,,,,,,,,,,Yes,2.49,No,,19.00,each.each,Yes,10,0,25185606,4006166281082,,Rayher,Grey,,,,,,,,Yes,,,,dbae64cd-de96-4021-81bc-763c18318daf,0522505e-9eec-441c-9e8c-9f416a1f8b9a
+Stearinpulver,,,,,,,,,,Yes,2.49,No,,19.00,each.each,Yes,5,0,3104800,4006166039416,,Rayher,Grey,,,,,,,,Yes,,,,3fca0991-1c0a-47b7-9a0f-f6f0d7e9e4d9,8dfb1abc-a31f-4d4e-b9fb-29bcbe2d5f65
+Sternanis,,,,,,,,,,Yes,4.29,No,,19.00,each.each,Yes,5,0,8523800,4006166514241,"Sternanis, SB-Btl. 30 g",Rayher,Grey,,,,,,,,Yes,,,,17236170-41ed-4599-8bff-6e9cd2b26131,9426dc94-c9a5-48ab-b621-20009eac869f
+Strickring,,,,,,,,,,Yes,9.95,No,,19.00,each.each,Yes,2,0,,4250938407358,,MyBoshi,Orange,,,,,,,,Yes,Strickring,,,0f158884-fe72-4135-839a-1a3f0d77552b,f73be2ee-41c8-463c-9e87-0e21a399b264
+Strukturschnee fein,,,,,,,,,,Yes,9.99,No,,19.00,each.each,Yes,4,0,35108100,4006166827051,"Strukturschnee fein, schneeweiß, mit Eis-Effekt, Dose 250ml",Rayher,Grey,,,,,,,,Yes,,,,1c6f158a-d775-4e27-9225-fb0e817359ad,9cccabbb-11dc-43d9-9364-655b42c21f61
+Strukturschnee fein Hologramm,,,,,,,,,,Yes,10.99,No,,19.00,each.each,Yes,5,0,35110100,4006166827075,"Strukturschnee fein Hologramm, schneeweiß, mit Eis-Effekt, Dose 250ml",Rayher,Grey,,,,,,,,Yes,,,,4988febe-dd81-4fd5-a670-0b9d87c9659d,b6ea09ce-c32c-4db8-aa7c-3e29223c0f03
+Sublimation Flasche,,,,,,,,,,Yes,11.00,No,,19.00,each.each,No,0,0,,,,Dienstleistungen,Yellow,,,,,,,,Yes,,,,287294a9-6483-4382-abde-1706f9691521,80beff6c-563f-49a0-94d2-fb3c19f9af8d
+Sublimation Tasse einfach,,,,,,,,,,Yes,7.00,No,,19.00,each.each,No,0,0,,,,Dienstleistungen,Yellow,,,,,,,,Yes,,,,8416424e-1845-4557-9c25-1a11eacc354e,d933aeff-b48a-4487-af42-771215ed5c79
+Superior Candy,,,,,,,,,,,,No,,19.00,each.each,Yes,,,,,,Vinylfolien Bunt,Light red,,,,,,,,Yes,Superior Candy,,,9fd77c2a-9ec3-41ee-ab20-1259066b7e25,
+,rainbow,,,,,,,,,Yes,2.69,,,,,,4,0,,9800300312121,,,,https://images.sumup.com/img_6P95E9SMSW89BV0NQVMMMJ5ZMD,,,,,,,,,,,,e6efd70e-fc6f-4d47-90bb-536c819a59f9
+,cloud,,,,,,,,,Yes,2.69,,,,,,0,0,7,9800300312138,,,,https://images.sumup.com/img_4V4CDMRRQ383TAPGNXXH8EQZF9,,,,,,,,,,,,7a50bed7-1aeb-46ec-b2cd-3da95bbb3e0f
+SUPERIOR Holo-Brushed Vinylfolie,,,,,,,,,,,,No,,19.00,each.each,Yes,,,,,"SUPERIOR Holo-Brushed Vinylfolie, 21 cm x 29,7 cm",Vinylfolien Bunt,Yellow,,,,,,,,Yes,,,,11b14938-ffcc-4851-9fec-e3ff36b664a0,
+,Lime,Farbe,Lime,,,,,,,Yes,2.69,,,,,,14,0,9724,972430031296,,,,,,,,,,,,,,,,c4ba9f5f-9d8d-4d24-a47c-fdda569955c6
+,Pink,Farbe,Pink,,,,,,,Yes,2.69,,,,,,15,0,9722,972230031246,,,,,,,,,,,,,,,,be60d3a4-5df5-49d2-bb52-d9fa828a3db3
+,Silver,Farbe,Silver,,,,,,,Yes,2.69,,,,,,13,0,9720,972030031256,,,,,,,,,,,,,,,,964c3f50-a83a-497f-9e62-0056c6ca1fbb
+Superior Jewel Metallic,,,,,,,,,,,,No,,19.00,each.each,Yes,,,,,,Vinylfolien Uni,Light red,,,,,,,,Yes,Superior Jewel Metallic,,,3dd0d02b-065c-4c48-a3a2-095c6f83edda,
+,deep gold,Farbe,deep gold,,,,,,,Yes,2.59,,,,,,5,0,95JDG,9567300692010,,,,,,,,,,,,,,,,a475e9ff-4fd1-4282-9b40-529d10cf2c1e
+,silver,Farbe,silver,,,,,,,Yes,2.59,,,,,,5,0,95JSI,9567300692027,,,,,,,,,,,,,,,,4bd9284f-ca9b-480e-a3ea-774436c6932b
+,black,Farbe,black,,,,,,,Yes,2.59,,,,,,5,0,95JBK,9567300692033,,,,,,,,,,,,,,,,a6cea3ac-55bf-45e6-8c7a-07431fb5ca04
+Superior Matt-Chrome,,,,,,,,,,,,No,,19.00,each.each,Yes,,,,,,Vinylfolien Uni,Light red,,,,,,,,Yes,Superior Matt-Chrome,,,da5bed64-37d7-42f1-b924-25b38563eeef,
+,royal blue,Farbe,royal blue,,,,,,,Yes,2.39,,,,,,3,0,9202-SUP,4167300692086,,,,,,,,,,,,,,,,dbfca700-be4c-4081-a29e-a8c4eb500150
+,satin red,Farbe,satin red,,,,,,,Yes,2.39,,,,,,4,0,9201-SUP,4167300692017,,,,,,,,,,,,,,,,d438067b-92c9-47dd-aefe-aaf53afcfce4
+,light gold,Farbe,light gold,,,,,,,Yes,2.39,,,,,,1,0,9271-SUP,4167300692710,,,,,,,,,,,,,,,,3c79614e-008d-42da-ac58-b6ad38251376
+,rose gold,Farbe,rose gold,,,,,,,Yes,2.39,,,,,,5,0,9202-SUP,4167300692024,,,,,,,,,,,,,,,,73f563e4-e41c-4edd-ac4d-2a5f4a6d206b
+,emerald green,Farbe,emerald green,,,,,,,Yes,2.39,,,,,,4,0,9237-SUP,4167300692376,,,,,,,,,,,,,,,,ff578367-0bcc-4c0b-b4c4-aa73af391b13
+SUPERIOR Matt Vinylfolie,,,,,,,,,,,,No,,19.00,each.each,Yes,,,,,"SUPERIOR Matt Vinylfolie, 21 cm x 29,7 cm",Vinylfolien Uni,Light green,,,,,,,,Yes,,,,7f9718b5-a93b-4f75-bdbc-1fbbc13ae7be,
+,Pastel Blue,Farbe,Pastel Blue,,,,,,,Yes,0.99,,,,,,28,0,4168,416830062571,,,,,,,,,,,,,,,,cb9b90bb-1dd4-4329-b134-b00c2b631c47
+,Pastel Green,Farbe,Pastel Green,,,,,,,Yes,0.99,,,,,,28,0,4164,416430062512,,,,,,,,,,,,,,,,6e7d526f-c397-48a2-9d49-a58b06c975b5
+,Pastel Lilac,Farbe,Pastel Lilac,,,,,,,Yes,0.99,,,,,,18,0,4167,416730062523,,,,,,,,,,,,,,,,bf4615e4-497e-4309-80aa-85d6ae559fef
+,Pastel Orange,Farbe,Pastel Orange,,,,,,,Yes,0.99,,,,,,27,0,4166,416630062579,,,,,,,,,,,,,,,,9ae788fe-f708-471a-ad3e-eacb7b2be8cb
+,Pastel Red,Farbe,Pastel Red,,,,,,,Yes,0.99,,,,,,23,0,4163,416330062574,,,,,,,,,,,,,,,,f27c83c3-d912-4eae-a94e-7bd50b178e5a
+Superior Rakelblatt,,,,,,,,,,Yes,5.99,No,,19.00,each.each,Yes,9,0,SUP-C04,,,Diverses,Light red,,,,,,,,Yes,,,,d6675bd7-da00-4616-8e67-067aef89fb5b,73fca6f6-388f-497a-99ce-01f50f2cb36d
+Superior Rakel mit Filzgleiter,,,,,,,,,,Yes,4.99,No,,19.00,each.each,Yes,5,0,SUP-A4649,,,Diverses,Light red,,,,,,,,Yes,,,,8a039aac-9088-41c1-b350-c62ce4cc2b0a,8c36d8e2-2145-4c27-906d-fa63cc33f506
+SUPERIOR SPARKLE Cloud 30.5 x 30.5,,,,,,,,,,Yes,3.29,No,,19.00,each.each,Yes,5,0,9835,983530031265,,Vinylfolien Bunt,Yellow,,,,,,,,Yes,,,,6ddab038-44ce-421d-945d-58b152553bbd,91244826-523c-4468-b194-36fa3f90e45c
+SUPERIOR Sparkle Pattern Vinylfolie,,,,,,,,,,,,No,,19.00,each.each,Yes,,,,,"SUPERIOR Sparkle Pattern Vinylfolie, 21 cm x 29,7 cm",Vinylfolien Bunt,Yellow,,,,,,,,Yes,,,,d1c79099-89ad-497b-9b76-218affec35f4,
+,Black Multi,Farbe,Black Multi,,,,,,,Yes,2.69,,,,,,8,0,9831,983130031291,,,,,,,,,,,,,,,,b25e4574-7295-47d1-80aa-abcc0666e6e1
+,Cloud,Farbe,Cloud,,,,,,,Yes,2.69,,,,,,9,0,9835,983530031212,,,,,,,,,,,,,,,,98f60871-56e5-4326-9954-8899f33ffe7d
+"Superior, Sticker-Vinyl A4, einzeln",,,,,,,,,,Yes,2.29,No,,19.00,each.each,No,0,0,,9987300692030,,Diverses,Light red,,,,,,,,Yes,"Superior, Sticker-Vinyl A4, einzeln",,,6b8931d4-f820-4124-90bb-07a99bd2441b,cfc146b1-d1c7-447d-aff6-77169668cb8a
+"Superior Sticker- Vinyl, Ink-Jet",,,,,,,,,,Yes,8.99,No,,19.00,each.each,Yes,9,0,SUP-INK-JET,9977300692031,,Vinylfolien Uni,Light red,,,,,,,,Yes,,,,6932368a-b9ad-4227-bb7d-91337fe3c84b,3f036fb7-faac-403a-bed9-c340cef0ec2f
+"Sweet Tropical, Duftkerze (M.F.)",,,,,,,,,,Yes,16.50,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_4KYJJAFH3T96K8MH6ZNP8EXQ15,,,,,,,Yes,"Sweet Tropical, Duftkerze (M.F.)",,,55d6ffa9-4fcd-4b5b-9658-003df520d95a,f528c8c3-b4eb-463f-8c96-aa5878c4e18f
+Synthetik-Breitpinsel flach,,,,,,,,,,Yes,11.99,No,,19.00,each.each,Yes,2,0,37045000,4006166434266,Synthetik-Breitpinsel flach. Gr. 50,Rayher,Grey,,,,,,,,Yes,,,,cfdc778f-e52c-4929-b0e9-8be13d1e9286,62ba5946-fb13-44bc-a013-f769a5ed70b8
+Tablett Blumenmädchen + Dose (Ing.S.),,,,,,,,,,Yes,18.00,No,,0.00,each.each,No,0,0,,,,Ingrid Schiffmann,Dark blue,,,,,,,,Yes,Tablett Blumenmädchen + Dose (Ing.S.),,,3da3b802-46e2-4a00-a697-313631a48405,47e1e54d-3f5b-44bd-929c-87ef4706ee77
+"Tasse, glanz ",,,,,,,,,,Yes,8.00,No,,19.00,each.each,No,0,0,,,,Marktstand,Light red,,,,,,,,Yes,,,,597c6f94-2b6c-41b8-85de-2ad3513210f1,b58f86bb-35ee-4751-9444-84de27d005be
+"Tasse, matt",,,,,,,,,,Yes,10.00,No,,19.00,each.each,No,0,0,,,,Marktstand,Light red,,,,,,,,Yes,,,,d514690c-8142-467f-86ee-ef46afab9098,c606c100-a68f-4d9d-9bd5-878e31ec03ab
+Tasse matt weiß,,,,,,,,,,,,No,,19.00,each.each,No,,,,,,"Subli Tassen, Gläser, Flaschen",Purple,,,,,,,,Yes,,,,2eb2b243-c6a6-478e-a78e-dae540c1c343,
+,Standard,,,,,,,,,Yes,3.95,,,,,,0,0,,,,,,,,,,,,,,,,,,bb437c1a-cb46-4d5c-b212-d29414d54c5a
+,sublimiert,,,,,,,,,Yes,10.95,,,,,,0,0,,,,,,,,,,,,,,,,,,489f87dc-d48d-40f2-9d87-814c17cc0430
+Tassen-Geschenkverpackung,,,,,,,,,,Yes,1.00,No,,19.00,each.each,No,0,0,,,,Verpackungen,Black,,,,,,,,Yes,Tassen-Geschenkverpackung,,,00ac72f4-cc92-49be-a154-06ef91552efb,3a4af97b-5013-41e0-8846-1870af3fcdd3
+Tassenkarton,,,,,,,,,,Yes,0.99,No,,19.00,each.each,Yes,48,0,,,,Diverses,Light red,,,,,,,,Yes,Tassenkarton,,,52227cc5-e50f-4c6a-b155-e7bb26154ea9,225a1328-817e-4f36-aeac-892da9005b7a
+Tasse Perlmutt,,,,,,,,,,,,No,,19.00,each.each,No,,,,,,"Subli Tassen, Gläser, Flaschen",Purple,,,,,,,,Yes,,,,777da029-9c98-4377-93b0-1b0025037aee,
+,Standard,,,,,,,,,Yes,3.90,,,,,,0,0,,,,,,,,,,,,,,,,,,7ab20616-b2df-4457-9334-5420bb02fca2
+,sublimiert,,,,,,,,,Yes,10.90,,,,,,0,0,,,,,,,,,,,,,,,,,,193271ff-6b02-41ae-8f5f-50c788d1eb13
+Tasse Perlmutt 2er,,,,,,,,,,Yes,7.00,No,,19.00,each.each,No,0,0,,,,"Subli Tassen, Gläser, Flaschen",Purple,,,,,,,,Yes,,,,5e633a4d-4569-49f1-b6b6-a908beae17ab,6974f5a9-cb7a-49ca-9565-38506b1e84e9
+Tasse weiß,,,,,,,,,,,,No,,19.00,each.each,No,,,,,,"Subli Tassen, Gläser, Flaschen",Purple,,,,,,,,Yes,,,,4d4375e1-97f6-4632-948c-65bed6e1fa50,
+,,,,,,,,,,Yes,2.95,,,,,,0,0,,,,,,,,,,,,,,,,,,1cc7ca85-8c37-4428-82cc-e4374bf4cb66
+,Plus Sublimation,,,,,,,,,Yes,9.95,,,,,,0,0,,,,,,,,,,,,,,,,,,bc36ebd5-a656-44e1-8624-825d49694c9d
+Teddybär (Y.S.),,,,,,,,,,Yes,15.00,No,,0.00,each.each,No,0,0,,,,Yvonne Schwarz,Purple,,,,,,,,Yes,Teddybär (Y.S.),,,70b15f0c-e009-4c8b-9c01-1f6b199030f9,ad51f139-2ed6-40f2-ba33-22a99a0ac920
+"Teelicht, groß (M.F.)",,,,,,,,,,Yes,4.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_4BF4CQB2Q58ESVPB3MJBH3YE81,,,,,,,Yes,"Teelicht, groß, Biene",,,26effe96-93be-4b55-a4da-556463c47338,c8fda2f8-2715-43b7-879c-01521d3d4f70
+"Teelichthalter Herz +Mädchen ",,,,,,,,,,Yes,12.00,No,,19.00,each.each,No,0,0,,,,Dienstleistungen,Pink,https://images.sumup.com/img_52QKHQT0718JX811AGQKFKX8QD,,,,,,,Yes,"Teelichthalter Herz +Mädchen ",,,50ccdc55-fc2a-4e9d-a669-c6d9eed3140e,4f9ceab8-6704-4dff-939c-eafb81e570ce
+"Teelichthalter rund, Silikonform",,,,,,,,,,Yes,8.94,No,,19.00,each.each,Yes,4,1,2007623,4036159549622,,HobbyFun,Light red,https://images.sumup.com/img_4CF4BVBQ7N8PXA080Q5QDCFM5Z,,,,,,,Yes,,,,89507598-960a-4883-894f-e49cbbae8a00,313a038d-51a8-420b-9096-fd8879e4ba6e
+Thermoflasche mit Bambusdeckel,,,,,,,,,,,,No,,19.00,each.each,Yes,,,,,,"Subli Tassen, Gläser, Flaschen",Purple,,,,,,,,Yes,,,,c342926b-938d-4e43-8fdf-163977ce702b,
+,Standard,,,,,,,,,Yes,13.90,,,,,,5,0,,,,,,,,,,,,,,,,,,513fdd97-c18c-4f43-a2e0-4384919a7283
+,sublimiert,,,,,,,,,Yes,22.90,,,,,,-2,0,,,,,,,,,,,,,,,,,,105f574c-048a-4c6b-a8bf-9fb1cbc5be94
+Thermoflasche mit Teesieb,,,,,,,,,,,,No,,19.00,each.each,No,,,,,,"Subli Tassen, Gläser, Flaschen",Light red,,,,,,,,Yes,Thermoflasche mit Teesieb,,,a1c12906-3576-46ce-bebb-e799d91a922c,
+,Standard,,,,,,,,,Yes,13.90,,,,,,0,0,,,,,,,,,,,,,,,,,,d7fb5073-e6ad-4609-87e5-ecf2edbfa5d9
+,sublimiert,,,,,,,,,Yes,22.90,,,,,,0,0,,,,,,,,,,,,,,,,,,0aa39022-617c-4aa7-81d6-9bd71a8d6e5d
+"Toffee Becher, Duftkerze (M.F.)",,,,,,,,,,Yes,16.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_4SMH83PS5J9QXBN35GHY16YWET,,,,,,,Yes,"Toffee Becher, Duftkerze (M.F.)",,,91808082-3485-413a-82fd-284005475daa,de16ee28-c83c-4a72-89c3-cd3f24da16fc
+"Transferfolie ""Balance""",,,,,,,,,,Yes,5.49,No,,19.00,each.each,Yes,10,0,31647000,4006166938009,,Rayher,Grey,,,,,,,,Yes,,,,0dbf28f2-c5b3-4012-97c1-99f3965dc5af,d4b74497-7b13-49ee-9dfc-adec477b4aa8
+"Transferfolie ""Glückslicht""",,,,,,,,,,Yes,5.49,No,,19.00,each.each,Yes,10,0,31646000,4006166818004,,Rayher,Grey,,,,,,,,Yes,,,,4ddc7cb9-d80f-4518-bd55-14a25dd6560a,5d4906b5-1937-4c3b-b4b9-ec1f2f273589
+"TRENDY-Band 25 silber, Rol. à 5 m",,,,,,,,,,Yes,3.25,No,,19.00,length.metre,No,0,0,3822 988,4036159467797,,HobbyFun,Light red,https://images.sumup.com/img_1X4KKYSCZ28BHB9BXF8JGH7F70,,,,,,,Yes,"TRENDY-Band 25 silber, Rol. à 5 m",,,9b40355a-218e-4dda-8d28-4359fcbc5e1b,3d87dd98-8640-47a6-9a77-3d70d73571ac
+"TRENDY-Band mit Blüten, creme, Rol. à 5 m",,,,,,,,,,Yes,2.95,No,,19.00,length.metre,No,0,0,3823 654,4036159498371,,3D-Druck,Light red,https://images.sumup.com/img_46R672Q14J89KSF0FH1GX61J5X,,,,,,,Yes,"TRENDY-Band mit Blüten, creme, Rol. à 5 m",,,9122b9ed-e841-468b-a23a-d3ad2ab56553,2dc3a36d-8d80-4e94-9e71-6af1f3a2fd28
+"TRENDY-Band mit Perlen + Ringen, Rol. à 5 m, creme/gold",,,,,,,,,,Yes,3.25,No,,19.00,length.metre,No,0,0,3822 408,4036159494526,,HobbyFun,Light red,https://images.sumup.com/img_0QH362V7D48B4R9TAZB6JVAN39,,,,,,,Yes,"TRENDY-Band mit Perlen + Ringen, Rol. à 5 m, creme/gold",,,a56f6a0b-b265-47e0-b8af-4e305039cad9,a41dd3c1-b91f-43f7-9a20-8502b09c7ad0
+"TRENDY-Band mit Perlen + Ringen, Rol. à 5 m, weiss/silber",,,,,,,,,,Yes,3.25,No,,19.00,length.metre,No,0,0,3822 407,4036159494519,,HobbyFun,Light red,https://images.sumup.com/img_1GHFRC1YF29BGV4GSJJV4ME316,,,,,,,Yes,"TRENDY-Band mit Perlen + Ringen, Rol. à 5 m, weiss/silber",,,4d7a9ea6-f467-4932-98c1-34d30eb77ae6,73ff15be-a418-4bfa-b529-e539709fd87e
+"TRENDY-Band Rosen mit Perlherz, Rol. à 5 m, creme",,,,,,,,,,Yes,2.00,No,,19.00,length.metre,No,0,0,3822 977,4036159467414,,HobbyFun,Light red,https://images.sumup.com/img_2AE1RFBD309T08VZXTQMSV2G75,,,,,,,Yes,"TRENDY-Band Rosen mit Perlherz, Rol. à 5 m, creme",,,35a3270a-d310-49ab-9b77-0d45903210d7,08165b65-fff3-4cb2-bb16-fd1106e4bb2c
+Trockenblumenstrauß,,,,,,,,,,Yes,4.99,No,,19.00,each.each,Yes,7,0,85491264,4006166818066,,Rayher,Grey,,,,,,,,Yes,,,,e41a5e4b-131d-499f-8fbe-3cdde38315f7,91af7082-2a47-4cf1-87a4-f72d73557db1
+Trockenblumenstrauß,,,,,,,,,,Yes,4.99,No,,19.00,each.each,Yes,7,0,85491430,4006166818080,,Rayher,Grey,,,,,,,,Yes,,,,9afcd245-9d77-4a7a-a92a-0705bc0f42b5,24bc63d7-7ccd-49b3-800b-08fd522bb67b
+Trockenblumenstrauß,,,,,,,,,,Yes,4.99,No,,19.00,each.each,Yes,8,0,85491104,4006166818073,,Rayher,Grey,,,,,,,,Yes,,,,a6e6a8db-020a-4345-b6d2-8579a07ede2c,2ef02575-d369-402d-a872-fd6df39cb20f
+Trockenblumenstrauß,,,,,,,,,,Yes,4.99,No,,19.00,each.each,Yes,8,0,85491210,4006166211911,,Rayher,Grey,,,,,,,,Yes,,,,f6893a7f-d00d-4361-ac4d-06d71f5ac796,adb1c6f4-4f36-4d7b-8d86-2620e69638ee
+Trockenblumenstrauß,,,,,,,,,,Yes,4.99,No,,19.00,each.each,Yes,7,0,85491576,4006166818103,,Rayher,Grey,,,,,,,,Yes,,,,a8643729-9294-4e65-87dc-c8e096235aeb,2df742cd-fa1e-41ab-8d06-050ed5c4d0ee
+Trockenblumen Strauß m.Papiermanschette,,,,,,,,,,Yes,8.99,No,,19.00,each.each,Yes,2,0,85490308,4006166818059,,Rayher,Grey,,,,,,,,Yes,,,,66bafc9d-09bd-4a88-9404-27152602a947,8e745ef9-5a51-421c-91b4-ffaec3a0e9bf
+Türkranz,,,,,,,,,,Yes,25.00,No,,19.00,each.each,No,0,0,,,,Dienstleistungen,Pink,https://images.sumup.com/img_1B16PFY7EX8APTSXB5WX6GJEPS,,,,,,,Yes,Türkranz,,,18482453-0c07-46a7-876d-7fc8304bf5cf,caaf2504-fbf4-4dfe-9f59-afdb3c6c19be
+UHU Holzleim Express,,,,,,,,,,Yes,5.25,No,,19.00,each.each,Yes,9,0,3330500,4026700485806,,Rayher,Grey,,,,,,,,Yes,,,,724291cd-003e-45f4-98d1-334b285ac837,a7c26ae1-8579-4b08-810a-53ef9ad7eecc
+"Under the Sea, Duftkerze (M.F.)",,,,,,,,,,Yes,16.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_594BJSN52Z8WEV02HBHTEW02K0,,,,,,,Yes,"Under the Sea, Duftkerze (M.F.)",,,fc41f233-65d0-438c-a7e1-ad22519abd39,7317ff01-89c9-409f-8687-6599206f177c
+Unendlichkeitsaufsteller,,,,,,,,,,Yes,12.00,No,,19.00,each.each,No,0,0,,,,Moni,Pink,,,,,,,,Yes,,,,5372635e-fadd-400c-bc4d-45651153ac0b,75f9d823-c369-4102-93b6-f14090746332
+"Untersetzer Rund, Silikon Gießform",,,,,,,,,,Yes,12.99,No,,19.00,each.each,Yes,3,0,36125000,4006166817298,Silikon Gießform Untersetzer Rund. ø 17cm x H 2.1cm,"Rayher, Silikonformen",Grey,,,,,,,,Yes,,,,fe29ffba-131a-4d26-87e6-dbb116404941,1367aa2c-c5af-49e7-a3ab-f1e7c3ec8635
+"Vase fein geriffelt, Silikon Gießform",,,,,,,,,,Yes,12.99,No,,19.00,each.each,Yes,4,0,36153000,4006166898358,Silikon Gießform Vase fein geriffelt. Boden ø8.3cm. Höhe 9.5cm. +1 Reagenzglas,"Rayher, Silikonformen",Grey,,,,,,,,Yes,,,,07c3b3ec-d33c-49f3-a8f6-b72cdd810250,c630e255-ccb2-4e38-b5b9-121acfefdd7d
+"Vase, Herz, Silikonform",,,,,,,,,,Yes,9.94,No,,19.00,each.each,Yes,5,1,2007645,4036159549943,,HobbyFun,Light red,https://images.sumup.com/img_6F079520VE9XZTEYFN6307V5RK,,,,,,,Yes,,,,cdfdab07-2c3d-4dfc-af3e-41602293a2ff,01b8ea88-d979-4c24-8b1d-3395ef2ee21f
+"Vase Quadrat mit Kreis, Silikon Gießform",,,,,,,,,,Yes,12.99,No,,19.00,each.each,Yes,5,0,36134000,4006166043482,Silikon Gießform Vase Quadrat mit Kreis. 11x3.7x11cm. inkl. 1 Reagenzglas,"Rayher, Silikonformen",Grey,,,,,,,,Yes,,,,ae1fdec2-6d6e-4382-ad11-c4196b41121b,dbf5f14c-d84f-4cae-956d-e8f0b6d0357c
+Viny-finger-bin Lime-Green,,,,,,,,,,Yes,9.90,No,,19.00,each.each,No,0,0,40628-lime-greej,4251148230859,,Diverses,Light red,,,,,,,,Yes,,,,1f43ae46-ce32-4790-bd90-3c00443365f1,375f9b23-05d3-4a39-afee-13e279836c6a
+Vinyl-finger-bin Pink,,,,,,,,,,Yes,9.90,No,,19.00,each.each,Yes,2,0,40628-pink,4251148230866,,Diverses,Light red,,,,,,,,Yes,,,,fb53dede-6750-4cf1-9dad-3c07099592d5,23e8b408-65e3-40b6-815f-c1266a11512f
+"Vogelhäuschen, klein, hängeng",,,,,,,,,,Yes,5.00,No,,19.00,each.each,No,0,0,,,,Dienstleistungen,Light red,https://images.sumup.com/img_5FRZP27JJE9N38ABHWV2CS4Q0C,,,,,,,Yes,"Vogelhäuschen, klein, hängeng",,,fd1b19c3-f05a-4ad7-87e1-b4cce586dfe5,40d2b03c-cb96-451c-badc-28a13f26437f
+"Vogelhäußer + Vogel, Silikon Gießform",,,,,,,,,,Yes,11.99,No,,19.00,each.each,Yes,2,0,36-172-000,4006166830051,,"Rayher, Silikonformen",Light red,,,,,,,,Yes,"Vogelhäußer + Vogel, Silikon Gießform",,,fa9b2cd6-dd72-468d-84d2-5e99de047d3e,d5bea3c8-bf9a-4e35-8e89-0996b73bbd97
+"Vogelhaus + Vogel, Silikon Gießform",,,,,,,,,,Yes,11.99,No,,19.00,each.each,Yes,2,0,36-171-000,4006166830044,,"Rayher, Silikonformen",Light red,,,,,,,,Yes,"Vogelhaus + Vogel, Silikon Gießform",,,35395fcd-293c-4603-ac4f-29584487715d,9ef3e0c6-5120-4520-bd53-1157d0ab17ce
+Wachslinsen,,,,,,,,,,Yes,18.99,No,,19.00,each.each,Yes,3,0,3107202,4006166686184,,Rayher,Grey,,,,,,,,Yes,,,,a7837316-1973-4587-b433-17a5f6c60c66,43a160cb-ce9d-4c93-b73c-e199b61ad0d4
+Wachsschmelzgefäß 1l,,,,,,,,,,Yes,22.25,No,,19.00,each.each,Yes,1,0,8938900,4006166653377,,Rayher,Grey,,,,,,,,Yes,,,,503626db-fc68-4f59-b17d-ab5047b5ecd3,c6aeb3b0-8452-4bb0-8e0e-5d0170c286f9
+"Wax Melts, franz. Croissant, (M.F.)",,,,,,,,,,Yes,3.50,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_286EMTWS1Z9MYAGHSDHDMTV8HB,,,,,,,Yes,"Wax Melts, franz. Croissant, (M.F.)",,,733b800a-4b52-430f-89cb-11a39f259e29,211881f2-8f44-4ed7-a944-8b3ca3ae2e4a
+"Wax Melts, gezuckerte Magnolie (M.F.)",,,,,,,,,,Yes,3.50,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_0YAMCSZ89790SSBKBDDPTHFYR1,,,,,,,Yes,"Wax Melts, gezuckerte Magnolie (M.F.)",,,6659cc8a-7eb8-4305-9e3b-b43b1b1a1d23,2b6c3741-59ad-4e57-b2a3-2d0997687465
+"Wax Melts, süße Erbse, (M.F.)",,,,,,,,,,Yes,3.50,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_2BYYEMTKRE9A4RR7C4JHDXM4QE,,,,,,,Yes,"Wax Melts, süße Erbse, (M.F.)",,,d4be1202-5a86-47b4-a949-7525da4de18f,afb840ba-fea3-4abf-968b-a6f69e6006d6
+"Wax Melts Tüte, (M.F.)",,,,,,,,,,,,No,,0.00,each.each,No,,,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_5EVF4K91Q280VBVJ3J1ZDBC1AE,,,,,,,Yes,"Wax Melts Tüte, (M.F.)",,,093cd866-7050-4c74-9275-e128642b6b43,
+,Standard,,,,,,,,,Yes,3.00,,,,,,0,0,,,,,,,,,,,,,,,,,,98aa3994-c617-4650-ae2a-c61bf800d618
+,Irish Cream,,,,,,,,,Yes,3.00,,,,,,0,0,,,,,,,,,,,,,,,,,,8408ea14-4ef2-4ffe-91c1-0b81de7a29c3
+,French Croissant,,,,,,,,,Yes,3.00,,,,,,0,0,,,,,,,,,,,,,,,,,,ff8947ea-2549-4a8a-88ff-a870ebe7090e
+,gezuckerte Magnolie,,,,,,,,,Yes,3.00,,,,,,0,0,,,,,,,,,,,,,,,,,,a0c505b1-057e-4d62-b55a-96efb0fb02d7
+,Vanille Toffee,,,,,,,,,Yes,3.00,,,,,,0,0,,,,,,,,,,,,,,,,,,83d2de9c-337a-4107-aa98-f05531369147
+,Grapefruit Gin Brasil,,,,,,,,,Yes,3.00,,,,,,0,0,,,,,,,,,,,,,,,,,,8be0c3a6-77c6-4efe-8a93-444203dbd690
+,Blue Hawaiian,,,,,,,,,Yes,3.00,,,,,,0,0,,,,,,,,,,,,,,,,,,2e323df4-c5cf-4859-a1ea-7438c266b23e
+,Kleines schwarzes Kleid,,,,,,,,,Yes,3.00,,,,,,0,0,,,,,,,,,,,,,,,,,,a9f3fe67-e697-42da-9b0d-b403dc037db1
+,Süße Erbse,,,,,,,,,Yes,3.00,,,,,,0,0,,,,,,,,,,,,,,,,,,43f0b453-1c0b-46a4-afe8-f2621c368f08
+,Lemongras,,,,,,,,,Yes,3.00,,,,,,0,0,,,,,,,,,,,,,,,,,,d761a25f-2c53-4aae-bece-dfbf93a87233
+,Schokolade,,,,,,,,,Yes,3.00,,,,,,0,0,,,,,,,,,,,,,,,,,,1a4f34c8-b310-4b60-a939-e4e9c510bdae
+,Honig Milch,,,,,,,,,Yes,3.00,,,,,,0,0,,,,,,,,,,,,,,,,,,a0a9ec41-0ff0-4025-9d46-dd32582c5079
+,Christmas Pudding,,,,,,,,,Yes,3.00,,,,,,0,0,,,,,,,,,,,,,,,,,,0e087ac7-d5b4-463d-9b68-703e17f33307
+,Christmas Tea,,,,,,,,,Yes,3.00,,,,,,0,0,,,,,,,,,,,,,,,,,,6f8ea756-4e07-4436-aee4-0076662fc04c
+,"Glühwein ",,,,,,,,,Yes,3.00,,,,,,0,0,,,,,,,,,,,,,,,,,,bb5ae1bf-edb0-4e25-8a81-eff30b3609e1
+,Pistazien-Pudding,,,,,,,,,Yes,3.00,,,,,,0,0,,,,,,,,,,,,,,,,,,21fb0e7c-50a8-4061-a776-2b5426ea2d59
+,Lebkuchen,,,,,,,,,Yes,3.00,,,,,,0,0,,,,,,,,,,,,,,,,,,6de96d08-12f1-4550-8268-2ecb67467e2e
+Weinglas 2 cm Btl. à 4 St.,,,,,,,,,,Yes,2.95,No,,19.00,each.each,Yes,4,0,3481 105,4036159546010,,HobbyFun,Light red,https://images.sumup.com/img_08RK0TANMS9W2R5AP3YMHNCXV7,,,,,,,Yes,Weinglas 2 cm Btl. à 4 St.,,,9f3a1442-2ced-4040-9487-c5929ac6e746,cee4fa47-5d71-47d4-b1b9-66816ba4eabf
+"Wichtel, Silikon Gießform",,,,,,,,,,Yes,11.49,No,,19.00,each.each,Yes,5,0,36122000,4006166358159,,"Rayher, Silikonformen",Light red,,,,,,,,Yes,"Wichtel, Silikon Gießform",,,9f8cca2f-6e74-4dc0-be2b-05aeb76f19be,a8446f66-2c33-4490-8a8a-53f611d11d36
+Windlicht Bisquit (Ing.S.),,,,,,,,,,Yes,10.00,No,,0.00,each.each,No,0,0,,,,Ingrid Schiffmann,Dark blue,,,,,,,,Yes,Windlicht Bisquit (Ing.S.),,,678853ac-0811-4c59-b8e0-78259b30836b,3208caa5-8082-4ed5-81ce-6603b695dfed
+Windlicht Blumenkopf (Ing.S.),,,,,,,,,,Yes,18.00,No,,0.00,each.each,No,0,0,,,,Ingrid Schiffmann,Dark blue,,,,,,,,Yes,,,,d492904b-4c05-4a6d-8ebc-f6d2e450bf81,7515fd08-d6f9-4172-84cd-99ee7e9c72ac
+"Windlicht ""Home sweet Home""",,,,,,,,,,Yes,20.00,No,,19.00,each.each,No,0,0,,,,Dienstleistungen,Pink,https://images.sumup.com/img_043NP4BS859MSVJ21VZ0PCREJ7,,,,,,,Yes,"Windlicht ""Home sweet Home""",,,ef51dbb5-d52c-41eb-9583-3cfd4e7a1c0e,2837a06b-6c5f-493c-b2ee-6b982b2349b9
+"Winterzauber, Duftkerze (M.F.)",,,,,,,,,,Yes,16.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_7XYZ10YXTW8JHR29CV0G9A9EQ7,,,,,,,Yes,,,,eddb3a73-8a08-43c7-9a40-9bcc14561e11,b4b3e7b4-001a-402b-8470-83e4a8272cde
+Winterzauber (Ing.S.),,,,,,,,,,Yes,20.00,No,,0.00,each.each,No,0,0,,,,Ingrid Schiffmann,Light red,https://images.sumup.com/img_5GPDMHKKZD9ZZR5X9M34HZNMT3,,,,,,,Yes,,,,bbbb63ec-d16c-44d3-8a10-1a15310c8dcb,83f723d8-0689-4f4a-8828-c36d281ce812
+"Wollnadeln 3er Set, flexible Ösen Aluminium,",,,,,,,,,,Yes,2.99,No,,19.00,each.each,Yes,3,0,ZUMB0013,4251260505217,,MyBoshi,Orange,,,,,,,,Yes,"Wollnadeln 3er Set, flexible Ösen Aluminium,",,,e1966bd8-5419-4ef5-93c5-636730f87be2,1caa3059-8b09-41b5-aaab-0be86f075c2c
+"Wonderland, Duftkerze (M.F.)",,,,,,,,,,Yes,25.00,No,,0.00,each.each,No,0,0,,,,Kerzen - Michelle Fischer,Light red,https://images.sumup.com/img_4EDMFH77ZD9K7VF7MXJB3MDVSD,,,,,,,Yes,,,,f19a8cec-7ae4-4bb3-a2c8-734605d41fc6,38063a1f-918b-419c-8cb2-9090509ef75a
+Zahlenaufsteller Kerze (Ing.S.),,,,,,,,,,Yes,10.00,No,,0.00,each.each,No,0,0,,,,Ingrid Schiffmann,Dark blue,,,,,,,,Yes,Zahlenaufsteller Kerze (Ing.S.),,,fc9374ae-a6c3-46c7-9fd7-589c7ff779e2,e98f6be6-100d-4800-a35d-3bc7ef38727f
+Zahlenaufsteller - Reagenzglas (Ing.S.),,,,,,,,,,Yes,12.00,No,,0.00,each.each,No,0,0,,,,Ingrid Schiffmann,Dark blue,,,,,,,,Yes,Zahlenaufsteller - Reagenzglas (Ing.S.),,,aa0d92bf-6035-447f-bf4b-8a996a8c9d3a,5e78638f-8c38-4962-b494-4eda0966722d
+"Zimtstangen, präpariert",,,,,,,,,,Yes,2.49,No,,19.00,each.each,Yes,5,0,8504400,4006166979637,"Zimtstangen, präpariert, ca. 8cm, SB-Btl 30g",Rayher,Grey,,,,,,,,Yes,,,,6290604d-d579-447e-b16f-d64251eca16d,f54562de-f123-42ef-8014-ee0b95d3687e
