@@ -3,8 +3,11 @@ package de.hinundhergestellt.jhuh;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.hinundhergestellt.jhuh.ready2order.ApiClient;
+import de.hinundhergestellt.jhuh.ready2order.EnforcingApiClient;
 import de.hinundhergestellt.jhuh.ready2order.model.ProductsIdPutRequestMixin;
 import de.hinundhergestellt.jhuh.ready2order.model.ProductsIdPutRequest;
+import de.hinundhergestellt.jhuh.ready2order.model.ProductsPostRequest;
+import de.hinundhergestellt.jhuh.ready2order.model.ProductsPostRequestMixin;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -29,6 +32,7 @@ public class HuhApplication {
     public ObjectMapper objectMapper() {
         var objectMapper = new ObjectMapper();
         objectMapper.addMixIn(ProductsIdPutRequest.class, ProductsIdPutRequestMixin.class);
+        objectMapper.addMixIn(ProductsPostRequest.class, ProductsPostRequestMixin.class);
         //objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         return objectMapper;
     }
@@ -47,7 +51,7 @@ public class HuhApplication {
 
     @Bean
     public ApiClient apiClient() {
-        var apiClient = new ApiClient(restTemplate());
+        var apiClient = new EnforcingApiClient(restTemplate());
         apiClient.setApiKey("${READY2ORDER_APIKEY}");
         return apiClient;
     }

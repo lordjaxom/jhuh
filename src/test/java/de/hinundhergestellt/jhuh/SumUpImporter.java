@@ -9,6 +9,8 @@ import de.hinundhergestellt.jhuh.sumup.SumUpArticle;
 import de.hinundhergestellt.jhuh.sumup.SumUpArticleBook;
 import de.hinundhergestellt.jhuh.sumup.SumUpVariant;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.lang.Nullable;
 
@@ -29,6 +31,8 @@ import static java.util.function.Function.identity;
 
 @SuppressWarnings("NewClassNamingConvention")
 class SumUpImporter {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SumUpImporter.class);
 
     private static final List<Category> CATEGORIES = List.of(
             new Category("Plotterfolien", null),
@@ -107,31 +111,61 @@ class SumUpImporter {
                 continue; // not imported yet
             }
 
-            var lowestPrice = article.variants().stream().map(SumUpVariant::price).min(naturalOrder());
+            LOGGER.info("Creating product {}", article.itemName());
 
+            var lowestPrice = article.variants().stream().map(SumUpVariant::price).min(naturalOrder()).orElseThrow();
             var productGroup = requireNonNull(productGroups.get(categoryName));
-            var product = products.get(article.itemName());
-            if (product == null) {
-                product = new ProductVariation(
-                        article.itemName(),
-                        ifSingleVariant(article, SumUpVariant::sku),
-                        ifSingleVariant(article, SumUpVariant::barcode),
-                        article.description(),
-                        withDefault(ifSingleVariant(article, SumUpVariant::price), BigDecimal.ZERO),
+
+            var product = new ProductVariation(
+                    article.itemName(),
+                    ifSingleVariant(article, SumUpVariant::sku),
+                    ifSingleVariant(article, SumUpVariant::barcode),
+                    article.description(),
+                    withDefault(ifSingleVariant(article, SumUpVariant::price), lowestPrice),
+                    true,
+                    article.taxRate(),
+                    article.variants().size() == 1,
+                    article.variants().size() > 1,
+                    withDefault(ifSingleVariant(article, it -> BigDecimal.valueOf(it.quantity())), BigDecimal.ZERO),
+                    ifSingleVariant(article, it -> "piece"),
+                    withDefault(ifSingleVariant(article, it -> BigDecimal.valueOf(it.lowStockThreshold())), BigDecimal.ZERO),
+                    BigDecimal.ZERO,
+                    0,
+                    true,
+                    true,
+                    null,
+                    null,
+                    productGroup.getId()
+            );
+            productClient.save(product);
+
+            if (article.variants().size() == 1) {
+                continue;
+            }
+
+            for (var variant : article.variants()) {
+                var productVariation = new ProductVariation(
+                        variant.variations(),
+                        variant.sku(),
+                        variant.barcode(),
+                        "",
+                        variant.price().subtract(lowestPrice),
                         true,
                         article.taxRate(),
-                        article.variants().size() == 1,
-                        article.variants().size() > 1,
-                        withDefault(ifSingleVariant(article, it -> BigDecimal.valueOf(it.quantity())), BigDecimal.ZERO),
-                        "pieces",
-                        BigDecimal.ZERO,
+                        true,
+                        false,
+                        BigDecimal.valueOf(variant.quantity()),
+                        "piece",
+                        BigDecimal.valueOf(variant.lowStockThreshold()),
                         BigDecimal.ZERO,
                         0,
                         true,
-                        7,
+                        true,
                         null,
+                        product.getId(),
                         productGroup.getId()
                 );
+                productClient.save(productVariation);
             }
         }
     }

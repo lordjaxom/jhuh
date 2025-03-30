@@ -20,9 +20,10 @@ public class ProductVariation {
     private ProductsGet200ResponseInner value;
 
     public ProductVariation(String name, @Nullable String itemNumber, @Nullable String barcode, @Nullable String description,
-                            BigDecimal price, boolean priceIncludesVat, BigDecimal vat, boolean stockEnabled, boolean variationsEnabled,
-                            BigDecimal stockValue, String stockUnit, BigDecimal stockReorderLevel, BigDecimal stockSafetyStock,
-                            int sortIndex, boolean active, int typeId, @Nullable Integer baseId, int productGroupId) {
+                            BigDecimal price, boolean priceIncludesVat, @Nullable BigDecimal vat, boolean stockEnabled,
+                            boolean variationsEnabled, BigDecimal stockValue, @Nullable String stockUnit, BigDecimal stockReorderLevel,
+                            BigDecimal stockSafetyStock, int sortIndex, boolean active, boolean discountable, @Nullable Integer typeId,
+                            @Nullable Integer baseId, int productGroupId) {
         value = new ProductsGet200ResponseInner();
         value.setProductName(name);
         // value.setProductExternalReference();
@@ -31,7 +32,7 @@ public class ProductVariation {
         value.setProductDescription(description);
         value.setProductPrice(price.toPlainString());
         value.setProductPriceIncludesVat(priceIncludesVat);
-        value.setProductVat(vat.toPlainString());
+        value.setProductVat(Optional.ofNullable(vat).map(BigDecimal::toPlainString).orElse(null));
 //        value.setProductCustomPrice();
 //        value.setProductCustomQuantity();
 //        value.setProductFav();
@@ -48,7 +49,7 @@ public class ProductVariation {
         value.setProductActive(active);
 //        value.setProductSoldOut();
 //        value.setProductSideDishOrder();
-//        value.setProductDiscountable();
+        value.setProductDiscountable(discountable);
 //        value.setProductAccountingCode();
 //        value.setProductColorClass();
         value.setProductTypeId(typeId);
@@ -64,6 +65,10 @@ public class ProductVariation {
     ProductVariation(ProductsGet200ResponseInner value) {
         this.value = value;
         fixUp();
+    }
+
+    public int getId() {
+        return requireNonNull(value.getProductId());
     }
 
     public String getName() {
@@ -92,11 +97,7 @@ public class ProductVariation {
     }
 
     private void fixUp() {
-        value.setProductgroupId(
-                Optional.ofNullable(value.getProductgroup())
-                        .map(ProductsGet200ResponseInnerProductgroup::getProductgroupId)
-                        .orElse(null)
-        );
+        value.setProductgroupId(requireNonNull(value.getProductgroup()).getProductgroupId());
     }
 
     private ProductsIdPutRequest toPutRequest() {
@@ -142,8 +143,8 @@ public class ProductVariation {
         request.setProductStockUnit(value.getProductStockUnit());
         request.setProductSortIndex(value.getProductSortIndex());
         request.setProductType(value.getProductType());
-        request.setProductgroup(toProductgroup());
         request.setProductBase(toProductBase());
+        request.setProductgroupId(value.getProductgroupId());
         return request;
     }
 
