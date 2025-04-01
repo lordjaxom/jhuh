@@ -8844,6 +8844,10 @@
                       }
                     },
                     "type": "object"
+                  },
+                  "product_variations_enabled": {
+                    "type": "boolean",
+                    "example": true
                   }
                 }
               }
@@ -9522,6 +9526,10 @@
                       }
                     },
                     "type": "object"
+                  },
+                  "product_variations_enabled": {
+                    "type": "boolean",
+                    "example": true
                   }
                 }
               }

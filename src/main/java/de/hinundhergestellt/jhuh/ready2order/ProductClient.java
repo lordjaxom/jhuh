@@ -33,6 +33,10 @@ public class ProductClient {
                 .toList();
     }
 
+    public ProductVariation findById(int id) {
+        return new ProductVariation(api.productsIdGet(id, true, null, null));
+    }
+
     public void save(ProductVariation product) {
         product.save(api);
     }

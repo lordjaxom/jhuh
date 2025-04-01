@@ -1,9 +1,9 @@
 package de.hinundhergestellt.jhuh;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.hinundhergestellt.jhuh.ready2order.ApiClient;
-import de.hinundhergestellt.jhuh.ready2order.EnforcingApiClient;
+import de.hinundhergestellt.jhuh.ready2order.RateLimitEnforcingApiClient;
 import de.hinundhergestellt.jhuh.ready2order.model.ProductsIdPutRequestMixin;
 import de.hinundhergestellt.jhuh.ready2order.model.ProductsIdPutRequest;
 import de.hinundhergestellt.jhuh.ready2order.model.ProductsPostRequest;
@@ -33,7 +33,7 @@ public class HuhApplication {
         var objectMapper = new ObjectMapper();
         objectMapper.addMixIn(ProductsIdPutRequest.class, ProductsIdPutRequestMixin.class);
         objectMapper.addMixIn(ProductsPostRequest.class, ProductsPostRequestMixin.class);
-        //objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        objectMapper.setSerializationInclusion(JsonInclude.Include.ALWAYS);
         return objectMapper;
     }
 
@@ -51,7 +51,7 @@ public class HuhApplication {
 
     @Bean
     public ApiClient apiClient() {
-        var apiClient = new EnforcingApiClient(restTemplate());
+        var apiClient = new RateLimitEnforcingApiClient(restTemplate());
         apiClient.setApiKey("${READY2ORDER_APIKEY}");
         return apiClient;
     }

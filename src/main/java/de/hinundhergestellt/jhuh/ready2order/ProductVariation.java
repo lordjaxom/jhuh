@@ -121,6 +121,7 @@ public class ProductVariation {
         request.setProductType(value.getProductType());
         // ProductBase cannot be modified
         request.setProductgroup(toProductgroup());
+        request.setProductVariationsEnabled(value.getProductVariationsEnabled());
         return request;
     }
 
@@ -144,7 +145,8 @@ public class ProductVariation {
         request.setProductSortIndex(value.getProductSortIndex());
         request.setProductType(value.getProductType());
         request.setProductBase(toProductBase());
-        request.setProductgroupId(value.getProductgroupId());
+        request.setProductgroup(toProductgroup());
+        request.setProductVariationsEnabled(value.getProductVariationsEnabled());
         return request;
     }
 

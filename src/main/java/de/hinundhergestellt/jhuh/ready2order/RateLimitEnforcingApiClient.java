@@ -22,9 +22,9 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public class EnforcingApiClient extends ApiClient {
+public class RateLimitEnforcingApiClient extends ApiClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EnforcingApiClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RateLimitEnforcingApiClient.class);
 
     private static final Duration RATE_LIMIT_DURATION = Duration.ofMinutes(1);
     private static final Duration RATE_LIMIT_BUFFER = Duration.ofSeconds(2);
@@ -34,7 +34,7 @@ public class EnforcingApiClient extends ApiClient {
 
     private final SortedSet<LocalDateTime> requestTimes = new TreeSet<>();
 
-    public EnforcingApiClient(RestTemplate restTemplate) {
+    public RateLimitEnforcingApiClient(RestTemplate restTemplate) {
         super(restTemplate);
     }
 
@@ -65,12 +65,17 @@ public class EnforcingApiClient extends ApiClient {
 
         LOGGER.debug("Enforce rate limit of {} calls in {}, delaying {}", RATE_LIMIT_COUNT, log(RATE_LIMIT_DURATION), log(delay));
 
+        sleep(delay);
+        enforceRateLimit();
+    }
+
+    private static void sleep(Duration delay) {
         try {
             Thread.sleep(delay);
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Interrupted enforcing rate limit", e);
         }
-        enforceRateLimit();
     }
 
     private static LogMessage log(Duration duration) {

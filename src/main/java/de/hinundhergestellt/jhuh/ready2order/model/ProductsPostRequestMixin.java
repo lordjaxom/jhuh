@@ -7,4 +7,7 @@ public abstract class ProductsPostRequestMixin {
 
     @JsonIgnore
     public abstract Integer getProductVatId();
+
+    @JsonIgnore
+    public abstract Integer getProductgroupId();
 }
