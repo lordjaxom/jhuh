@@ -3,7 +3,7 @@ package de.hinundhergestellt.jhuh;
 import de.hinundhergestellt.jhuh.ready2order.ProductClient;
 import de.hinundhergestellt.jhuh.ready2order.ProductGroup;
 import de.hinundhergestellt.jhuh.ready2order.ProductGroupClient;
-import de.hinundhergestellt.jhuh.ready2order.ProductVariation;
+import de.hinundhergestellt.jhuh.ready2order.mapping.ProductMapper;
 import de.hinundhergestellt.jhuh.sumup.SumUpArticle;
 import de.hinundhergestellt.jhuh.sumup.SumUpArticleBook;
 import de.hinundhergestellt.jhuh.sumup.SumUpVariant;
@@ -15,7 +15,6 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -25,8 +24,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static de.hinundhergestellt.jhuh.ready2order.ApiUtils.withDefault;
-import static java.util.Comparator.naturalOrder;
 import static java.util.Objects.requireNonNull;
 import static java.util.function.Function.identity;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -129,6 +126,8 @@ class SumUpImporter {
             return;
         }
 
+        var productMapper = new ProductMapper();
+
         var apiClient = application.apiClient();
         var productGroupClient = new ProductGroupClient(apiClient);
         var productClient = new ProductClient(apiClient);
@@ -146,60 +145,14 @@ class SumUpImporter {
             LOGGER.info("[{}/{}] Creating product {}", count, sumUpBook.articles().size(), article.itemName());
 
             var categoryName = CATEGORIES_MAPPING.getOrDefault(article.category(), article.category());
-            var lowestPrice = article.variants().stream().map(SumUpVariant::price).min(naturalOrder()).orElseThrow();
             var productGroup = requireNonNull(productGroups.get(categoryName));
 
-            var product = new ProductVariation(
-                    article.itemName(),
-                    ifSingleVariant(article, SumUpVariant::sku),
-                    ifSingleVariant(article, SumUpVariant::barcode),
-                    article.description(),
-                    withDefault(ifSingleVariant(article, SumUpVariant::price), lowestPrice),
-                    true,
-                    article.taxRate(),
-                    article.trackInventory() && article.variants().size() == 1,
-                    article.variants().size() > 1,
-                    withDefault(ifSingleVariant(article, it -> BigDecimal.valueOf(it.quantity())), BigDecimal.ZERO),
-                    ifSingleVariant(article, it -> "piece"),
-                    withDefault(ifSingleVariant(article, it -> BigDecimal.valueOf(it.lowStockThreshold())), BigDecimal.ZERO),
-                    BigDecimal.ZERO,
-                    0,
-                    true,
-                    true,
-                    null,
-                    null,
-                    productGroup.getId()
-            );
+            var product = productMapper.mapArticleToProduct(article, productGroup);
             productClient.save(product);
 
-            if (article.variants().size() == 1) {
-                continue;
-            }
-
-            for (var variant : article.variants()) {
-                var productVariation = new ProductVariation(
-                        withDefault(variant.variations(), "Standard"),
-                        variant.sku(),
-                        variant.barcode(),
-                        "",
-                        variant.price().subtract(lowestPrice),
-                        true,
-                        article.taxRate(),
-                        article.trackInventory(),
-                        false,
-                        BigDecimal.valueOf(variant.quantity()),
-                        "piece",
-                        BigDecimal.valueOf(variant.lowStockThreshold()),
-                        BigDecimal.ZERO,
-                        0,
-                        true,
-                        true,
-                        null,
-                        product.getId(),
-                        productGroup.getId()
-                );
-                productClient.save(productVariation);
-            }
+            productMapper
+                    .mapVariantsToProducts(article, product)
+                    .forEach(productClient::save);
         }
     }
 
@@ -221,7 +174,7 @@ class SumUpImporter {
     }
 
     private static SumUpArticleBook loadSumUpBook() throws IOException {
-        var bookPath = Path.of("/home/lordjaxom/Downloads/2025-03-30_11-12-33_items-export_MDS2FTSP.csv");
+        var bookPath = Path.of("/home/lordjaxom/Downloads/2025-05-12_14-27-54_items-export_MDS2FTSP.csv");
         try (var reader = Files.newBufferedReader(bookPath)) {
             return SumUpArticleBook.loadBook(reader);
         }
@@ -274,10 +227,6 @@ class SumUpImporter {
         articlesByCategory.forEach(it ->
                 LOGGER.warn("Category {} only has {} articles, consider combining with another category", it.getKey(),
                         it.getValue().size()));
-    }
-
-    private static <T> @Nullable T ifSingleVariant(SumUpArticle article, Function<SumUpVariant, T> getter) {
-        return article.variants().size() == 1 ? getter.apply(article.variants().getFirst()) : null;
     }
 
     private record Category(String name, @Nullable String parent) {

@@ -52,6 +52,7 @@ public class HuhApplication {
     @Bean
     public ApiClient apiClient() {
         var apiClient = new RateLimitEnforcingApiClient(restTemplate());
+        apiClient.setBasePath("https://api.ready2order.com/v1");
         apiClient.setApiKey("${READY2ORDER_APIKEY}");
         return apiClient;
     }
