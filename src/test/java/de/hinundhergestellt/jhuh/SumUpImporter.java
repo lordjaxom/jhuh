@@ -1,5 +1,6 @@
 package de.hinundhergestellt.jhuh;
 
+import de.hinundhergestellt.jhuh.ready2order.Product;
 import de.hinundhergestellt.jhuh.ready2order.ProductClient;
 import de.hinundhergestellt.jhuh.ready2order.ProductGroup;
 import de.hinundhergestellt.jhuh.ready2order.ProductGroupClient;
@@ -147,13 +148,35 @@ class SumUpImporter {
             var categoryName = CATEGORIES_MAPPING.getOrDefault(article.category(), article.category());
             var productGroup = requireNonNull(productGroups.get(categoryName));
 
-            var product = productMapper.mapArticleToProduct(article, productGroup);
-            productClient.save(product);
+            if (article.variants().size() == 1) {
+                var product = productMapper.mapArticleToProduct(article, productGroup);
+                productClient.save(product);
+                continue;
+            }
+
+            // Workaround: Since scanning barcodes of variations doesn't work, create a product group named after the article and create
+            // separate products for each variant
+
+            var articleGroup = productGroups.get(article.itemName());
+            if (articleGroup == null) {
+                articleGroup = productMapper.mapArticleToProductGroup(article, productGroup);
+                productGroupClient.save(articleGroup);
+                productGroups.put(article.itemName(), articleGroup);
+            }
 
             productMapper
-                    .mapVariantsToProducts(article, product)
+                    .mapVariantsToProducts(article, articleGroup)
                     .forEach(productClient::save);
         }
+    }
+
+    @Test
+    void findProductTypeForVariation() {
+        var apiClient = application.apiClient();
+        var productClient = new ProductClient(apiClient);
+
+        var products = productClient.findAll();
+        LOGGER.info("Typ ist {}", products.get(0).getTypeId());
     }
 
     @Test

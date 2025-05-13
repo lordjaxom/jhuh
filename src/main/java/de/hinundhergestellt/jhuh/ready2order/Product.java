@@ -21,7 +21,7 @@ public class Product {
     public Product(String name, @Nullable String itemNumber, @Nullable String barcode, @Nullable String description,
                    BigDecimal price, boolean priceIncludesVat, @Nullable BigDecimal vat, boolean stockEnabled,
                    boolean variationsEnabled, BigDecimal stockValue, @Nullable String stockUnit, BigDecimal stockReorderLevel,
-                   BigDecimal stockSafetyStock, int sortIndex, boolean active, boolean discountable, @Nullable Integer typeId,
+                   BigDecimal stockSafetyStock, int sortIndex, boolean active, boolean discountable, @Nullable String type,
                    @Nullable Integer baseId, int productGroupId) {
         value = new ProductsGet200ResponseInner();
         value.setProductName(name);
@@ -51,8 +51,8 @@ public class Product {
         value.setProductDiscountable(discountable);
 //        value.setProductAccountingCode();
 //        value.setProductColorClass();
-        value.setProductTypeId(typeId);
-//        value.setProductType();
+//        value.setProductTypeId(typeId);
+        value.setProductType(type);
 //        value.setProductCreatedAt();
 //        value.setProductUpdatedAt();
 //        value.setProductAlternativeNameOnReceipts();
@@ -84,6 +84,10 @@ public class Product {
 
     public int getProductGroupId() {
         return requireNonNull(value.getProductgroupId());
+    }
+
+    public int getTypeId() {
+        return requireNonNull(value.getProductTypeId());
     }
 
     void save(ProductApi api) {

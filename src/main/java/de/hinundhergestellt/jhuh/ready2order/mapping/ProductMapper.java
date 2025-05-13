@@ -5,11 +5,13 @@ import de.hinundhergestellt.jhuh.ready2order.ProductGroup;
 import de.hinundhergestellt.jhuh.sumup.SumUpArticle;
 import de.hinundhergestellt.jhuh.sumup.SumUpVariant;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Comparator.naturalOrder;
@@ -17,7 +19,23 @@ import static java.util.Comparator.naturalOrder;
 @Component
 public class ProductMapper {
 
+    public ProductGroup mapArticleToProductGroup(SumUpArticle article, ProductGroup productGroup) {
+        Assert.isTrue(article.variants().size() > 1, "Article must have more than one variant.");
+
+        return new ProductGroup(
+                article.itemName(),
+                article.description(),
+                "",
+                true,
+                productGroup.getId(),
+                0,
+                3
+        );
+    }
+
     public Product mapArticleToProduct(SumUpArticle article, ProductGroup productGroup) {
+        Assert.isTrue(article.variants().size() == 1, "Article must have exactly one variant.");
+
         return new Product(
                 article.itemName(),
                 ofSingleVariant(article, SumUpVariant::sku).orElse(null),
@@ -65,6 +83,30 @@ public class ProductMapper {
         );
     }
 
+    public Product mapVariantToProduct(SumUpArticle article, SumUpVariant variant, ProductGroup articleGroup) {
+        return new Product(
+                Stream.of(article.itemName(), variant.variations()).filter(StringUtils::hasText).collect(Collectors.joining(" ")),
+                variant.sku(),
+                variant.barcode(),
+                article.description(),
+                variant.price(),
+                true,
+                article.taxRate(),
+                article.trackInventory(),
+                false,
+                BigDecimal.valueOf(variant.quantity()),
+                "piece",
+                BigDecimal.valueOf(variant.lowStockThreshold()),
+                BigDecimal.ZERO,
+                0,
+                true,
+                true,
+                "standard",
+                null,
+                articleGroup.getId()
+        );
+    }
+
     public Stream<Product> mapVariantsToProducts(SumUpArticle article, Product base) {
         if (article.variants().size() == 1) {
             return Stream.empty();
@@ -72,6 +114,12 @@ public class ProductMapper {
 
         return article.variants().stream()
                 .map(it -> mapVariantToProduct(article, it, base));
+    }
+
+    public Stream<Product> mapVariantsToProducts(SumUpArticle article, ProductGroup articleGroup) {
+        Assert.isTrue(article.variants().size() > 1, "Article must have more than one variant.");
+
+        return article.variants().stream().map(it -> mapVariantToProduct(article, it, articleGroup));
     }
 
     private static BigDecimal findLowestPrice(SumUpArticle article) {
