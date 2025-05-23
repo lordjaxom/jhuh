@@ -1,4 +1,4 @@
-package de.hinundhergestellt.jhuh;
+package de.hinundhergestellt.jhuh.importers;
 
 import com.google.common.collect.ImmutableMap;
 import de.hinundhergestellt.jhuh.ready2order.ApiClient;
@@ -9,11 +9,13 @@ import de.hinundhergestellt.jhuh.ready2order.mapping.ProductMapper;
 import de.hinundhergestellt.jhuh.sumup.SumUpArticle;
 import de.hinundhergestellt.jhuh.sumup.SumUpArticleBook;
 import de.hinundhergestellt.jhuh.sumup.SumUpVariant;
-import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
@@ -30,10 +32,10 @@ import java.util.stream.Stream;
 import static java.util.Objects.requireNonNull;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.joining;
-import static org.assertj.core.api.Assertions.assertThat;
 
-@SuppressWarnings("NewClassNamingConvention")
-class SumUpImporter {
+@Component
+@Profile("import-sumup")
+public class SumUpImporter implements ApplicationRunner {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SumUpImporter.class);
 
@@ -121,11 +123,19 @@ class SumUpImporter {
 
             .build();
 
-    private final HuhApplication application = new HuhApplication(new RestTemplateBuilder());
-    private final ApiClient apiClient = application.ready2orderApiClient();
+    private final ApiClient apiClient;
 
-    @Test
-    void prepareCategories() {
+    public SumUpImporter(ApiClient apiClient) {
+        this.apiClient = apiClient;
+    }
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        prepareCategories();
+        importSumUp();
+    }
+
+    private void prepareCategories() {
         var productGroupClient = new ProductGroupClient(apiClient);
         var productGroups = productGroupClient.findAllMappedByPath();
 
@@ -144,8 +154,7 @@ class SumUpImporter {
         }
     }
 
-    @Test
-    void importSumUp() throws IOException {
+    private void importSumUp() throws IOException {
         var sumUpBook = loadSumUpBook();
         if (!verifySumUpBook(sumUpBook)) {
             return;
@@ -189,47 +198,6 @@ class SumUpImporter {
         }
     }
 
-    @Test
-    void prepareCategoriesAndImportSumUp() throws IOException {
-        prepareCategories();
-        importSumUp();
-    }
-
-    @Test
-    void countWolle() throws IOException {
-        var sumUpBook = loadSumUpBook();
-        var collected = sumUpBook.articles().stream()
-                .filter(it -> it.category().equals("MyBoshi") || it.category().equals("Gründl"))
-                .count();
-        System.out.println(collected);
-    }
-
-    @Test
-    void findProductTypeForVariation() {
-        var apiClient = application.ready2orderApiClient();
-        var productClient = new ProductClient(apiClient);
-
-        var products = productClient.findAll();
-        LOGGER.info("Typ ist {}", products.get(0).getTypeId());
-    }
-
-    @Test
-    void removeItemNumberFromProduct() {
-        var apiClient = application.ready2orderApiClient();
-        var productClient = new ProductClient(apiClient);
-
-        var products = productClient.findAll();
-
-        var product = products.stream()
-                .filter(it -> it.getItemNumber().isPresent())
-                .findFirst()
-                .orElseThrow();
-        product.setItemNumber(null);
-        productClient.save(product);
-
-        assertThat(productClient.findById(product.getId()).getItemNumber()).isNotPresent();
-    }
-
     private static SumUpArticleBook loadSumUpBook() throws IOException {
         var bookPath = Path.of("/home/lordjaxom/Downloads/2025-05-23_14-41-23_items-export_MDS2FTSP.csv");
         try (var reader = Files.newBufferedReader(bookPath)) {
@@ -237,7 +205,7 @@ class SumUpImporter {
         }
     }
 
-    private boolean verifySumUpBook(SumUpArticleBook book) {
+    private static boolean verifySumUpBook(SumUpArticleBook book) {
         long errors = 0;
         errors += checkSumUpBookForDuplicates(book, "SKU", ArticleVariant::sku);
         errors += checkSumUpBookForDuplicates(book, "Barcode", ArticleVariant::barcode);
@@ -252,7 +220,7 @@ class SumUpImporter {
         return errors == 0;
     }
 
-    private long checkSumUpBookForDuplicates(SumUpArticleBook book, String name, Function<ArticleVariant, String> getter) {
+    private static long checkSumUpBookForDuplicates(SumUpArticleBook book, String name, Function<ArticleVariant, String> getter) {
         var duplicates = book.articles().stream()
                 .flatMap(article -> article.variants().stream()
                         .map(variant -> new ArticleVariant(article, variant)))
@@ -266,7 +234,7 @@ class SumUpImporter {
         return duplicates.size();
     }
 
-    private long checkSumUpBookForMissingCategories(SumUpArticleBook book) {
+    private static long checkSumUpBookForMissingCategories(SumUpArticleBook book) {
         var missing = book.articles().stream()
                 .map(SumUpArticle::category)
                 .map(it -> CATEGORIES_MAPPING.getOrDefault(it, it))
@@ -289,7 +257,7 @@ class SumUpImporter {
                 .sum();
     }
 
-    private long checkSumUpBookForNegativeInventory(SumUpArticleBook book) {
+    private static long checkSumUpBookForNegativeInventory(SumUpArticleBook book) {
         var negative = book.articles().stream()
                 .flatMap(article -> article.variants().stream()
                         .map(variant -> new ArticleVariant(article, variant)))
@@ -300,7 +268,7 @@ class SumUpImporter {
         return negative.size();
     }
 
-    private void checkSumUpBookForTinyCategories(SumUpArticleBook book) {
+    private static void checkSumUpBookForTinyCategories(SumUpArticleBook book) {
         var articlesByCategory = book.articles().stream()
                 .collect(Collectors.groupingBy(it -> CATEGORIES_MAPPING.getOrDefault(it.category(), it.category())))
                 .entrySet().stream()

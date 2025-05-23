@@ -10,8 +10,11 @@ import de.hinundhergestellt.jhuh.ready2order.model.ProductsIdPutRequestMixin;
 import de.hinundhergestellt.jhuh.ready2order.model.ProductsIdPutRequest;
 import de.hinundhergestellt.jhuh.ready2order.model.ProductsPostRequest;
 import de.hinundhergestellt.jhuh.ready2order.model.ProductsPostRequestMixin;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpEntity;
@@ -20,52 +23,37 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
+
 @SpringBootApplication
 public class HuhApplication {
 
-    private final RestTemplateBuilder restTemplateBuilder;
-
     public static void main(String[] args) {
-        SpringApplication.run(HuhApplication.class, args);
-    }
-
-    public HuhApplication(RestTemplateBuilder restTemplateBuilder) {
-        this.restTemplateBuilder = restTemplateBuilder;
+        new SpringApplicationBuilder(HuhApplication.class)
+                .web(WebApplicationType.NONE)
+                .run(args);
     }
 
     @Bean
-    public ObjectMapper objectMapper() {
+    public ApiClient ready2orderApiClient(@Value("${ready2order.apikey}") String apikey) {
         var objectMapper = new ObjectMapper();
         objectMapper.addMixIn(ProductsIdPutRequest.class, ProductsIdPutRequestMixin.class);
         objectMapper.addMixIn(ProductsPostRequest.class, ProductsPostRequestMixin.class);
         objectMapper.setSerializationInclusion(JsonInclude.Include.ALWAYS);
-        return objectMapper;
-    }
 
-    @Bean
-    public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter() {
-        return new MappingJackson2HttpMessageConverter(objectMapper());
-    }
+        var messageConverter = new MappingJackson2HttpMessageConverter(objectMapper);
+        var restTemplate = new RestTemplate(List.of(messageConverter));
 
-    @Bean
-    public RestTemplate restTemplate() {
-        return restTemplateBuilder
-                .messageConverters(mappingJackson2HttpMessageConverter())
-                .build();
-    }
-
-    @Bean
-    public ApiClient ready2orderApiClient() {
-        var apiClient = new RateLimitEnforcingApiClient(restTemplate());
+        var apiClient = new RateLimitEnforcingApiClient(restTemplate);
         apiClient.setBasePath("https://api.ready2order.com/v1");
-        apiClient.setApiKey("${READY2ORDER_APIKEY}");
+        apiClient.setApiKey(apikey);
         return apiClient;
     }
 
     @Bean
-    public GraphQLClient shopifyApiClient() {
-        var baseUrl = "https://${SHOPIFY_DOMAIN}.myshopify.com/admin/api/2025-04/graphql.json";
-        var token = "${SHOPIFY_TOKEN}";
+    public GraphQLClient shopifyApiClient(@Value("${shopify.domain}") String domain,
+                                          @Value("${shopify.token}") String token) {
+        var baseUrl = "https://" + domain + ".myshopify.com/admin/api/2025-04/graphql.json";
         var restTemplate = new RestTemplate();
         return GraphQLClient.createCustom(baseUrl, (url, headers, body) -> {
             var httpHeaders = new HttpHeaders();

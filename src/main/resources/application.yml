@@ -1,0 +1,6 @@
+ready2order:
+  apikey: ${READY2ORDER_APIKEY}
+
+shopify:
+  domain: ${SHOPIFY_DOMAIN}
+  token: ${SHOPIFY_TOKEN}

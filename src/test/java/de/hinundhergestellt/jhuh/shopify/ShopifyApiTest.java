@@ -2,22 +2,18 @@ package de.hinundhergestellt.jhuh.shopify;
 
 import com.netflix.graphql.dgs.client.GraphQLClient;
 import com.netflix.graphql.dgs.client.codegen.GraphQLQueryRequest;
-import com.shopify.admin.client.InventoryItemProjection;
-import com.shopify.admin.client.PageInfoProjection;
-import com.shopify.admin.client.ProductEdgeProjection;
-import com.shopify.admin.client.ProductProjection;
-import com.shopify.admin.client.ProductVariantConnectionProjection;
-import com.shopify.admin.client.ProductVariantEdgeProjection;
-import com.shopify.admin.client.ProductVariantProjection;
 import com.shopify.admin.client.ProductsGraphQLQuery;
 import com.shopify.admin.client.ProductsProjectionRoot;
 import de.hinundhergestellt.jhuh.HuhApplication;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
+@SpringBootTest(classes = HuhApplication.class)
 class ShopifyApiTest {
 
-    private final HuhApplication application = new HuhApplication(new RestTemplateBuilder());
+    @Autowired
+    private GraphQLClient shopifyApiClient;
 
     @Test
     void getProducts() {
@@ -56,9 +52,8 @@ class ShopifyApiTest {
         GraphQLQueryRequest request = new GraphQLQueryRequest(query, root);
         System.out.println(request.serialize());
 
-        var client = application.shopifyApiClient();
-        var response = client.executeQuery(request.serialize());
-        System.out.println(response.toString());
+        var response = shopifyApiClient.executeQuery(request.serialize());
+        System.out.println(response);
     }
 }
 
