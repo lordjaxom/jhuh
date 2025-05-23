@@ -1,6 +1,7 @@
 package de.hinundhergestellt.jhuh;
 
-import de.hinundhergestellt.jhuh.ready2order.Product;
+import com.google.common.collect.ImmutableMap;
+import de.hinundhergestellt.jhuh.ready2order.ApiClient;
 import de.hinundhergestellt.jhuh.ready2order.ProductClient;
 import de.hinundhergestellt.jhuh.ready2order.ProductGroup;
 import de.hinundhergestellt.jhuh.ready2order.ProductGroupClient;
@@ -20,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -27,6 +29,7 @@ import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SuppressWarnings("NewClassNamingConvention")
@@ -35,20 +38,17 @@ class SumUpImporter {
     private static final Logger LOGGER = LoggerFactory.getLogger(SumUpImporter.class);
 
     private static final List<Category> CATEGORIES = List.of(
-            new Category("Plotterfolien", null),
-            new Category("Vinylfolien", "Plotterfolien"),
+            new Category("Plotten", null),
+            new Category("Vinylfolien", "Plotten"),
             new Category("Vinylfolien Standard", "Vinylfolien"),
-            new Category("Vinylfolien Bunt", "Vinylfolien"),
-            new Category("Vinylfolien Glitzer", "Vinylfolien"),
-            new Category("Vinylfolien Glasdekor", "Vinylfolien"),
-            new Category("Flexfolien", "Plotterfolien"),
+            new Category("Vinylfolien Spezial", "Vinylfolien"),
+            new Category("Flexfolien", "Plotten"),
             new Category("Flexfolien Standard", "Flexfolien"),
-            new Category("Flexfolien Glitter", "Flexfolien"),
             new Category("Flexfolien Spezial", "Flexfolien"),
-            new Category("Flockfolien", "Plotterfolien"),
+            new Category("Flockfolien", "Plotten"),
+            new Category("Zubehör", "Plotten"),
 
             new Category("Mietfächer", null),
-            new Category("Simone Friedhoff", "Mietfächer"),
             new Category("Ingrid Schiffmann", "Mietfächer"),
             new Category("Yvonne Schwarz", "Mietfächer"),
             new Category("Michelle Fischer", "Mietfächer"),
@@ -65,57 +65,81 @@ class SumUpImporter {
             new Category("HobbyFun", "Bastelmaterial"),
             new Category("Creartec", "Bastelmaterial"),
             new Category("Sublimation", "Bastelmaterial"),
-            new Category("Sublimation Tassen Gläser Flaschen", "Sublimation"),
-            new Category("Sublimation Sonstiges", "Sublimation"),
+            new Category("Papier", "Bastelmaterial"),
+            new Category("Diverses", "Bastelmaterial"),
 
-            // TODO
-            new Category("3D-Druck", null),
-            new Category("Klötzchen", null),
-            new Category("Dienstleistungen", null),
-            new Category("Marktstand", null),
-            new Category("Diverses", null),
-            new Category("Papier", null),
-            new Category("Holz", null),
-            new Category("Moni", null),
-            new Category("Verpackungen", null),
-            new Category("Silhouette", null)
+            new Category("Anfertigungen", null),
+            new Category("Holz", "Anfertigungen"),
+            new Category("Dienstleistungen", "Anfertigungen"),
+            new Category("Diverses", "Anfertigungen"),
+
+            new Category("Verpackungen", null)
     );
 
-    private static final Map<String, Category> CATEGORIES_BY_NAME =
-            CATEGORIES.stream().collect(Collectors.toMap(Category::name, identity()));
+    private static final Map<String, Category> CATEGORIES_BY_PATH = CATEGORIES.stream()
+            .collect(Collectors.toMap(
+                    it -> it.path(CATEGORIES),
+                    identity()
+            ));
 
-    private static final Map<String, String> CATEGORIES_MAPPING = Map.of(
-            "Flexfolien", "Flexfolien Standard",
-            "Vinylfolien Uni", "Vinylfolien Standard",
-            "Vinylfolie Glasdekor", "Vinylfolien Glasdekor",
-            "Flexfolien spezial", "Flexfolien Spezial",
-            "MyBoshi", "myboshi",
-            "Kerzen - Michelle Fischer", "Michelle Fischer",
-            "Rayher", "Rayher Sonstiges",
-            "Rayher, Silikonformen", "Rayher Silikonformen",
-            "Subli Tassen, Gläser, Flaschen", "Sublimation Tassen Gläser Flaschen",
-            "Subli Sonstiges", "Sublimation Sonstiges"
-    );
+    private static final Map<String, String> CATEGORIES_MAPPING = ImmutableMap.<String, String>builder()
+            .put("Flexfolien", "Plotten/Flexfolien/Flexfolien Standard")
+            .put("Flexfolien Glitter", "Plotten/Flexfolien/Flexfolien Spezial")
+            .put("Flexfolien spezial", "Plotten/Flexfolien/Flexfolien Spezial")
+            .put("Vinylfolien Uni", "Plotten/Vinylfolien/Vinylfolien Standard")
+            .put("Vinylfolie Glasdekor", "Plotten/Vinylfolien/Vinylfolien Spezial")
+            .put("Vinylfolien Bunt", "Plotten/Vinylfolien/Vinylfolien Spezial")
+            .put("Vinylfolien Glitzer", "Plotten/Vinylfolien/Vinylfolien Spezial")
+            .put("Flockfolien", "Plotten/Flockfolien")
+            .put("Silhouette", "Plotten/Zubehör")
+
+            .put("Ingrid Schiffmann", "Mietfächer/Ingrid Schiffmann")
+            .put("Yvonne Schwarz", "Mietfächer/Yvonne Schwarz")
+            .put("Kerzen - Michelle Fischer", "Mietfächer/Michelle Fischer")
+
+            .put("MyBoshi", "Häkeln und Stricken/myboshi")
+            .put("Gründl", "Häkeln und Stricken/Gründl")
+            .put("Rico Design", "Häkeln und Stricken/Rico Design")
+
+            .put("Rayher, Silikonformen", "Bastelmaterial/Rayher/Rayher Silikonformen")
+            .put("Rayher", "Bastelmaterial/Rayher/Rayher Sonstiges")
+            .put("HobbyFun", "Bastelmaterial/HobbyFun")
+            .put("Creartec", "Bastelmaterial/Creartec")
+            .put("Subli Sonstiges", "Bastelmaterial/Sublimation")
+            .put("Subli Tassen, Gläser, Flaschen", "Bastelmaterial/Sublimation")
+            .put("Papier", "Bastelmaterial/Papier")
+            .put("Klötzchen", "Bastelmaterial/Diverses")
+            .put("Diverses", "Bastelmaterial/Diverses")
+
+            .put("Holz", "Anfertigungen/Holz")
+            .put("Dienstleistungen", "Anfertigungen/Dienstleistungen")
+            .put("3D-Druck", "Anfertigungen/Diverses")
+            .put("Marktstand", "Anfertigungen/Diverses")
+            .put("Moni", "Anfertigungen/Diverses")
+
+            .put("Verpackungen", "Verpackungen")
+
+            .build();
 
     private final HuhApplication application = new HuhApplication(new RestTemplateBuilder());
+    private final ApiClient apiClient = application.ready2orderApiClient();
 
     @Test
     void prepareCategories() {
-        var apiClient = application.apiClient();
         var productGroupClient = new ProductGroupClient(apiClient);
-        var productGroups = productGroupClient.findAll().stream()
-                .collect(Collectors.toMap(
-                        ProductGroup::getName,
-                        identity()
-                ));
+        var productGroups = productGroupClient.findAllMappedByPath();
 
         for (var category : CATEGORIES) {
-            var productGroup = productGroups.get(category.name());
+            var path = category.path(CATEGORIES);
+            var productGroup = productGroups.get(path);
             if (productGroup == null) {
-                var parent = Optional.ofNullable(category.parent()).map(productGroups::get).map(ProductGroup::getId).orElse(null);
+                var parent = Optional.ofNullable(category.parentPath(CATEGORIES))
+                        .map(productGroups::get)
+                        .map(ProductGroup::getId)
+                        .orElse(null);
                 productGroup = new ProductGroup(category.name(), "", "", true, parent, 0, 7);
                 productGroupClient.save(productGroup);
-                productGroups.put(category.name(), productGroup);
+                productGroups.put(path, productGroup);
             }
         }
     }
@@ -129,15 +153,10 @@ class SumUpImporter {
 
         var productMapper = new ProductMapper();
 
-        var apiClient = application.apiClient();
         var productGroupClient = new ProductGroupClient(apiClient);
         var productClient = new ProductClient(apiClient);
 
-        var productGroups = productGroupClient.findAll().stream()
-                .collect(Collectors.toMap(
-                        ProductGroup::getName,
-                        identity()
-                ));
+        var productGroups = productGroupClient.findAllMappedByPath();
 
         long count = 0;
         for (var article : sumUpBook.articles()) {
@@ -171,8 +190,23 @@ class SumUpImporter {
     }
 
     @Test
+    void prepareCategoriesAndImportSumUp() throws IOException {
+        prepareCategories();
+        importSumUp();
+    }
+
+    @Test
+    void countWolle() throws IOException {
+        var sumUpBook = loadSumUpBook();
+        var collected = sumUpBook.articles().stream()
+                .filter(it -> it.category().equals("MyBoshi") || it.category().equals("Gründl"))
+                .count();
+        System.out.println(collected);
+    }
+
+    @Test
     void findProductTypeForVariation() {
-        var apiClient = application.apiClient();
+        var apiClient = application.ready2orderApiClient();
         var productClient = new ProductClient(apiClient);
 
         var products = productClient.findAll();
@@ -181,7 +215,7 @@ class SumUpImporter {
 
     @Test
     void removeItemNumberFromProduct() {
-        var apiClient = application.apiClient();
+        var apiClient = application.ready2orderApiClient();
         var productClient = new ProductClient(apiClient);
 
         var products = productClient.findAll();
@@ -197,7 +231,7 @@ class SumUpImporter {
     }
 
     private static SumUpArticleBook loadSumUpBook() throws IOException {
-        var bookPath = Path.of("/home/lordjaxom/Downloads/2025-05-12_14-27-54_items-export_MDS2FTSP.csv");
+        var bookPath = Path.of("/home/lordjaxom/Downloads/2025-05-23_14-41-23_items-export_MDS2FTSP.csv");
         try (var reader = Files.newBufferedReader(bookPath)) {
             return SumUpArticleBook.loadBook(reader);
         }
@@ -207,7 +241,9 @@ class SumUpImporter {
         long errors = 0;
         errors += checkSumUpBookForDuplicates(book, "SKU", ArticleVariant::sku);
         errors += checkSumUpBookForDuplicates(book, "Barcode", ArticleVariant::barcode);
+        // errors += checkSumUpBookForMissingBarcodes(book);
         errors += checkSumUpBookForMissingCategories(book);
+        checkSumUpBookForNegativeInventory(book);
 
         if (errors == 0) {
             checkSumUpBookForTinyCategories(book);
@@ -235,10 +271,33 @@ class SumUpImporter {
                 .map(SumUpArticle::category)
                 .map(it -> CATEGORIES_MAPPING.getOrDefault(it, it))
                 .distinct()
-                .filter(it -> !CATEGORIES_BY_NAME.containsKey(it))
+                .filter(it -> !CATEGORIES_BY_PATH.containsKey(it))
                 .toList();
         missing.forEach(it -> LOGGER.error("Missing category {}", it));
         return missing.size();
+    }
+
+    private long checkSumUpBookForMissingBarcodes(SumUpArticleBook book) {
+        return book.articles().stream()
+                .mapToLong(it -> {
+                    var missing = it.variants().stream()
+                            .filter(variant -> !StringUtils.hasLength(variant.barcode()))
+                            .toList();
+                    missing.forEach(variant -> LOGGER.error("Missing barcode for {} {}", it.itemName(), variant.variations()));
+                    return missing.size();
+                })
+                .sum();
+    }
+
+    private long checkSumUpBookForNegativeInventory(SumUpArticleBook book) {
+        var negative = book.articles().stream()
+                .flatMap(article -> article.variants().stream()
+                        .map(variant -> new ArticleVariant(article, variant)))
+                .filter(it -> it.variant.quantity() < 0)
+                .toList();
+        negative.forEach(it -> LOGGER.error("Negative quantity {} in {} {}", it.variant.quantity(), it.article.itemName(),
+                it.variant.variations()));
+        return negative.size();
     }
 
     private void checkSumUpBookForTinyCategories(SumUpArticleBook book) {
@@ -253,6 +312,22 @@ class SumUpImporter {
     }
 
     private record Category(String name, @Nullable String parent) {
+
+        public String path(List<Category> categories) {
+            return Stream.of(parentPath(categories), name)
+                    .filter(Objects::nonNull)
+                    .collect(joining("/"));
+        }
+
+        public @Nullable String parentPath(List<Category> categories) {
+            return Optional.ofNullable(parent)
+                    .flatMap(it -> categories.stream()
+                            .filter(category -> category.name.equals(it))
+                            .map(category -> category.path(categories))
+                            .findFirst()
+                    )
+                    .orElse(null);
+        }
     }
 
     private record ArticleVariant(SumUpArticle article, SumUpVariant variant) {
@@ -269,7 +344,7 @@ class SumUpImporter {
         public String toString() {
             return Stream.of(article.itemName(), variant.variations())
                     .filter(StringUtils::hasLength)
-                    .collect(Collectors.joining(" "));
+                    .collect(joining(" "));
         }
     }
 }

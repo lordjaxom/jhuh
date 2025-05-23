@@ -82,6 +82,10 @@ public class Product {
         value.setProductItemnumber(itemNumber);
     }
 
+    public Optional<String> getBarcode() {
+        return Optional.ofNullable(value.getProductBarcode());
+    }
+
     public int getProductGroupId() {
         return requireNonNull(value.getProductgroupId());
     }

@@ -39,6 +39,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>com.opencsv</groupId>
@@ -49,6 +53,16 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>33.4.6-jre</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.mores</groupId>
+            <artifactId>java-shopify-graphql-admin</artifactId>
+            <version>2025.04.001</version>
+        </dependency>
+        <dependency>
+            <groupId>com.netflix.graphql.dgs</groupId>
+            <artifactId>graphql-dgs-client</artifactId>
+            <version>10.0.1</version>
         </dependency>
 
         <dependency>

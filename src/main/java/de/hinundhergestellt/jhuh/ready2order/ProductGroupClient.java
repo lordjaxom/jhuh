@@ -4,6 +4,10 @@ import de.hinundhergestellt.jhuh.ready2order.api.ProductGroupApi;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static java.util.function.Function.identity;
 
 @Component
 public class ProductGroupClient {
@@ -18,6 +22,15 @@ public class ProductGroupClient {
         return api.productgroupsGet(null, null).stream()
                 .map(ProductGroup::new)
                 .toList();
+    }
+
+    public Map<String, ProductGroup> findAllMappedByPath() {
+        var productGroups = findAll();
+        return productGroups.stream()
+                .collect(Collectors.toMap(
+                        it -> it.getPath(productGroups),
+                        identity()
+                ));
     }
 
     public void save(ProductGroup productGroup) {

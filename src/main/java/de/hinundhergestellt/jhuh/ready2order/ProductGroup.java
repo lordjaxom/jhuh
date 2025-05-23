@@ -5,6 +5,12 @@ import de.hinundhergestellt.jhuh.ready2order.model.ProductgroupsGet200ResponseIn
 import de.hinundhergestellt.jhuh.ready2order.model.ProductgroupsPostRequest;
 import org.springframework.lang.Nullable;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static java.util.Objects.requireNonNull;
 
 public class ProductGroup {
@@ -33,6 +39,22 @@ public class ProductGroup {
 
     public String getName() {
         return requireNonNull(value.getProductgroupName());
+    }
+
+    public String getPath(List<ProductGroup> productGroups) {
+        return Stream.of(getParentPath(productGroups), getName())
+                .filter(Objects::nonNull)
+                .collect(Collectors.joining("/"));
+    }
+
+    public @Nullable String getParentPath(List<ProductGroup> productGroups) {
+        return Optional.ofNullable(value.getProductgroupParent())
+                .flatMap(it -> productGroups.stream()
+                        .filter(group -> group.getId() == it)
+                        .map(group -> group.getPath(productGroups))
+                        .findFirst()
+                )
+                .orElse(null);
     }
 
     void save(ProductGroupApi api) {

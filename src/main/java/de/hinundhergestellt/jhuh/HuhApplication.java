@@ -2,6 +2,8 @@ package de.hinundhergestellt.jhuh;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.netflix.graphql.dgs.client.GraphQLClient;
+import com.netflix.graphql.dgs.client.HttpResponse;
 import de.hinundhergestellt.jhuh.ready2order.ApiClient;
 import de.hinundhergestellt.jhuh.ready2order.RateLimitEnforcingApiClient;
 import de.hinundhergestellt.jhuh.ready2order.model.ProductsIdPutRequestMixin;
@@ -12,6 +14,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
@@ -50,10 +55,27 @@ public class HuhApplication {
     }
 
     @Bean
-    public ApiClient apiClient() {
+    public ApiClient ready2orderApiClient() {
         var apiClient = new RateLimitEnforcingApiClient(restTemplate());
         apiClient.setBasePath("https://api.ready2order.com/v1");
         apiClient.setApiKey("${READY2ORDER_APIKEY}");
         return apiClient;
+    }
+
+    @Bean
+    public GraphQLClient shopifyApiClient() {
+        var baseUrl = "https://${SHOPIFY_DOMAIN}.myshopify.com/admin/api/2025-04/graphql.json";
+        var token = "${SHOPIFY_TOKEN}";
+        var restTemplate = new RestTemplate();
+        return GraphQLClient.createCustom(baseUrl, (url, headers, body) -> {
+            var httpHeaders = new HttpHeaders();
+            //httpHeaders.putAll(headers);
+            headers.forEach(httpHeaders::addAll);
+            httpHeaders.add("X-Shopify-Access-Token", token);
+
+            System.out.println("Query: " + body);
+            var response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(body, httpHeaders), String.class);
+            return new HttpResponse(response.getStatusCode().value(), response.getBody());
+        });
     }
 }
