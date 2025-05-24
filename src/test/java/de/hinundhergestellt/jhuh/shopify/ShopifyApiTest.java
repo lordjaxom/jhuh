@@ -1,59 +1,38 @@
 package de.hinundhergestellt.jhuh.shopify;
 
-import com.netflix.graphql.dgs.client.GraphQLClient;
-import com.netflix.graphql.dgs.client.codegen.GraphQLQueryRequest;
-import com.shopify.admin.client.ProductsGraphQLQuery;
-import com.shopify.admin.client.ProductsProjectionRoot;
+import com.shopify.admin.types.Product;
 import de.hinundhergestellt.jhuh.HuhApplication;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.List;
 
 @SpringBootTest(classes = HuhApplication.class)
 class ShopifyApiTest {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ShopifyApiTest.class);
+
     @Autowired
-    private GraphQLClient shopifyApiClient;
+    private ShopifyProductClient productClient;
 
     @Test
-    void getProducts() {
-        var query = ProductsGraphQLQuery.newRequest()
-                .first(250)
-                .build();
+    void getsAllProducts() {
+        productClient.findAll().forEach(it -> LOGGER.info("Product: {}", it.getTitle()));
+    }
 
-        var root = new ProductsProjectionRoot<>();
-        var edgeProjection = root.edges();
-        var productProjection = edgeProjection.node();
-
-        productProjection.handle();
-        productProjection.id();
-        productProjection.status();
-        productProjection.tags();
-
-        var variantConnectionProjection = productProjection.variants(10, null, null,
-                null, null, null);
-        var vEdgeProjection = variantConnectionProjection.edges();
-        var variantProjection = vEdgeProjection.node();
-        variantProjection.barcode();
-        variantProjection.compareAtPrice();
-        variantProjection.id();
-        var inventoryItemProjection = variantProjection.inventoryItem();
-        inventoryItemProjection.id();
-        variantProjection.price();
-        variantProjection.sku();
-
-        productProjection.vendor();
-
-        var pageInfoProjection = root.pageInfo();
-        pageInfoProjection.endCursor();
-        pageInfoProjection.hasNextPage();
-        pageInfoProjection.startCursor();
-
-        GraphQLQueryRequest request = new GraphQLQueryRequest(query, root);
-        System.out.println(request.serialize());
-
-        var response = shopifyApiClient.executeQuery(request.serialize());
-        System.out.println(response);
+    @Test
+    void createsNewProduct() {
+        var product = new Product();
+        product.setTitle("New Product");
+        product.setDescription("New Description");
+        product.setVendor("ACME");
+        product.setProductType("Wolle");
+        product.setTags(List.of("Wolle"));
+        productClient.save(product);
+        LOGGER.info("New Product: {}", product.getId());
     }
 }
 

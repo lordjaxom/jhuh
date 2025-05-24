@@ -57,11 +57,9 @@ public class HuhApplication {
         var restTemplate = new RestTemplate();
         return GraphQLClient.createCustom(baseUrl, (url, headers, body) -> {
             var httpHeaders = new HttpHeaders();
-            //httpHeaders.putAll(headers);
-            headers.forEach(httpHeaders::addAll);
+            httpHeaders.putAll(headers);
             httpHeaders.add("X-Shopify-Access-Token", token);
 
-            System.out.println("Query: " + body);
             var response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(body, httpHeaders), String.class);
             return new HttpResponse(response.getStatusCode().value(), response.getBody());
         });
