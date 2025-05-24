@@ -11,6 +11,7 @@ import de.hinundhergestellt.jhuh.ready2order.model.ProductsIdPutRequest;
 import de.hinundhergestellt.jhuh.ready2order.model.ProductsPostRequest;
 import de.hinundhergestellt.jhuh.ready2order.model.ProductsPostRequestMixin;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.Banner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -30,7 +31,7 @@ public class HuhApplication {
 
     public static void main(String[] args) {
         new SpringApplicationBuilder(HuhApplication.class)
-                .web(WebApplicationType.NONE)
+                .bannerMode(Banner.Mode.OFF)
                 .run(args);
     }
 

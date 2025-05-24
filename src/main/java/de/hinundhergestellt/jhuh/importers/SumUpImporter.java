@@ -31,6 +31,7 @@ import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.joining;
 
 @Component
@@ -130,7 +131,7 @@ public class SumUpImporter implements ApplicationRunner {
     }
 
     @Override
-    public void run(ApplicationArguments args) throws Exception {
+    public void run(ApplicationArguments args) throws IOException {
         prepareCategories();
         importSumUp();
     }
@@ -209,11 +210,11 @@ public class SumUpImporter implements ApplicationRunner {
         long errors = 0;
         errors += checkSumUpBookForDuplicates(book, "SKU", ArticleVariant::sku);
         errors += checkSumUpBookForDuplicates(book, "Barcode", ArticleVariant::barcode);
-        // errors += checkSumUpBookForMissingBarcodes(book);
         errors += checkSumUpBookForMissingCategories(book);
-        checkSumUpBookForNegativeInventory(book);
+        errors += checkSumUpBookForNegativeInventory(book);
 
         if (errors == 0) {
+            checkSumUpBookForMissingBarcodes(book);
             checkSumUpBookForTinyCategories(book);
         }
 
@@ -225,7 +226,7 @@ public class SumUpImporter implements ApplicationRunner {
                 .flatMap(article -> article.variants().stream()
                         .map(variant -> new ArticleVariant(article, variant)))
                 .filter(it -> StringUtils.hasLength(getter.apply(it)))
-                .collect(Collectors.groupingBy(getter))
+                .collect(groupingBy(getter))
                 .entrySet().stream()
                 .filter(it -> it.getValue().size() > 1)
                 .toList();
@@ -245,38 +246,33 @@ public class SumUpImporter implements ApplicationRunner {
         return missing.size();
     }
 
-    private long checkSumUpBookForMissingBarcodes(SumUpArticleBook book) {
-        return book.articles().stream()
-                .mapToLong(it -> {
-                    var missing = it.variants().stream()
-                            .filter(variant -> !StringUtils.hasLength(variant.barcode()))
-                            .toList();
-                    missing.forEach(variant -> LOGGER.error("Missing barcode for {} {}", it.itemName(), variant.variations()));
-                    return missing.size();
-                })
-                .sum();
-    }
-
     private static long checkSumUpBookForNegativeInventory(SumUpArticleBook book) {
         var negative = book.articles().stream()
                 .flatMap(article -> article.variants().stream()
                         .map(variant -> new ArticleVariant(article, variant)))
                 .filter(it -> it.variant.quantity() < 0)
                 .toList();
-        negative.forEach(it -> LOGGER.error("Negative quantity {} in {} {}", it.variant.quantity(), it.article.itemName(),
+        negative.forEach(it -> LOGGER.error("Negative quantity {} for {} {}", it.variant.quantity(), it.article.itemName(),
                 it.variant.variations()));
         return negative.size();
     }
 
     private static void checkSumUpBookForTinyCategories(SumUpArticleBook book) {
-        var articlesByCategory = book.articles().stream()
-                .collect(Collectors.groupingBy(it -> CATEGORIES_MAPPING.getOrDefault(it.category(), it.category())))
+        book.articles().stream()
+                .collect(groupingBy(it -> CATEGORIES_MAPPING.getOrDefault(it.category(), it.category())))
                 .entrySet().stream()
                 .filter(it -> it.getValue().size() <= 5)
-                .toList();
-        articlesByCategory.forEach(it ->
-                LOGGER.warn("Category {} only has {} articles, consider combining with another category", it.getKey(),
-                        it.getValue().size()));
+                .forEach(it ->
+                        LOGGER.warn("Category {} only has {} articles, consider combining with another category", it.getKey(),
+                                it.getValue().size()));
+    }
+
+    private static void checkSumUpBookForMissingBarcodes(SumUpArticleBook book) {
+        book.articles().stream()
+                .flatMap(article -> article.variants().stream()
+                        .map(variant -> new ArticleVariant(article, variant)))
+                .filter(it -> !StringUtils.hasLength(it.variant.barcode()))
+                .forEach(it -> LOGGER.warn("Missing barcode for {} {}", it.article.itemName(), it.variant.variations()));
     }
 
     private record Category(String name, @Nullable String parent) {
