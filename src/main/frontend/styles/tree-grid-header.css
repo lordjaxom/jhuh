@@ -1,0 +1,11 @@
+vaadin-grid::part(header-cell) {
+    font-weight: bold;
+    background-color: #f0f0f0;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    line-height: 1.2em;
+}
+
+.border {
+    border: 1px solid red;
+}

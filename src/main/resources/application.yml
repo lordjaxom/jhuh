@@ -1,3 +1,7 @@
+spring:
+  application:
+    name: jHuH
+
 ready2order:
   apikey: ${READY2ORDER_APIKEY}
 
