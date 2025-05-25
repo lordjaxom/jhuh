@@ -1,5 +1,5 @@
 vaadin-grid::part(header-cell) {
     font-weight: bold;
-    background-color: var(--lumo-contrast-10pct);
+    //background-color: var(--lumo-contrast-10pct);
     min-height: var(--lumo-size-m);
 }

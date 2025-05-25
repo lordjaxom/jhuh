@@ -7,7 +7,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface SyncProductRepository extends JpaRepository<SyncProduct, UUID> {
+public interface SyncVariantRepository extends JpaRepository<SyncVariant, UUID> {
 
-    Optional<SyncProduct> findByShopifyId(String shopifyId);
+    boolean existsByBarcode(String barcode);
+
+    Optional<SyncVariant> findByBarcode(String barcode);
 }

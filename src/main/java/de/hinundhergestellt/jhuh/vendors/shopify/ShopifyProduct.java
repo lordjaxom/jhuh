@@ -1,8 +1,12 @@
 package de.hinundhergestellt.jhuh.vendors.shopify;
 
 import com.shopify.admin.types.Product;
+import com.shopify.admin.types.ProductVariant;
+import com.shopify.admin.types.ProductVariantEdge;
+import org.springframework.util.Assert;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 public class ShopifyProduct {
 
@@ -54,5 +58,10 @@ public class ShopifyProduct {
 
     public boolean getHasOnlyDefaultVariant() {
         return product.getHasOnlyDefaultVariant();
+    }
+
+    public Stream<ProductVariant> getVariants() {
+        Assert.isTrue(!product.getVariants().getPageInfo().getHasNextPage(), "Product has more variants than were loaded");
+        return product.getVariants().getEdges().stream().map(ProductVariantEdge::getNode);
     }
 }

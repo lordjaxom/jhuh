@@ -70,37 +70,37 @@ public class ShopifyProductClient {
                 .after(after)
                 .build();
 
-        var root = new ProductsProjectionRoot<>();
-        var edgeProjection = root.edges();
-        var productProjection = edgeProjection.node();
-        productProjection.handle();
-        productProjection.id();
-        productProjection.title();
-        productProjection.vendor();
-        productProjection.productType();
-        productProjection.tags();
-        //
-        productProjection.tracksInventory();
-        productProjection.totalVariants();
-        productProjection.variantsCount().count().precision();
-        productProjection.options().id().name().optionValues().id().name();
-        productProjection.hasOnlyDefaultVariant();
-
-        var variantConnectionProjection = productProjection.variants(null, null, null, null, null, null);
-        var variantEdgeProjection = variantConnectionProjection.edges();
-        var variantProjection = variantEdgeProjection.node();
-        variantProjection.barcode();
-        variantProjection.compareAtPrice();
-        variantProjection.id();
-        variantProjection.price();
-        variantProjection.sku();
-        var inventoryItemProjection = variantProjection.inventoryItem();
-        inventoryItemProjection.id();
-
-        var pageInfoProjection = root.pageInfo();
-        pageInfoProjection.endCursor();
-        pageInfoProjection.hasNextPage();
-        pageInfoProjection.startCursor();
+        // @formatter:off
+        var root = new ProductsProjectionRoot<>()
+                .edges()
+                    .node()
+                        .handle()
+                        .id()
+                        .title()
+                        .vendor()
+                        .productType()
+                        .tags()
+                        .variants(100, null, null, null, null, null)
+                            .edges()
+                                .node()
+                                    .id()
+                                    .title()
+                                    .price()
+                                    .sku()
+                                    .barcode()
+                                    //.inventoryItem().id().parent()
+                                    .parent()
+                                .parent()
+                            .pageInfo()
+                                .hasNextPage()
+                                .parent()
+                            .parent()
+                        .parent()
+                    .parent()
+                .pageInfo()
+                    .hasNextPage()
+                    .endCursor();
+        // @formatter:on
 
         var request = new GraphQLQueryRequest(query, root);
         var response = apiClient.executeQuery(request.serialize());
