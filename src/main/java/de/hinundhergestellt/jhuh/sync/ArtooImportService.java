@@ -8,6 +8,7 @@ import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductGroup;
 import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductGroupClient;
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProduct;
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProductClient;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -40,11 +42,15 @@ public class ArtooImportService {
                               ShopifyProductClient shopifyProductClient,
                               SyncProductRepository syncProductRepository,
                               SyncVariantRepository syncVariantRepository) {
-        productGroups = artooProductGroupClient.findAll();
-        products = artooProductClient.findAll();
+        productGroups = artooProductGroupClient.findAll().toList();
+        products = artooProductClient.findAll().toList();
         this.shopifyProductClient = shopifyProductClient;
         this.syncProductRepository = syncProductRepository;
         this.syncVariantRepository = syncVariantRepository;
+    }
+
+    public Optional<ArtooProductGroup> findProductGroupByName(String name) {
+        return productGroups.stream().filter(it -> it.getName().equals(name)).findFirst();
     }
 
     public Stream<ArtooProductGroup> findRootProductGroups() {
@@ -97,6 +103,12 @@ public class ArtooImportService {
                 : isReadyForSync(item);
     }
 
+    public boolean isOrContainsMarkedWithErrors(Object item) {
+        return item instanceof ArtooProductGroup group && group.getTypeId() != 3
+                ? containsMarkedWithErrors(group)
+                : isMarkedForSync(item) && !isReadyForSync(item);
+    }
+
     public boolean isMarkedForSync(Object item) {
         return switch (item) {
             case ArtooProductGroup group when group.getTypeId() == 3 -> findProductsByProductGroup(group).anyMatch(this::isMarkedForSync);
@@ -115,10 +127,10 @@ public class ArtooImportService {
     @Transactional
     public CompletableFuture<Void> syncWithShopify() {
         try {
-            shopifyProductClient.findAll().forEach(this::syncFromShopify);
+            var shopifyProducts = shopifyProductClient.findAll().toList();
+            shopifyProducts.forEach(this::syncFromShopify);
 
-
-
+            checkAllArtooVariationsSynced(shopifyProducts);
             return completedFuture(null);
         } catch (RuntimeException e) {
             LOGGER.error("Couldn't synchronize with Shopify", e);
@@ -128,7 +140,18 @@ public class ArtooImportService {
 
     private boolean containsReadyForSync(ArtooProductGroup group) {
         return findProductGroupsByParent(group).anyMatch(this::containsReadyForSync) ||
-                findProductsByProductGroup(group).anyMatch(this::isReadyForSync);
+                findProductsByProductGroup(group).anyMatch(this::isOrContainsReadyForSync);
+    }
+
+    private boolean containsMarkedWithErrors(ArtooProductGroup group) {
+        return findProductGroupsByParent(group).anyMatch(this::containsMarkedWithErrors) ||
+                findProductsByProductGroup(group).anyMatch(this::isOrContainsMarkedWithErrors);
+    }
+
+    private Optional<ArtooProductGroup> findVariationGroupByProduct(ArtooProduct product) {
+        return productGroups.stream()
+                .filter(it -> it.getId() == product.getProductGroupId() && it.getTypeId() == 3)
+                .findFirst();
     }
 
     private void syncFromShopify(ShopifyProduct product) {
@@ -144,5 +167,57 @@ public class ArtooImportService {
                 .orElseGet(() -> new SyncVariant(syncProduct, variant.getBarcode()));
 
         Assert.isTrue(syncVariant.getProduct() == syncProduct, "SyncVariant.product does not match ShopifyProduct");
+    }
+
+    private void checkAllArtooVariationsSynced(List<ShopifyProduct> shopifyProducts) {
+        var handledVariationGroups = new HashSet<Integer>();
+        for (var product : products) {
+            var barcode = product.getBarcode().orElse(null);
+            if (barcode == null) {
+                continue;
+            }
+
+            var variationGroup = findVariationGroupByProduct(product).orElse(null);
+            if (variationGroup == null || handledVariationGroups.contains(variationGroup.getId())) {
+                continue;
+            }
+            handledVariationGroups.add(variationGroup.getId());
+
+            var referenceVariant = syncVariantRepository.findByBarcode(barcode).orElse(null);
+            SyncProduct syncProduct;
+            if (referenceVariant == null || (syncProduct = referenceVariant.getProduct()).getShopifyId().isEmpty()) {
+                continue;
+            }
+
+            var artooVariations = findProductsByProductGroup(variationGroup).toList();
+            if (artooVariations.stream().anyMatch(it -> it.getBarcode().isEmpty())) {
+                LOGGER.warn("Not all variations of {} have a barcode in ready2order, skipping", variationGroup.getName());
+                continue;
+            }
+
+            var shopifyProduct = shopifyProducts.stream()
+                    .filter(it -> it.getId().equals(syncProduct.getShopifyId().get()))
+                    .findFirst()
+                    .orElseThrow();
+
+            shopifyProduct.getVariants()
+                    .filter(it -> artooVariations.stream().noneMatch(variation ->
+                            variation.getBarcode().orElseThrow().equals(it.getBarcode())))
+                    .forEach(it -> {
+                        LOGGER.info("Variant {} of {} no longer in ready2order, marking for deletion", it.getTitle(),
+                                shopifyProduct.getTitle());
+                        syncVariantRepository
+                                .findByBarcode(it.getBarcode())
+                                .ifPresent(sync -> sync.setDeleted(true));
+                    });
+
+            artooVariations.stream()
+                    .map(it -> Pair.of(it, it.getBarcode().orElseThrow()))
+                    .filter(it -> shopifyProduct.getVariants().noneMatch(variant -> variant.getBarcode().equals(it.getRight())))
+                    .forEach(it -> {
+                        LOGGER.info("Variant {} not in Shopify, adding SyncVariant", it.getLeft().getName());
+                        syncVariantRepository.save(new SyncVariant(syncProduct, it.getRight()));
+                    });
+        }
     }
 }

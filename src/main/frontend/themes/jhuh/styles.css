@@ -3,3 +3,31 @@ vaadin-grid::part(header-cell) {
     //background-color: var(--lumo-contrast-10pct);
     min-height: var(--lumo-size-m);
 }
+
+.progress-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.progress-spinner {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 10px solid lightgray;
+    border-top-color: var(--lumo-primary-color);
+    animation: progress-spinner 1s linear infinite;
+}
+
+@keyframes progress-spinner {
+    to {
+        transform: rotate(360deg);
+    }
+}

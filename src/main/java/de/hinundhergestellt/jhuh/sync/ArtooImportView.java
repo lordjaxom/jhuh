@@ -2,13 +2,18 @@ package de.hinundhergestellt.jhuh.sync;
 
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.HasText;
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.treegrid.TreeGrid;
@@ -34,8 +39,10 @@ public class ArtooImportView extends VerticalLayout {
     private final ArtooImportService importService;
 
     private TreeGrid<Object> treeGrid;
+    private Div progressOverlay;
 
-    private boolean onlyReadyForSync;
+    private boolean onlyReadyForSync = true;
+    private boolean onlyMarkedWithErrors = false;
 
     public ArtooImportView(ArtooImportService importService) {
         this.importService = importService;
@@ -48,6 +55,7 @@ public class ArtooImportView extends VerticalLayout {
         createHeader();
         createFilters();
         createTreeGrid();
+        createProgressOverlay();
     }
 
     private void createHeader() {
@@ -75,14 +83,23 @@ public class ArtooImportView extends VerticalLayout {
         var spacer = new Div();
         spacer.setWidthFull();
 
-        var readyCheckbox = new Checkbox("Nur synchronisierbare");
+        var readyCheckbox = new Checkbox("Bereit zum Synchronisieren");
+        readyCheckbox.setValue(onlyReadyForSync);
         readyCheckbox.getStyle().setWhiteSpace(Style.WhiteSpace.NOWRAP);
         readyCheckbox.addValueChangeListener(event -> {
             onlyReadyForSync = event.getValue();
             treeGrid.getDataProvider().refreshAll();
         });
 
-        var filtersLayout = new HorizontalLayout(spacer, readyCheckbox);
+        var errorsCheckbox = new Checkbox("Synchronisierte mit Fehlern");
+        errorsCheckbox.setValue(onlyMarkedWithErrors);
+        errorsCheckbox.getStyle().setWhiteSpace(Style.WhiteSpace.NOWRAP);
+        errorsCheckbox.addValueChangeListener(event -> {
+            onlyMarkedWithErrors = event.getValue();
+            treeGrid.getDataProvider().refreshAll();
+        });
+
+        var filtersLayout = new HorizontalLayout(spacer, readyCheckbox, errorsCheckbox);
         filtersLayout.setWidthFull();
         add(filtersLayout);
     }
@@ -105,7 +122,7 @@ public class ArtooImportView extends VerticalLayout {
         treeGrid.addColumn(new ComponentRenderer<>(this::treeItemSyncButton))
                 .setHeader("")
                 .setSortable(false)
-                .setWidth("120px")
+                .setWidth("80px")
                 .setFlexGrow(0);
         treeGrid.setDataProvider(new TreeDataProvider());
         treeGrid.expandRecursively(treeGrid.getDataProvider().fetchChildren(new HierarchicalQuery<>(null, null)), Integer.MAX_VALUE);
@@ -114,17 +131,31 @@ public class ArtooImportView extends VerticalLayout {
         add(treeGrid);
     }
 
-    private void handleSyncWithSpotifyClick(ClickEvent<Button> event) {
-        setEnabled(false);
-        importService.syncWithShopify().whenComplete((unused, throwable) -> {
-            getUI().ifPresent(ui -> ui.access(() -> {
+    private void createProgressOverlay() {
+        var progressSpinner = new Div();
+        progressSpinner.setClassName("progress-spinner");
+        progressOverlay = new Div(progressSpinner);
+        progressOverlay.addClassName("progress-overlay");
+        progressOverlay.setVisible(false);
+        add(progressOverlay);
+    }
 
-//                var notification = Notification.show("Application submitted!", 5000, Notification.Position.TOP_END);
-//                notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-                setEnabled(true);
-                treeGrid.getDataProvider().refreshAll();
-            }));
-        });
+    private void handleSyncWithSpotifyClick(ClickEvent<Button> event) {
+        progressOverlay.setVisible(true);
+        importService
+                .syncWithShopify()
+                .whenComplete((ignored, throwable) -> handleSyncWithSpotifyCompleteAsync(throwable));
+    }
+
+    private void handleSyncWithSpotifyCompleteAsync(@Nullable Throwable throwable) {
+        getUI().ifPresent(ui -> ui.access(() -> {
+            progressOverlay.setVisible(false);
+            treeGrid.getDataProvider().refreshAll();
+
+            if (throwable != null) {
+                showErrorNotification(throwable);
+            }
+        }));
     }
 
     private @Nullable Icon treeItemStatusIcon(Object item) {
@@ -157,7 +188,10 @@ public class ArtooImportView extends VerticalLayout {
 
         var ready = importService.isReadyForSync(item);
         var marked = importService.isMarkedForSync(item);
-        var button = new Button(marked ? "Remove" : "Add");
+        var icon = marked ? VaadinIcon.MINUS.create() : VaadinIcon.PLUS.create();
+        icon.setSize("20px");
+        icon.setColor(!ready ? "lightgray" : marked ? "red" : "green");
+        var button = new Button(icon);
         button.setEnabled(ready);
         button.setHeight("20px");
         button.addClickListener(event -> {
@@ -169,6 +203,19 @@ public class ArtooImportView extends VerticalLayout {
             treeGrid.getDataProvider().refreshItem(item);
         });
         return button;
+    }
+
+    private static void showErrorNotification(Throwable error) {
+        var notification = new Notification();
+        notification.setPosition(Notification.Position.TOP_CENTER);
+        notification.setDuration(Integer.MAX_VALUE);
+        notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+        var button = new Button(VaadinIcon.CLOSE_SMALL.create(), event -> notification.close());
+        button.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+        var layout = new HorizontalLayout(VaadinIcon.WARNING.create(), new Text(error.getMessage()), button);
+        layout.setAlignItems(FlexComponent.Alignment.CENTER);
+        notification.add(layout);
+        notification.open();
     }
 
     private class TreeDataProvider extends AbstractBackEndHierarchicalDataProvider<Object, Void> {
@@ -183,6 +230,7 @@ public class ArtooImportView extends VerticalLayout {
                     ))
                     .orElseGet(() -> importService.findRootProductGroups().map(Object.class::cast))
                     .filter(it -> !onlyReadyForSync || importService.isOrContainsReadyForSync(it))
+                    .filter(it -> !onlyMarkedWithErrors || importService.isOrContainsMarkedWithErrors(it))
                     .sorted(comparing(importService::getItemName));
         }
 

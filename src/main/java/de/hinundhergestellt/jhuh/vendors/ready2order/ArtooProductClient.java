@@ -3,7 +3,7 @@ package de.hinundhergestellt.jhuh.vendors.ready2order;
 import de.hinundhergestellt.jhuh.vendors.ready2order.api.ProductApi;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 @Component
 public class ArtooProductClient {
@@ -14,10 +14,8 @@ public class ArtooProductClient {
         api = new ProductApi(apiClient);
     }
 
-    public List<ArtooProduct> findAll() {
-        return api.productsGet(null, null, null, null, null, null, null, true, null, null).stream()
-                .map(ArtooProduct::new)
-                .toList();
+    public Stream<ArtooProduct> findAll() {
+        return PagingIterator.stream(this::findAll);
     }
 
     public ArtooProduct findById(int id) {
@@ -26,5 +24,10 @@ public class ArtooProductClient {
 
     public void save(ArtooProduct product) {
         product.save(api);
+    }
+
+    private Stream<ArtooProduct> findAll(int page) {
+        return api.productsGet(page, null, null, null, null, null, null, true, null, null).stream()
+                .map(ArtooProduct::new);
     }
 }

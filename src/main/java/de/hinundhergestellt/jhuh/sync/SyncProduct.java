@@ -13,10 +13,13 @@ import org.springframework.lang.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
+import static java.util.Optional.ofNullable;
+
 @Entity
-@Table(indexes = @Index(columnList = "shopifyId"))
+@Table(indexes = @Index(name = "idx_syncproduct_shopifyid", columnList = "shopifyId"))
 public class SyncProduct {
 
     @Id
@@ -40,6 +43,10 @@ public class SyncProduct {
 
     protected SyncProduct() {
         // for JPA
+    }
+
+    public Optional<String> getShopifyId() {
+        return ofNullable(shopifyId);
     }
 
     public List<SyncVariant> getVariants() {

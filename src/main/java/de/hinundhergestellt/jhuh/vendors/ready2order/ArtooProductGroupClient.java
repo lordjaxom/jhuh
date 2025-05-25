@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.function.Function.identity;
 
@@ -18,14 +19,12 @@ public class ArtooProductGroupClient {
         api = new ProductGroupApi(apiClient);
     }
 
-    public List<ArtooProductGroup> findAll() {
-        return api.productgroupsGet(null, null).stream()
-                .map(ArtooProductGroup::new)
-                .toList();
+    public Stream<ArtooProductGroup> findAll() {
+        return PagingIterator.stream(this::findAll);
     }
 
     public Map<String, ArtooProductGroup> findAllMappedByPath() {
-        var productGroups = findAll();
+        var productGroups = findAll().toList();
         return productGroups.stream()
                 .collect(Collectors.toMap(
                         it -> it.getPath(productGroups),
@@ -35,5 +34,9 @@ public class ArtooProductGroupClient {
 
     public void save(ArtooProductGroup productGroup) {
         productGroup.save(api);
+    }
+
+    private Stream<ArtooProductGroup> findAll(int page) {
+        return api.productgroupsGet(page, null).stream().map(ArtooProductGroup::new);
     }
 }

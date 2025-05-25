@@ -10,7 +10,7 @@ import jakarta.persistence.Table;
 import java.util.UUID;
 
 @Entity
-@Table(indexes = @Index(columnList = "barcode"))
+@Table(indexes = @Index(name = "idx_syncvariant_barcode", columnList = "barcode"))
 public class SyncVariant {
 
     @Id
@@ -21,6 +21,9 @@ public class SyncVariant {
 
     @Column(nullable = false, unique = true)
     private String barcode;
+
+    @Column(nullable = false)
+    private boolean deleted;
 
     public SyncVariant(SyncProduct product, String barcode) {
         id = UUID.randomUUID();
@@ -34,5 +37,9 @@ public class SyncVariant {
 
     public SyncProduct getProduct() {
         return product;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
     }
 }
