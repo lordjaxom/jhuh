@@ -26,8 +26,8 @@ public class ShopifyProductClient {
         this.apiClient = shopifyApiClient;
     }
 
-    public Stream<Product> findAll() {
-        return PagingIterator.stream(this::findNextPage);
+    public Stream<ShopifyProduct> findAll() {
+        return PagingIterator.stream(this::findAll);
     }
 
     public void save(Product product) {
@@ -64,7 +64,7 @@ public class ShopifyProductClient {
         product.setId(payload.getProduct().getId());
     }
 
-    private Pair<Stream<Product>, PageInfo> findNextPage(String after) {
+    private Pair<Stream<ShopifyProduct>, PageInfo> findAll(String after) {
         var query = ProductsGraphQLQuery.newRequest()
                 .first(100)
                 .after(after)
@@ -76,11 +76,17 @@ public class ShopifyProductClient {
         productProjection.handle();
         productProjection.id();
         productProjection.title();
-        productProjection.status();
-        productProjection.tags();
         productProjection.vendor();
+        productProjection.productType();
+        productProjection.tags();
+        //
+        productProjection.tracksInventory();
+        productProjection.totalVariants();
+        productProjection.variantsCount().count().precision();
+        productProjection.options().id().name().optionValues().id().name();
+        productProjection.hasOnlyDefaultVariant();
 
-        var variantConnectionProjection = productProjection.variants(100, null, null, null, null, null);
+        var variantConnectionProjection = productProjection.variants(null, null, null, null, null, null);
         var variantEdgeProjection = variantConnectionProjection.edges();
         var variantProjection = variantEdgeProjection.node();
         variantProjection.barcode();
@@ -98,7 +104,15 @@ public class ShopifyProductClient {
 
         var request = new GraphQLQueryRequest(query, root);
         var response = apiClient.executeQuery(request.serialize());
+        if (response.hasErrors()) {
+            throw new RuntimeException(response.getErrors().toString()); // TODO
+        }
         var payload = response.extractValueAsObject("products", ProductConnection.class);
-        return Pair.ofNonNull(payload.getEdges().stream().map(ProductEdge::getNode), payload.getPageInfo());
+        return Pair.ofNonNull(
+                payload.getEdges().stream()
+                        .map(ProductEdge::getNode)
+                        .map(ShopifyProduct::new),
+                payload.getPageInfo()
+        );
     }
 }

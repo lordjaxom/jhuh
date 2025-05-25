@@ -20,7 +20,8 @@ class ShopifyApiTest {
 
     @Test
     void getsAllProducts() {
-        productClient.findAll().forEach(it -> LOGGER.info("Product: {}", it.getTitle()));
+        var products = productClient.findAll().toList();
+        products.forEach(it -> LOGGER.info("Product: {}", it.getTitle()));
     }
 
     @Test

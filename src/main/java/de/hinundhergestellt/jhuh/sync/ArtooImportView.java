@@ -1,14 +1,15 @@
 package de.hinundhergestellt.jhuh.sync;
 
+import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.GridVariant;
-import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.shared.Tooltip;
@@ -18,17 +19,20 @@ import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.Route;
-import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProduct;
 import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductGroup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
+import org.springframework.scheduling.TaskScheduler;
 
 import java.util.stream.Stream;
 
 import static java.util.Comparator.comparing;
 
 @Route
-@CssImport(value = "./styles/tree-grid-header.css", themeFor = "vaadin-grid")
 public class ArtooImportView extends VerticalLayout {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ArtooImportView.class);
 
     private final ArtooImportService importService;
 
@@ -49,12 +53,16 @@ public class ArtooImportView extends VerticalLayout {
         var title = new H3("Artikel aus ready2order importieren");
         title.setWhiteSpace(HasText.WhiteSpace.NOWRAP);
         title.getStyle().setMargin("auto 0");
+
         var spacer = new Div();
         spacer.setWidthFull();
+
         var button = new Button("Sync mit Shopify");
         button.getStyle()
                 .setPosition(Style.Position.RELATIVE)
                 .setRight("5px");
+        button.addClickListener(this::handleSyncWithSpotifyClick);
+
         var titleLayout = new HorizontalLayout(title, spacer, button);
         titleLayout.setPadding(true);
         titleLayout.setWidthFull();
@@ -64,11 +72,11 @@ public class ArtooImportView extends VerticalLayout {
 
     private void createTreeGrid() {
         treeGrid = new TreeGrid<>();
-        treeGrid.addHierarchyColumn(this::treeItemName)
+        treeGrid.addHierarchyColumn(importService::getItemName)
                 .setHeader("Bezeichnung")
                 .setSortable(false)
                 .setFlexGrow(10);
-        treeGrid.addColumn(this::treeItemVariations)
+        treeGrid.addColumn(item -> importService.getItemVariations(item).map(String::valueOf).orElse(""))
                 .setHeader("Variationen")
                 .setSortable(false)
                 .setFlexGrow(1);
@@ -85,36 +93,28 @@ public class ArtooImportView extends VerticalLayout {
         treeGrid.setDataProvider(new TreeDataProvider());
         treeGrid.setWidthFull();
         treeGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
-        treeGrid.addClassName("border");
-        treeGrid.addClassName("compact-header");
         add(treeGrid);
     }
 
-    private String treeItemName(Object item) {
-        return switch (item) {
-            case ArtooProductGroup group -> group.getName();
-            case ArtooProduct product -> product.getName();
-            default -> throw new IllegalStateException("Unexpected item " + item);
-        };
-    }
-
-    private String treeItemVariations(Object item) {
-        return switch (item) {
-            case ArtooProductGroup group when group.getTypeId() == 3 ->
-                    String.valueOf(importService.findProductsByProductGroup(group).count());
-            case ArtooProductGroup ignored -> "";
-            default -> "0";
-        };
+    private void handleSyncWithSpotifyClick(ClickEvent<Button> event) {
+        var button = event.getSource();
+        button.setEnabled(false);
+        importService.syncWithShopify().whenComplete((unused, throwable) -> {
+            button.getUI().ifPresent(ui -> ui.access(() -> {
+                var notification = Notification.show("Application submitted!", 5000, Notification.Position.TOP_END);
+                notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                button.setEnabled(true);
+            }));
+        });
     }
 
     private @Nullable Icon treeItemStatusIcon(Object item) {
-        var syncable = treeItemSyncable(item);
-        if (syncable == null) {
+        if (!importService.isSyncable(item)) {
             return null;
         }
 
         Icon icon;
-        if (syncable) {
+        if (importService.isReadyForSync(item)) {
             icon = VaadinIcon.CHECK.create();
             icon.getStyle().set("color", "var(--lumo-success-color)");
         } else {
@@ -127,42 +127,24 @@ public class ArtooImportView extends VerticalLayout {
     }
 
     private @Nullable Button treeItemSyncButton(Object item) {
-        var syncable = treeItemSyncable(item);
-        if (syncable == null) {
+        if (!importService.isSyncable(item)) {
             return null;
         }
 
-        var marked = treeItemMarkedForSync(item);
+        var ready = importService.isReadyForSync(item);
+        var marked = importService.isMarkedForSync(item);
         var button = new Button(marked ? "Remove" : "Add");
-        button.setEnabled(syncable);
+        button.setEnabled(ready);
         button.setHeight("20px");
         button.addClickListener(event -> {
-            switch (item) {
-                case ArtooProductGroup group when marked -> importService.unmarkForSync(group);
-                case ArtooProductGroup group -> importService.markForSync(group);
-                case ArtooProduct product when marked -> importService.unmarkForSync(product);
-                case ArtooProduct product -> importService.markForSync(product);
-                default -> throw new IllegalStateException("Unexpected item " + item);
+            if (marked) {
+                importService.markForSync(item);
+            } else {
+                importService.unmarkForSync(item);
             }
             treeGrid.getDataProvider().refreshItem(item);
         });
         return button;
-    }
-
-    private @Nullable Boolean treeItemSyncable(Object item) {
-        return switch (item) {
-            case ArtooProductGroup group when group.getTypeId() == 3 -> importService.isSyncable(group);
-            case ArtooProduct product -> importService.isSyncable(product);
-            default -> null;
-        };
-    }
-
-    private boolean treeItemMarkedForSync(Object item) {
-        return switch (item) {
-            case ArtooProductGroup group when group.getTypeId() == 3 -> importService.isMarkedForSync(group);
-            case ArtooProduct product -> importService.isMarkedForSync(product);
-            default -> throw new IllegalStateException("Unexpected item " + item);
-        };
     }
 
     private class TreeDataProvider extends AbstractBackEndHierarchicalDataProvider<Object, Void> {
@@ -176,7 +158,7 @@ public class ArtooImportView extends VerticalLayout {
                             importService.findProductsByProductGroup(it)
                     ))
                     .orElseGet(() -> importService.findRootProductGroups().map(Object.class::cast))
-                    .sorted(comparing(ArtooImportView.this::treeItemName));
+                    .sorted(comparing(importService::getItemName));
         }
 
         @Override
