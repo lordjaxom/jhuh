@@ -39,6 +39,10 @@ public class SyncVariant {
         return product;
     }
 
+    public String getBarcode() {
+        return barcode;
+    }
+
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;
     }

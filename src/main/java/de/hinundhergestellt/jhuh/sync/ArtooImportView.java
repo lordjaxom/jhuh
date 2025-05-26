@@ -22,6 +22,8 @@ import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.Route;
+import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedCategory;
+import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedProduct;
 import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +32,7 @@ import org.springframework.lang.Nullable;
 import java.util.stream.Stream;
 
 import static java.util.Comparator.comparing;
+import static java.util.stream.Stream.*;
 
 @Route
 public class ArtooImportView extends VerticalLayout {
@@ -166,12 +169,12 @@ public class ArtooImportView extends VerticalLayout {
     }
 
     private @Nullable Icon treeItemStatusIcon(Object item) {
-        if (!importService.isSyncable(item)) {
+        if (!(item instanceof ArtooMappedProduct product)) {
             return null;
         }
 
-        var ready = importService.isReadyForSync(item);
-        var marked = importService.isMarkedForSync(item);
+        var ready = product.isReadyForSync();
+        var marked = importService.isMarkedForSync(product);
         Icon icon;
         if (!ready) {
             icon = VaadinIcon.WARNING.create();
@@ -189,12 +192,12 @@ public class ArtooImportView extends VerticalLayout {
     }
 
     private @Nullable Button treeItemSyncButton(Object item) {
-        if (!importService.isSyncable(item)) {
+        if (!(item instanceof ArtooMappedProduct product)) {
             return null;
         }
 
-        var ready = importService.isReadyForSync(item);
-        var marked = importService.isMarkedForSync(item);
+        var ready = product.isReadyForSync();
+        var marked = importService.isMarkedForSync(product);
         var icon = marked ? VaadinIcon.MINUS.create() : VaadinIcon.PLUS.create();
         icon.setSize("20px");
         icon.setColor(!ready ? "lightgray" : marked ? "red" : "green");
@@ -230,12 +233,9 @@ public class ArtooImportView extends VerticalLayout {
         @Override
         public Stream<Object> fetchChildrenFromBackEnd(HierarchicalQuery<Object, Void> query) {
             return query.getParentOptional()
-                    .map(ArtooProductGroup.class::cast)
-                    .map(it -> Stream.concat(
-                            importService.findProductGroupsByParent(it),
-                            importService.findProductsByProductGroup(it)
-                    ))
-                    .orElseGet(() -> importService.findRootProductGroups().map(Object.class::cast))
+                    .map(ArtooMappedCategory.class::cast)
+                    .map(it -> concat(it.getChildren().stream(), it.getProducts().stream()))
+                    .orElseGet(() -> importService.findRootCategories().stream().map(Object.class::cast))
                     .filter(it -> !onlyReadyForSync || importService.filterByReadyToSync(it))
                     .filter(it -> !onlyMarkedWithErrors || importService.filterByMarkedWithErrors(it))
                     .sorted(comparing(importService::getItemName));
@@ -243,7 +243,7 @@ public class ArtooImportView extends VerticalLayout {
 
         @Override
         public boolean hasChildren(Object item) {
-            return item instanceof ArtooProductGroup productGroup && productGroup.getTypeId() != 3;
+            return item instanceof ArtooMappedCategory;
         }
 
         @Override
