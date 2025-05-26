@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.failedFuture;
+import static java.util.stream.Stream.concat;
 
 @Service
 @VaadinSessionScope
@@ -97,24 +98,24 @@ public class ArtooImportService {
         };
     }
 
-    public boolean isOrContainsReadyForSync(Object item) {
-        return item instanceof ArtooProductGroup group && group.getTypeId() != 3
-                ? containsReadyForSync(group)
-                : isReadyForSync(item);
-    }
-
-    public boolean isOrContainsMarkedWithErrors(Object item) {
-        return item instanceof ArtooProductGroup group && group.getTypeId() != 3
-                ? containsMarkedWithErrors(group)
-                : isMarkedForSync(item) && !isReadyForSync(item);
-    }
-
     public boolean isMarkedForSync(Object item) {
         return switch (item) {
             case ArtooProductGroup group when group.getTypeId() == 3 -> findProductsByProductGroup(group).anyMatch(this::isMarkedForSync);
             case ArtooProduct product -> product.getBarcode().map(syncVariantRepository::existsByBarcode).orElse(false);
             default -> throw new IllegalStateException("Unexpected item " + item);
         };
+    }
+
+    public boolean filterByReadyToSync(Object item) {
+        return item instanceof ArtooProductGroup group && group.getTypeId() != 3
+                ? concat(findProductGroupsByParent(group), findProductsByProductGroup(group)).anyMatch(this::filterByReadyToSync)
+                : isReadyForSync(item);
+    }
+
+    public boolean filterByMarkedWithErrors(Object item) {
+        return item instanceof ArtooProductGroup group && group.getTypeId() != 3
+                ? concat(findProductGroupsByParent(group), findProductsByProductGroup(group)).anyMatch(this::filterByMarkedWithErrors)
+                : isMarkedForSync(item) && !isReadyForSync(item);
     }
 
     public void markForSync(Object item) {
@@ -130,22 +131,12 @@ public class ArtooImportService {
             var shopifyProducts = shopifyProductClient.findAll().toList();
             shopifyProducts.forEach(this::syncFromShopify);
 
-            checkAllArtooVariationsSynced(shopifyProducts);
+//            checkAllArtooVariationsSynced(shopifyProducts);
             return completedFuture(null);
         } catch (RuntimeException e) {
             LOGGER.error("Couldn't synchronize with Shopify", e);
             return failedFuture(e);
         }
-    }
-
-    private boolean containsReadyForSync(ArtooProductGroup group) {
-        return findProductGroupsByParent(group).anyMatch(this::containsReadyForSync) ||
-                findProductsByProductGroup(group).anyMatch(this::isOrContainsReadyForSync);
-    }
-
-    private boolean containsMarkedWithErrors(ArtooProductGroup group) {
-        return findProductGroupsByParent(group).anyMatch(this::containsMarkedWithErrors) ||
-                findProductsByProductGroup(group).anyMatch(this::isOrContainsMarkedWithErrors);
     }
 
     private Optional<ArtooProductGroup> findVariationGroupByProduct(ArtooProduct product) {

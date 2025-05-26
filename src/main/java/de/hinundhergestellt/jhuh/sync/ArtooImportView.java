@@ -84,18 +84,25 @@ public class ArtooImportView extends VerticalLayout {
         spacer.setWidthFull();
 
         var readyCheckbox = new Checkbox("Bereit zum Synchronisieren");
+        var errorsCheckbox = new Checkbox("Synchronisierte mit Fehlern");
+
         readyCheckbox.setValue(onlyReadyForSync);
         readyCheckbox.getStyle().setWhiteSpace(Style.WhiteSpace.NOWRAP);
         readyCheckbox.addValueChangeListener(event -> {
             onlyReadyForSync = event.getValue();
+            if (event.getValue()) {
+                errorsCheckbox.setValue(false);
+            }
             treeGrid.getDataProvider().refreshAll();
         });
 
-        var errorsCheckbox = new Checkbox("Synchronisierte mit Fehlern");
         errorsCheckbox.setValue(onlyMarkedWithErrors);
         errorsCheckbox.getStyle().setWhiteSpace(Style.WhiteSpace.NOWRAP);
         errorsCheckbox.addValueChangeListener(event -> {
             onlyMarkedWithErrors = event.getValue();
+            if (event.getValue()) {
+                readyCheckbox.setValue(false);
+            }
             treeGrid.getDataProvider().refreshAll();
         });
 
@@ -229,8 +236,8 @@ public class ArtooImportView extends VerticalLayout {
                             importService.findProductsByProductGroup(it)
                     ))
                     .orElseGet(() -> importService.findRootProductGroups().map(Object.class::cast))
-                    .filter(it -> !onlyReadyForSync || importService.isOrContainsReadyForSync(it))
-                    .filter(it -> !onlyMarkedWithErrors || importService.isOrContainsMarkedWithErrors(it))
+                    .filter(it -> !onlyReadyForSync || importService.filterByReadyToSync(it))
+                    .filter(it -> !onlyMarkedWithErrors || importService.filterByMarkedWithErrors(it))
                     .sorted(comparing(importService::getItemName));
         }
 

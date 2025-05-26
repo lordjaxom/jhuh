@@ -3,7 +3,6 @@ package de.hinundhergestellt.jhuh.vendors.ready2order;
 import de.hinundhergestellt.jhuh.vendors.ready2order.api.ProductGroupApi;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
