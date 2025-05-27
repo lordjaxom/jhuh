@@ -112,7 +112,7 @@ public class ArtooImportService {
         var syncProduct = syncProductRepository
                 .findByShopifyId(product.getId())
                 .orElseGet(() -> syncProductRepository.save(new SyncProduct(product.getId(), product.getTags())));
-        product.getVariants().forEach(variant -> reconcileFromShopify(variant, syncProduct));
+        product.getVariants().iterator().forEachRemaining(variant -> reconcileFromShopify(variant, syncProduct));
     }
 
     private void reconcileFromShopify(ProductVariant variant, SyncProduct syncProduct) {
