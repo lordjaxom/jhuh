@@ -15,4 +15,8 @@ class ArtooMappedCategory internal constructor(
     fun findProductByBarcode(barcode: String): ArtooMappedProduct? =
         products.firstOrNull { it.findVariationByBarcode(barcode) != null }
             ?: children.firstNotNullOfOrNull { it.findProductByBarcode(barcode) }
+
+    fun findProductById(id: String): ArtooMappedProduct? =
+        products.firstOrNull { it.id == id }
+            ?: children.firstNotNullOfOrNull { it.findProductById(id) }
 }

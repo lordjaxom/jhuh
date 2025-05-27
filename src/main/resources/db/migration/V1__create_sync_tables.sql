@@ -1,6 +1,7 @@
 CREATE TABLE sync_product
 (
     id         UUID NOT NULL,
+    artoo_id   VARCHAR(255),
     shopify_id VARCHAR(255),
     CONSTRAINT pk_syncproduct PRIMARY KEY (id)
 );
@@ -31,6 +32,8 @@ ALTER TABLE sync_product_variants
 
 ALTER TABLE sync_variant
     ADD CONSTRAINT uc_syncvariant_barcode UNIQUE (barcode);
+
+CREATE INDEX idx_syncproduct_artooid ON sync_product (artoo_id);
 
 CREATE INDEX idx_syncproduct_shopifyid ON sync_product (shopify_id);
 

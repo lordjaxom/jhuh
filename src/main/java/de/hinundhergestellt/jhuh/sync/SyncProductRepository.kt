@@ -11,4 +11,6 @@ interface SyncProductRepository : JpaRepository<SyncProduct, UUID> {
     fun findAllBy(): Stream<SyncProduct>
 
     fun findByShopifyId(shopifyId: String): SyncProduct?
+
+    fun deleteByArtooId(artooId: String)
 }

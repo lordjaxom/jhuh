@@ -21,9 +21,11 @@ class ArtooDataStore(
 ) {
     val rootCategories by factory.rootCategories()
 
-    fun findProductByBarcode(barcode: String): ArtooMappedProduct? {
-        return rootCategories.firstNotNullOfOrNull { it.findProductByBarcode(barcode) }
-    }
+    fun findProductByBarcode(barcode: String) =
+        rootCategories.firstNotNullOfOrNull { it.findProductByBarcode(barcode) }
+
+    fun findProductById(id: String) =
+        rootCategories.firstNotNullOf { it.findProductById(id) }
 }
 
 @Service
@@ -46,7 +48,7 @@ private class DataStoreBuilder(
 
     fun rootCategories() =
         groups.asSequence()
-            .filter { it.parent == 0 }
+            .filter { it.parent == 0 && it.typeId == 7 }
             .map { toCategory(it) }
             .toList()
 

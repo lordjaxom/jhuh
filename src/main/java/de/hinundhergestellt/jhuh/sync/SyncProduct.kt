@@ -1,12 +1,21 @@
 package de.hinundhergestellt.jhuh.sync
 
+import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedProduct
 import jakarta.persistence.*
 import org.springframework.lang.Nullable
 import java.util.*
 
 @Entity
-@Table(indexes = [Index(name = "idx_syncproduct_shopifyid", columnList = "shopifyId")])
+@Table(
+    indexes = [
+        Index(name = "idx_syncproduct_artooid", columnList = "artooId"),
+        Index(name = "idx_syncproduct_shopifyid", columnList = "shopifyId")
+    ]
+)
 class SyncProduct(
+
+    @Column
+    var artooId: String?,
 
     @Column
     var shopifyId: String?,
@@ -20,4 +29,3 @@ class SyncProduct(
     @Id
     val id: UUID = UUID.randomUUID()
 )
-

@@ -218,9 +218,9 @@ class ArtooImportView(
         button.height = "20px"
         button.addClickListener {
             if (marked) {
-                importService.markForSync(item)
-            } else {
                 importService.unmarkForSync(item)
+            } else {
+                importService.markForSync(item)
             }
             treeGrid.getDataProvider().refreshItem(item)
         }

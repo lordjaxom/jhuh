@@ -9,12 +9,8 @@ import de.hinundhergestellt.jhuh.service.ready2order.SingleArtooMappedProduct
 import de.hinundhergestellt.jhuh.service.shopify.ShopifyDataStore
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProduct
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.CompletableFuture.completedFuture
-import java.util.concurrent.CompletableFuture.failedFuture
 
 private val logger = KotlinLogging.logger {}
 
@@ -68,10 +64,17 @@ class ArtooImportService(
             else -> throw IllegalStateException("Unexpected item $item")
         }
 
-    fun markForSync(item: Any) {
+    @Transactional
+    fun markForSync(product: ArtooMappedProduct) {
+        // TODO: Tags!
+        val syncProduct = SyncProduct(product.id, null, listOf())
+        product.variations.forEach { SyncVariant(syncProduct, it.barcode!!) }
+        syncProductRepository.save(syncProduct)
     }
 
-    fun unmarkForSync(item: Any) {
+    @Transactional
+    fun unmarkForSync(product: ArtooMappedProduct) {
+        syncProductRepository.deleteByArtooId(product.id)
     }
 
     @Transactional
@@ -81,27 +84,30 @@ class ArtooImportService(
     }
 
     private fun reconcileFromShopify(shopifyProduct: ShopifyProduct) {
-        val syncProduct = syncProductRepository
-            .findByShopifyId(shopifyProduct.id)
-            ?: syncProductRepository.save(SyncProduct(shopifyProduct.id, shopifyProduct.tags))
+        val syncProduct = syncProductRepository.findByShopifyId(shopifyProduct.id)
+            ?: syncProductRepository.save(SyncProduct(null, shopifyProduct.id, shopifyProduct.tags))
         shopifyProduct.variants.forEach { reconcileFromShopify(it, syncProduct) }
     }
 
     private fun reconcileFromShopify(variant: ProductVariant, syncProduct: SyncProduct) {
-        val syncVariant = syncVariantRepository
-            .findByBarcode(variant.barcode)
+        val syncVariant = syncVariantRepository.findByBarcode(variant.barcode)
             ?: SyncVariant(syncProduct, variant.barcode)
 
         require(syncVariant.product === syncProduct) { "SyncVariant.product does not match ShopifyProduct" }
     }
 
     private fun reconcileFromArtoo(syncProduct: SyncProduct) {
-        val artooProduct = syncProduct.variants.firstNotNullOfOrNull { artooDataStore.findProductByBarcode(it.barcode) }
-        if (artooProduct == null) {
-            logger.info { "Product from SyncProduct ${syncProduct.id} no longer in ready2order, marked for deletion" }
-            syncProduct.variants.forEach { it.deleted = true }
-            return
-        }
+        val artooProduct = syncProduct.artooId
+            ?.let { artooDataStore.findProductById(it) }
+            ?: run {
+                syncProduct.variants.firstNotNullOfOrNull { artooDataStore.findProductByBarcode(it.barcode) }
+                    ?.also { syncProduct.artooId = it.id }
+                    ?: run {
+                        logger.info { "Product from SyncProduct ${syncProduct.id} no longer in ready2order, marked for deletion" }
+                        syncProduct.variants.forEach { it.deleted = true }
+                        return
+                    }
+            }
 
         syncProduct.variants.asSequence()
             .filter { artooDataStore.findProductByBarcode(it.barcode) == null }
