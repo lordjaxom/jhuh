@@ -6,6 +6,7 @@ import java.util.*
 @Entity
 @Table(indexes = [Index(name = "idx_syncvariant_barcode", columnList = "barcode")])
 class SyncVariant(
+
     @ManyToOne(optional = false)
     val product: SyncProduct,
 
@@ -17,4 +18,8 @@ class SyncVariant(
 
     @Id
     val id: UUID = UUID.randomUUID(),
-)
+) {
+    init {
+        product.variants.add(this)
+    }
+}

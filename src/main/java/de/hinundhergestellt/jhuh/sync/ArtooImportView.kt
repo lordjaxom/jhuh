@@ -23,19 +23,24 @@ import com.vaadin.flow.function.ValueProvider
 import com.vaadin.flow.router.Route
 import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedCategory
 import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedProduct
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.core.task.AsyncTaskExecutor
 import org.springframework.lang.Nullable
+import java.util.concurrent.CompletableFuture
 import java.util.stream.Stream
 import kotlin.streams.asStream
 
 @Route
 class ArtooImportView(
-    private val importService: ArtooImportService
+    private val importService: ArtooImportService,
+    @Qualifier("applicationTaskExecutor") private val taskExecutor: AsyncTaskExecutor
 ) : VerticalLayout() {
 
     private lateinit var treeGrid: TreeGrid<Any>
     private lateinit var progressOverlay: Div
 
-    private var onlyReadyForSync = true
+    private var onlyMarkedForSync = true
+    private var onlyReadyForSync = false
     private var onlyMarkedWithErrors = false
 
     init {
@@ -75,14 +80,27 @@ class ArtooImportView(
         val spacer = Div()
         spacer.setWidthFull()
 
+        val markedCheckbox = Checkbox("Nur synchronisiert")
         val readyCheckbox = Checkbox("Bereit zum Synchronisieren")
-        val errorsCheckbox = Checkbox("Synchronisierte mit Fehlern")
+        val errorsCheckbox = Checkbox("Synchronisiert mit Fehlern")
+
+        markedCheckbox.value = onlyMarkedForSync
+        markedCheckbox.style.setWhiteSpace(Style.WhiteSpace.NOWRAP)
+        markedCheckbox.addValueChangeListener {
+            onlyMarkedForSync = it.value
+            if (it.value) {
+                readyCheckbox.value = false
+                errorsCheckbox.value = false
+            }
+            treeGrid.dataProvider.refreshAll()
+        }
 
         readyCheckbox.value = onlyReadyForSync
         readyCheckbox.style.setWhiteSpace(Style.WhiteSpace.NOWRAP)
         readyCheckbox.addValueChangeListener {
             onlyReadyForSync = it.value
             if (it.value) {
+                markedCheckbox.value = false
                 errorsCheckbox.value = false
             }
             treeGrid.dataProvider.refreshAll()
@@ -93,18 +111,19 @@ class ArtooImportView(
         errorsCheckbox.addValueChangeListener { event ->
             onlyMarkedWithErrors = event.value
             if (event.value) {
+                markedCheckbox.value = false
                 readyCheckbox.value = false
             }
             treeGrid.dataProvider.refreshAll()
         }
 
-        val filtersLayout = HorizontalLayout(spacer, readyCheckbox, errorsCheckbox)
+        val filtersLayout = HorizontalLayout(spacer, markedCheckbox, readyCheckbox, errorsCheckbox)
         filtersLayout.setWidthFull()
         add(filtersLayout)
     }
 
     private fun createTreeGrid() {
-        val treeGrid = TreeGrid<Any>()
+        treeGrid = TreeGrid<Any>()
         treeGrid.addHierarchyColumn(ValueProvider { item: Any? -> importService.getItemName(item!!) })
             .setHeader("Bezeichnung")
             .setSortable(false).flexGrow = 10
@@ -140,8 +159,8 @@ class ArtooImportView(
 
     private fun syncWithSpotify() {
         progressOverlay.isVisible = true
-        importService
-            .syncWithShopify()
+        CompletableFuture
+            .runAsync({ importService.syncWithShopify() }, taskExecutor)
             .whenComplete { _, throwable -> handleSyncWithSpotifyCompleteAsync(throwable) }
     }
 
@@ -214,6 +233,7 @@ class ArtooImportView(
             return (query.parent
                 ?.let { (it as ArtooMappedCategory).children.asSequence() + it.products.asSequence() }
                 ?: importService.rootCategories.asSequence())
+                .filter { !onlyMarkedForSync || importService.filterByMarkedForSync(it) }
                 .filter { !onlyReadyForSync || importService.filterByReadyToSync(it) }
                 .filter { !onlyMarkedWithErrors || importService.filterByMarkedWithErrors(it) }
                 .sortedBy { importService.getItemName(it) }

@@ -27,7 +27,7 @@ class ShopifyDataStoreFactory(
     @Qualifier("applicationTaskExecutor") private val taskExecutor: AsyncTaskExecutor
 ) {
     fun products(): Lazy<List<ShopifyProduct>> {
-        val products = taskExecutor.submit(Callable { logger.info{"Loading shprod"}; productClient.findAll().asSequence().toList() })
+        val products = taskExecutor.submit(Callable { productClient.findAll().asSequence().toList() })
         return lazy { products.get() }
     }
 }

@@ -7,6 +7,7 @@ import java.util.*
 @Entity
 @Table(indexes = [Index(name = "idx_syncproduct_shopifyid", columnList = "shopifyId")])
 class SyncProduct(
+
     @Column
     var shopifyId: String?,
 

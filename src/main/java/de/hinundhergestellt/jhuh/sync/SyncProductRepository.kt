@@ -8,7 +8,7 @@ import java.util.stream.Stream
 @Repository
 interface SyncProductRepository : JpaRepository<SyncProduct, UUID> {
 
-    fun findAllBy(): Sequence<SyncProduct>
+    fun findAllBy(): Stream<SyncProduct>
 
     fun findByShopifyId(shopifyId: String): SyncProduct?
 }

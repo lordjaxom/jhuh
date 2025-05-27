@@ -20,6 +20,10 @@ class ArtooDataStore(
     factory: ArtooDataStoreFactory
 ) {
     val rootCategories by factory.rootCategories()
+
+    fun findProductByBarcode(barcode: String): ArtooMappedProduct? {
+        return rootCategories.firstNotNullOfOrNull { it.findProductByBarcode(barcode) }
+    }
 }
 
 @Service
@@ -29,8 +33,8 @@ class ArtooDataStoreFactory(
     @Qualifier("applicationTaskExecutor") private val taskExecutor: AsyncTaskExecutor
 ) {
     fun rootCategories(): Lazy<List<ArtooMappedCategory>> {
-        val groups = taskExecutor.submit(Callable { logger.info { "Loading products" }; productGroupClient.findAll().toList() })
-        val products = taskExecutor.submit(Callable { logger.info { "Loading groups" }; productClient.findAll().toList() })
+        val groups = taskExecutor.submit(Callable { productGroupClient.findAll().toList() })
+        val products = taskExecutor.submit(Callable { productClient.findAll().toList() })
         return lazy { DataStoreBuilder(groups.get(), products.get()).rootCategories() }
     }
 }
