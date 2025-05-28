@@ -1,12 +1,16 @@
 package de.hinundhergestellt.jhuh.sync
 
-import com.vaadin.flow.component.*
+import com.vaadin.flow.component.Component
+import com.vaadin.flow.component.HasText
+import com.vaadin.flow.component.Text
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.checkbox.Checkbox
+import com.vaadin.flow.component.dialog.Dialog
 import com.vaadin.flow.component.grid.GridVariant
 import com.vaadin.flow.component.html.Div
 import com.vaadin.flow.component.html.H3
+import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.notification.Notification
@@ -14,18 +18,17 @@ import com.vaadin.flow.component.notification.NotificationVariant
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
+import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.component.treegrid.TreeGrid
 import com.vaadin.flow.data.provider.hierarchy.AbstractBackEndHierarchicalDataProvider
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery
 import com.vaadin.flow.data.renderer.ComponentRenderer
 import com.vaadin.flow.dom.Style
-import com.vaadin.flow.function.ValueProvider
 import com.vaadin.flow.router.Route
 import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedCategory
 import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedProduct
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.task.AsyncTaskExecutor
-import org.springframework.lang.Nullable
 import java.util.concurrent.CompletableFuture
 import java.util.stream.Stream
 import kotlin.streams.asStream
@@ -67,7 +70,7 @@ class ArtooImportView(
         button.style
             .setPosition(Style.Position.RELATIVE)
             .setRight("5px")
-        button.addClickListener { syncWithSpotify() }
+        button.addClickListener { syncWithShopify() }
 
         val titleLayout = HorizontalLayout(title, spacer, button)
         titleLayout.isPadding = true
@@ -130,11 +133,11 @@ class ArtooImportView(
                 isSortable = false
                 flexGrow = 10
             }
-        treeGrid.addColumn { importService.getItemTags(it) }
+        treeGrid.addColumn(ComponentRenderer{ it -> treeItemTagsSpan(it) })
             .setHeader("Tags")
             .apply {
                 isSortable = false
-                flexGrow = 10
+                flexGrow = 5
             }
         treeGrid.addColumn { importService.getItemVariations(it) }
             .setHeader("V#")
@@ -173,14 +176,14 @@ class ArtooImportView(
         add(progressOverlay)
     }
 
-    private fun syncWithSpotify() {
+    private fun syncWithShopify() {
         progressOverlay.isVisible = true
         CompletableFuture
             .runAsync({ importService.syncWithShopify() }, taskExecutor)
-            .whenComplete { _, throwable -> handleSyncWithSpotifyCompleteAsync(throwable) }
+            .whenComplete { _, throwable -> syncWithShopifyComplete(throwable) }
     }
 
-    private fun handleSyncWithSpotifyCompleteAsync(throwable: Throwable?) {
+    private fun syncWithShopifyComplete(throwable: Throwable?) {
         ui.ifPresent {
             it.access {
                 progressOverlay.isVisible = false
@@ -192,10 +195,40 @@ class ArtooImportView(
         }
     }
 
-    @Nullable
-    private fun treeItemStatusIcon(item: Any): Icon? {
+    private fun editItemTags(item: Any) {
+        val dialog = Dialog()
+        dialog.headerTitle = "Tags bearbeiten"
+        val closeButton = Button(VaadinIcon.CLOSE.create()) { dialog.close() }
+        closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY)
+        dialog.header.add(closeButton)
+        val textField = TextField()
+        textField.value = importService.getItemTags(item)
+        dialog.add(textField)
+        dialog.footer.add(Button("Speichern") {
+            importService.updateItemTags(item, textField.value)
+            treeGrid.dataProvider.refreshItem(item)
+            dialog.close()
+        })
+        dialog.open()
+    }
+
+    private fun treeItemTagsSpan(item: Any): Span {
+        val icon = VaadinIcon.EDIT.create()
+        icon.setSize("20px")
+        icon.color = "grey"
+        val button = Button(icon) { editItemTags(item) }
+        button.height = "20px"
+        button.style.setMargin("0 5px 0 0")
+        button.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE)
+        val text = Text(importService.getItemTags(item))
+        return Span(button, text).apply {
+            style.setWhiteSpace(Style.WhiteSpace.NOWRAP)
+        }
+    }
+
+    private fun treeItemStatusIcon(item: Any): Component {
         if (item !is ArtooMappedProduct) {
-            return null
+            return Span()
         }
 
         val ready = item.isReadyForSync
@@ -218,10 +251,9 @@ class ArtooImportView(
         return icon
     }
 
-    @Nullable
-    private fun treeItemSyncButton(item: Any): Button? {
+    private fun treeItemSyncButton(item: Any): Component {
         if (item !is ArtooMappedProduct) {
-            return null
+            return Span()
         }
 
         val ready = item.isReadyForSync
@@ -238,7 +270,7 @@ class ArtooImportView(
             } else {
                 importService.markForSync(item)
             }
-            treeGrid.getDataProvider().refreshItem(item)
+            treeGrid.dataProvider.refreshItem(item)
         }
         return button
     }

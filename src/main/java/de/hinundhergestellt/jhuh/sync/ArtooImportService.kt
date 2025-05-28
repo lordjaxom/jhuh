@@ -32,19 +32,17 @@ class ArtooImportService(
             else -> throw IllegalStateException("Unexpected item $item")
         }
 
-    fun getItemTags(item: Any) =
-        when (item) {
+    fun getItemTags(item: Any): String {
+        val tags = when (item) {
             is ArtooMappedCategory -> syncCategoryRepository.findByArtooId(item.id)?.tags
-            is ArtooMappedProduct -> {
-                val tags = artooDataStore.findAllCategoriesByProduct(item)
-                    .mapNotNull { syncCategoryRepository.findByArtooId(it.id)?.tags }
-                    .flatten()
-                    .toSet()
-                logger.info { "Tags from parent categories of ${item.name}: ${tags}"} // TODO
-                syncProductRepository.findByArtooId(item.id)?.tags?.let { it - tags }
-            }
+            is ArtooMappedProduct -> syncProductRepository.findByArtooId(item.id)?.tags
             else -> throw IllegalStateException("Unexpected item $item")
-        }?.sorted()?.joinToString(", ") ?: ""
+        }
+        return tags
+            ?.sorted()
+            ?.joinToString(", ")
+            ?: ""
+    }
 
     fun getItemVariations(item: Any) =
         when (item) {
@@ -55,6 +53,7 @@ class ArtooImportService(
         }
 
     fun isMarkedForSync(product: ArtooMappedProduct) =
+        // TODO: do not delete when unmarking, to preserve tags, add synced marker instead
         product.variations
             .any { variation -> variation.barcode?.let { syncVariantRepository.existsByBarcode(it) } ?: false }
 
@@ -80,8 +79,18 @@ class ArtooImportService(
         }
 
     @Transactional
+    fun updateItemTags(item: Any, value: String) {
+        val tags = when (item) {
+            is ArtooMappedCategory -> syncCategoryRepository.findByArtooId(item.id)!!.tags
+            is ArtooMappedProduct -> syncProductRepository.findByArtooId(item.id)!!.tags
+            else -> throw IllegalStateException("Unexpected item $item")
+        }
+        tags.clear()
+        tags.addAll(value.splitToSequence(",").map { it.trim() }.filter { it.isNotEmpty() })
+    }
+
+    @Transactional
     fun markForSync(product: ArtooMappedProduct) {
-        // TODO: Tags!
         SyncProduct(product.id, null, mutableSetOf())
             .apply { variants.addAll(product.variations.map { SyncVariant(this, it.barcode!!) }) }
             .also { syncProductRepository.save(it) }
@@ -163,10 +172,15 @@ class ArtooImportService(
             .fold(null as Set<String>?) { acc, tags -> acc?.intersect(tags) ?: tags }
             .also { if (it.isNullOrEmpty()) return }!!
 
-        SyncCategory(artooCategory.id, commonTags.toMutableSet()).also { syncCategoryRepository.save(it) }
+        syncCategoryRepository.save(SyncCategory(artooCategory.id, commonTags.toMutableSet()))
+
         artooCategory.children.asSequence()
             .mapNotNull { syncCategoryRepository.findByArtooId(it.id) }
             .onEach { it.tags.removeAll(commonTags) }
-            .forEach { syncCategoryRepository.save(it) }
+            .forEach { syncCategoryRepository.save(it) } // for later retrieval in same transaction
+        artooCategory.products.asSequence()
+            .mapNotNull { syncProductRepository.findByArtooId(it.id) }
+            .onEach { it.tags.removeAll(commonTags) }
+            .forEach { syncProductRepository.save(it) } // for later retrieval in same transaction
     }
 }
