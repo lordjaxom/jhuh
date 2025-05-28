@@ -1,3 +1,16 @@
+CREATE TABLE sync_category
+(
+    id       UUID NOT NULL,
+    artoo_id INT NOT NULL,
+    CONSTRAINT pk_synccategory PRIMARY KEY (id)
+);
+
+CREATE TABLE sync_category_tags
+(
+    sync_category_id UUID NOT NULL,
+    tags             VARCHAR(255)
+);
+
 CREATE TABLE sync_product
 (
     id         UUID NOT NULL,
@@ -33,6 +46,8 @@ ALTER TABLE sync_product_variants
 ALTER TABLE sync_variant
     ADD CONSTRAINT uc_syncvariant_barcode UNIQUE (barcode);
 
+CREATE INDEX idx_synccategory_artooid ON sync_category (artoo_id);
+
 CREATE INDEX idx_syncproduct_artooid ON sync_product (artoo_id);
 
 CREATE INDEX idx_syncproduct_shopifyid ON sync_product (shopify_id);
@@ -41,6 +56,9 @@ CREATE INDEX idx_syncvariant_barcode ON sync_variant (barcode);
 
 ALTER TABLE sync_variant
     ADD CONSTRAINT FK_SYNCVARIANT_ON_PRODUCT FOREIGN KEY (product_id) REFERENCES sync_product (id);
+
+ALTER TABLE sync_category_tags
+    ADD CONSTRAINT fk_synccategory_tags_on_sync_category FOREIGN KEY (sync_category_id) REFERENCES sync_category (id);
 
 ALTER TABLE sync_product_tags
     ADD CONSTRAINT fk_syncproduct_tags_on_sync_product FOREIGN KEY (sync_product_id) REFERENCES sync_product (id);

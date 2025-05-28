@@ -18,8 +18,4 @@ class SyncVariant(
 
     @Id
     val id: UUID = UUID.randomUUID(),
-) {
-    init {
-        product.variants.add(this)
-    }
-}
+)

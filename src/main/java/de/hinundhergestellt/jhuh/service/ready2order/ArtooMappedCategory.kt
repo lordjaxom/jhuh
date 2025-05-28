@@ -7,6 +7,7 @@ class ArtooMappedCategory internal constructor(
     val children: List<ArtooMappedCategory>,
     val products: List<ArtooMappedProduct>
 ) {
+    val id by group::id
     val name by group::name
 
     fun containsReadyForSync(): Boolean =
@@ -19,4 +20,15 @@ class ArtooMappedCategory internal constructor(
     fun findProductById(id: String): ArtooMappedProduct? =
         products.firstOrNull { it.id == id }
             ?: children.firstNotNullOfOrNull { it.findProductById(id) }
+
+    fun findAllCategoriesByProduct(product: ArtooMappedProduct): Sequence<ArtooMappedCategory> = sequence {
+        var found = false
+        children.asSequence()
+            .flatMap { it.findAllCategoriesByProduct(product) }
+            .onEach { found = true }
+            .also { yieldAll(it) }
+        if (found || products.contains(product)) {
+            yield(this@ArtooMappedCategory)
+        }
+    }
 }

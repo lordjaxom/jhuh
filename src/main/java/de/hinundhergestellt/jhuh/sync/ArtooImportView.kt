@@ -124,23 +124,39 @@ class ArtooImportView(
 
     private fun createTreeGrid() {
         treeGrid = TreeGrid<Any>()
-        treeGrid.addHierarchyColumn(ValueProvider { item: Any? -> importService.getItemName(item!!) })
+        treeGrid.addHierarchyColumn { importService.getItemName(it) }
             .setHeader("Bezeichnung")
-            .setSortable(false).flexGrow = 10
-        treeGrid.addColumn(ValueProvider { item: Any? -> importService.getItemVariations(item!!) })
-            .setHeader("Variationen")
-            .setSortable(false).flexGrow = 1
-        treeGrid.addColumn(ComponentRenderer<Icon, Any> { it -> treeItemStatusIcon(it) })
-            .setHeader("")
-            .setSortable(false)
-            .setWidth("32px").flexGrow = 0
-        treeGrid.addColumn(ComponentRenderer<Button, Any> { it -> treeItemSyncButton(it) })
-            .setHeader("")
-            .setSortable(false)
-            .setWidth("80px").flexGrow = 0
+            .apply {
+                isSortable = false
+                flexGrow = 10
+            }
+        treeGrid.addColumn { importService.getItemTags(it) }
+            .setHeader("Tags")
+            .apply {
+                isSortable = false
+                flexGrow = 10
+            }
+        treeGrid.addColumn { importService.getItemVariations(it) }
+            .setHeader("V#")
+            .apply {
+                isSortable = false
+                flexGrow = 1
+            }
+        treeGrid.addColumn(ComponentRenderer { it -> treeItemStatusIcon(it) })
+            .setHeader("").apply {
+                isSortable = false
+                width = "32px"
+                flexGrow = 0
+            }
+        treeGrid.addColumn(ComponentRenderer { it -> treeItemSyncButton(it) })
+            .setHeader("").apply {
+                isSortable = false
+                width = "80px"
+                flexGrow = 0
+            }
         treeGrid.setDataProvider(TreeDataProvider())
         treeGrid.expandRecursively(
-            treeGrid.getDataProvider().fetchChildren(HierarchicalQuery(null, null)),
+            treeGrid.dataProvider.fetchChildren(HierarchicalQuery(null, null)),
             Int.Companion.MAX_VALUE
         )
         treeGrid.setSizeFull()

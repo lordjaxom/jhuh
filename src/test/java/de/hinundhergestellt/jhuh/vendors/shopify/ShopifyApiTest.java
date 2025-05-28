@@ -19,12 +19,6 @@ class ShopifyApiTest {
     private ShopifyProductClient productClient;
 
     @Test
-    void getsAllProducts() {
-        var products = productClient.findAll().toList();
-        products.forEach(it -> LOGGER.info("Product: {}", it.getTitle()));
-    }
-
-    @Test
     void createsNewProduct() {
         var product = new Product();
         product.setTitle("New Product");

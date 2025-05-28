@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.netflix.graphql.dgs.client.GraphQLClient
 import com.netflix.graphql.dgs.client.HttpResponse
-import com.netflix.graphql.dgs.client.RequestExecutor
 import de.hinundhergestellt.jhuh.vendors.ready2order.ApiClient
 import de.hinundhergestellt.jhuh.vendors.ready2order.RateLimitEnforcingApiClient
 import de.hinundhergestellt.jhuh.vendors.ready2order.model.ProductsIdPutRequest
@@ -14,17 +13,14 @@ import de.hinundhergestellt.jhuh.vendors.ready2order.model.ProductsPostRequestMi
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.Banner
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.builder.SpringApplicationBuilder
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
-import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.scheduling.annotation.EnableAsync
 import org.springframework.web.client.RestTemplate
-import java.util.List
 
 @SpringBootApplication
 @EnableAsync

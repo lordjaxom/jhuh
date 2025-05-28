@@ -21,7 +21,7 @@ class SyncProduct(
     var shopifyId: String?,
 
     @ElementCollection(fetch = FetchType.EAGER)
-    val tags: List<String>,
+    val tags: MutableSet<String>,
 
     @OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL], orphanRemoval = true)
     val variants: MutableList<SyncVariant> = mutableListOf(),

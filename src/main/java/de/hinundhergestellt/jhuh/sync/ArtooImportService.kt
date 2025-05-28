@@ -20,7 +20,8 @@ class ArtooImportService(
     private val artooDataStore: ArtooDataStore,
     private val shopifyDataStore: ShopifyDataStore,
     private val syncProductRepository: SyncProductRepository,
-    private val syncVariantRepository: SyncVariantRepository
+    private val syncVariantRepository: SyncVariantRepository,
+    private val syncCategoryRepository: SyncCategoryRepository,
 ) {
     val rootCategories by artooDataStore::rootCategories
 
@@ -30,6 +31,20 @@ class ArtooImportService(
             is ArtooMappedProduct -> item.name
             else -> throw IllegalStateException("Unexpected item $item")
         }
+
+    fun getItemTags(item: Any) =
+        when (item) {
+            is ArtooMappedCategory -> syncCategoryRepository.findByArtooId(item.id)?.tags
+            is ArtooMappedProduct -> {
+                val tags = artooDataStore.findAllCategoriesByProduct(item)
+                    .mapNotNull { syncCategoryRepository.findByArtooId(it.id)?.tags }
+                    .flatten()
+                    .toSet()
+                logger.info { "Tags from parent categories of ${item.name}: ${tags}"} // TODO
+                syncProductRepository.findByArtooId(item.id)?.tags?.let { it - tags }
+            }
+            else -> throw IllegalStateException("Unexpected item $item")
+        }?.sorted()?.joinToString(", ") ?: ""
 
     fun getItemVariations(item: Any) =
         when (item) {
@@ -67,9 +82,9 @@ class ArtooImportService(
     @Transactional
     fun markForSync(product: ArtooMappedProduct) {
         // TODO: Tags!
-        val syncProduct = SyncProduct(product.id, null, listOf())
-        product.variations.forEach { SyncVariant(syncProduct, it.barcode!!) }
-        syncProductRepository.save(syncProduct)
+        SyncProduct(product.id, null, mutableSetOf())
+            .apply { variants.addAll(product.variations.map { SyncVariant(this, it.barcode!!) }) }
+            .also { syncProductRepository.save(it) }
     }
 
     @Transactional
@@ -79,19 +94,25 @@ class ArtooImportService(
 
     @Transactional
     fun syncWithShopify() {
-        shopifyDataStore.products.forEach { reconcileFromShopify(it) }
-        syncProductRepository.findAllBy().forEach { reconcileFromArtoo(it) }
+        try {
+            shopifyDataStore.products.forEach { reconcileFromShopify(it) }
+            syncProductRepository.findAllBy().forEach { reconcileFromArtoo(it) }
+            artooDataStore.rootCategories.forEach { reconcileCategories(it) }
+        } catch (e: RuntimeException) {
+            logger.error(e) { "Synchronization failed" }
+        }
     }
 
     private fun reconcileFromShopify(shopifyProduct: ShopifyProduct) {
         val syncProduct = syncProductRepository.findByShopifyId(shopifyProduct.id)
-            ?: syncProductRepository.save(SyncProduct(null, shopifyProduct.id, shopifyProduct.tags))
+            ?: SyncProduct(null, shopifyProduct.id, shopifyProduct.tags.toMutableSet())
         shopifyProduct.variants.forEach { reconcileFromShopify(it, syncProduct) }
+        syncProductRepository.save(syncProduct) // for later retrieval in same transaction
     }
 
     private fun reconcileFromShopify(variant: ProductVariant, syncProduct: SyncProduct) {
         val syncVariant = syncVariantRepository.findByBarcode(variant.barcode)
-            ?: SyncVariant(syncProduct, variant.barcode)
+            ?: SyncVariant(syncProduct, variant.barcode).also { syncProduct.variants.add(it) }
 
         require(syncVariant.product === syncProduct) { "SyncVariant.product does not match ShopifyProduct" }
     }
@@ -99,15 +120,8 @@ class ArtooImportService(
     private fun reconcileFromArtoo(syncProduct: SyncProduct) {
         val artooProduct = syncProduct.artooId
             ?.let { artooDataStore.findProductById(it) }
-            ?: run {
-                syncProduct.variants.firstNotNullOfOrNull { artooDataStore.findProductByBarcode(it.barcode) }
-                    ?.also { syncProduct.artooId = it.id }
-                    ?: run {
-                        logger.info { "Product from SyncProduct ${syncProduct.id} no longer in ready2order, marked for deletion" }
-                        syncProduct.variants.forEach { it.deleted = true }
-                        return
-                    }
-            }
+            ?: findArtooProductByVariantBarcodesAndReconcile(syncProduct)
+            ?: return
 
         syncProduct.variants.asSequence()
             .filter { artooDataStore.findProductByBarcode(it.barcode) == null }
@@ -121,7 +135,38 @@ class ArtooImportService(
             .filter { variation -> syncProduct.variants.none { it.barcode == variation.barcode } }
             .forEach {
                 logger.info { "Variation ${it.name} not in Shopify, mark for synchronisation" }
-                SyncVariant(syncProduct, it.barcode!!)
+                syncProduct.variants.add(SyncVariant(syncProduct, it.barcode!!))
             }
+
+        syncProductRepository.save(syncProduct) // for later retrieval in same transaction
+    }
+
+    private fun findArtooProductByVariantBarcodesAndReconcile(syncProduct: SyncProduct) =
+        syncProduct.variants
+            .firstNotNullOfOrNull { artooDataStore.findProductByBarcode(it.barcode) }
+            ?.also { syncProduct.artooId = it.id }
+            ?: null.also {
+                logger.info { "Product from SyncProduct ${syncProduct.id} not found in ready2order, mark for deletion" }
+                syncProduct.variants.forEach { it.deleted = true }
+            }
+
+    private fun reconcileCategories(artooCategory: ArtooMappedCategory) {
+        artooCategory.children.forEach { reconcileCategories(it) }
+
+        if (syncCategoryRepository.findByArtooId(artooCategory.id) != null) {
+            return
+        }
+
+        val tagsOfCategories = artooCategory.children.asSequence().mapNotNull { syncCategoryRepository.findByArtooId(it.id)?.tags }
+        val tagsOfProducts = artooCategory.products.asSequence().mapNotNull { syncProductRepository.findByArtooId(it.id)?.tags }
+        val commonTags = (tagsOfCategories + tagsOfProducts)
+            .fold(null as Set<String>?) { acc, tags -> acc?.intersect(tags) ?: tags }
+            .also { if (it.isNullOrEmpty()) return }!!
+
+        SyncCategory(artooCategory.id, commonTags.toMutableSet()).also { syncCategoryRepository.save(it) }
+        artooCategory.children.asSequence()
+            .mapNotNull { syncCategoryRepository.findByArtooId(it.id) }
+            .onEach { it.tags.removeAll(commonTags) }
+            .forEach { syncCategoryRepository.save(it) }
     }
 }

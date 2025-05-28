@@ -12,7 +12,7 @@ import org.springframework.core.task.AsyncTaskExecutor
 import org.springframework.stereotype.Service
 import java.util.concurrent.Callable
 
-private val logger = KotlinLogging.logger {  }
+private val logger = KotlinLogging.logger { }
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -26,6 +26,9 @@ class ArtooDataStore(
 
     fun findProductById(id: String) =
         rootCategories.firstNotNullOf { it.findProductById(id) }
+
+    fun findAllCategoriesByProduct(product: ArtooMappedProduct) =
+        rootCategories.asSequence().flatMap { it.findAllCategoriesByProduct(product) }
 }
 
 @Service
