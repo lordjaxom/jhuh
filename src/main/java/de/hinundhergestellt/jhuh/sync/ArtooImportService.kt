@@ -53,9 +53,7 @@ class ArtooImportService(
         }
 
     fun isMarkedForSync(product: ArtooMappedProduct) =
-        // TODO: do not delete when unmarking, to preserve tags, add synced marker instead
-        product.variations
-            .any { variation -> variation.barcode?.let { syncVariantRepository.existsByBarcode(it) } ?: false }
+        syncProductRepository.findByArtooId(product.id)?.synced ?: false
 
     fun filterByReadyToSync(item: Any) =
         when (item) {
@@ -91,24 +89,29 @@ class ArtooImportService(
 
     @Transactional
     fun markForSync(product: ArtooMappedProduct) {
-        SyncProduct(product.id, null, mutableSetOf())
-            .apply { variants.addAll(product.variations.map { SyncVariant(this, it.barcode!!) }) }
-            .also { syncProductRepository.save(it) }
+        val syncProduct = syncProductRepository.findByArtooId(product.id)
+            ?.apply { synced = true }
+            ?: SyncProduct(product.id, null, mutableSetOf())
+        syncProductRepository.save(syncProduct)
     }
 
     @Transactional
     fun unmarkForSync(product: ArtooMappedProduct) {
-        syncProductRepository.deleteByArtooId(product.id)
+        syncProductRepository.findByArtooId(product.id)
+            ?.apply { synced = false }
+            ?.also { syncProductRepository.save(it) }
     }
 
     @Transactional
-    fun syncWithShopify() {
+    fun synchronize() {
         try {
             shopifyDataStore.products.forEach { reconcileFromShopify(it) }
             syncProductRepository.findAllBy().forEach { reconcileFromArtoo(it) }
             artooDataStore.rootCategories.forEach { reconcileCategories(it) }
-        } catch (e: RuntimeException) {
+            synchronizeWithShopify()
+        } catch (e: Exception) {
             logger.error(e) { "Synchronization failed" }
+            throw e
         }
     }
 
@@ -182,5 +185,9 @@ class ArtooImportService(
             .mapNotNull { syncProductRepository.findByArtooId(it.id) }
             .onEach { it.tags.removeAll(commonTags) }
             .forEach { syncProductRepository.save(it) } // for later retrieval in same transaction
+    }
+
+    private fun synchronizeWithShopify() {
+
     }
 }

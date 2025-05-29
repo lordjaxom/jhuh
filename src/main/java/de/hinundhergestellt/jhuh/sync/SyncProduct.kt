@@ -23,6 +23,9 @@ class SyncProduct(
     @ElementCollection(fetch = FetchType.EAGER)
     val tags: MutableSet<String>,
 
+    @Column(nullable = false)
+    var synced: Boolean = true,
+
     @OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL], orphanRemoval = true)
     val variants: MutableList<SyncVariant> = mutableListOf(),
 

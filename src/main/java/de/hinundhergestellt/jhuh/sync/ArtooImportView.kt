@@ -7,11 +7,11 @@ import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.checkbox.Checkbox
 import com.vaadin.flow.component.dialog.Dialog
+import com.vaadin.flow.component.grid.ColumnTextAlign
 import com.vaadin.flow.component.grid.GridVariant
 import com.vaadin.flow.component.html.Div
 import com.vaadin.flow.component.html.H3
 import com.vaadin.flow.component.html.Span
-import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.notification.Notification
 import com.vaadin.flow.component.notification.NotificationVariant
@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.task.AsyncTaskExecutor
 import java.util.concurrent.CompletableFuture
 import java.util.stream.Stream
+import kotlin.jvm.optionals.getOrNull
 import kotlin.streams.asStream
 
 @Route
@@ -49,7 +50,6 @@ class ArtooImportView(
     init {
         setHeightFull()
         width = "1170px"
-        //        setSpacing(false);
         style.setMargin("0 auto")
 
         createHeader()
@@ -66,11 +66,11 @@ class ArtooImportView(
         val spacer = Div()
         spacer.setWidthFull()
 
-        val button = Button("Sync mit Shopify")
+        val button = Button("Synchronisieren")
         button.style
             .setPosition(Style.Position.RELATIVE)
             .setRight("5px")
-        button.addClickListener { syncWithShopify() }
+        button.addClickListener { synchronize() }
 
         val titleLayout = HorizontalLayout(title, spacer, button)
         titleLayout.isPadding = true
@@ -131,30 +131,32 @@ class ArtooImportView(
             .setHeader("Bezeichnung")
             .apply {
                 isSortable = false
-                flexGrow = 10
+                flexGrow = 100
             }
-        treeGrid.addColumn(ComponentRenderer{ it -> treeItemTagsSpan(it) })
+        treeGrid.addColumn(ComponentRenderer { it -> treeItemTagsColumn(it) })
             .setHeader("Tags")
             .apply {
                 isSortable = false
-                flexGrow = 5
+                flexGrow = 50
             }
         treeGrid.addColumn { importService.getItemVariations(it) }
             .setHeader("V#")
             .apply {
                 isSortable = false
-                flexGrow = 1
+                textAlign = ColumnTextAlign.CENTER
+                width = "4em"
+                flexGrow = 0
             }
-        treeGrid.addColumn(ComponentRenderer { it -> treeItemStatusIcon(it) })
+        treeGrid.addColumn(ComponentRenderer { it -> treeItemStatusColumn(it) })
             .setHeader("").apply {
                 isSortable = false
                 width = "32px"
                 flexGrow = 0
             }
-        treeGrid.addColumn(ComponentRenderer { it -> treeItemSyncButton(it) })
+        treeGrid.addColumn(ComponentRenderer { it -> treeItemActionsColumn(it) })
             .setHeader("").apply {
                 isSortable = false
-                width = "80px"
+                width = "56px"
                 flexGrow = 0
             }
         treeGrid.setDataProvider(TreeDataProvider())
@@ -176,23 +178,17 @@ class ArtooImportView(
         add(progressOverlay)
     }
 
-    private fun syncWithShopify() {
+    private fun synchronize() {
         progressOverlay.isVisible = true
         CompletableFuture
-            .runAsync({ importService.syncWithShopify() }, taskExecutor)
-            .whenComplete { _, throwable -> syncWithShopifyComplete(throwable) }
-    }
-
-    private fun syncWithShopifyComplete(throwable: Throwable?) {
-        ui.ifPresent {
-            it.access {
-                progressOverlay.isVisible = false
-                treeGrid.dataProvider.refreshAll()
-                if (throwable != null) {
-                    showErrorNotification(throwable)
+            .runAsync({ importService.synchronize() }, taskExecutor)
+            .whenComplete { _, throwable ->
+                ui.getOrNull()?.access {
+                    throwable?.also { showErrorNotification(it) }
+                    progressOverlay.isVisible = false
+                    treeGrid.dataProvider.refreshAll()
                 }
             }
-        }
     }
 
     private fun editItemTags(item: Any) {
@@ -212,21 +208,21 @@ class ArtooImportView(
         dialog.open()
     }
 
-    private fun treeItemTagsSpan(item: Any): Span {
+    private fun treeItemTagsColumn(item: Any): Component {
         val icon = VaadinIcon.EDIT.create()
         icon.setSize("20px")
-        icon.color = "grey"
         val button = Button(icon) { editItemTags(item) }
         button.height = "20px"
-        button.style.setMargin("0 5px 0 0")
         button.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE)
         val text = Text(importService.getItemTags(item))
-        return Span(button, text).apply {
-            style.setWhiteSpace(Style.WhiteSpace.NOWRAP)
-        }
+        val layout = HorizontalLayout(button, text)
+        layout.isSpacing = false
+        layout.themeList.add("spacing-s")
+        layout.style.setWhiteSpace(Style.WhiteSpace.NOWRAP)
+        return layout
     }
 
-    private fun treeItemStatusIcon(item: Any): Component {
+    private fun treeItemStatusColumn(item: Any): Component {
         if (item !is ArtooMappedProduct) {
             return Span()
         }
@@ -235,35 +231,36 @@ class ArtooImportView(
         val marked = importService.isMarkedForSync(item)
         val icon = when {
             !ready -> VaadinIcon.WARNING.create().apply {
-                style.set("color", "var(--lumo-warning-color)")
+                style.setColor("var(--lumo-warning-color)")
                 //Tooltip.forComponent(icon).withText("Fehler beim Laden der Artikel");
             }
 
             !marked -> VaadinIcon.CIRCLE.create().apply {
-                style.set("color", "lightgray")
+                style.setColor("lightgray")
             }
 
             else -> VaadinIcon.CHECK.create().apply {
-                style.set("color", "var(--lumo-success-color)")
+                style.setColor("var(--lumo-success-color)")
             }
         }
         icon.setSize("16px")
         return icon
     }
 
-    private fun treeItemSyncButton(item: Any): Component {
+    private fun treeItemActionsColumn(item: Any): Component {
         if (item !is ArtooMappedProduct) {
             return Span()
         }
 
         val ready = item.isReadyForSync
         val marked = importService.isMarkedForSync(item)
-        val icon = if (marked) VaadinIcon.MINUS.create() else VaadinIcon.PLUS.create()
+        val icon = if (marked) VaadinIcon.TRASH.create() else VaadinIcon.PLUS.create()
         icon.setSize("20px")
-        icon.color = if (!ready) "lightgray" else if (marked) "red" else "green"
+        //icon.color = if (!ready) "lightgray" else if (marked) "red" else "green"
         val button = Button(icon)
         button.isEnabled = ready
         button.height = "20px"
+        button.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE)
         button.addClickListener {
             if (marked) {
                 importService.unmarkForSync(item)

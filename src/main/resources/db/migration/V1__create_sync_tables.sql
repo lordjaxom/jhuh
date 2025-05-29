@@ -1,7 +1,7 @@
 CREATE TABLE sync_category
 (
     id       UUID NOT NULL,
-    artoo_id INT NOT NULL,
+    artoo_id INT  NOT NULL,
     CONSTRAINT pk_synccategory PRIMARY KEY (id)
 );
 
@@ -13,9 +13,10 @@ CREATE TABLE sync_category_tags
 
 CREATE TABLE sync_product
 (
-    id         UUID NOT NULL,
+    id         UUID    NOT NULL,
     artoo_id   VARCHAR(255),
     shopify_id VARCHAR(255),
+    synced     BOOLEAN NOT NULL,
     CONSTRAINT pk_syncproduct PRIMARY KEY (id)
 );
 
