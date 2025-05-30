@@ -20,7 +20,7 @@ class ShopifyDataStore(
 ) {
     val products by factory.products()
 
-    fun findById(id: String) =
+    fun findProductById(id: String) =
         products.find { it.id == id }
 
     fun deleteProduct(product: ShopifyProduct) {
@@ -28,7 +28,7 @@ class ShopifyDataStore(
         products.remove(product)
     }
 
-    fun saveVariants(product: ShopifyProduct, variants: List<ShopifyVariant>) {
+    fun createVariants(product: ShopifyProduct, variants: List<ShopifyVariant>) {
         variantClient.create(product, variants)
         variants.forEach { product.addVariant(it) }
     }

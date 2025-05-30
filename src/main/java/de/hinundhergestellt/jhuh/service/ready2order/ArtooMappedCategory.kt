@@ -10,8 +10,11 @@ class ArtooMappedCategory internal constructor(
     val id by group::id
     val name by group::name
 
+    fun findAllProducts(): Sequence<ArtooMappedProduct> =
+        children.asSequence().flatMap { it.findAllProducts() } + products.asSequence()
+
     fun containsReadyForSync(): Boolean =
-        children.asSequence().any { it.containsReadyForSync() } || products.asSequence().any { it.isReadyForSync }
+        children.any { it.containsReadyForSync() } || products.any { it.isReadyForSync }
 
     fun findProductByBarcode(barcode: String): ArtooMappedProduct? =
         products.firstOrNull { it.findVariationByBarcode(barcode) != null }

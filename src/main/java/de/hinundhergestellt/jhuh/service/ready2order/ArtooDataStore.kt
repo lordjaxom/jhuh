@@ -21,6 +21,9 @@ class ArtooDataStore(
 ) {
     val rootCategories by factory.rootCategories()
 
+    fun findAllProducts() =
+        rootCategories.flatMap { it.findAllProducts() }
+
     fun findProductByBarcode(barcode: String) =
         rootCategories.firstNotNullOfOrNull { it.findProductByBarcode(barcode) }
 

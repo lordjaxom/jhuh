@@ -9,6 +9,9 @@ abstract class ArtooMappedProduct protected constructor(
     val isReadyForSync: Boolean
         get() = variations.all { it.barcode != null }
 
+    val barcodes
+        get() = variations.mapNotNull { it.barcode }
+
     fun findVariationByBarcode(barcode: String) =
         variations.firstOrNull { it.barcode == barcode }
 }
