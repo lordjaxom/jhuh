@@ -25,7 +25,10 @@ class ArtooDataStore(
         rootCategories.firstNotNullOfOrNull { it.findProductByBarcode(barcode) }
 
     fun findProductById(id: String) =
-        rootCategories.firstNotNullOf { it.findProductById(id) }
+        rootCategories.firstNotNullOfOrNull { it.findProductById(id) }
+
+    fun findVariationByBarcode(barcode: String) =
+        rootCategories.firstNotNullOfOrNull { it.findVariationByBarcode(barcode) }
 
     fun findAllCategoriesByProduct(product: ArtooMappedProduct) =
         rootCategories.asSequence().flatMap { it.findAllCategoriesByProduct(product) }

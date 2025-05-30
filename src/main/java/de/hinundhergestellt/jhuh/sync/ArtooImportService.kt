@@ -1,6 +1,5 @@
 package de.hinundhergestellt.jhuh.sync
 
-import com.shopify.admin.types.ProductVariant
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.service.ready2order.ArtooDataStore
 import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedCategory
@@ -8,6 +7,7 @@ import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedProduct
 import de.hinundhergestellt.jhuh.service.ready2order.SingleArtooMappedProduct
 import de.hinundhergestellt.jhuh.service.shopify.ShopifyDataStore
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProduct
+import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyVariant
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -108,7 +108,8 @@ class ArtooImportService(
             shopifyDataStore.products.forEach { reconcileFromShopify(it) }
             syncProductRepository.findAllBy().forEach { reconcileFromArtoo(it) }
             artooDataStore.rootCategories.forEach { reconcileCategories(it) }
-            synchronizeWithShopify()
+
+            syncProductRepository.findAllBy().forEach { synchronizeWithShopify(it) }
         } catch (e: Exception) {
             logger.error(e) { "Synchronization failed" }
             throw e
@@ -122,20 +123,23 @@ class ArtooImportService(
         syncProductRepository.save(syncProduct) // for later retrieval in same transaction
     }
 
-    private fun reconcileFromShopify(variant: ProductVariant, syncProduct: SyncProduct) {
-        val syncVariant = syncVariantRepository.findByBarcode(variant.barcode)
-            ?: SyncVariant(syncProduct, variant.barcode).also { syncProduct.variants.add(it) }
+    private fun reconcileFromShopify(shopifyVariant: ShopifyVariant, syncProduct: SyncProduct) {
+        val syncVariant = syncVariantRepository.findByBarcode(shopifyVariant.barcode)
+            ?: SyncVariant(syncProduct, shopifyVariant.barcode).also { syncProduct.variants.add(it) }
 
         require(syncVariant.product === syncProduct) { "SyncVariant.product does not match ShopifyProduct" }
     }
 
     private fun reconcileFromArtoo(syncProduct: SyncProduct) {
-        val artooProduct = syncProduct.artooId
-            ?.let { artooDataStore.findProductById(it) }
-            ?: findArtooProductByVariantBarcodesAndReconcile(syncProduct)
-            ?: return
+        val artooProduct = findArtooProductBySyncProductAndReconcile(syncProduct)
+        if (artooProduct == null) {
+            logger.info { "Product from SyncProduct ${syncProduct.id} not found in ready2order, mark for deletion" }
+            syncProduct.variants.forEach { it.deleted = true }
+            syncProductRepository.save(syncProduct)
+            return
+        }
 
-        syncProduct.variants.asSequence()
+        syncProduct.variants
             .filter { artooDataStore.findProductByBarcode(it.barcode) == null }
             .forEach {
                 logger.info { "Variant of ${artooProduct.name} with barcode ${it.barcode} no longer in ready2order, mark for deletion" }
@@ -153,14 +157,15 @@ class ArtooImportService(
         syncProductRepository.save(syncProduct) // for later retrieval in same transaction
     }
 
-    private fun findArtooProductByVariantBarcodesAndReconcile(syncProduct: SyncProduct) =
+    private fun findArtooProductBySyncProductAndReconcile(syncProduct: SyncProduct) =
+        syncProduct.artooId
+            ?.let { artooDataStore.findProductById(it)!! }
+            ?: findArtooProductByVariantsBarcodeAndReconcile(syncProduct)
+
+    private fun findArtooProductByVariantsBarcodeAndReconcile(syncProduct: SyncProduct) =
         syncProduct.variants
             .firstNotNullOfOrNull { artooDataStore.findProductByBarcode(it.barcode) }
             ?.also { syncProduct.artooId = it.id }
-            ?: null.also {
-                logger.info { "Product from SyncProduct ${syncProduct.id} not found in ready2order, mark for deletion" }
-                syncProduct.variants.forEach { it.deleted = true }
-            }
 
     private fun reconcileCategories(artooCategory: ArtooMappedCategory) {
         artooCategory.children.forEach { reconcileCategories(it) }
@@ -187,7 +192,59 @@ class ArtooImportService(
             .forEach { syncProductRepository.save(it) } // for later retrieval in same transaction
     }
 
-    private fun synchronizeWithShopify() {
+    private fun synchronizeWithShopify(syncProduct: SyncProduct) {
+        val shopifyProduct = syncProduct.shopifyId?.let { shopifyDataStore.findById(it) }
+        if (shopifyProduct == null) {
+            logger.error { "Creating new products in Shopify is not implemented, skipping" }
+            return
+        }
 
+        deleteVariantsFromShopify(syncProduct, shopifyProduct)
+        if (deleteProductFromShopify(syncProduct, shopifyProduct)) {
+            return
+        }
+        uploadVariantsToShopify(syncProduct, shopifyProduct)
+        syncProductRepository.save(syncProduct)
+    }
+
+    private fun deleteVariantsFromShopify(syncProduct: SyncProduct, shopifyProduct: ShopifyProduct) {
+        val deleteSyncVariants = syncProduct.variants.filter { it.deleted }
+        if (deleteSyncVariants.isEmpty()) {
+            return
+        }
+
+        // deleting the last variant in Shopify is impossible, delete the product instead
+        if (syncProduct.variants.size > deleteSyncVariants.size) {
+            logger.info { "Delete ${deleteSyncVariants.size} variants of ${shopifyProduct.title} from Shopify" }
+            val shopifyVariants = deleteSyncVariants.map { shopifyProduct.findVariantByBarcode(it.barcode)!! }
+            shopifyDataStore.deleteVariants(shopifyProduct, shopifyVariants)
+        }
+        syncProduct.variants.removeAll(deleteSyncVariants)
+    }
+
+    private fun deleteProductFromShopify(syncProduct: SyncProduct, shopifyProduct: ShopifyProduct): Boolean {
+        if (syncProduct.variants.isNotEmpty()) {
+            return false
+        }
+
+        logger.info { "Delete product ${shopifyProduct.title} from Shopify" }
+        shopifyDataStore.deleteProduct(shopifyProduct)
+        syncProductRepository.delete(syncProduct)
+        return true
+    }
+
+    private fun uploadVariantsToShopify(syncProduct: SyncProduct, shopifyProduct: ShopifyProduct) {
+        val newShopifyVariants = syncProduct.variants
+            .filter { shopifyProduct.findVariantByBarcode(it.barcode) == null }
+            .map { syncVariant ->
+                val product = syncProduct.artooId?.let { artooDataStore.findProductById(it) }!!
+                val variation = product.findVariationByBarcode(syncVariant.barcode)!!
+                val optionName = variation.name.removePrefix(product.name).trim()
+                ShopifyVariant(optionName, variation.itemNumber, variation.barcode!!, variation.price, variation.stockValue.toInt())
+            }
+        if (newShopifyVariants.isNotEmpty()) {
+            logger.info { "Upload ${newShopifyVariants.size} variants of ${shopifyProduct.title} to Shopify" }
+            shopifyDataStore.saveVariants(shopifyProduct, newShopifyVariants)
+        }
     }
 }

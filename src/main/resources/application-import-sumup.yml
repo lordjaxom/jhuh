@@ -6,5 +6,6 @@ spring:
       - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
       - org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
       - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - com.vaadin.flow.spring.SpringBootAutoConfiguration
   main:
     web-application-type: none

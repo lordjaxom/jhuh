@@ -1,5 +1,6 @@
 package de.hinundhergestellt.jhuh.vendors.shopify;
 
+import com.netflix.graphql.dgs.client.GraphQLClient;
 import com.shopify.admin.types.Product;
 import de.hinundhergestellt.jhuh.HuhApplication;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,8 @@ class ShopifyApiTest {
 
     @Autowired
     private ShopifyProductClient productClient;
+    @Autowired
+    private GraphQLClient graphQLClient;
 
     @Test
     void createsNewProduct() {
@@ -28,6 +31,11 @@ class ShopifyApiTest {
         product.setTags(List.of("Wolle"));
         productClient.save(product);
         LOGGER.info("New Product: {}", product.getId());
+    }
+
+    @Test
+    void getsLocations() {
+
     }
 }
 

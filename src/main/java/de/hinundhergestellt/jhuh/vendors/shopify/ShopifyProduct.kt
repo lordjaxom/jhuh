@@ -1,12 +1,10 @@
 package de.hinundhergestellt.jhuh.vendors.shopify
 
 import com.shopify.admin.types.Product
-import com.shopify.admin.types.ProductVariant
-import com.shopify.admin.types.ProductVariantEdge
-import org.springframework.util.Assert
 
-class ShopifyProduct internal constructor(private val product: Product) {
-
+class ShopifyProduct internal constructor(
+    private val product: Product
+) {
     val handle: String by product::handle
     val id: String by product::id
 
@@ -16,9 +14,17 @@ class ShopifyProduct internal constructor(private val product: Product) {
     var vendor: String by product::vendor
     val hasOnlyDefaultVariant: Boolean by product::hasOnlyDefaultVariant
 
-    val variants: Sequence<ProductVariant>
-        get() {
-            require(!product.variants.pageInfo.hasNextPage) { "Product has more variants than were loaded" }
-            return product.variants.edges.asSequence().map { it.node }
-        }
+    val variants
+        get() = product.variants.edges.asSequence().map { ShopifyVariant(it.node) }
+
+    fun findVariantByBarcode(barcode: String) =
+        variants.firstOrNull { it.barcode == barcode }
+
+    internal fun addVariant(variant: ShopifyVariant) {
+        product.variants.edges.add(variant.toEdge())
+    }
+
+    internal fun removeVariants(variants: List<ShopifyVariant>) {
+        product.variants.edges.removeIf { edge -> variants.any { it.id == edge.node!!.id } }
+    }
 }
