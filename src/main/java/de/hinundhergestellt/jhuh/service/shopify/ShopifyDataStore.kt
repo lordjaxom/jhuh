@@ -2,8 +2,8 @@ package de.hinundhergestellt.jhuh.service.shopify
 
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProductClient
-import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyVariant
-import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyVariantClient
+import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProductVariant
+import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProductVariantClient
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.context.annotation.Scope
@@ -16,26 +16,31 @@ import java.util.concurrent.Callable
 class ShopifyDataStore(
     factory: ShopifyDataStoreFactory,
     private val productClient: ShopifyProductClient,
-    private val variantClient: ShopifyVariantClient
+    private val variantClient: ShopifyProductVariantClient
 ) {
     val products by factory.products()
 
     fun findProductById(id: String) =
         products.find { it.id == id }
 
-    fun deleteProduct(product: ShopifyProduct) {
+    fun create(product: ShopifyProduct) {
+        productClient.create(product)
+        products.add(product)
+    }
+
+    fun delete(product: ShopifyProduct) {
         productClient.delete(product)
         products.remove(product)
     }
 
-    fun createVariants(product: ShopifyProduct, variants: List<ShopifyVariant>) {
-        variantClient.create(product, variants)
-        variants.forEach { product.addVariant(it) }
+    fun create(product: ShopifyProduct, variant: ShopifyProductVariant) {
+        variantClient.create(product, listOf(variant))
+        product.variants.add(variant)
     }
 
-    fun deleteVariants(product: ShopifyProduct, variants: List<ShopifyVariant>) {
-        variantClient.delete(product, variants)
-        product.removeVariants(variants)
+    fun delete(product: ShopifyProduct, variant: ShopifyProductVariant) {
+        variantClient.delete(product, listOf(variant))
+        product.variants.remove(variant)
     }
 }
 

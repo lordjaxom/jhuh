@@ -8,25 +8,33 @@ import com.shopify.admin.client.ProductVariantsBulkCreateProjectionRoot
 import com.shopify.admin.client.ProductVariantsBulkDeleteGraphQLQuery
 import com.shopify.admin.client.ProductVariantsBulkDeleteProjectionRoot
 import com.shopify.admin.types.ProductVariantsBulkCreatePayload
+import com.shopify.admin.types.ProductVariantsBulkCreateStrategy
 import com.shopify.admin.types.ProductVariantsBulkDeletePayload
 import org.springframework.stereotype.Component
 
 @Component
-class ShopifyVariantClient(
+class ShopifyProductVariantClient(
     private val apiClient: GraphQLClient
 ) {
-    fun create(product: ShopifyProduct, variants: List<ShopifyVariant>) {
+    fun create(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
         val inputs = variants
             .onEach { require(it.id == null) { "Variant id must be null" } }
             .map { it.toProductVariantsBulkInput() }
 
+        val strategy =
+            if (product.variants.isEmpty()) ProductVariantsBulkCreateStrategy.REMOVE_STANDALONE_VARIANT
+            else ProductVariantsBulkCreateStrategy.DEFAULT
         val query = ProductVariantsBulkCreateGraphQLQuery.newRequest()
+            .strategy(strategy)
             .productId(product.id)
             .variants(inputs)
             .build()
 
         // @formatter:off
         val root = ProductVariantsBulkCreateProjectionRoot<BaseSubProjectionNode<*, *>, BaseSubProjectionNode<*, *>>()
+            .productVariants()
+                .id()
+                .parent()
             .userErrors()
                 .message()
                 .field()
@@ -37,9 +45,11 @@ class ShopifyVariantClient(
         require(!response.hasErrors()) { "Product variants bulk create failed: " + response.errors }
         val payload = response.extractValueAsObject("productVariantsBulkCreate", ProductVariantsBulkCreatePayload::class.java)
         require((payload.userErrors.isEmpty())) { "Product variants bulk create failed: " + payload.userErrors }
+
+        variants.zip(payload.productVariants).forEach { (variant, created) -> variant.id = created.id }
     }
 
-    fun delete(product: ShopifyProduct, variants: List<ShopifyVariant>) {
+    fun delete(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
         val query = ProductVariantsBulkDeleteGraphQLQuery.newRequest()
             .productId(product.id)
             .variantsIds(variants.map { it.id })

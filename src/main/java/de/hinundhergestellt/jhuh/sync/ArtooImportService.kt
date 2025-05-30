@@ -1,5 +1,6 @@
 package de.hinundhergestellt.jhuh.sync
 
+import com.shopify.admin.types.ProductOption
 import com.shopify.admin.types.SelectedOption
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.service.ready2order.ArtooDataStore
@@ -9,7 +10,7 @@ import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedVariation
 import de.hinundhergestellt.jhuh.service.ready2order.SingleArtooMappedProduct
 import de.hinundhergestellt.jhuh.service.shopify.ShopifyDataStore
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProduct
-import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyVariant
+import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProductVariant
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -120,13 +121,13 @@ class ArtooImportService(
 
     private fun reconcileFromShopify(shopifyProduct: ShopifyProduct) {
         // all products in Shopify are considered synced
-        val syncProduct = syncProductRepository.findByShopifyId(shopifyProduct.id)
+        val syncProduct = syncProductRepository.findByShopifyId(shopifyProduct.id!!)
             ?: SyncProduct(shopifyId = shopifyProduct.id, tags = shopifyProduct.tags.toMutableSet(), synced = true)
         shopifyProduct.variants.forEach { reconcileFromShopify(it, syncProduct) }
         syncProductRepository.save(syncProduct) // for later retrieval in same transaction
     }
 
-    private fun reconcileFromShopify(shopifyVariant: ShopifyVariant, syncProduct: SyncProduct) {
+    private fun reconcileFromShopify(shopifyVariant: ShopifyProductVariant, syncProduct: SyncProduct) {
         syncVariantRepository.findByBarcode(shopifyVariant.barcode)
             ?.also { require(it.product === syncProduct) { "SyncVariant.product does not match ShopifyVariant.product" } }
             ?: SyncVariant(syncProduct, shopifyVariant.barcode).also { syncProduct.variants.add(it) }
@@ -178,22 +179,23 @@ class ArtooImportService(
     private fun synchronizeWithShopify(syncProduct: SyncProduct) {
         // TODO: Products in ready2order with no barcodes at all?
         val artooProduct = if (syncProduct.synced) syncProduct.artooId?.let { artooDataStore.findProductById(it) } else null
-        val shopifyProduct = syncProduct.shopifyId?.let { shopifyDataStore.findProductById(it) }
+        var shopifyProduct = syncProduct.shopifyId?.let { shopifyDataStore.findProductById(it) }
 
         if (artooProduct == null) {
-            require(shopifyProduct != null)  { "SyncProduct vanished from both ready2order and Shopify" }
-            logger.info { "Product ${shopifyProduct.title} no longer in ready2order or not synced, delete from Shopify"}
-            shopifyDataStore.deleteProduct(shopifyProduct)
+            require(shopifyProduct != null) { "SyncProduct vanished from both ready2order and Shopify" }
+            logger.info { "Product ${shopifyProduct!!.title} no longer in ready2order or not synced, delete from Shopify" }
+            shopifyDataStore.delete(shopifyProduct)
             syncProductRepository.delete(syncProduct)
             return
         }
 
         if (shopifyProduct == null) {
-            logger.warn { "Creating new product ${artooProduct.name} in Shopify not implemented yet, skipping" }
-            return
+            logger.info { "Product ${artooProduct.name} only in ready2order, create in Shopify" }
+            shopifyProduct = buildShopifyProduct(artooProduct, syncProduct)
+            shopifyDataStore.create(shopifyProduct)
+        } else {
+            // Update product if necessary
         }
-
-        // Update product if necessary
 
         syncProduct.variants.forEach { synchronizeWithShopify(it, artooProduct, shopifyProduct) }
     }
@@ -205,7 +207,7 @@ class ArtooImportService(
         if (artooVariation == null) {
             require(shopifyVariant != null) { "SyncVariant vanished from both ready2order and Shopify" }
             logger.info { "Variant ${shopifyVariant.title} of ${shopifyProduct.title} no longer in ready2order, delete from Shopify" }
-            shopifyDataStore.deleteVariants(shopifyProduct, listOf(shopifyVariant))
+            shopifyDataStore.delete(shopifyProduct, shopifyVariant)
             syncVariant.product.variants.remove(syncVariant)
             return
         }
@@ -213,19 +215,45 @@ class ArtooImportService(
         if (shopifyVariant == null) {
             logger.info { "Variant ${artooVariation.name} only in ready2order, create in Shopify" }
             val newShopifyVariant = buildShopifyVariant(shopifyProduct, artooProduct, artooVariation)
-            shopifyDataStore.createVariants(shopifyProduct, listOf(newShopifyVariant))
+            shopifyDataStore.create(shopifyProduct, newShopifyVariant)
+            return
         }
 
         // Update variant if necessary
+    }
+
+    private fun buildShopifyProduct(
+        artooProduct: ArtooMappedProduct,
+        syncProduct: SyncProduct
+    ): ShopifyProduct {
+        val categoryTags = artooDataStore.findAllCategoriesByProduct(artooProduct)
+            .mapNotNull { syncCategoryRepository.findByArtooId(it.id)?.tags }
+            .flatten()
+            .toSet()
+        val tags = categoryTags + syncProduct.tags
+        val options = when (artooProduct) {
+            is SingleArtooMappedProduct -> listOf()
+            else -> listOf(ProductOption().apply {
+                name = "Farbe" // TODO
+                values = artooProduct.variations.map { it.name.removePrefix(artooProduct.name).trim() }
+            })
+        }
+        return ShopifyProduct(
+            artooProduct.name,
+            "unknown", // TODO
+            "unknown", // TODO
+            tags.toList(),
+            options
+        )
     }
 
     private fun buildShopifyVariant(
         shopifyProduct: ShopifyProduct,
         artooProduct: ArtooMappedProduct,
         artooVariation: ArtooMappedVariation
-    ): ShopifyVariant {
+    ): ShopifyProductVariant {
         val optionValue = artooVariation.name.removePrefix(artooProduct.name).trim()
-        return ShopifyVariant(
+        return ShopifyProductVariant(
             optionValue,
             artooVariation.itemNumber,
             artooVariation.barcode!!,

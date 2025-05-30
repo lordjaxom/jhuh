@@ -20,33 +20,28 @@ class ShopifyProductClient(
         findAll(it)
     }
 
-    fun save(product: Product) {
+    fun create(product: ShopifyProduct) {
         require(product.id == null) { "Product id must be null" }
 
-        val productInput = ProductCreateInput()
-        productInput.title = product.title
-        productInput.vendor = product.vendor
-        productInput.productType = product.productType
-        productInput.tags = product.tags
-
         val query = ProductCreateGraphQLQuery.newRequest()
-            .product(productInput)
+            .product(product.toProductCreateInput())
             .build()
 
         // @formatter:off
         val root = ProductCreateProjectionRoot<BaseSubProjectionNode<*, *>?, BaseSubProjectionNode<*, *>?>()
-        .product()
-        .id()
-        .parent()
-        .userErrors()
-        .message()
-        .field()
+            .product()
+                .id()
+                .parent()
+            .userErrors()
+                .message()
+                .field()
         // @formatter:on
 
         val request = GraphQLQueryRequest(query, root)
         val response = apiClient.executeQuery(request.serialize())
         val payload = response.extractValueAsObject("productCreate", ProductCreatePayload::class.java)
         require(payload.userErrors.isEmpty()) { "Product creation failed: " + payload.userErrors }
+
         product.id = payload.product.id
     }
 
@@ -107,7 +102,6 @@ class ShopifyProductClient(
                             .parent()
                         .parent()
                     .options()
-                        .id()
                         .name()
                         .parent()
                     .parent()

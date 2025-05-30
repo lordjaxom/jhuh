@@ -12,8 +12,6 @@ import org.springframework.core.task.AsyncTaskExecutor
 import org.springframework.stereotype.Service
 import java.util.concurrent.Callable
 
-private val logger = KotlinLogging.logger { }
-
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 class ArtooDataStore(
@@ -24,14 +22,8 @@ class ArtooDataStore(
     fun findAllProducts() =
         rootCategories.flatMap { it.findAllProducts() }
 
-    fun findProductByBarcode(barcode: String) =
-        rootCategories.firstNotNullOfOrNull { it.findProductByBarcode(barcode) }
-
     fun findProductById(id: String) =
         rootCategories.firstNotNullOfOrNull { it.findProductById(id) }
-
-    fun findVariationByBarcode(barcode: String) =
-        rootCategories.firstNotNullOfOrNull { it.findVariationByBarcode(barcode) }
 
     fun findAllCategoriesByProduct(product: ArtooMappedProduct) =
         rootCategories.asSequence().flatMap { it.findAllCategoriesByProduct(product) }
