@@ -3,6 +3,7 @@ package de.hinundhergestellt.jhuh.service.shopify
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProductClient
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyVariant
+import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyVariantClient
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.context.annotation.Scope
@@ -14,7 +15,8 @@ import java.util.concurrent.Callable
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 class ShopifyDataStore(
     factory: ShopifyDataStoreFactory,
-    private val productClient: ShopifyProductClient
+    private val productClient: ShopifyProductClient,
+    private val variantClient: ShopifyVariantClient
 ) {
     val products by factory.products()
 
@@ -22,17 +24,17 @@ class ShopifyDataStore(
         products.find { it.id == id }
 
     fun deleteProduct(product: ShopifyProduct) {
-        productClient.deleteProduct(product)
+        productClient.delete(product)
         products.remove(product)
     }
 
     fun saveVariants(product: ShopifyProduct, variants: List<ShopifyVariant>) {
-        productClient.saveVariants(product, variants)
+        variantClient.create(product, variants)
         variants.forEach { product.addVariant(it) }
     }
 
     fun deleteVariants(product: ShopifyProduct, variants: List<ShopifyVariant>) {
-        productClient.deleteVariants(product, variants)
+        variantClient.delete(product, variants)
         product.removeVariants(variants)
     }
 }

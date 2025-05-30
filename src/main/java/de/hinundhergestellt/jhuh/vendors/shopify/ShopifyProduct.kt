@@ -1,6 +1,7 @@
 package de.hinundhergestellt.jhuh.vendors.shopify
 
 import com.shopify.admin.types.Product
+import com.shopify.admin.types.ProductOption
 
 class ShopifyProduct internal constructor(
     private val product: Product
@@ -13,6 +14,7 @@ class ShopifyProduct internal constructor(
     var tags: List<String> by product::tags
     var vendor: String by product::vendor
     val hasOnlyDefaultVariant: Boolean by product::hasOnlyDefaultVariant
+    val options: List<ProductOption> by product::options
 
     val variants
         get() = product.variants.edges.asSequence().map { ShopifyVariant(it.node) }

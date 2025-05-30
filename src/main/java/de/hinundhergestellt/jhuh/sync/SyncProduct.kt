@@ -15,16 +15,16 @@ import java.util.*
 class SyncProduct(
 
     @Column
-    var artooId: String?,
+    var artooId: String? = null,
 
     @Column
-    var shopifyId: String?,
+    var shopifyId: String? = null,
 
     @ElementCollection(fetch = FetchType.EAGER)
-    val tags: MutableSet<String>,
+    val tags: MutableSet<String> = mutableSetOf(),
 
     @Column(nullable = false)
-    var synced: Boolean = true,
+    var synced: Boolean = false,
 
     @OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL], orphanRemoval = true)
     val variants: MutableList<SyncVariant> = mutableListOf(),

@@ -11,13 +11,13 @@ class ShopifyVariant internal constructor(
         sku: String?,
         barcode: String,
         price: BigDecimal?,
-        quantity: Int // TODO raus - wird gesynced
+        selectedOption: SelectedOption
     ) : this(ProductVariant().also {
         it.title = title
         it.sku = sku
         it.barcode = barcode
         it.price = price?.toPlainString()
-        it.inventoryQuantity = quantity
+        it.selectedOptions = listOf(selectedOption)
     })
 
     val id: String? by variant::id
@@ -35,10 +35,12 @@ class ShopifyVariant internal constructor(
             id = variant.id
             barcode = variant.barcode
 
-            optionValues = listOf(VariantOptionValueInput().apply {
-                optionName = "Farbe"
-                name = variant.title
-            })
+            optionValues = variant.selectedOptions.map {
+                VariantOptionValueInput().apply {
+                    optionName = it.name
+                    name = it.value
+                }
+            }
             inventoryItem = InventoryItemInput().apply {
                 sku = variant.sku
                 price = variant.price
