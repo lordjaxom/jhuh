@@ -14,6 +14,8 @@ import com.vaadin.flow.component.html.Div
 import com.vaadin.flow.component.html.H3
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.VaadinIcon
+import com.vaadin.flow.component.menubar.MenuBar
+import com.vaadin.flow.component.menubar.MenuBarVariant
 import com.vaadin.flow.component.notification.Notification
 import com.vaadin.flow.component.notification.NotificationVariant
 import com.vaadin.flow.component.orderedlayout.FlexComponent
@@ -24,6 +26,7 @@ import com.vaadin.flow.component.treegrid.TreeGrid
 import com.vaadin.flow.data.provider.hierarchy.AbstractBackEndHierarchicalDataProvider
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery
 import com.vaadin.flow.dom.Style
+import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
 import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedCategory
 import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedProduct
@@ -35,6 +38,7 @@ import kotlin.jvm.optionals.getOrNull
 import kotlin.streams.asStream
 
 @Route
+@PageTitle("Datenabgleich mit Shopify")
 class ArtooImportView(
     private val importService: ArtooImportService,
     @Qualifier("applicationTaskExecutor") private val taskExecutor: AsyncTaskExecutor
@@ -59,24 +63,11 @@ class ArtooImportView(
     }
 
     private fun createHeader() {
-        val title = H3("Artikel aus ready2order importieren")
-        title.whiteSpace = HasText.WhiteSpace.NOWRAP
-        title.style.setMargin("auto 0")
-
-        val spacer = Div()
-        spacer.setWidthFull()
-
-        val button = Button("Synchronisieren")
-        button.style
-            .setPosition(Style.Position.RELATIVE)
-            .setRight("5px")
-        button.addClickListener { synchronize() }
-
-        val titleLayout = HorizontalLayout(title, spacer, button)
-        titleLayout.isPadding = true
-        titleLayout.setWidthFull()
-        titleLayout.style.setBackgroundColor("var(--lumo-primary-color-10pct)")
-        add(titleLayout)
+        val menuBar = MenuBar()
+        menuBar.setWidthFull()
+        menuBar.addThemeVariants(MenuBarVariant.LUMO_END_ALIGNED)
+        menuBar.addItem("Synchronisieren") { synchronize() }
+        add(menuBar)
     }
 
     private fun createFilters() {
@@ -84,33 +75,20 @@ class ArtooImportView(
         readyForSyncCheckbox = Checkbox("Bereit zum Synchronisieren")
         markedWithErrorsCheckbox = Checkbox("Synchronisiert mit Fehlern")
 
-        markedForSyncCheckbox.value = true
-        markedForSyncCheckbox.style.setWhiteSpace(Style.WhiteSpace.NOWRAP)
-        markedForSyncCheckbox.addValueChangeListener {
-            if (it.value) {
-                readyForSyncCheckbox.value = false
-                markedWithErrorsCheckbox.value = false
+        fun mutualExclusiveFilterCheckbox(checkbox: Checkbox, value: Boolean, vararg others: Checkbox) {
+            checkbox.value = value
+            checkbox.style.setWhiteSpace(Style.WhiteSpace.NOWRAP)
+            checkbox.addValueChangeListener {
+                if (it.value) {
+                    others.forEach { other -> other.value = false }
+                }
+                treeGrid.dataProvider.refreshAll()
             }
-            treeGrid.dataProvider.refreshAll()
         }
 
-        readyForSyncCheckbox.style.setWhiteSpace(Style.WhiteSpace.NOWRAP)
-        readyForSyncCheckbox.addValueChangeListener {
-            if (it.value) {
-                markedForSyncCheckbox.value = false
-                markedWithErrorsCheckbox.value = false
-            }
-            treeGrid.dataProvider.refreshAll()
-        }
-
-        markedWithErrorsCheckbox.style.setWhiteSpace(Style.WhiteSpace.NOWRAP)
-        markedWithErrorsCheckbox.addValueChangeListener {
-            if (it.value) {
-                markedForSyncCheckbox.value = false
-                readyForSyncCheckbox.value = false
-            }
-            treeGrid.dataProvider.refreshAll()
-        }
+        mutualExclusiveFilterCheckbox(markedForSyncCheckbox, true, readyForSyncCheckbox, markedWithErrorsCheckbox)
+        mutualExclusiveFilterCheckbox(readyForSyncCheckbox, false, markedForSyncCheckbox, markedWithErrorsCheckbox)
+        mutualExclusiveFilterCheckbox(markedWithErrorsCheckbox, false, markedForSyncCheckbox, readyForSyncCheckbox)
 
         filterTextField = TextField()
         filterTextField.placeholder = "Suche..."
@@ -146,7 +124,7 @@ class ArtooImportView(
                 flexGrow = 5
             }
         treeGrid.addColumn { importService.getItemTags(it) }
-            .setHeader("Tags")
+            .setHeader("Weitere Tags")
             .apply {
                 isSortable = false
                 flexGrow = 30
@@ -159,7 +137,7 @@ class ArtooImportView(
                 width = "4em"
                 flexGrow = 0
             }
-        treeGrid.addComponentColumn{ treeItemStatusColumn(it) }
+        treeGrid.addComponentColumn { treeItemStatusColumn(it) }
             .setHeader("")
             .apply {
                 isSortable = false
@@ -168,7 +146,6 @@ class ArtooImportView(
             }
         treeGrid.addComponentColumn { treeItemActionsColumn(it) }
             .setHeader("")
-            .setPartNameGenerator { it -> "no-padding" }
             .apply {
                 isSortable = false
                 width = "72px"
@@ -208,6 +185,7 @@ class ArtooImportView(
 
     private fun editItem(item: Any) {
         val dialog = Dialog()
+        dialog.width = "400px"
         dialog.headerTitle = if (item is ArtooMappedCategory) "Kategorie bearbeiten" else "Produkt bearbeiten"
 
         val closeButton = Button(VaadinIcon.CLOSE.create()) { dialog.close() }
@@ -219,24 +197,30 @@ class ArtooImportView(
         layout.isPadding = false
         dialog.add(layout)
 
-        val vendorTextField: TextField?
-        val typeTextField: TextField?
-        if (item is ArtooMappedProduct) {
-            vendorTextField = TextField()
-            vendorTextField.label = "Hersteller"
-            vendorTextField.value = importService.getItemVendor(item)
-            vendorTextField.setWidthFull()
-            layout.add(vendorTextField)
+        fun textFieldWithCheckboxForCategory(label: String, value: String): Pair<TextField, Checkbox?> {
+            val textField = TextField()
+            textField.label = label
+            textField.value = value
+            textField.isEnabled = item is ArtooMappedProduct
+            textField.setWidthFull()
+            layout.add(textField)
 
-            typeTextField = TextField()
-            typeTextField.label = "Produktart"
-            typeTextField.value = importService.getItemType(item)
-            typeTextField.setWidthFull()
-            layout.add(typeTextField)
-        } else {
-            vendorTextField = null
-            typeTextField = null
+            if (item is ArtooMappedProduct) {
+                return Pair(textField, null)
+            }
+
+            val checkbox = Checkbox("Für alle Produkte ersetzen?")
+            checkbox.value = false
+            checkbox.addValueChangeListener {
+                textField.isEnabled = it.value
+                if (it.value) textField.focus()
+            }
+            layout.add(checkbox)
+            return Pair(textField, checkbox)
         }
+
+        val (vendorTextField, vendorCheckbox) = textFieldWithCheckboxForCategory("Hersteller", importService.getItemVendor(item))
+        val (typeTextField, typeCheckbox) = textFieldWithCheckboxForCategory("Produktart", importService.getItemType(item))
 
         val tagsTextField = TextField()
         tagsTextField.label = "Tags"
@@ -244,15 +228,18 @@ class ArtooImportView(
         tagsTextField.setWidthFull()
         layout.add(tagsTextField)
 
-        (vendorTextField ?: tagsTextField).focus()
+        sequenceOf(vendorTextField, tagsTextField).first { it.isEnabled }.focus()
 
         val saveButton = Button("Speichern")
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY)
         saveButton.addClickShortcut(Key.ENTER)
         saveButton.addClickListener {
-            importService.updateItem(item, vendorTextField?.value, typeTextField?.value, tagsTextField.value)
-            treeGrid.dataProvider.refreshItem(item)
+            dialog.isEnabled = false
+            val vendor = vendorTextField.value.takeIf { vendorCheckbox?.value ?: true }
+            val type = typeTextField.value.takeIf { typeCheckbox?.value ?: true }
+            importService.updateItem(item, vendor, type, tagsTextField.value)
             dialog.close()
+            treeGrid.dataProvider.refreshItem(item, vendor != null || type != null)
         }
         dialog.footer.add(saveButton)
         dialog.open()

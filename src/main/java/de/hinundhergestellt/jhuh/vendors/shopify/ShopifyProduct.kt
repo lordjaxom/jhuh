@@ -11,6 +11,8 @@ class ShopifyProduct internal constructor(
 ) {
     var id: String? by product::id
     var title: String by product::title
+    var vendor: String by product::vendor
+    var productType: String by product::productType
     var tags: List<String> by product::tags
     val options: List<ProductOption> by product::options
 
