@@ -47,7 +47,7 @@ class ArtooImportView(
     private lateinit var withErrorsCheckbox: Checkbox
     private lateinit var errorFreeCheckbox: Checkbox
     private lateinit var filterTextField: TextField
-    private lateinit var treeGrid: TreeGrid<Any>
+    private lateinit var treeGrid: TreeGrid<SyncableItem>
     private lateinit var progressOverlay: Div
 
     init {
@@ -103,32 +103,32 @@ class ArtooImportView(
     }
 
     private fun createTreeGrid() {
-        treeGrid = TreeGrid<Any>()
-        treeGrid.addHierarchyColumn { importService.getItemName(it) }
+        treeGrid = TreeGrid<SyncableItem>()
+        treeGrid.addHierarchyColumn { it.name }
             .setHeader("Bezeichnung")
             .apply {
                 isSortable = false
                 flexGrow = 100
             }
-        treeGrid.addColumn { importService.getItemVendor(it) }
+        treeGrid.addColumn { it.vendor }
             .setHeader("Hersteller")
             .apply {
                 isSortable = false
                 flexGrow = 5
             }
-        treeGrid.addColumn { importService.getItemType(it) }
+        treeGrid.addColumn { it.type }
             .setHeader("Produktart")
             .apply {
                 isSortable = false
                 flexGrow = 5
             }
-        treeGrid.addColumn { importService.getItemTags(it) }
+        treeGrid.addColumn { it.tags }
             .setHeader("Weitere Tags")
             .apply {
                 isSortable = false
                 flexGrow = 30
             }
-        treeGrid.addColumn { importService.getItemVariations(it) }
+        treeGrid.addColumn { it.variations }
             .setHeader("V#")
             .apply {
                 isSortable = false
@@ -182,10 +182,10 @@ class ArtooImportView(
             }
     }
 
-    private fun editItem(item: Any) {
+    private fun editItem(item: SyncableItem) {
         val dialog = Dialog()
         dialog.width = "400px"
-        dialog.headerTitle = if (item is ArtooMappedCategory) "Kategorie bearbeiten" else "Produkt bearbeiten"
+        dialog.headerTitle = if (item is ArtooImportService.Category) "Kategorie bearbeiten" else "Produkt bearbeiten"
 
         val closeButton = Button(VaadinIcon.CLOSE.create()) { dialog.close() }
         closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY)
@@ -200,11 +200,11 @@ class ArtooImportView(
             val textField = TextField()
             textField.label = label
             textField.value = value
-            textField.isEnabled = item is ArtooMappedProduct
+            textField.isEnabled = item is ArtooImportService.Product
             textField.setWidthFull()
             layout.add(textField)
 
-            if (item is ArtooMappedProduct) {
+            if (item is ArtooImportService.Product) {
                 return Pair(textField, null)
             }
 
@@ -218,12 +218,12 @@ class ArtooImportView(
             return Pair(textField, checkbox)
         }
 
-        val (vendorTextField, vendorCheckbox) = textFieldWithCheckboxForCategory("Hersteller", importService.getItemVendor(item))
-        val (typeTextField, typeCheckbox) = textFieldWithCheckboxForCategory("Produktart", importService.getItemType(item))
+        val (vendorTextField, vendorCheckbox) = textFieldWithCheckboxForCategory("Hersteller", item.vendor ?: "")
+        val (typeTextField, typeCheckbox) = textFieldWithCheckboxForCategory("Produktart", item.type ?: "")
 
         val tagsTextField = TextField()
         tagsTextField.label = "Tags"
-        tagsTextField.value = importService.getItemTags(item)
+        tagsTextField.value = item.tags
         tagsTextField.setWidthFull()
         layout.add(tagsTextField)
 
@@ -244,16 +244,16 @@ class ArtooImportView(
         dialog.open()
     }
 
-    private fun treeItemStatusColumn(item: Any): Component {
-        if (item !is ArtooMappedProduct) {
+    private fun treeItemStatusColumn(item: SyncableItem): Component {
+        if (item !is ArtooImportService.Product) {
             return Span()
         }
 
-        val problems = importService.getSyncProblems(item)
+        val problems = item.syncProblems
         val icon = when {
             problems.has<SyncProblem.Error>() -> VaadinIcon.WARNING.create().apply { style.setColor("var(--lumo-error-color") }
             problems.isNotEmpty() -> VaadinIcon.WARNING.create().apply { style.setColor("var(--lumo-warning-color") }
-            importService.isMarkedForSync(item) -> VaadinIcon.CHECK.create().apply { style.setColor("var(--lumo-success-color") }
+            item.isMarkedForSync -> VaadinIcon.CHECK.create().apply { style.setColor("var(--lumo-success-color") }
             else -> VaadinIcon.CIRCLE.create().apply { style.setColor("var(--lumo-tertiary-color") }
         }
         icon.setSize("16px")
@@ -263,7 +263,7 @@ class ArtooImportView(
         return icon
     }
 
-    private fun treeItemActionsColumn(item: Any): Component {
+    private fun treeItemActionsColumn(item: SyncableItem): Component {
         val spacer = Span()
         spacer.setWidthFull()
 
@@ -272,9 +272,9 @@ class ArtooImportView(
         layout.themeList.add("spacing-s")
         layout.style.setWhiteSpace(Style.WhiteSpace.NOWRAP)
 
-        if (item is ArtooMappedProduct) {
-            val marked = importService.isMarkedForSync(item)
-            val problems = importService.getSyncProblems(item)
+        if (item is ArtooImportService.Product) {
+            val marked = item.isMarkedForSync
+            val problems = item.syncProblems
 
             val markUnmarkIcon = if (marked) VaadinIcon.TRASH.create() else VaadinIcon.PLUS.create()
             markUnmarkIcon.setSize("20px")
@@ -303,23 +303,21 @@ class ArtooImportView(
         return layout
     }
 
-    private inner class TreeDataProvider : AbstractBackEndHierarchicalDataProvider<Any, Void?>() {
+    private inner class TreeDataProvider : AbstractBackEndHierarchicalDataProvider<SyncableItem, Void?>() {
 
-        override fun fetchChildrenFromBackEnd(query: HierarchicalQuery<Any, Void?>): Stream<Any> {
+        override fun fetchChildrenFromBackEnd(query: HierarchicalQuery<SyncableItem, Void?>): Stream<SyncableItem> {
             val withErrors = if (withErrorsCheckbox.value) true else if (errorFreeCheckbox.value) false else null
-            val children = (query.parent as ArtooMappedCategory?)
-                ?.let { it.children.asSequence() + it.products.asSequence() }
-                ?: importService.rootCategories.asSequence()
-            return children
-                .filter { importService.filterBy(it, markedForSyncCheckbox.value, withErrors, filterTextField.value) }
-                .sortedBy { importService.getItemName(it) }
+            val children = (query.parent as ArtooImportService.Category?)?.childrenAndProducts ?: importService.rootCategories
+            return children.asSequence()
+                .filter { it.filterBy(markedForSyncCheckbox.value, withErrors, filterTextField.value) }
+                .sortedBy { it.name }
                 .asStream()
         }
 
-        override fun hasChildren(item: Any) =
-            item is ArtooMappedCategory
+        override fun hasChildren(item: SyncableItem) =
+            item is ArtooImportService.Category
 
-        override fun getChildCount(query: HierarchicalQuery<Any, Void?>) =
+        override fun getChildCount(query: HierarchicalQuery<SyncableItem, Void?>) =
             fetchChildren(query).count().toInt()
     }
 }

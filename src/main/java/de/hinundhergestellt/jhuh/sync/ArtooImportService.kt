@@ -9,6 +9,7 @@ import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedProduct
 import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedVariation
 import de.hinundhergestellt.jhuh.service.ready2order.SingleArtooMappedProduct
 import de.hinundhergestellt.jhuh.service.shopify.ShopifyDataStore
+import de.hinundhergestellt.jhuh.util.lazyWithReset
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProductVariant
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -27,124 +28,54 @@ class ArtooImportService(
     private val syncVariantRepository: SyncVariantRepository,
     private val syncCategoryRepository: SyncCategoryRepository,
 ) {
-    val rootCategories by artooDataStore::rootCategories
-
-    fun getItemName(item: Any) =
-        when (item) {
-            is ArtooMappedCategory -> item.name
-            is ArtooMappedProduct -> item.name
-            else -> throw IllegalStateException("Unexpected item $item")
-        }
-
-    fun getItemVendor(item: Any) =
-        when (item) {
-            is ArtooMappedCategory -> ""
-            is ArtooMappedProduct -> syncProductRepository.findByArtooId(item.id)?.vendor ?: ""
-            else -> throw IllegalStateException("Unexpected item $item")
-        }
-
-    fun getItemType(item: Any) =
-        when (item) {
-            is ArtooMappedCategory -> ""
-            is ArtooMappedProduct -> syncProductRepository.findByArtooId(item.id)?.type ?: ""
-            else -> throw IllegalStateException("Unexpected item $item")
-        }
-
-    fun getItemTags(item: Any): String {
-        val tags = when (item) {
-            is ArtooMappedCategory -> syncCategoryRepository.findByArtooId(item.id)?.tags
-            is ArtooMappedProduct -> syncProductRepository.findByArtooId(item.id)?.tags
-            else -> throw IllegalStateException("Unexpected item $item")
-        }
-        return tags?.sorted()?.joinToString(", ") ?: ""
-    }
-
-    fun getItemVariations(item: Any) =
-        when (item) {
-            is ArtooMappedCategory -> null
-            is SingleArtooMappedProduct -> 0
-            is ArtooMappedProduct -> item.variations.size
-            else -> throw IllegalStateException("Unexpected item $item")
-        }
-
-    fun isMarkedForSync(product: ArtooMappedProduct) =
-        syncProductRepository.findByArtooId(product.id)?.synced ?: false
-
-    fun getSyncProblems(product: ArtooMappedProduct, knownSyncProduct: SyncProduct? = null) = buildList {
-        val barcodes = product.barcodes
-        if (barcodes.isEmpty()) {
-            add(SyncProblem.Error("Produkt hat keine Barcodes"))
-        }
-        else if (barcodes.size < product.variations.size) {
-            add(SyncProblem.Warning("Nicht alle Variationen haben einen Barcode"))
-        }
-
-        val syncProduct = knownSyncProduct ?: syncProductRepository.findByArtooId(product.id)
-        if (syncProduct?.vendor == null) {
-            add(SyncProblem.Error("Produkt hat keinen Hersteller"))
-        }
-        if (syncProduct?.type == null) {
-            add(SyncProblem.Error("Produkt hat keine Produktart"))
-        }
-    }
-
-    fun filterBy(item: Any, markedForSync: Boolean, withErrors: Boolean?, text: String): Boolean =
-        when (item) {
-            is ArtooMappedCategory -> (item.children.asSequence() + item.products.asSequence())
-                .any { filterBy(it, markedForSync, withErrors, text) }
-
-            is ArtooMappedProduct -> (!markedForSync || isMarkedForSync(item)) &&
-                    (withErrors == null || getSyncProblems(item).isNotEmpty() == withErrors) &&
-                    (text.isEmpty() || item.name.contains(text, ignoreCase = true))
-
-            else -> throw IllegalStateException("Unexpected item $item")
-        }
+    val rootCategories = artooDataStore.rootCategories.map { Category(it) }
 
     @Transactional
-    fun updateItem(item: Any, vendor: String?, type: String?, tags: String) {
-        val splitTags = tags.splitToSequence(",").map { it.trim() }.filter { it.isNotEmpty() }.toMutableSet()
+    fun updateItem(item: SyncableItem, vendor: String?, type: String?, tags: String) {
+        val tagsAsSet = tags.splitToSequence(",").map { it.trim() }.filter { it.isNotEmpty() }.toMutableSet()
         when (item) {
-            is ArtooMappedCategory -> {
-                val syncCategory = syncCategoryRepository.findByArtooId(item.id)!!
-                syncCategory.tags = splitTags
-                syncCategoryRepository.save(syncCategory)
+            is Category -> {
+                val syncCategory = item.syncCategory
+                    ?.also { it.tags = tagsAsSet }
+                    ?: tagsAsSet.takeIf { it.isNotEmpty() }?.let { SyncCategory(item.id, it) }
+                syncCategory?.also { syncCategoryRepository.save(it) }
 
-                if (vendor == null && type == null) {
-                    return
-                }
-                item.findAllProducts().forEach { artooProduct ->
-                    val syncProduct = syncProductRepository.findByArtooId(artooProduct.id)
-                        ?.also { if (vendor != null) it.vendor = vendor; if (type != null) it.type = type }
-                        ?: SyncProduct(artooId = artooProduct.id, vendor = vendor, type = type, synced = false)
-                    syncProductRepository.save(syncProduct)
+                if (vendor != null || type != null) {
+                    item.value.findAllProducts().forEach { artooProduct ->
+                        val syncProduct = syncProductRepository.findByArtooId(artooProduct.id)
+                            ?.also { if (vendor != null) it.vendor = vendor; if (type != null) it.type = type }
+                            ?: SyncProduct(artooId = artooProduct.id, vendor = vendor, type = type, synced = false)
+                        syncProductRepository.save(syncProduct)
+                    }
                 }
             }
 
-            is ArtooMappedProduct -> {
-                val syncProduct = syncProductRepository.findByArtooId(item.id)!!
-                syncProduct.vendor = vendor
-                syncProduct.type = type
-                syncProduct.tags = splitTags
+            is Product -> {
+                val syncProduct = item.syncProduct
+                    ?.also { it.vendor = vendor; it.type = type; it.tags = tagsAsSet }
+                    ?: SyncProduct(artooId = item.id, vendor = vendor, type = type, tags = tagsAsSet, synced = false)
                 syncProductRepository.save(syncProduct)
             }
-
-            else -> throw IllegalArgumentException("Unexpected item $item")
         }
+        item.reset()
     }
 
     @Transactional
-    fun markForSync(product: ArtooMappedProduct) {
-        val syncProduct = syncProductRepository.findByArtooId(product.id)
+    fun markForSync(product: Product) {
+        val syncProduct = product.syncProduct
             ?.apply { synced = true }
-            ?: SyncProduct(artooId = product.id, synced = true)
+            ?: run { SyncProduct(artooId = product.id, synced = true) }
         syncProductRepository.save(syncProduct)
+        product.reset()
     }
 
     @Transactional
-    fun unmarkForSync(product: ArtooMappedProduct) {
-        syncProductRepository.findByArtooId(product.id)
-            ?.apply { synced = false }
-            ?.also { syncProductRepository.save(it) }
+    fun unmarkForSync(product: Product) {
+        product.syncProduct?.also {
+            it.synced = false
+            syncProductRepository.save(it)
+            product.reset()
+        }
     }
 
     @Transactional
@@ -155,9 +86,26 @@ class ArtooImportService(
             artooDataStore.rootCategories.forEach { reconcileCategories(it) }
 
             syncProductRepository.findAllBy().forEach { synchronizeWithShopify(it) }
+
+            rootCategories.forEach { it.reset() }
         } catch (e: Exception) {
             logger.error(e) { "Synchronization failed" }
             throw e
+        }
+    }
+
+    private fun checkSyncProblems(product: ArtooMappedProduct, syncProduct: SyncProduct?) = buildList {
+        val barcodes = product.barcodes
+        if (barcodes.isEmpty()) {
+            add(SyncProblem.Error("Produkt hat keine Barcodes"))
+        } else if (barcodes.size < product.variations.size) {
+            add(SyncProblem.Warning("Nicht alle Variationen haben einen Barcode"))
+        }
+        if (syncProduct?.vendor == null) {
+            add(SyncProblem.Error("Produkt hat keinen Hersteller"))
+        }
+        if (syncProduct?.type == null) {
+            add(SyncProblem.Error("Produkt hat keine Produktart"))
         }
     }
 
@@ -222,7 +170,7 @@ class ArtooImportService(
         val artooProduct = syncProduct.artooId?.let { artooDataStore.findProductById(it) }
         var shopifyProduct = syncProduct.shopifyId?.let { shopifyDataStore.findProductById(it) }
 
-        if (artooProduct != null && getSyncProblems(artooProduct, syncProduct).has<SyncProblem.Error>()) {
+        if (artooProduct != null && checkSyncProblems(artooProduct, syncProduct).has<SyncProblem.Error>()) {
             logger.warn { "Product ${artooProduct.name} has errors, skipping synchronization" }
             return
         }
@@ -319,6 +267,76 @@ class ArtooImportService(
             }
         )
     }
+
+    inner class Category(val value: ArtooMappedCategory) : SyncableItem {
+
+        private val lazySyncCategory = lazyWithReset { syncCategoryRepository.findByArtooId(value.id) }
+        internal val syncCategory by lazySyncCategory
+
+        val id by value::id
+
+        val childrenAndProducts = value.run { children.map { Category(it) } + products.map { Product(it) } }
+
+        override val name by value::name
+        override val vendor = null
+        override val type = null
+        override val tagsAsSet get() = syncCategory?.tags?.toSet() ?: setOf()
+        override val variations = null
+
+        override fun filterBy(markedForSync: Boolean, withErrors: Boolean?, text: String) =
+            childrenAndProducts.any { it.filterBy(markedForSync, withErrors, text) }
+
+        override fun reset() {
+            lazySyncCategory.reset()
+            childrenAndProducts.forEach { it.reset() }
+        }
+    }
+
+    inner class Product(val value: ArtooMappedProduct) : SyncableItem {
+
+        private val lazySyncProduct = lazyWithReset { syncProductRepository.findByArtooId(value.id) }
+        internal val syncProduct by lazySyncProduct
+
+        val id by value::id
+        val isMarkedForSync get() = syncProduct?.synced ?: false
+
+        private val lazySyncProblems = lazyWithReset { checkSyncProblems(value, syncProduct) }
+        val syncProblems by lazySyncProblems
+
+        override val name by value::name
+        override val vendor get() = syncProduct?.vendor
+        override val type get() = syncProduct?.type
+        override val tagsAsSet get() = syncProduct?.tags?.toSet() ?: setOf()
+        override val variations = when (value) {
+            is SingleArtooMappedProduct -> 0
+            else -> value.variations.size
+        }
+
+        override fun filterBy(markedForSync: Boolean, withErrors: Boolean?, text: String) =
+            (!markedForSync || isMarkedForSync) &&
+                    (withErrors == null || syncProblems.isNotEmpty() == withErrors) &&
+                    (text.isEmpty() || name.contains(text, ignoreCase = true))
+
+        override fun reset() {
+            lazySyncProblems.reset()
+            lazySyncProduct.reset()
+        }
+    }
+}
+
+sealed interface SyncableItem {
+
+    val name: String
+    val vendor: String?
+    val type: String?
+    val tagsAsSet: Set<String>
+    val variations: Int?
+
+    val tags get() = tagsAsSet.sorted().joinToString(", ")
+
+    fun filterBy(markedForSync: Boolean, withErrors: Boolean?, text: String): Boolean
+
+    fun reset()
 }
 
 sealed class SyncProblem(val message: String) {
