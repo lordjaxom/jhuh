@@ -249,16 +249,16 @@ class ArtooImportView(
             return Span()
         }
 
-        val messages = importService.getSyncMessages(item)
+        val problems = importService.getSyncProblems(item)
         val icon = when {
-            messages.any { it is SyncMessage.Error } -> VaadinIcon.WARNING.create().apply { style.setColor("var(--lumo-error-color") }
-            messages.isNotEmpty() -> VaadinIcon.WARNING.create().apply { style.setColor("var(--lumo-warning-color") }
+            problems.has<SyncProblem.Error>() -> VaadinIcon.WARNING.create().apply { style.setColor("var(--lumo-error-color") }
+            problems.isNotEmpty() -> VaadinIcon.WARNING.create().apply { style.setColor("var(--lumo-warning-color") }
             importService.isMarkedForSync(item) -> VaadinIcon.CHECK.create().apply { style.setColor("var(--lumo-success-color") }
             else -> VaadinIcon.CIRCLE.create().apply { style.setColor("var(--lumo-tertiary-color") }
         }
         icon.setSize("16px")
-        if (messages.isNotEmpty()) {
-            Tooltip.forComponent(icon).withText(messages.joinToString("\n"))
+        if (problems.isNotEmpty()) {
+            Tooltip.forComponent(icon).withText(problems.joinToString("\n"))
         }
         return icon
     }
@@ -274,12 +274,12 @@ class ArtooImportView(
 
         if (item is ArtooMappedProduct) {
             val marked = importService.isMarkedForSync(item)
-            val messages = importService.getSyncMessages(item)
+            val problems = importService.getSyncProblems(item)
 
             val markUnmarkIcon = if (marked) VaadinIcon.TRASH.create() else VaadinIcon.PLUS.create()
             markUnmarkIcon.setSize("20px")
             val markUnmarkButton = Button(markUnmarkIcon)
-            markUnmarkButton.isEnabled = marked || messages.none { it is SyncMessage.Error }
+            markUnmarkButton.isEnabled = marked || !problems.has<SyncProblem.Error>()
             markUnmarkButton.height = "20px"
             markUnmarkButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE)
             markUnmarkButton.addClickListener {

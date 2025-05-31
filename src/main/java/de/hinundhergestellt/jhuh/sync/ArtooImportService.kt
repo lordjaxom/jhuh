@@ -70,21 +70,21 @@ class ArtooImportService(
     fun isMarkedForSync(product: ArtooMappedProduct) =
         syncProductRepository.findByArtooId(product.id)?.synced ?: false
 
-    fun getSyncMessages(product: ArtooMappedProduct, knownSyncProduct: SyncProduct? = null) = buildList {
+    fun getSyncProblems(product: ArtooMappedProduct, knownSyncProduct: SyncProduct? = null) = buildList {
         val barcodes = product.barcodes
         if (barcodes.isEmpty()) {
-            add(SyncMessage.Error("Produkt hat keine Barcodes"))
+            add(SyncProblem.Error("Produkt hat keine Barcodes"))
         }
         else if (barcodes.size < product.variations.size) {
-            add(SyncMessage.Warning("Nicht alle Variationen haben einen Barcode"))
+            add(SyncProblem.Warning("Nicht alle Variationen haben einen Barcode"))
         }
 
         val syncProduct = knownSyncProduct ?: syncProductRepository.findByArtooId(product.id)
         if (syncProduct?.vendor == null) {
-            add(SyncMessage.Error("Produkt hat keinen Hersteller"))
+            add(SyncProblem.Error("Produkt hat keinen Hersteller"))
         }
         if (syncProduct?.type == null) {
-            add(SyncMessage.Error("Produkt hat keine Produktart"))
+            add(SyncProblem.Error("Produkt hat keine Produktart"))
         }
     }
 
@@ -94,7 +94,7 @@ class ArtooImportService(
                 .any { filterBy(it, markedForSync, withErrors, text) }
 
             is ArtooMappedProduct -> (!markedForSync || isMarkedForSync(item)) &&
-                    (withErrors == null || getSyncMessages(item).isNotEmpty() == withErrors) &&
+                    (withErrors == null || getSyncProblems(item).isNotEmpty() == withErrors) &&
                     (text.isEmpty() || item.name.contains(text, ignoreCase = true))
 
             else -> throw IllegalStateException("Unexpected item $item")
@@ -222,7 +222,7 @@ class ArtooImportService(
         val artooProduct = syncProduct.artooId?.let { artooDataStore.findProductById(it) }
         var shopifyProduct = syncProduct.shopifyId?.let { shopifyDataStore.findProductById(it) }
 
-        if (artooProduct != null && getSyncMessages(artooProduct, syncProduct).any { it is SyncMessage.Error }) {
+        if (artooProduct != null && getSyncProblems(artooProduct, syncProduct).has<SyncProblem.Error>()) {
             logger.warn { "Product ${artooProduct.name} has errors, skipping synchronization" }
             return
         }
@@ -321,12 +321,14 @@ class ArtooImportService(
     }
 }
 
-sealed class SyncMessage(val message: String) {
-    class Warning(message: String) : SyncMessage(message)
-    class Error(message: String) : SyncMessage(message)
+sealed class SyncProblem(val message: String) {
+    class Warning(message: String) : SyncProblem(message)
+    class Error(message: String) : SyncProblem(message)
 
     override fun toString() = message
 }
+
+inline fun <reified T> List<SyncProblem>.has() = any { it is T }
 
 private fun toSyncProduct(shopifyProduct: ShopifyProduct) =
     SyncProduct(
