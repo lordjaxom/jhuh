@@ -13,9 +13,6 @@ class ArtooMappedCategory internal constructor(
     fun findAllProducts(): Sequence<ArtooMappedProduct> =
         children.asSequence().flatMap { it.findAllProducts() } + products.asSequence()
 
-    fun containsReadyForSync(): Boolean =
-        children.any { it.containsReadyForSync() } || products.any { it.isReadyForSync }
-
     fun findProductByBarcode(barcode: String): ArtooMappedProduct? =
         products.firstOrNull { it.findVariationByBarcode(barcode) != null }
             ?: children.firstNotNullOfOrNull { it.findProductByBarcode(barcode) }

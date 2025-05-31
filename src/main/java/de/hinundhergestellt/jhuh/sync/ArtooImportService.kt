@@ -56,10 +56,7 @@ class ArtooImportService(
             is ArtooMappedProduct -> syncProductRepository.findByArtooId(item.id)?.tags
             else -> throw IllegalStateException("Unexpected item $item")
         }
-        return tags
-            ?.sorted()
-            ?.joinToString(", ")
-            ?: ""
+        return tags?.sorted()?.joinToString(", ") ?: ""
     }
 
     fun getItemVariations(item: Any) =
@@ -73,14 +70,31 @@ class ArtooImportService(
     fun isMarkedForSync(product: ArtooMappedProduct) =
         syncProductRepository.findByArtooId(product.id)?.synced ?: false
 
-    fun filterBy(item: Any, markedForSync: Boolean, readyForSync: Boolean, markedWithErrors: Boolean, text: String): Boolean =
+    fun getSyncMessages(product: ArtooMappedProduct) = buildList {
+        val barcodes = product.barcodes
+        if (barcodes.isEmpty()) {
+            add(SyncMessage.Error("Produkt hat keine Barcodes"))
+        }
+        else if (barcodes.size < product.variations.size) {
+            add(SyncMessage.Warning("Nicht alle Variationen haben einen Barcode"))
+        }
+
+        val syncProduct = syncProductRepository.findByArtooId(product.id)
+        if (syncProduct?.vendor == null) {
+            add(SyncMessage.Error("Produkt hat keinen Hersteller"))
+        }
+        if (syncProduct?.type == null) {
+            add(SyncMessage.Error("Produkt hat keine Produktart"))
+        }
+    }
+
+    fun filterBy(item: Any, markedForSync: Boolean, withErrors: Boolean?, text: String): Boolean =
         when (item) {
             is ArtooMappedCategory -> (item.children.asSequence() + item.products.asSequence())
-                .any { filterBy(it, markedForSync, readyForSync, markedWithErrors, text) }
+                .any { filterBy(it, markedForSync, withErrors, text) }
 
             is ArtooMappedProduct -> (!markedForSync || isMarkedForSync(item)) &&
-                    (!readyForSync || item.isReadyForSync) &&
-                    (!markedWithErrors || isMarkedForSync(item) && !item.isReadyForSync) &&
+                    (withErrors == null || getSyncMessages(item).isNotEmpty() == withErrors) &&
                     (text.isEmpty() || item.name.contains(text, ignoreCase = true))
 
             else -> throw IllegalStateException("Unexpected item $item")
@@ -300,6 +314,13 @@ class ArtooImportService(
             }
         )
     }
+}
+
+sealed class SyncMessage(val message: String) {
+    class Warning(message: String) : SyncMessage(message)
+    class Error(message: String) : SyncMessage(message)
+
+    override fun toString() = message
 }
 
 private fun toSyncProduct(shopifyProduct: ShopifyProduct) =

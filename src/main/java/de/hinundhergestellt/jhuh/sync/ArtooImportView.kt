@@ -1,7 +1,6 @@
 package de.hinundhergestellt.jhuh.sync
 
 import com.vaadin.flow.component.Component
-import com.vaadin.flow.component.HasText
 import com.vaadin.flow.component.Key
 import com.vaadin.flow.component.Text
 import com.vaadin.flow.component.button.Button
@@ -11,7 +10,6 @@ import com.vaadin.flow.component.dialog.Dialog
 import com.vaadin.flow.component.grid.ColumnTextAlign
 import com.vaadin.flow.component.grid.GridVariant
 import com.vaadin.flow.component.html.Div
-import com.vaadin.flow.component.html.H3
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.menubar.MenuBar
@@ -21,6 +19,7 @@ import com.vaadin.flow.component.notification.NotificationVariant
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
+import com.vaadin.flow.component.shared.Tooltip
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.component.treegrid.TreeGrid
 import com.vaadin.flow.data.provider.hierarchy.AbstractBackEndHierarchicalDataProvider
@@ -45,8 +44,8 @@ class ArtooImportView(
 ) : VerticalLayout() {
 
     private lateinit var markedForSyncCheckbox: Checkbox
-    private lateinit var readyForSyncCheckbox: Checkbox
-    private lateinit var markedWithErrorsCheckbox: Checkbox
+    private lateinit var withErrorsCheckbox: Checkbox
+    private lateinit var errorFreeCheckbox: Checkbox
     private lateinit var filterTextField: TextField
     private lateinit var treeGrid: TreeGrid<Any>
     private lateinit var progressOverlay: Div
@@ -72,8 +71,8 @@ class ArtooImportView(
 
     private fun createFilters() {
         markedForSyncCheckbox = Checkbox("Nur synchronisiert")
-        readyForSyncCheckbox = Checkbox("Bereit zum Synchronisieren")
-        markedWithErrorsCheckbox = Checkbox("Synchronisiert mit Fehlern")
+        withErrorsCheckbox = Checkbox("Nur fehlerhaft")
+        errorFreeCheckbox = Checkbox("Nur fehlerfrei")
 
         fun mutualExclusiveFilterCheckbox(checkbox: Checkbox, value: Boolean, vararg others: Checkbox) {
             checkbox.value = value
@@ -86,9 +85,9 @@ class ArtooImportView(
             }
         }
 
-        mutualExclusiveFilterCheckbox(markedForSyncCheckbox, true, readyForSyncCheckbox, markedWithErrorsCheckbox)
-        mutualExclusiveFilterCheckbox(readyForSyncCheckbox, false, markedForSyncCheckbox, markedWithErrorsCheckbox)
-        mutualExclusiveFilterCheckbox(markedWithErrorsCheckbox, false, markedForSyncCheckbox, readyForSyncCheckbox)
+        mutualExclusiveFilterCheckbox(markedForSyncCheckbox, true)
+        mutualExclusiveFilterCheckbox(withErrorsCheckbox, false, errorFreeCheckbox)
+        mutualExclusiveFilterCheckbox(errorFreeCheckbox, false, withErrorsCheckbox)
 
         filterTextField = TextField()
         filterTextField.placeholder = "Suche..."
@@ -97,7 +96,7 @@ class ArtooImportView(
         filterTextField.setWidthFull()
         filterTextField.addValueChangeListener { treeGrid.dataProvider.refreshAll() }
 
-        val filtersLayout = HorizontalLayout(markedForSyncCheckbox, readyForSyncCheckbox, markedWithErrorsCheckbox, filterTextField)
+        val filtersLayout = HorizontalLayout(markedForSyncCheckbox, withErrorsCheckbox, errorFreeCheckbox, filterTextField)
         filtersLayout.setWidthFull()
         filtersLayout.alignItems = FlexComponent.Alignment.CENTER
         add(filtersLayout)
@@ -250,23 +249,17 @@ class ArtooImportView(
             return Span()
         }
 
-        val ready = item.isReadyForSync
-        val marked = importService.isMarkedForSync(item)
+        val messages = importService.getSyncMessages(item)
         val icon = when {
-            !ready -> VaadinIcon.WARNING.create().apply {
-                style.setColor("var(--lumo-warning-color)")
-                //Tooltip.forComponent(icon).withText("Fehler beim Laden der Artikel");
-            }
-
-            !marked -> VaadinIcon.CIRCLE.create().apply {
-                style.setColor("lightgray")
-            }
-
-            else -> VaadinIcon.CHECK.create().apply {
-                style.setColor("var(--lumo-success-color)")
-            }
+            messages.any { it is SyncMessage.Error } -> VaadinIcon.WARNING.create().apply { style.setColor("var(--lumo-error-color") }
+            messages.isNotEmpty() -> VaadinIcon.WARNING.create().apply { style.setColor("var(--lumo-warning-color") }
+            importService.isMarkedForSync(item) -> VaadinIcon.CHECK.create().apply { style.setColor("var(--lumo-success-color") }
+            else -> VaadinIcon.CIRCLE.create().apply { style.setColor("var(--lumo-tertiary-color") }
         }
         icon.setSize("16px")
+        if (messages.isNotEmpty()) {
+            Tooltip.forComponent(icon).withText(messages.joinToString("\n"))
+        }
         return icon
     }
 
@@ -280,13 +273,13 @@ class ArtooImportView(
         layout.style.setWhiteSpace(Style.WhiteSpace.NOWRAP)
 
         if (item is ArtooMappedProduct) {
-            val ready = item.isReadyForSync
             val marked = importService.isMarkedForSync(item)
+            val messages = importService.getSyncMessages(item)
 
             val markUnmarkIcon = if (marked) VaadinIcon.TRASH.create() else VaadinIcon.PLUS.create()
             markUnmarkIcon.setSize("20px")
             val markUnmarkButton = Button(markUnmarkIcon)
-            markUnmarkButton.isEnabled = ready || marked
+            markUnmarkButton.isEnabled = marked || messages.none { it is SyncMessage.Error }
             markUnmarkButton.height = "20px"
             markUnmarkButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE)
             markUnmarkButton.addClickListener {
@@ -313,16 +306,12 @@ class ArtooImportView(
     private inner class TreeDataProvider : AbstractBackEndHierarchicalDataProvider<Any, Void?>() {
 
         override fun fetchChildrenFromBackEnd(query: HierarchicalQuery<Any, Void?>): Stream<Any> {
+            val withErrors = if (withErrorsCheckbox.value) true else if (errorFreeCheckbox.value) false else null
             val children = (query.parent as ArtooMappedCategory?)
                 ?.let { it.children.asSequence() + it.products.asSequence() }
                 ?: importService.rootCategories.asSequence()
             return children
-                .filter {
-                    importService.filterBy(
-                        it, markedForSyncCheckbox.value, readyForSyncCheckbox.value,
-                        markedWithErrorsCheckbox.value, filterTextField.value
-                    )
-                }
+                .filter { importService.filterBy(it, markedForSyncCheckbox.value, withErrors, filterTextField.value) }
                 .sortedBy { importService.getItemName(it) }
                 .asStream()
         }

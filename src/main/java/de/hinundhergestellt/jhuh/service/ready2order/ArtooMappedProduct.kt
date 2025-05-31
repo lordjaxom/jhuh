@@ -6,9 +6,6 @@ abstract class ArtooMappedProduct protected constructor(
     abstract val id: String
     abstract val name: String
 
-    val isReadyForSync: Boolean
-        get() = variations.all { it.barcode != null }
-
     val barcodes
         get() = variations.mapNotNull { it.barcode }
 
