@@ -70,7 +70,7 @@ class ArtooImportService(
     fun isMarkedForSync(product: ArtooMappedProduct) =
         syncProductRepository.findByArtooId(product.id)?.synced ?: false
 
-    fun getSyncMessages(product: ArtooMappedProduct) = buildList {
+    fun getSyncMessages(product: ArtooMappedProduct, knownSyncProduct: SyncProduct? = null) = buildList {
         val barcodes = product.barcodes
         if (barcodes.isEmpty()) {
             add(SyncMessage.Error("Produkt hat keine Barcodes"))
@@ -79,7 +79,7 @@ class ArtooImportService(
             add(SyncMessage.Warning("Nicht alle Variationen haben einen Barcode"))
         }
 
-        val syncProduct = syncProductRepository.findByArtooId(product.id)
+        val syncProduct = knownSyncProduct ?: syncProductRepository.findByArtooId(product.id)
         if (syncProduct?.vendor == null) {
             add(SyncMessage.Error("Produkt hat keinen Hersteller"))
         }
@@ -221,6 +221,11 @@ class ArtooImportService(
         // TODO: Products in ready2order with no barcodes at all?
         val artooProduct = syncProduct.artooId?.let { artooDataStore.findProductById(it) }
         var shopifyProduct = syncProduct.shopifyId?.let { shopifyDataStore.findProductById(it) }
+
+        if (artooProduct != null && getSyncMessages(artooProduct, syncProduct).any { it is SyncMessage.Error }) {
+            logger.warn { "Product ${artooProduct.name} has errors, skipping synchronization" }
+            return
+        }
 
         if (artooProduct == null || !syncProduct.synced) {
             require(shopifyProduct != null) { "SyncProduct vanished from both ready2order and Shopify" }
