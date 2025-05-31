@@ -2,6 +2,7 @@ package de.hinundhergestellt.jhuh.sync
 
 import com.vaadin.flow.component.Component
 import com.vaadin.flow.component.HasText
+import com.vaadin.flow.component.Key
 import com.vaadin.flow.component.Text
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.button.ButtonVariant
@@ -22,7 +23,6 @@ import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.component.treegrid.TreeGrid
 import com.vaadin.flow.data.provider.hierarchy.AbstractBackEndHierarchicalDataProvider
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery
-import com.vaadin.flow.data.renderer.ComponentRenderer
 import com.vaadin.flow.dom.Style
 import com.vaadin.flow.router.Route
 import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedCategory
@@ -40,12 +40,12 @@ class ArtooImportView(
     @Qualifier("applicationTaskExecutor") private val taskExecutor: AsyncTaskExecutor
 ) : VerticalLayout() {
 
+    private lateinit var markedForSyncCheckbox: Checkbox
+    private lateinit var readyForSyncCheckbox: Checkbox
+    private lateinit var markedWithErrorsCheckbox: Checkbox
+    private lateinit var filterTextField: TextField
     private lateinit var treeGrid: TreeGrid<Any>
     private lateinit var progressOverlay: Div
-
-    private var onlyMarkedForSync = true
-    private var onlyReadyForSync = false
-    private var onlyMarkedWithErrors = false
 
     init {
         setHeightFull()
@@ -80,48 +80,48 @@ class ArtooImportView(
     }
 
     private fun createFilters() {
-        val spacer = Div()
-        spacer.setWidthFull()
+        markedForSyncCheckbox = Checkbox("Nur synchronisiert")
+        readyForSyncCheckbox = Checkbox("Bereit zum Synchronisieren")
+        markedWithErrorsCheckbox = Checkbox("Synchronisiert mit Fehlern")
 
-        val markedCheckbox = Checkbox("Nur synchronisiert")
-        val readyCheckbox = Checkbox("Bereit zum Synchronisieren")
-        val errorsCheckbox = Checkbox("Synchronisiert mit Fehlern")
-
-        markedCheckbox.value = onlyMarkedForSync
-        markedCheckbox.style.setWhiteSpace(Style.WhiteSpace.NOWRAP)
-        markedCheckbox.addValueChangeListener {
-            onlyMarkedForSync = it.value
+        markedForSyncCheckbox.value = true
+        markedForSyncCheckbox.style.setWhiteSpace(Style.WhiteSpace.NOWRAP)
+        markedForSyncCheckbox.addValueChangeListener {
             if (it.value) {
-                readyCheckbox.value = false
-                errorsCheckbox.value = false
+                readyForSyncCheckbox.value = false
+                markedWithErrorsCheckbox.value = false
             }
             treeGrid.dataProvider.refreshAll()
         }
 
-        readyCheckbox.value = onlyReadyForSync
-        readyCheckbox.style.setWhiteSpace(Style.WhiteSpace.NOWRAP)
-        readyCheckbox.addValueChangeListener {
-            onlyReadyForSync = it.value
+        readyForSyncCheckbox.style.setWhiteSpace(Style.WhiteSpace.NOWRAP)
+        readyForSyncCheckbox.addValueChangeListener {
             if (it.value) {
-                markedCheckbox.value = false
-                errorsCheckbox.value = false
+                markedForSyncCheckbox.value = false
+                markedWithErrorsCheckbox.value = false
             }
             treeGrid.dataProvider.refreshAll()
         }
 
-        errorsCheckbox.value = onlyMarkedWithErrors
-        errorsCheckbox.style.setWhiteSpace(Style.WhiteSpace.NOWRAP)
-        errorsCheckbox.addValueChangeListener { event ->
-            onlyMarkedWithErrors = event.value
-            if (event.value) {
-                markedCheckbox.value = false
-                readyCheckbox.value = false
+        markedWithErrorsCheckbox.style.setWhiteSpace(Style.WhiteSpace.NOWRAP)
+        markedWithErrorsCheckbox.addValueChangeListener {
+            if (it.value) {
+                markedForSyncCheckbox.value = false
+                readyForSyncCheckbox.value = false
             }
             treeGrid.dataProvider.refreshAll()
         }
 
-        val filtersLayout = HorizontalLayout(spacer, markedCheckbox, readyCheckbox, errorsCheckbox)
+        filterTextField = TextField()
+        filterTextField.placeholder = "Suche..."
+        filterTextField.prefixComponent = VaadinIcon.SEARCH.create()
+        filterTextField.isClearButtonVisible = true
+        filterTextField.setWidthFull()
+        filterTextField.addValueChangeListener { treeGrid.dataProvider.refreshAll() }
+
+        val filtersLayout = HorizontalLayout(markedForSyncCheckbox, readyForSyncCheckbox, markedWithErrorsCheckbox, filterTextField)
         filtersLayout.setWidthFull()
+        filtersLayout.alignItems = FlexComponent.Alignment.CENTER
         add(filtersLayout)
     }
 
@@ -133,11 +133,23 @@ class ArtooImportView(
                 isSortable = false
                 flexGrow = 100
             }
-        treeGrid.addColumn(ComponentRenderer { it -> treeItemTagsColumn(it) })
+        treeGrid.addColumn { importService.getItemVendor(it) }
+            .setHeader("Hersteller")
+            .apply {
+                isSortable = false
+                flexGrow = 5
+            }
+        treeGrid.addColumn { importService.getItemType(it) }
+            .setHeader("Produktart")
+            .apply {
+                isSortable = false
+                flexGrow = 5
+            }
+        treeGrid.addColumn { importService.getItemTags(it) }
             .setHeader("Tags")
             .apply {
                 isSortable = false
-                flexGrow = 50
+                flexGrow = 30
             }
         treeGrid.addColumn { importService.getItemVariations(it) }
             .setHeader("V#")
@@ -147,16 +159,19 @@ class ArtooImportView(
                 width = "4em"
                 flexGrow = 0
             }
-        treeGrid.addColumn(ComponentRenderer { it -> treeItemStatusColumn(it) })
-            .setHeader("").apply {
+        treeGrid.addComponentColumn{ treeItemStatusColumn(it) }
+            .setHeader("")
+            .apply {
                 isSortable = false
                 width = "32px"
                 flexGrow = 0
             }
-        treeGrid.addColumn(ComponentRenderer { it -> treeItemActionsColumn(it) })
-            .setHeader("").apply {
+        treeGrid.addComponentColumn { treeItemActionsColumn(it) }
+            .setHeader("")
+            .setPartNameGenerator { it -> "no-padding" }
+            .apply {
                 isSortable = false
-                width = "56px"
+                width = "72px"
                 flexGrow = 0
             }
         treeGrid.setDataProvider(TreeDataProvider())
@@ -191,35 +206,56 @@ class ArtooImportView(
             }
     }
 
-    private fun editItemTags(item: Any) {
+    private fun editItem(item: Any) {
         val dialog = Dialog()
-        dialog.headerTitle = "Tags bearbeiten"
+        dialog.headerTitle = if (item is ArtooMappedCategory) "Kategorie bearbeiten" else "Produkt bearbeiten"
+
         val closeButton = Button(VaadinIcon.CLOSE.create()) { dialog.close() }
         closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY)
         dialog.header.add(closeButton)
-        val textField = TextField()
-        textField.value = importService.getItemTags(item)
-        dialog.add(textField)
-        dialog.footer.add(Button("Speichern") {
-            importService.updateItemTags(item, textField.value)
+
+        val layout = VerticalLayout()
+        layout.isSpacing = false
+        layout.isPadding = false
+        dialog.add(layout)
+
+        val vendorTextField: TextField?
+        val typeTextField: TextField?
+        if (item is ArtooMappedProduct) {
+            vendorTextField = TextField()
+            vendorTextField.label = "Hersteller"
+            vendorTextField.value = importService.getItemVendor(item)
+            vendorTextField.setWidthFull()
+            layout.add(vendorTextField)
+
+            typeTextField = TextField()
+            typeTextField.label = "Produktart"
+            typeTextField.value = importService.getItemType(item)
+            typeTextField.setWidthFull()
+            layout.add(typeTextField)
+        } else {
+            vendorTextField = null
+            typeTextField = null
+        }
+
+        val tagsTextField = TextField()
+        tagsTextField.label = "Tags"
+        tagsTextField.value = importService.getItemTags(item)
+        tagsTextField.setWidthFull()
+        layout.add(tagsTextField)
+
+        (vendorTextField ?: tagsTextField).focus()
+
+        val saveButton = Button("Speichern")
+        saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY)
+        saveButton.addClickShortcut(Key.ENTER)
+        saveButton.addClickListener {
+            importService.updateItem(item, vendorTextField?.value, typeTextField?.value, tagsTextField.value)
             treeGrid.dataProvider.refreshItem(item)
             dialog.close()
-        })
+        }
+        dialog.footer.add(saveButton)
         dialog.open()
-    }
-
-    private fun treeItemTagsColumn(item: Any): Component {
-        val icon = VaadinIcon.EDIT.create()
-        icon.setSize("20px")
-        val button = Button(icon) { editItemTags(item) }
-        button.height = "20px"
-        button.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE)
-        val text = Text(importService.getItemTags(item))
-        val layout = HorizontalLayout(button, text)
-        layout.isSpacing = false
-        layout.themeList.add("spacing-s")
-        layout.style.setWhiteSpace(Style.WhiteSpace.NOWRAP)
-        return layout
     }
 
     private fun treeItemStatusColumn(item: Any): Component {
@@ -248,39 +284,58 @@ class ArtooImportView(
     }
 
     private fun treeItemActionsColumn(item: Any): Component {
-        if (item !is ArtooMappedProduct) {
-            return Span()
+        val spacer = Span()
+        spacer.setWidthFull()
+
+        val layout = HorizontalLayout(spacer)
+        layout.isSpacing = false
+        layout.themeList.add("spacing-s")
+        layout.style.setWhiteSpace(Style.WhiteSpace.NOWRAP)
+
+        if (item is ArtooMappedProduct) {
+            val ready = item.isReadyForSync
+            val marked = importService.isMarkedForSync(item)
+
+            val markUnmarkIcon = if (marked) VaadinIcon.TRASH.create() else VaadinIcon.PLUS.create()
+            markUnmarkIcon.setSize("20px")
+            val markUnmarkButton = Button(markUnmarkIcon)
+            markUnmarkButton.isEnabled = ready || marked
+            markUnmarkButton.height = "20px"
+            markUnmarkButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE)
+            markUnmarkButton.addClickListener {
+                if (marked) {
+                    importService.unmarkForSync(item)
+                } else {
+                    importService.markForSync(item)
+                }
+                treeGrid.dataProvider.refreshItem(item)
+            }
+            layout.add(markUnmarkButton)
         }
 
-        val ready = item.isReadyForSync
-        val marked = importService.isMarkedForSync(item)
-        val icon = if (marked) VaadinIcon.TRASH.create() else VaadinIcon.PLUS.create()
-        icon.setSize("20px")
-        //icon.color = if (!ready) "lightgray" else if (marked) "red" else "green"
-        val button = Button(icon)
-        button.isEnabled = ready
-        button.height = "20px"
-        button.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE)
-        button.addClickListener {
-            if (marked) {
-                importService.unmarkForSync(item)
-            } else {
-                importService.markForSync(item)
-            }
-            treeGrid.dataProvider.refreshItem(item)
-        }
-        return button
+        val editIcon = VaadinIcon.EDIT.create()
+        editIcon.setSize("20px")
+        val editButton = Button(editIcon) { editItem(item) }
+        editButton.height = "20px"
+        editButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE)
+        layout.add(editButton)
+
+        return layout
     }
 
     private inner class TreeDataProvider : AbstractBackEndHierarchicalDataProvider<Any, Void?>() {
 
         override fun fetchChildrenFromBackEnd(query: HierarchicalQuery<Any, Void?>): Stream<Any> {
-            return (query.parent
-                ?.let { (it as ArtooMappedCategory).children.asSequence() + it.products.asSequence() }
-                ?: importService.rootCategories.asSequence())
-                .filter { !onlyMarkedForSync || importService.filterByMarkedForSync(it) }
-                .filter { !onlyReadyForSync || importService.filterByReadyToSync(it) }
-                .filter { !onlyMarkedWithErrors || importService.filterByMarkedWithErrors(it) }
+            val children = (query.parent as ArtooMappedCategory?)
+                ?.let { it.children.asSequence() + it.products.asSequence() }
+                ?: importService.rootCategories.asSequence()
+            return children
+                .filter {
+                    importService.filterBy(
+                        it, markedForSyncCheckbox.value, readyForSyncCheckbox.value,
+                        markedWithErrorsCheckbox.value, filterTextField.value
+                    )
+                }
                 .sortedBy { importService.getItemName(it) }
                 .asStream()
         }

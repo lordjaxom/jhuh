@@ -35,6 +35,20 @@ class ArtooImportService(
             else -> throw IllegalStateException("Unexpected item $item")
         }
 
+    fun getItemVendor(item: Any) =
+        when (item) {
+            is ArtooMappedCategory -> ""
+            is ArtooMappedProduct -> syncProductRepository.findByArtooId(item.id)?.vendor ?: ""
+            else -> throw IllegalStateException("Unexpected item $item")
+        }
+
+    fun getItemType(item: Any) =
+        when (item) {
+            is ArtooMappedCategory -> ""
+            is ArtooMappedProduct -> syncProductRepository.findByArtooId(item.id)?.type ?: ""
+            else -> throw IllegalStateException("Unexpected item $item")
+        }
+
     fun getItemTags(item: Any): String {
         val tags = when (item) {
             is ArtooMappedCategory -> syncCategoryRepository.findByArtooId(item.id)?.tags
@@ -58,36 +72,40 @@ class ArtooImportService(
     fun isMarkedForSync(product: ArtooMappedProduct) =
         syncProductRepository.findByArtooId(product.id)?.synced ?: false
 
-    fun filterByReadyToSync(item: Any) =
+    fun filterBy(item: Any, markedForSync: Boolean, readyForSync: Boolean, markedWithErrors: Boolean, text: String): Boolean =
         when (item) {
-            is ArtooMappedCategory -> item.containsReadyForSync()
-            is ArtooMappedProduct -> item.isReadyForSync
-            else -> throw IllegalStateException("Unexpected item $item")
-        }
+            is ArtooMappedCategory -> (item.children.asSequence() + item.products.asSequence())
+                .any { filterBy(it, markedForSync, readyForSync, markedWithErrors, text) }
 
-    fun filterByMarkedForSync(item: Any): Boolean =
-        when (item) {
-            is ArtooMappedCategory -> (item.children.asSequence() + item.products.asSequence()).any { filterByMarkedForSync(it) }
-            is ArtooMappedProduct -> isMarkedForSync(item)
-            else -> throw IllegalStateException("Unexpected item $item")
-        }
+            is ArtooMappedProduct -> (!markedForSync || isMarkedForSync(item)) &&
+                    (!readyForSync || item.isReadyForSync) &&
+                    (!markedWithErrors || isMarkedForSync(item) && !item.isReadyForSync) &&
+                    (text.isEmpty() || item.name.contains(text, ignoreCase = true))
 
-    fun filterByMarkedWithErrors(item: Any): Boolean =
-        when (item) {
-            is ArtooMappedCategory -> (item.children.asSequence() + item.products.asSequence()).any { filterByMarkedWithErrors(it) }
-            is ArtooMappedProduct -> isMarkedForSync(item) && !item.isReadyForSync
             else -> throw IllegalStateException("Unexpected item $item")
         }
 
     @Transactional
-    fun updateItemTags(item: Any, value: String) {
-        val tags = when (item) {
-            is ArtooMappedCategory -> syncCategoryRepository.findByArtooId(item.id)!!.tags
-            is ArtooMappedProduct -> syncProductRepository.findByArtooId(item.id)!!.tags
-            else -> throw IllegalStateException("Unexpected item $item")
+    fun updateItem(item: Any, vendor: String?, type: String?, tags: String) {
+        val splitTags = tags.splitToSequence(",").map { it.trim() }.filter { it.isNotEmpty() }.toMutableSet()
+        when (item) {
+            is ArtooMappedCategory -> {
+                require(vendor == null && type == null) { "Vendor and product type not supported for SyncCategory" }
+                val syncCategory = syncCategoryRepository.findByArtooId(item.id)!!
+                syncCategory.tags = splitTags
+                syncCategoryRepository.save(syncCategory)
+            }
+
+            is ArtooMappedProduct -> {
+                val syncProduct = syncProductRepository.findByArtooId(item.id)!!
+                syncProduct.vendor = vendor
+                syncProduct.type = type
+                syncProduct.tags = splitTags
+                syncProductRepository.save(syncProduct)
+            }
+
+            else -> throw IllegalArgumentException("Unexpected item $item")
         }
-        tags.clear()
-        tags.addAll(value.splitToSequence(",").map { it.trim() }.filter { it.isNotEmpty() })
     }
 
     @Transactional

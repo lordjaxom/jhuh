@@ -9,5 +9,4 @@ class ArtooMappedVariation internal constructor(
     val itemNumber by product::itemNumber
     val barcode by product::barcode
     val price by product::price
-    val stockValue by product::stockValue
 }

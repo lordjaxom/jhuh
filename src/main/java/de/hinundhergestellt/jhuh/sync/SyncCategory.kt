@@ -17,7 +17,7 @@ class SyncCategory(
     val artooId: Int,
 
     @ElementCollection(fetch = FetchType.EAGER)
-    val tags: MutableSet<String> = mutableSetOf(),
+    var tags: MutableSet<String> = mutableSetOf(),
 
     @Id
     val id: UUID = UUID.randomUUID(),

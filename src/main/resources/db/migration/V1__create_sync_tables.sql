@@ -16,6 +16,8 @@ CREATE TABLE sync_product
     id         UUID    NOT NULL,
     artoo_id   VARCHAR(255),
     shopify_id VARCHAR(255),
+    vendor     VARCHAR(255),
+    type       VARCHAR(255),
     synced     BOOLEAN NOT NULL,
     CONSTRAINT pk_syncproduct PRIMARY KEY (id)
 );

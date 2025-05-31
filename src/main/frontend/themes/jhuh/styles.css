@@ -1,6 +1,9 @@
+html {
+    --vaadin-grid-cell-padding: 4px 8px
+}
+
 vaadin-grid::part(header-cell) {
     font-weight: bold;
-    //background-color: var(--lumo-contrast-10pct);
     min-height: var(--lumo-size-m);
 }
 

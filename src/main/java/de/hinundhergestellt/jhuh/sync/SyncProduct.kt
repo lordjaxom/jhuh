@@ -20,8 +20,14 @@ class SyncProduct(
     @Column
     var shopifyId: String? = null,
 
+    @Column
+    var vendor: String? = null,
+
+    @Column
+    var type: String? = null,
+
     @ElementCollection(fetch = FetchType.EAGER)
-    val tags: MutableSet<String> = mutableSetOf(),
+    var tags: MutableSet<String> = mutableSetOf(),
 
     @Column(nullable = false)
     var synced: Boolean = false,
