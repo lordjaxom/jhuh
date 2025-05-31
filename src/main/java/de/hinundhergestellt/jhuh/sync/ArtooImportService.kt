@@ -178,14 +178,16 @@ class ArtooImportService(
 
     private fun synchronizeWithShopify(syncProduct: SyncProduct) {
         // TODO: Products in ready2order with no barcodes at all?
-        val artooProduct = if (syncProduct.synced) syncProduct.artooId?.let { artooDataStore.findProductById(it) } else null
+        val artooProduct = syncProduct.artooId?.let { artooDataStore.findProductById(it) }
         var shopifyProduct = syncProduct.shopifyId?.let { shopifyDataStore.findProductById(it) }
 
-        if (artooProduct == null) {
+        if (artooProduct == null || !syncProduct.synced) {
             require(shopifyProduct != null) { "SyncProduct vanished from both ready2order and Shopify" }
             logger.info { "Product ${shopifyProduct!!.title} no longer in ready2order or not synced, delete from Shopify" }
             shopifyDataStore.delete(shopifyProduct)
-            syncProductRepository.delete(syncProduct)
+            if (artooProduct == null) {
+                syncProductRepository.delete(syncProduct)
+            }
             return
         }
 
@@ -197,29 +199,36 @@ class ArtooImportService(
             // Update product if necessary
         }
 
-        syncProduct.variants.forEach { synchronizeWithShopify(it, artooProduct, shopifyProduct) }
+        val bulkOperations = syncProduct.variants.map { synchronizeWithShopify(it, artooProduct, shopifyProduct) }
+        bulkOperations
+            .mapNotNull { (it as? VariantBulkOperation.Delete)?.variant }
+            .also { if (it.isNotEmpty()) shopifyDataStore.delete(shopifyProduct, it) }
+        bulkOperations
+            .mapNotNull { (it as? VariantBulkOperation.Create)?.variant }
+            .also { if (it.isNotEmpty()) shopifyDataStore.create(shopifyProduct, it) }
     }
 
-    private fun synchronizeWithShopify(syncVariant: SyncVariant, artooProduct: ArtooMappedProduct, shopifyProduct: ShopifyProduct) {
+    private fun synchronizeWithShopify(syncVariant: SyncVariant, artooProduct: ArtooMappedProduct, shopifyProduct: ShopifyProduct)
+            : VariantBulkOperation? {
         val artooVariation = artooProduct.findVariationByBarcode(syncVariant.barcode)
         val shopifyVariant = shopifyProduct.findVariantByBarcode(syncVariant.barcode)
 
         if (artooVariation == null) {
             require(shopifyVariant != null) { "SyncVariant vanished from both ready2order and Shopify" }
             logger.info { "Variant ${shopifyVariant.title} of ${shopifyProduct.title} no longer in ready2order, delete from Shopify" }
-            shopifyDataStore.delete(shopifyProduct, shopifyVariant)
             syncVariant.product.variants.remove(syncVariant)
-            return
+            return VariantBulkOperation.Delete(shopifyVariant)
         }
 
         if (shopifyVariant == null) {
             logger.info { "Variant ${artooVariation.name} only in ready2order, create in Shopify" }
             val newShopifyVariant = buildShopifyVariant(shopifyProduct, artooProduct, artooVariation)
-            shopifyDataStore.create(shopifyProduct, newShopifyVariant)
-            return
+            return VariantBulkOperation.Create(newShopifyVariant)
         }
 
         // Update variant if necessary
+
+        return null
     }
 
     private fun buildShopifyProduct(
@@ -263,5 +272,10 @@ class ArtooImportService(
                 value = optionValue
             }
         )
+    }
+
+    private sealed class VariantBulkOperation {
+        class Delete(val variant: ShopifyProductVariant) : VariantBulkOperation()
+        class Create(val variant: ShopifyProductVariant) : VariantBulkOperation()
     }
 }

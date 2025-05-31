@@ -20,7 +20,7 @@ class ShopifyProductClient(
         findAll(it)
     }
 
-    fun create(product: ShopifyProduct) {
+    fun create(product: ShopifyProduct): String {
         require(product.id == null) { "Product id must be null" }
 
         val query = ProductCreateGraphQLQuery.newRequest()
@@ -42,7 +42,7 @@ class ShopifyProductClient(
         val payload = response.extractValueAsObject("productCreate", ProductCreatePayload::class.java)
         require(payload.userErrors.isEmpty()) { "Product creation failed: " + payload.userErrors }
 
-        product.id = payload.product.id
+        return payload.product.id!!
     }
 
     fun delete(product: ShopifyProduct) {

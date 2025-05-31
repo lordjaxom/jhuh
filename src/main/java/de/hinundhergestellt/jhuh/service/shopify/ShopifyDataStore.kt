@@ -24,7 +24,7 @@ class ShopifyDataStore(
         products.find { it.id == id }
 
     fun create(product: ShopifyProduct) {
-        productClient.create(product)
+        product.id = productClient.create(product)
         products.add(product)
     }
 
@@ -33,14 +33,17 @@ class ShopifyDataStore(
         products.remove(product)
     }
 
-    fun create(product: ShopifyProduct, variant: ShopifyProductVariant) {
-        variantClient.create(product, listOf(variant))
-        product.variants.add(variant)
+    fun create(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
+        val ids = variantClient.create(product, variants)
+        variants.zip(ids).forEach { (variant, id) ->
+            variant.id = id
+            product.variants.add(variant)
+        }
     }
 
-    fun delete(product: ShopifyProduct, variant: ShopifyProductVariant) {
-        variantClient.delete(product, listOf(variant))
-        product.variants.remove(variant)
+    fun delete(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
+        variantClient.delete(product, variants)
+        product.variants.removeAll(variants)
     }
 }
 
