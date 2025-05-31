@@ -37,7 +37,6 @@ CREATE TABLE sync_variant
     id         UUID         NOT NULL,
     product_id UUID         NOT NULL,
     barcode    VARCHAR(255) NOT NULL,
-    deleted    BOOLEAN      NOT NULL,
     CONSTRAINT pk_syncvariant PRIMARY KEY (id)
 );
 

@@ -13,9 +13,6 @@ class SyncVariant(
     @Column(nullable = false, unique = true)
     val barcode: String,
 
-    @Column(nullable = false)
-    var deleted: Boolean = false,
-
     @Id
     val id: UUID = UUID.randomUUID(),
 )

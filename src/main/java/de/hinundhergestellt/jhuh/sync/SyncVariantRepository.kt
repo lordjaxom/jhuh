@@ -8,9 +8,5 @@ import java.util.stream.Stream
 @Repository
 interface SyncVariantRepository : JpaRepository<SyncVariant, UUID> {
 
-    fun existsByBarcode(barcode: String): Boolean
-
     fun findByBarcode(barcode: String): SyncVariant?
-
-    fun findByBarcodeIn(barcode: List<String>): Stream<SyncVariant>
 }
