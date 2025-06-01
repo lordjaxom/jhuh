@@ -4,6 +4,8 @@ import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProductClient
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProductVariantClient
+import de.hinundhergestellt.jhuh.vendors.shopify.UnsavedShopifyProduct
+import de.hinundhergestellt.jhuh.vendors.shopify.UnsavedShopifyProductVariant
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.context.annotation.Scope
@@ -23,9 +25,10 @@ class ShopifyDataStore(
     fun findProductById(id: String) =
         products.find { it.id == id }
 
-    fun create(product: ShopifyProduct) {
-        productClient.create(product)
-        products.add(product)
+    fun create(product: UnsavedShopifyProduct): ShopifyProduct {
+        val created = productClient.create(product)
+        products.add(created)
+        return created
     }
 
     fun delete(product: ShopifyProduct) {
@@ -33,9 +36,9 @@ class ShopifyDataStore(
         products.remove(product)
     }
 
-    fun create(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
-        variantClient.create(product, variants)
-        product.variants.addAll(variants)
+    fun create(product: ShopifyProduct, variants: List<UnsavedShopifyProductVariant>) {
+        val created = variantClient.create(product, variants)
+        product.variants.addAll(created)
     }
 
     fun delete(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {

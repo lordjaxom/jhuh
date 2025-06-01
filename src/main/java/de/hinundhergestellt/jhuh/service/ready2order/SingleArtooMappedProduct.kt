@@ -1,7 +1,6 @@
 package de.hinundhergestellt.jhuh.service.ready2order
 
 import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProduct
-import java.util.List
 
 class SingleArtooMappedProduct internal constructor(
     private val product: ArtooProduct

@@ -16,18 +16,14 @@ import org.springframework.stereotype.Component
 class ShopifyProductVariantClient(
     private val apiClient: GraphQLClient
 ) {
-    fun create(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
-        val inputs = variants
-            .onEach { require(it.id == null) { "Variant id must be null" } }
-            .map { it.toProductVariantsBulkInput() }
-
+    fun create(product: ShopifyProduct, variants: List<UnsavedShopifyProductVariant>): List<ShopifyProductVariant> {
         val strategy =
-            if (product.variants.isEmpty()) ProductVariantsBulkCreateStrategy.REMOVE_STANDALONE_VARIANT
+            if (product.options.isEmpty()) ProductVariantsBulkCreateStrategy.REMOVE_STANDALONE_VARIANT
             else ProductVariantsBulkCreateStrategy.DEFAULT
         val query = ProductVariantsBulkCreateGraphQLQuery.newRequest()
             .strategy(strategy)
             .productId(product.id!!)
-            .variants(inputs)
+            .variants(variants.map { it.toProductVariantsBulkInput() })
             .build()
 
         // @formatter:off
@@ -47,16 +43,15 @@ class ShopifyProductVariantClient(
         val payload = response.extractValueAsObject("productVariantsBulkCreate", ProductVariantsBulkCreatePayload::class.java)
         require((payload.userErrors.isEmpty())) { "Product variants bulk create failed: " + payload.userErrors }
 
-        variants.zip(payload.productVariants).forEach { (variant, created) ->
-            variant.id = created.id!!
-            variant.title = created.title!!
-        }
+        return variants
+            .zip(payload.productVariants)
+            .map { (variant, created) -> ShopifyProductVariant(variant, created.id, created.title) }
     }
 
     fun delete(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
         val query = ProductVariantsBulkDeleteGraphQLQuery.newRequest()
             .productId(product.id!!)
-            .variantsIds(variants.map { it.id!! })
+            .variantsIds(variants.map { it.id })
             .build()
 
         // @formatter:off

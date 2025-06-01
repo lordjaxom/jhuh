@@ -1,9 +1,15 @@
 package de.hinundhergestellt.jhuh.sync
 
-import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedProduct
-import jakarta.persistence.*
-import org.springframework.lang.Nullable
-import java.util.*
+import jakarta.persistence.CascadeType
+import jakarta.persistence.Column
+import jakarta.persistence.ElementCollection
+import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
+import jakarta.persistence.Id
+import jakarta.persistence.Index
+import jakarta.persistence.OneToMany
+import jakarta.persistence.Table
+import java.util.UUID
 
 @Entity
 @Table(

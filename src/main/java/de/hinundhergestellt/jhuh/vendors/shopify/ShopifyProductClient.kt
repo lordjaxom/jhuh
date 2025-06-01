@@ -9,7 +9,11 @@ import com.shopify.admin.client.ProductDeleteGraphQLQuery
 import com.shopify.admin.client.ProductDeleteProjectionRoot
 import com.shopify.admin.client.ProductsGraphQLQuery
 import com.shopify.admin.client.ProductsProjectionRoot
-import com.shopify.admin.types.*
+import com.shopify.admin.types.PageInfo
+import com.shopify.admin.types.ProductConnection
+import com.shopify.admin.types.ProductCreatePayload
+import com.shopify.admin.types.ProductDeleteInput
+import com.shopify.admin.types.ProductDeletePayload
 import org.springframework.stereotype.Component
 
 @Component
@@ -20,9 +24,7 @@ class ShopifyProductClient(
         findAll(it)
     }
 
-    fun create(product: ShopifyProduct) {
-        require(product.id == null) { "Product id must be null" }
-
+    fun create(product: UnsavedShopifyProduct): ShopifyProduct {
         val query = ProductCreateGraphQLQuery.newRequest()
             .product(product.toProductCreateInput())
             .build()
@@ -45,8 +47,10 @@ class ShopifyProductClient(
         val payload = response.extractValueAsObject("productCreate", ProductCreatePayload::class.java)
         require(payload.userErrors.isEmpty()) { "Product creation failed: " + payload.userErrors }
 
-        product.options.zip(payload.product.options).forEach { (option, created) -> option.id = created.id!! }
-        product.id = payload.product.id!!
+        val options = product.options
+            .zip(payload.product.options)
+            .map { (option, created) -> ShopifyProductOption(option, created.id) }
+        return ShopifyProduct(product, payload.product.id, options)
     }
 
     fun delete(product: ShopifyProduct) {

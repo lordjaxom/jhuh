@@ -1,7 +1,5 @@
 package de.hinundhergestellt.jhuh.sync
 
-import com.shopify.admin.types.ProductOption
-import com.shopify.admin.types.SelectedOption
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.service.ready2order.ArtooDataStore
 import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedCategory
@@ -11,13 +9,14 @@ import de.hinundhergestellt.jhuh.service.ready2order.SingleArtooMappedProduct
 import de.hinundhergestellt.jhuh.service.shopify.ShopifyDataStore
 import de.hinundhergestellt.jhuh.util.lazyWithReset
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProduct
-import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProductOption
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProductVariantOption
+import de.hinundhergestellt.jhuh.vendors.shopify.UnsavedShopifyProduct
+import de.hinundhergestellt.jhuh.vendors.shopify.UnsavedShopifyProductOption
+import de.hinundhergestellt.jhuh.vendors.shopify.UnsavedShopifyProductVariant
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import kotlin.sequences.forEach
 
 private val logger = KotlinLogging.logger {}
 
@@ -43,10 +42,14 @@ class ArtooImportService(
                 syncCategory?.also { syncCategoryRepository.save(it) }
 
                 if (vendor != null || type != null) {
-                    item.value.findAllProducts().forEach { artooProduct ->
-                        val syncProduct = syncProductRepository.findByArtooId(artooProduct.id)
-                            ?.also { if (vendor != null) it.vendor = vendor; if (type != null) it.type = type }
-                            ?: SyncProduct(artooId = artooProduct.id, vendor = vendor, type = type, synced = false)
+                    item.value.findAllProducts().forEach { product ->
+                        var syncProduct = syncProductRepository.findByArtooId(product.id)
+                        if (syncProduct != null) {
+                            if (vendor != null) syncProduct.vendor = vendor.ifEmpty { null }
+                            if (type != null) syncProduct.type = type.ifEmpty { null }
+                        } else {
+                            syncProduct = SyncProduct(artooId = product.id, vendor = vendor, type = type, synced = false)
+                        }
                         syncProductRepository.save(syncProduct)
                     }
                 }
@@ -189,8 +192,8 @@ class ArtooImportService(
 
         if (shopifyProduct == null) {
             logger.info { "Product ${artooProduct.name} only in ready2order, create in Shopify" }
-            shopifyProduct = buildShopifyProduct(artooProduct, syncProduct)
-            shopifyDataStore.create(shopifyProduct)
+            val unsavedShopifyProduct = buildShopifyProduct(artooProduct, syncProduct)
+            shopifyProduct = shopifyDataStore.create(unsavedShopifyProduct)
         } else {
             // Update product if necessary
         }
@@ -230,7 +233,7 @@ class ArtooImportService(
     private fun buildShopifyProduct(
         artooProduct: ArtooMappedProduct,
         syncProduct: SyncProduct
-    ): ShopifyProduct {
+    ): UnsavedShopifyProduct {
         val categoryTags = artooDataStore.findAllCategoriesByProduct(artooProduct)
             .mapNotNull { syncCategoryRepository.findByArtooId(it.id)?.tags }
             .flatten()
@@ -239,13 +242,13 @@ class ArtooImportService(
         val options = when (artooProduct) {
             is SingleArtooMappedProduct -> listOf()
             else -> listOf(
-                ShopifyProductOption(
+                UnsavedShopifyProductOption(
                     "Farbe",
                     artooProduct.variations.map { it.name.removePrefix(artooProduct.name).trim() }
                 )
             )
         }
-        return ShopifyProduct(
+        return UnsavedShopifyProduct(
             artooProduct.name,
             syncProduct.vendor!!,
             syncProduct.type!!,
@@ -258,16 +261,18 @@ class ArtooImportService(
         shopifyProduct: ShopifyProduct,
         artooProduct: ArtooMappedProduct,
         artooVariation: ArtooMappedVariation
-    ): ShopifyProductVariant {
+    ): UnsavedShopifyProductVariant {
         val optionValue = artooVariation.name.removePrefix(artooProduct.name).trim()
-        return ShopifyProductVariant(
+        return UnsavedShopifyProductVariant(
             artooVariation.itemNumber ?: "",
             artooVariation.barcode!!,
             artooVariation.price,
-            listOf(ShopifyProductVariantOption(
-                shopifyProduct.options[0].name,
-                optionValue
-            ))
+            listOf(
+                ShopifyProductVariantOption(
+                    shopifyProduct.options[0].name,
+                    optionValue
+                )
+            )
         )
     }
 
@@ -362,5 +367,5 @@ private fun toSyncProduct(shopifyProduct: ShopifyProduct) =
 
 private sealed class VariantBulkOperation {
     class Delete(val variant: ShopifyProductVariant) : VariantBulkOperation()
-    class Create(val variant: ShopifyProductVariant) : VariantBulkOperation()
+    class Create(val variant: UnsavedShopifyProductVariant) : VariantBulkOperation()
 }

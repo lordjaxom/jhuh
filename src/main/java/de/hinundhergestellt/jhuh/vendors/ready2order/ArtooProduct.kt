@@ -1,11 +1,12 @@
 package de.hinundhergestellt.jhuh.vendors.ready2order
 
 import de.hinundhergestellt.jhuh.vendors.ready2order.api.ProductApi
-import de.hinundhergestellt.jhuh.vendors.ready2order.model.*
-import org.springframework.lang.Nullable
+import de.hinundhergestellt.jhuh.vendors.ready2order.model.ProductsGet200ResponseInner
+import de.hinundhergestellt.jhuh.vendors.ready2order.model.ProductsIdPutRequest
+import de.hinundhergestellt.jhuh.vendors.ready2order.model.ProductsPostRequest
+import de.hinundhergestellt.jhuh.vendors.ready2order.model.ProductsPostRequestProductBase
+import de.hinundhergestellt.jhuh.vendors.ready2order.model.ProductsPostRequestProductgroup
 import java.math.BigDecimal
-import java.util.*
-import java.util.function.Function
 
 class ArtooProduct {
 

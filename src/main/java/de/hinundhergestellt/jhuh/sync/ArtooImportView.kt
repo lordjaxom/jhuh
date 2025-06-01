@@ -27,8 +27,6 @@ import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery
 import com.vaadin.flow.dom.Style
 import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
-import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedCategory
-import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedProduct
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.task.AsyncTaskExecutor
 import java.util.concurrent.CompletableFuture
@@ -238,7 +236,7 @@ class ArtooImportView(
             val type = typeTextField.value.takeIf { typeCheckbox?.value ?: true }
             importService.updateItem(item, vendor, type, tagsTextField.value)
             dialog.close()
-            treeGrid.dataProvider.refreshItem(item, vendor != null || type != null)
+            refreshTreeItem(item, vendor != null || type != null)
         }
         dialog.footer.add(saveButton)
         dialog.open()
@@ -301,6 +299,13 @@ class ArtooImportView(
         layout.add(editButton)
 
         return layout
+    }
+
+    private fun refreshTreeItem(item: SyncableItem, recurse: Boolean) {
+        treeGrid.dataProvider.refreshItem(item)
+        if (recurse && item is ArtooImportService.Category) {
+            item.childrenAndProducts.forEach { refreshTreeItem(it, true) }
+        }
     }
 
     private inner class TreeDataProvider : AbstractBackEndHierarchicalDataProvider<SyncableItem, Void?>() {

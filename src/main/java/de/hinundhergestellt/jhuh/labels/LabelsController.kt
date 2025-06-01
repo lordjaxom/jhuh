@@ -5,7 +5,6 @@ import org.krysalis.barcode4j.impl.upcean.EAN13Bean
 import org.krysalis.barcode4j.output.bitmap.BitmapCanvasProvider
 import org.krysalis.barcode4j.tools.MimeTypes
 import org.springframework.http.MediaType
-import org.springframework.util.MimeType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping

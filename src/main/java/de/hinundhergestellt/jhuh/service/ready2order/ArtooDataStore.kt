@@ -4,7 +4,6 @@ import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductClient
 import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductGroup
 import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductGroupClient
-import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.context.annotation.Scope
