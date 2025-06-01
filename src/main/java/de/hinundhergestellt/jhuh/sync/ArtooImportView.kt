@@ -41,25 +41,25 @@ class ArtooImportView(
     @Qualifier("applicationTaskExecutor") private val taskExecutor: AsyncTaskExecutor
 ) : VerticalLayout() {
 
-    private lateinit var markedForSyncCheckbox: Checkbox
-    private lateinit var withErrorsCheckbox: Checkbox
-    private lateinit var errorFreeCheckbox: Checkbox
-    private lateinit var filterTextField: TextField
-    private lateinit var treeGrid: TreeGrid<SyncableItem>
-    private lateinit var progressOverlay: Div
+    private val markedForSyncCheckbox = Checkbox()
+    private val withErrorsCheckbox = Checkbox()
+    private val errorFreeCheckbox = Checkbox()
+    private val filterTextField = TextField()
+    private val treeGrid = TreeGrid<SyncableItem>()
+    private val progressOverlay = Div()
 
     init {
         setHeightFull()
         width = "1170px"
         style.setMargin("0 auto")
 
-        createHeader()
-        createFilters()
-        createTreeGrid()
-        createProgressOverlay()
+        configureHeader()
+        configureFilters()
+        configureTreeGrid()
+        configureProgressOverlay()
     }
 
-    private fun createHeader() {
+    private fun configureHeader() {
         val menuBar = MenuBar()
         menuBar.setWidthFull()
         menuBar.addThemeVariants(MenuBarVariant.LUMO_END_ALIGNED)
@@ -67,10 +67,10 @@ class ArtooImportView(
         add(menuBar)
     }
 
-    private fun createFilters() {
-        markedForSyncCheckbox = Checkbox("Nur synchronisiert")
-        withErrorsCheckbox = Checkbox("Nur fehlerhaft")
-        errorFreeCheckbox = Checkbox("Nur fehlerfrei")
+    private fun configureFilters() {
+        markedForSyncCheckbox.label = "Nur synchronisiert"
+        withErrorsCheckbox.label = "Nur fehlerhaft"
+        errorFreeCheckbox.label = "Nur fehlerfrei"
 
         fun mutualExclusiveFilterCheckbox(checkbox: Checkbox, value: Boolean, vararg others: Checkbox) {
             checkbox.value = value
@@ -87,7 +87,6 @@ class ArtooImportView(
         mutualExclusiveFilterCheckbox(withErrorsCheckbox, false, errorFreeCheckbox)
         mutualExclusiveFilterCheckbox(errorFreeCheckbox, false, withErrorsCheckbox)
 
-        filterTextField = TextField()
         filterTextField.placeholder = "Suche..."
         filterTextField.prefixComponent = VaadinIcon.SEARCH.create()
         filterTextField.isClearButtonVisible = true
@@ -100,8 +99,7 @@ class ArtooImportView(
         add(filtersLayout)
     }
 
-    private fun createTreeGrid() {
-        treeGrid = TreeGrid<SyncableItem>()
+    private fun configureTreeGrid() {
         treeGrid.addHierarchyColumn { it.name }
             .setHeader("Bezeichnung")
             .apply {
@@ -158,10 +156,10 @@ class ArtooImportView(
         add(treeGrid)
     }
 
-    private fun createProgressOverlay() {
+    private fun configureProgressOverlay() {
         val progressSpinner = Div()
         progressSpinner.className = "progress-spinner"
-        progressOverlay = Div(progressSpinner)
+        progressOverlay.add(progressSpinner)
         progressOverlay.addClassName("progress-overlay")
         progressOverlay.isVisible = false
         add(progressOverlay)
