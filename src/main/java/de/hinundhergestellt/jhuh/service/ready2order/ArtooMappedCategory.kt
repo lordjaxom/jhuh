@@ -35,4 +35,8 @@ class ArtooMappedCategory internal constructor(
             yield(this@ArtooMappedCategory)
         }
     }
+
+    override fun toString(): String {
+        return "ArtooMappedCategory(id=$id, name='$name')"
+    }
 }

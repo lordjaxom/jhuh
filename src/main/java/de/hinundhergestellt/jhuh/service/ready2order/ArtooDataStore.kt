@@ -45,7 +45,6 @@ private class DataStoreBuilder(
     private val groups: List<ArtooProductGroup>,
     private val products: List<ArtooProduct>
 ) {
-
     fun rootCategories() =
         groups.asSequence()
             .filter { it.parent == 0 && it.typeId == 7 }
@@ -54,18 +53,16 @@ private class DataStoreBuilder(
 
     private fun toCategory(group: ArtooProductGroup): ArtooMappedCategory {
         val children = groups.asSequence()
-            .filter { it.typeId == 7 }
-            .filter { it.parent == group.id }
+            .filter { it.parent == group.id && it.typeId == 7 }
             .map { toCategory(it) }
             .toList()
 
         val productsWithVariations = groups.asSequence()
-            .filter { it.typeId == 3 }
-            .filter { it.parent == group.id }
+            .filter { it.parent == group.id && it.typeId == 3 }
             .map { toProduct(it) }
         val singleProducts = products.asSequence()
             .filter { it.productGroupId == group.id }
-            .map { SingleArtooMappedProduct(it) }
+            .map { ArtooMappedProduct.Single(it) }
         val products = (productsWithVariations + singleProducts).toList()
 
         return ArtooMappedCategory(group, children, products)
@@ -77,6 +74,6 @@ private class DataStoreBuilder(
             .map { ArtooMappedVariation(it) }
             .toList()
 
-        return GroupArtooMappedProduct(group, variations)
+        return ArtooMappedProduct.Group(group, variations)
     }
 }

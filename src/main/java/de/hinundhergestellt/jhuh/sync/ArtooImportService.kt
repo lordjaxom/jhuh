@@ -5,7 +5,6 @@ import de.hinundhergestellt.jhuh.service.ready2order.ArtooDataStore
 import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedCategory
 import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedProduct
 import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedVariation
-import de.hinundhergestellt.jhuh.service.ready2order.SingleArtooMappedProduct
 import de.hinundhergestellt.jhuh.service.shopify.ShopifyDataStore
 import de.hinundhergestellt.jhuh.util.lazyWithReset
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProduct
@@ -240,8 +239,8 @@ class ArtooImportService(
         artooProduct: ArtooMappedProduct
     ): UnsavedShopifyProduct {
         val tags = buildTags(syncProduct, artooProduct)
-        val options = when (artooProduct) {
-            is SingleArtooMappedProduct -> listOf()
+                val options = when {
+            artooProduct.hasOnlyDefaultVariant -> listOf()
             else -> listOf(
                 UnsavedShopifyProductOption(
                     "Farbe",
@@ -345,10 +344,7 @@ class ArtooImportService(
         override val vendor get() = syncProduct?.vendor
         override val type get() = syncProduct?.type
         override val tagsAsSet get() = syncProduct?.tags?.toSet() ?: setOf()
-        override val variations = when (value) {
-            is SingleArtooMappedProduct -> 0
-            else -> value.variations.size
-        }
+        override val variations = if (value.hasOnlyDefaultVariant) 0 else value.variations.size
 
         override fun filterBy(markedForSync: Boolean, withErrors: Boolean?, text: String) =
             (!markedForSync || isMarkedForSync) &&

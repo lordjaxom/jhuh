@@ -200,7 +200,7 @@ public class SumUpImporter implements ApplicationRunner {
     }
 
     private static SumUpArticleBook loadSumUpBook() throws IOException {
-        var bookPath = Path.of("/home/lordjaxom/Downloads/2025-05-29_16-16-10_items-export_MDS2FTSP.csv");
+        var bookPath = Path.of("/home/lordjaxom/Downloads/2025-06-01_10-42-50_items-export_MDS2FTSP.csv");
         try (var reader = Files.newBufferedReader(bookPath)) {
             return SumUpArticleBook.loadBook(reader);
         }

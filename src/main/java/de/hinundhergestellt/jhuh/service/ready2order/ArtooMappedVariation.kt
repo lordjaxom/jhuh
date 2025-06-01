@@ -9,4 +9,8 @@ class ArtooMappedVariation internal constructor(
     val itemNumber by product::itemNumber
     val barcode by product::barcode
     val price by product::price
+
+    override fun toString(): String {
+        return "ArtooMappedVariation(name='$name', barcode=$barcode, itemNumber=$itemNumber)"
+    }
 }
