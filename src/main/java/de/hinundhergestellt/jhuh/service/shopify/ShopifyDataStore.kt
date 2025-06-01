@@ -41,6 +41,10 @@ class ShopifyDataStore(
         product.variants.addAll(created)
     }
 
+    fun update(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
+        variantClient.update(product, variants)
+    }
+
     fun delete(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
         variantClient.delete(product, variants)
         product.variants.removeAll(variants)

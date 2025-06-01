@@ -20,10 +20,10 @@ import java.util.UUID
 )
 class SyncProduct(
 
-    @Column
+    @Column(unique = true)
     var artooId: String? = null,
 
-    @Column
+    @Column(unique = true)
     var shopifyId: String? = null,
 
     @Column

@@ -252,7 +252,7 @@ class ArtooImportView(
             problems.has<SyncProblem.Error>() -> VaadinIcon.WARNING.create().apply { style.setColor("var(--lumo-error-color") }
             problems.isNotEmpty() -> VaadinIcon.WARNING.create().apply { style.setColor("var(--lumo-warning-color") }
             item.isMarkedForSync -> VaadinIcon.CHECK.create().apply { style.setColor("var(--lumo-success-color") }
-            else -> VaadinIcon.CIRCLE.create().apply { style.setColor("var(--lumo-tertiary-color") }
+            else -> VaadinIcon.CIRCLE.create().apply { style.setColor("lightgrey") }
         }
         icon.setSize("16px")
         if (problems.isNotEmpty()) {

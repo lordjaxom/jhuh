@@ -42,7 +42,7 @@ class ShopifyProductVariant private constructor(
     internal constructor(variant: ProductVariant) : this(
         variant.id,
         variant.title,
-        variant.sku,
+        variant.sku ?: "",
         variant.barcode,
         BigDecimal(variant.price),
         variant.selectedOptions.map { ShopifyProductVariantOption(it) }

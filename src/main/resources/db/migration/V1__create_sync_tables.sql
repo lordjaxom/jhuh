@@ -45,6 +45,15 @@ CREATE TABLE sync_variant
 ALTER TABLE sync_product_variants
     ADD CONSTRAINT uc_sync_product_variants_variants UNIQUE (variants_id);
 
+ALTER TABLE sync_category
+    ADD CONSTRAINT uc_synccategory_artooid UNIQUE (artoo_id);
+
+ALTER TABLE sync_product
+    ADD CONSTRAINT uc_syncproduct_artooid UNIQUE (artoo_id);
+
+ALTER TABLE sync_product
+    ADD CONSTRAINT uc_syncproduct_shopifyid UNIQUE (shopify_id);
+
 ALTER TABLE sync_variant
     ADD CONSTRAINT uc_syncvariant_barcode UNIQUE (barcode);
 

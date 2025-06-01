@@ -13,7 +13,7 @@ import java.util.UUID
 @Table(indexes = [Index(name = "idx_synccategory_artooid", columnList = "artooId")])
 class SyncCategory(
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     val artooId: Int,
 
     @ElementCollection(fetch = FetchType.EAGER)

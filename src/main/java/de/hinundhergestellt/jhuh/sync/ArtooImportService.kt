@@ -17,6 +17,7 @@ import de.hinundhergestellt.jhuh.vendors.shopify.UnsavedShopifyProductVariant
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import kotlin.reflect.KMutableProperty0
 
 private val logger = KotlinLogging.logger {}
 
@@ -90,7 +91,7 @@ class ArtooImportService(
             artooDataStore.findAllProducts().forEach { reconcileFromArtoo(it) }
             artooDataStore.rootCategories.forEach { reconcileCategories(it) }
 
-            syncProductRepository.findAllBy().forEach { synchronizeWithShopify(it) }
+            syncProductRepository.findAllBySyncedIsTrue().forEach { synchronizeWithShopify(it) }
 
             rootCategories.forEach { it.reset() }
         } catch (e: Exception) {
@@ -116,14 +117,18 @@ class ArtooImportService(
 
     private fun reconcileFromShopify(shopifyProduct: ShopifyProduct) {
         // all products in Shopify are considered synced
-        val syncProduct = syncProductRepository.findByShopifyId(shopifyProduct.id!!) ?: toSyncProduct(shopifyProduct)
+        val syncProduct = syncProductRepository.findByShopifyId(shopifyProduct.id) ?: toSyncProduct(shopifyProduct)
         shopifyProduct.variants.forEach { reconcileFromShopify(it, syncProduct) }
         syncProductRepository.save(syncProduct) // for later retrieval in same transaction
     }
 
     private fun reconcileFromShopify(shopifyVariant: ShopifyProductVariant, syncProduct: SyncProduct) {
         syncVariantRepository.findByBarcode(shopifyVariant.barcode)
-            ?.also { require(it.product === syncProduct) { "SyncVariant.product does not match ShopifyVariant.product" } }
+            ?.also {
+                require(it.product === syncProduct) {
+                    "SyncVariant.product does not match ShopifyVariant.product"
+                }
+            }
             ?: SyncVariant(syncProduct, shopifyVariant.barcode).also { syncProduct.variants.add(it) }
     }
 
@@ -171,7 +176,6 @@ class ArtooImportService(
     }
 
     private fun synchronizeWithShopify(syncProduct: SyncProduct) {
-        // TODO: Products in ready2order with no barcodes at all?
         val artooProduct = syncProduct.artooId?.let { artooDataStore.findProductById(it) }
         var shopifyProduct = syncProduct.shopifyId?.let { shopifyDataStore.findProductById(it) }
 
@@ -184,9 +188,7 @@ class ArtooImportService(
             require(shopifyProduct != null) { "SyncProduct vanished from both ready2order and Shopify" }
             logger.info { "Product ${shopifyProduct!!.title} no longer in ready2order or not synced, delete from Shopify" }
             shopifyDataStore.delete(shopifyProduct)
-            if (artooProduct == null) {
-                syncProductRepository.delete(syncProduct)
-            }
+            artooProduct?.apply { syncProductRepository.delete(syncProduct) }
             return
         }
 
@@ -194,6 +196,7 @@ class ArtooImportService(
             logger.info { "Product ${artooProduct.name} only in ready2order, create in Shopify" }
             val unsavedShopifyProduct = buildShopifyProduct(artooProduct, syncProduct)
             shopifyProduct = shopifyDataStore.create(unsavedShopifyProduct)
+            syncProduct.shopifyId = shopifyProduct.id
         } else {
             // Update product if necessary
         }
@@ -205,6 +208,9 @@ class ArtooImportService(
         bulkOperations
             .mapNotNull { (it as? VariantBulkOperation.Create)?.variant }
             .also { if (it.isNotEmpty()) shopifyDataStore.create(shopifyProduct, it) }
+        bulkOperations
+            .mapNotNull { (it as? VariantBulkOperation.Update)?.variant }
+            .also { if (it.isNotEmpty()) shopifyDataStore.update(shopifyProduct, it)}
     }
 
     private fun synchronizeWithShopify(syncVariant: SyncVariant, artooProduct: ArtooMappedProduct, shopifyProduct: ShopifyProduct)
@@ -221,11 +227,12 @@ class ArtooImportService(
 
         if (shopifyVariant == null) {
             logger.info { "Variant ${artooVariation.name} only in ready2order, create in Shopify" }
-            val newShopifyVariant = buildShopifyVariant(shopifyProduct, artooProduct, artooVariation)
-            return VariantBulkOperation.Create(newShopifyVariant)
+            val unsavedShopifyVariant = buildShopifyVariant(shopifyProduct, artooProduct, artooVariation)
+            return VariantBulkOperation.Create(unsavedShopifyVariant)
+        } else if (updateShopifyVariant(shopifyVariant, artooVariation)) {
+            logger.info { "Variant ${artooVariation.name} has changed fields, update in Shopify" }
+            return VariantBulkOperation.Update(shopifyVariant)
         }
-
-        // Update variant if necessary
 
         return null
     }
@@ -274,6 +281,19 @@ class ArtooImportService(
                 )
             )
         )
+    }
+
+    private fun updateShopifyVariant(shopifyVariant: ShopifyProductVariant, artooVariation: ArtooMappedVariation) =
+        updateProperty(shopifyVariant::sku, artooVariation.itemNumber ?: "") or
+                updateProperty(shopifyVariant::price, artooVariation.price)
+
+    private fun <T> updateProperty(property: KMutableProperty0<T>, value: T): Boolean {
+        if (property.get() != value) {
+            logger.info { "Property ${property.name} changed from ${property.get()} to $value" }
+            property.set(value)
+            return true
+        }
+        return false
     }
 
     inner class Category(val value: ArtooMappedCategory) : SyncableItem {
@@ -368,4 +388,5 @@ private fun toSyncProduct(shopifyProduct: ShopifyProduct) =
 private sealed class VariantBulkOperation {
     class Delete(val variant: ShopifyProductVariant) : VariantBulkOperation()
     class Create(val variant: UnsavedShopifyProductVariant) : VariantBulkOperation()
+    class Update(val variant: ShopifyProductVariant) : VariantBulkOperation()
 }
