@@ -17,7 +17,7 @@ class ArtooProductGroupClient(
     }
 
     fun findAllMappedByPath(): MutableMap<String, ArtooProductGroup> {
-        val productGroups = findAll().toList()
+        val productGroups = findAll().toMutableList()
         return productGroups.stream()
             .collect(
                 Collectors.toMap(

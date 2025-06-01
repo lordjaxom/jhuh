@@ -5,6 +5,7 @@ abstract class ArtooMappedProduct protected constructor(
 ) {
     abstract val id: String
     abstract val name: String
+    abstract val description: String
 
     val barcodes
         get() = variations.mapNotNull { it.barcode }

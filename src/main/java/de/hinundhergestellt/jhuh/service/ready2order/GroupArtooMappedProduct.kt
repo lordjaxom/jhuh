@@ -9,4 +9,5 @@ class GroupArtooMappedProduct internal constructor(
 
     override val id = "group-${group.id}"
     override val name by group::name
+    override val description by group::description
 }

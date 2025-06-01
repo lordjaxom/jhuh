@@ -7,6 +7,8 @@ import com.shopify.admin.client.ProductCreateGraphQLQuery
 import com.shopify.admin.client.ProductCreateProjectionRoot
 import com.shopify.admin.client.ProductDeleteGraphQLQuery
 import com.shopify.admin.client.ProductDeleteProjectionRoot
+import com.shopify.admin.client.ProductUpdateGraphQLQuery
+import com.shopify.admin.client.ProductUpdateProjectionRoot
 import com.shopify.admin.client.ProductsGraphQLQuery
 import com.shopify.admin.client.ProductsProjectionRoot
 import com.shopify.admin.types.PageInfo
@@ -14,6 +16,7 @@ import com.shopify.admin.types.ProductConnection
 import com.shopify.admin.types.ProductCreatePayload
 import com.shopify.admin.types.ProductDeleteInput
 import com.shopify.admin.types.ProductDeletePayload
+import com.shopify.admin.types.ProductUpdatePayload
 import org.springframework.stereotype.Component
 
 @Component
@@ -30,7 +33,7 @@ class ShopifyProductClient(
             .build()
 
         // @formatter:off
-        val root = ProductCreateProjectionRoot<BaseSubProjectionNode<*, *>?, BaseSubProjectionNode<*, *>?>()
+        val root = ProductCreateProjectionRoot<BaseSubProjectionNode<*, *>, BaseSubProjectionNode<*, *>>()
             .product()
                 .id()
                 .options()
@@ -44,13 +47,33 @@ class ShopifyProductClient(
 
         val request = GraphQLQueryRequest(query, root)
         val response = apiClient.executeQuery(request.serialize())
+        require(!response.hasErrors()) { "Product create failed: " + response.errors }
         val payload = response.extractValueAsObject("productCreate", ProductCreatePayload::class.java)
-        require(payload.userErrors.isEmpty()) { "Product creation failed: " + payload.userErrors }
+        require(payload.userErrors.isEmpty()) { "Product create failed: " + payload.userErrors }
 
         val options = product.options
             .zip(payload.product.options)
             .map { (option, created) -> ShopifyProductOption(option, created.id) }
         return ShopifyProduct(product, payload.product.id, options)
+    }
+
+    fun update(product: ShopifyProduct) {
+        val query = ProductUpdateGraphQLQuery.newRequest()
+            .product(product.toProductUpdateInput())
+            .build()
+
+        // @formatter:off
+        val root = ProductUpdateProjectionRoot<BaseSubProjectionNode<*, *>, BaseSubProjectionNode<*, *>>()
+            .userErrors()
+                .message()
+                .field()
+        // @formatter:on
+
+        val request = GraphQLQueryRequest(query, root)
+        val response = apiClient.executeQuery(request.serialize())
+        require(!response.hasErrors()) { "Product update failed: " + response.errors }
+        val payload = response.extractValueAsObject("productUpdate", ProductUpdatePayload::class.java)
+        require(payload.userErrors.isEmpty()) { "Product create failed: " + payload.userErrors }
     }
 
     fun delete(product: ShopifyProduct) {
@@ -74,7 +97,6 @@ class ShopifyProductClient(
         val payload = response.extractValueAsObject("productDelete", ProductDeletePayload::class.java)
         require(payload.userErrors.isEmpty()) { "Product delete failed: " + payload.userErrors }
     }
-
     private fun findAll(after: String?): Pair<Sequence<ShopifyProduct>, PageInfo> {
         val query = ProductsGraphQLQuery.newRequest()
             .first(250)
@@ -82,7 +104,7 @@ class ShopifyProductClient(
             .build()
 
         // @formatter:off
-        val root = ProductsProjectionRoot<BaseSubProjectionNode<*, *>?, BaseSubProjectionNode<*, *>?>()
+        val root = ProductsProjectionRoot<BaseSubProjectionNode<*, *>, BaseSubProjectionNode<*, *>>()
             .edges()
                 .node()
                     .handle()

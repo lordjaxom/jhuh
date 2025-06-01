@@ -11,6 +11,10 @@ open class UnsavedShopifyProductVariant(
     var price: BigDecimal,
     val options: List<ShopifyProductVariantOption>
 ) {
+    init {
+        price = price.setScale(2)
+    }
+
     internal open fun toProductVariantsBulkInput() =
         ProductVariantsBulkInput().also {
             it.barcode = barcode

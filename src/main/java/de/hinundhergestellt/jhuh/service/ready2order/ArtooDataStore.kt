@@ -24,7 +24,7 @@ class ArtooDataStore(
     fun findProductById(id: String) =
         rootCategories.firstNotNullOfOrNull { it.findProductById(id) }
 
-    fun findAllCategoriesByProduct(product: ArtooMappedProduct) =
+    fun findParentCategoriesByProduct(product: ArtooMappedProduct) =
         rootCategories.asSequence().flatMap { it.findAllCategoriesByProduct(product) }
 }
 

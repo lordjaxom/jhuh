@@ -31,6 +31,10 @@ class ShopifyDataStore(
         return created
     }
 
+    fun update(product: ShopifyProduct) {
+        productClient.update(product)
+    }
+
     fun delete(product: ShopifyProduct) {
         productClient.delete(product)
         products.remove(product)

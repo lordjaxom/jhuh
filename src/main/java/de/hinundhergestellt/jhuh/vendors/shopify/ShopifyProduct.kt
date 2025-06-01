@@ -2,20 +2,21 @@ package de.hinundhergestellt.jhuh.vendors.shopify
 
 import com.shopify.admin.types.Product
 import com.shopify.admin.types.ProductCreateInput
+import com.shopify.admin.types.ProductUpdateInput
 
 open class UnsavedShopifyProduct(
     var title: String,
     var vendor: String,
     var productType: String,
-    var tags: List<String>,
+    var tags: Set<String>,
     open val options: List<UnsavedShopifyProductOption>
 ) {
-    fun toProductCreateInput() =
+    internal fun toProductCreateInput() =
         ProductCreateInput().also {
             it.title = title
             it.vendor = vendor
             it.productType = productType
-            it.tags = tags
+            it.tags = tags.toList()
             it.productOptions = options.map { option -> option.toOptionCreateInput() }
         }
 }
@@ -25,7 +26,7 @@ class ShopifyProduct private constructor(
     title: String,
     vendor: String,
     productType: String,
-    tags: List<String>,
+    tags: Set<String>,
     override val options: List<ShopifyProductOption>,
     val variants: MutableList<ShopifyProductVariant>,
 ) : UnsavedShopifyProduct(
@@ -40,7 +41,7 @@ class ShopifyProduct private constructor(
         product.title,
         product.vendor,
         product.productType,
-        product.tags,
+        product.tags.toSet(),
         product.options.map { ShopifyProductOption(it) },
         product.variants.edges.asSequence().map { ShopifyProductVariant(it.node) }.toMutableList()
     )
@@ -57,4 +58,13 @@ class ShopifyProduct private constructor(
 
     fun findVariantByBarcode(barcode: String) =
         variants.firstOrNull { it.barcode == barcode }
+
+    internal fun toProductUpdateInput() =
+        ProductUpdateInput().also {
+            it.id = id
+            it.title = title
+            it.vendor = vendor
+            it.productType = productType
+            it.tags = tags.toList()
+        }
 }

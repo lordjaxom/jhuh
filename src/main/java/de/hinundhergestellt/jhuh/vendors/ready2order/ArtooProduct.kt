@@ -82,6 +82,9 @@ class ArtooProduct {
     val name: String
         get() = value.productName!!
 
+    val description: String
+        get() = value.productDescription!!
+
     val itemNumber: String?
         get() = value.productItemnumber
 
@@ -89,10 +92,10 @@ class ArtooProduct {
         get() = value.productBarcode
 
     val price: BigDecimal
-        get() = BigDecimal(value.productPrice!!)
+        get() = BigDecimal(value.productPrice!!).setScale(2)
 
     val stockValue: BigDecimal
-        get() = BigDecimal(value.productStockValue!!)
+        get() = BigDecimal(value.productStockValue!!).setScale(0)
 
     val productGroupId: Int
         get() = value.productgroupId!!

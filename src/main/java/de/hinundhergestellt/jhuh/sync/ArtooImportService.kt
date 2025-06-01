@@ -18,6 +18,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import kotlin.reflect.KMutableProperty0
+import kotlin.streams.asSequence
 
 private val logger = KotlinLogging.logger {}
 
@@ -124,11 +125,7 @@ class ArtooImportService(
 
     private fun reconcileFromShopify(shopifyVariant: ShopifyProductVariant, syncProduct: SyncProduct) {
         syncVariantRepository.findByBarcode(shopifyVariant.barcode)
-            ?.also {
-                require(it.product === syncProduct) {
-                    "SyncVariant.product does not match ShopifyVariant.product"
-                }
-            }
+            ?.also { require(it.product === syncProduct) { "SyncVariant.product does not match ShopifyVariant.product" } }
             ?: SyncVariant(syncProduct, shopifyVariant.barcode).also { syncProduct.variants.add(it) }
     }
 
@@ -156,7 +153,7 @@ class ArtooImportService(
             return
         }
 
-        val tagsOfCategories = artooCategory.children.asSequence().mapNotNull { syncCategoryRepository.findByArtooId(it.id)?.tags }
+        val tagsOfCategories = syncCategoryRepository.findByArtooIdIn(artooCategory.children.map { it.id }).asSequence().map { it.tags }
         val tagsOfProducts = artooCategory.products.asSequence().mapNotNull { syncProductRepository.findByArtooId(it.id)?.tags }
         val commonTags = (tagsOfCategories + tagsOfProducts).fold(null as Set<String>?) { acc, tags -> acc?.intersect(tags) ?: tags }
         if (commonTags.isNullOrEmpty()) {
@@ -165,10 +162,10 @@ class ArtooImportService(
 
         syncCategoryRepository.save(SyncCategory(artooCategory.id, commonTags.toMutableSet()))
 
-        artooCategory.children.asSequence()
-            .mapNotNull { syncCategoryRepository.findByArtooId(it.id) }
-            .onEach { it.tags.removeAll(commonTags) }
-            .forEach { syncCategoryRepository.save(it) } // for later retrieval in same transaction
+        syncCategoryRepository.findByArtooIdIn(artooCategory.children.map { it.id }).forEach {
+            it.tags.removeAll(commonTags)
+            syncCategoryRepository.save(it)
+        }
         artooCategory.products.asSequence()
             .mapNotNull { syncProductRepository.findByArtooId(it.id) }
             .onEach { it.tags.removeAll(commonTags) }
@@ -194,11 +191,12 @@ class ArtooImportService(
 
         if (shopifyProduct == null) {
             logger.info { "Product ${artooProduct.name} only in ready2order, create in Shopify" }
-            val unsavedShopifyProduct = buildShopifyProduct(artooProduct, syncProduct)
+            val unsavedShopifyProduct = buildShopifyProduct(syncProduct, artooProduct)
             shopifyProduct = shopifyDataStore.create(unsavedShopifyProduct)
             syncProduct.shopifyId = shopifyProduct.id
-        } else {
-            // Update product if necessary
+        } else if (updateShopifyProduct(syncProduct, shopifyProduct, artooProduct)) {
+            logger.info { "Product ${artooProduct.name} has changed, update in Shopify" }
+            shopifyDataStore.update(shopifyProduct)
         }
 
         val bulkOperations = syncProduct.variants.map { synchronizeWithShopify(it, artooProduct, shopifyProduct) }
@@ -210,7 +208,7 @@ class ArtooImportService(
             .also { if (it.isNotEmpty()) shopifyDataStore.create(shopifyProduct, it) }
         bulkOperations
             .mapNotNull { (it as? VariantBulkOperation.Update)?.variant }
-            .also { if (it.isNotEmpty()) shopifyDataStore.update(shopifyProduct, it)}
+            .also { if (it.isNotEmpty()) shopifyDataStore.update(shopifyProduct, it) }
     }
 
     private fun synchronizeWithShopify(syncVariant: SyncVariant, artooProduct: ArtooMappedProduct, shopifyProduct: ShopifyProduct)
@@ -230,7 +228,7 @@ class ArtooImportService(
             val unsavedShopifyVariant = buildShopifyVariant(shopifyProduct, artooProduct, artooVariation)
             return VariantBulkOperation.Create(unsavedShopifyVariant)
         } else if (updateShopifyVariant(shopifyVariant, artooVariation)) {
-            logger.info { "Variant ${artooVariation.name} has changed fields, update in Shopify" }
+            logger.info { "Variant ${artooVariation.name} has changed, update in Shopify" }
             return VariantBulkOperation.Update(shopifyVariant)
         }
 
@@ -238,14 +236,10 @@ class ArtooImportService(
     }
 
     private fun buildShopifyProduct(
-        artooProduct: ArtooMappedProduct,
-        syncProduct: SyncProduct
+        syncProduct: SyncProduct,
+        artooProduct: ArtooMappedProduct
     ): UnsavedShopifyProduct {
-        val categoryTags = artooDataStore.findAllCategoriesByProduct(artooProduct)
-            .mapNotNull { syncCategoryRepository.findByArtooId(it.id)?.tags }
-            .flatten()
-            .toSet()
-        val tags = categoryTags + syncProduct.tags + setOf(syncProduct.vendor!!, syncProduct.type!!)
+        val tags = buildTags(syncProduct, artooProduct)
         val options = when (artooProduct) {
             is SingleArtooMappedProduct -> listOf()
             else -> listOf(
@@ -256,12 +250,20 @@ class ArtooImportService(
             )
         }
         return UnsavedShopifyProduct(
-            artooProduct.name,
+            artooProduct.description.ifEmpty { artooProduct.name },
             syncProduct.vendor!!,
             syncProduct.type!!,
-            tags.toList(),
+            tags,
             options
         )
+    }
+
+    private fun updateShopifyProduct(syncProduct: SyncProduct, shopifyProduct: ShopifyProduct, artooProduct: ArtooMappedProduct): Boolean {
+        val tags = buildTags(syncProduct, artooProduct)
+        return updateProperty(shopifyProduct::title, artooProduct.description.ifEmpty { artooProduct.name }) or
+                updateProperty(shopifyProduct::vendor, syncProduct.vendor!!) or
+                updateProperty(shopifyProduct::productType, syncProduct.type!!) or
+                updateProperty(shopifyProduct::tags, tags)
     }
 
     private fun buildShopifyVariant(
@@ -294,6 +296,14 @@ class ArtooImportService(
             return true
         }
         return false
+    }
+
+    private fun buildTags(syncProduct: SyncProduct, artooProduct: ArtooMappedProduct) = buildSet {
+        val categoryIds = artooDataStore.findParentCategoriesByProduct(artooProduct).map { it.id }.toList()
+        addAll(syncCategoryRepository.findByArtooIdIn(categoryIds).asSequence().flatMap { it.tags })
+        addAll(syncProduct.tags)
+        add(syncProduct.vendor!!)
+        add(syncProduct.type!!)
     }
 
     inner class Category(val value: ArtooMappedCategory) : SyncableItem {
