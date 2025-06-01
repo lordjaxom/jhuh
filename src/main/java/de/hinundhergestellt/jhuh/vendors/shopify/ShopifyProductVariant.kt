@@ -3,46 +3,49 @@ package de.hinundhergestellt.jhuh.vendors.shopify
 import com.shopify.admin.types.*
 import java.math.BigDecimal
 
-class ShopifyProductVariant internal constructor(
-    private val variant: ProductVariant
+class ShopifyProductVariant private constructor(
+    var id: String?,
+    var title: String?,
+    var sku: String,
+    var barcode: String,
+    var price: BigDecimal,
+    val options: List<ShopifyProductVariantOption>
 ) {
-    var id: String? by variant::id
-    var title: String by variant::title
-    var barcode: String by variant::barcode
-
-    var price: BigDecimal
-        get() = BigDecimal(variant.price)
-        set(value) {
-            variant.price = value.toPlainString()
-        }
-
     constructor(
-        title: String,
-        sku: String?,
+        sku: String,
         barcode: String,
         price: BigDecimal,
-        selectedOption: SelectedOption
-    ) : this(ProductVariant().also {
-        it.title = title
-        it.sku = sku
-        it.barcode = barcode
-        it.price = price.toPlainString()
-        it.selectedOptions = listOf(selectedOption)
-    })
+        options: List<ShopifyProductVariantOption>
+    ) : this(
+        null,
+        null,
+        sku,
+        barcode,
+        price,
+        options
+    )
 
-    internal fun toProductVariantsBulkInput() = ProductVariantsBulkInput().apply {
-        id = variant.id
-        barcode = variant.barcode
-        optionValues = variant.selectedOptions.map {
-            VariantOptionValueInput().apply {
-                optionName = it.name
-                name = it.value
-            }
+    internal constructor(variant: ProductVariant) : this(
+        variant.id,
+        variant.title,
+        variant.sku,
+        variant.barcode,
+        BigDecimal(variant.price),
+        variant.selectedOptions.map { ShopifyProductVariantOption(it) }
+    )
+
+    internal fun toProductVariantsBulkInput() =
+        ProductVariantsBulkInput().also {
+            it.id = id
+            it.barcode = barcode
+            it.price = price.toPlainString()
+            it.optionValues = options.map { option -> option.toVariantOptionValueInput() }
+            it.inventoryItem = toInventoryItemInput()
         }
-        inventoryItem = InventoryItemInput().apply {
-            sku = variant.sku
-            price = variant.price
-            tracked = true
+
+    private fun toInventoryItemInput() =
+        InventoryItemInput().also {
+            it.sku = sku
+            it.tracked = true
         }
-    }
 }

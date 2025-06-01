@@ -11,7 +11,9 @@ import de.hinundhergestellt.jhuh.service.ready2order.SingleArtooMappedProduct
 import de.hinundhergestellt.jhuh.service.shopify.ShopifyDataStore
 import de.hinundhergestellt.jhuh.util.lazyWithReset
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProduct
+import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProductOption
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProductVariant
+import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProductVariantOption
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -236,10 +238,12 @@ class ArtooImportService(
         val tags = categoryTags + syncProduct.tags + setOf(syncProduct.vendor!!, syncProduct.type!!)
         val options = when (artooProduct) {
             is SingleArtooMappedProduct -> listOf()
-            else -> listOf(ProductOption().apply {
-                name = "Farbe" // TODO
-                values = artooProduct.variations.map { it.name.removePrefix(artooProduct.name).trim() }
-            })
+            else -> listOf(
+                ShopifyProductOption(
+                    "Farbe",
+                    artooProduct.variations.map { it.name.removePrefix(artooProduct.name).trim() }
+                )
+            )
         }
         return ShopifyProduct(
             artooProduct.name,
@@ -257,14 +261,13 @@ class ArtooImportService(
     ): ShopifyProductVariant {
         val optionValue = artooVariation.name.removePrefix(artooProduct.name).trim()
         return ShopifyProductVariant(
-            optionValue,
-            artooVariation.itemNumber,
+            artooVariation.itemNumber ?: "",
             artooVariation.barcode!!,
             artooVariation.price,
-            SelectedOption().apply {
-                name = shopifyProduct.options[0].name
-                value = optionValue
-            }
+            listOf(ShopifyProductVariantOption(
+                shopifyProduct.options[0].name,
+                optionValue
+            ))
         )
     }
 

@@ -20,7 +20,7 @@ class ShopifyProductClient(
         findAll(it)
     }
 
-    fun create(product: ShopifyProduct): String {
+    fun create(product: ShopifyProduct) {
         require(product.id == null) { "Product id must be null" }
 
         val query = ProductCreateGraphQLQuery.newRequest()
@@ -31,6 +31,9 @@ class ShopifyProductClient(
         val root = ProductCreateProjectionRoot<BaseSubProjectionNode<*, *>?, BaseSubProjectionNode<*, *>?>()
             .product()
                 .id()
+                .options()
+                    .id()
+                    .parent()
                 .parent()
             .userErrors()
                 .message()
@@ -42,7 +45,8 @@ class ShopifyProductClient(
         val payload = response.extractValueAsObject("productCreate", ProductCreatePayload::class.java)
         require(payload.userErrors.isEmpty()) { "Product creation failed: " + payload.userErrors }
 
-        return payload.product.id!!
+        product.options.zip(payload.product.options).forEach { (option, created) -> option.id = created.id!! }
+        product.id = payload.product.id!!
     }
 
     fun delete(product: ShopifyProduct) {
@@ -69,7 +73,7 @@ class ShopifyProductClient(
 
     private fun findAll(after: String?): Pair<Sequence<ShopifyProduct>, PageInfo> {
         val query = ProductsGraphQLQuery.newRequest()
-            .first(100)
+            .first(250)
             .after(after)
             .build()
 
@@ -83,7 +87,7 @@ class ShopifyProductClient(
                     .vendor()
                     .productType()
                     .tags()
-                    .variants(100, null, null, null, null, null)
+                    .variants(250, null, null, null, null, null)
                         .edges()
                             .node()
                                 .id()

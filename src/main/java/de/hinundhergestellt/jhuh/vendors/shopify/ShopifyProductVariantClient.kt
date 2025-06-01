@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component
 class ShopifyProductVariantClient(
     private val apiClient: GraphQLClient
 ) {
-    fun create(product: ShopifyProduct, variants: List<ShopifyProductVariant>): List<String> {
+    fun create(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
         val inputs = variants
             .onEach { require(it.id == null) { "Variant id must be null" } }
             .map { it.toProductVariantsBulkInput() }
@@ -34,6 +34,7 @@ class ShopifyProductVariantClient(
         val root = ProductVariantsBulkCreateProjectionRoot<BaseSubProjectionNode<*, *>, BaseSubProjectionNode<*, *>>()
             .productVariants()
                 .id()
+                .title()
                 .parent()
             .userErrors()
                 .message()
@@ -46,7 +47,10 @@ class ShopifyProductVariantClient(
         val payload = response.extractValueAsObject("productVariantsBulkCreate", ProductVariantsBulkCreatePayload::class.java)
         require((payload.userErrors.isEmpty())) { "Product variants bulk create failed: " + payload.userErrors }
 
-        return payload.productVariants.map { it.id!! }
+        variants.zip(payload.productVariants).forEach { (variant, created) ->
+            variant.id = created.id!!
+            variant.title = created.title!!
+        }
     }
 
     fun delete(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
