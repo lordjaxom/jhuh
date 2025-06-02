@@ -27,7 +27,7 @@ class RateLimitEnforcingApiClient(restTemplate: RestTemplate) : ApiClient(restTe
 
     override fun <T> invokeAPI(
         path: String, method: HttpMethod, pathParams: MutableMap<String?, Any?>,
-        queryParams: MultiValueMap<String?, String?>, body: Any, headerParams: HttpHeaders,
+        queryParams: MultiValueMap<String?, String?>, body: Any?, headerParams: HttpHeaders,
         cookieParams: MultiValueMap<String?, String?>, formParams: MultiValueMap<String?, Any?>,
         accept: MutableList<MediaType?>, contentType: MediaType, authNames: Array<String?>,
         returnType: ParameterizedTypeReference<T?>
