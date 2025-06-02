@@ -67,7 +67,7 @@ public class SumUpImporter implements ApplicationRunner {
             new Category("Rayher Sonstiges", "Rayher"),
             new Category("HobbyFun", "Bastelmaterial"),
             new Category("Creartec", "Bastelmaterial"),
-            new Category("Sublimation", "Bastelmaterial"),
+            new Category("Rico Design", "Bastelmaterial"),
             new Category("Papier", "Bastelmaterial"),
             new Category("Diverses", "Bastelmaterial"),
 
@@ -76,6 +76,7 @@ public class SumUpImporter implements ApplicationRunner {
             new Category("Dienstleistungen", "Anfertigungen"),
             new Category("Diverses", "Anfertigungen"),
 
+            new Category("Sublimation", null),
             new Category("Verpackungen", null)
     );
 
@@ -103,13 +104,14 @@ public class SumUpImporter implements ApplicationRunner {
             .put("MyBoshi", "Häkeln und Stricken/myboshi")
             .put("Gründl", "Häkeln und Stricken/Gründl")
             .put("Rico Design", "Häkeln und Stricken/Rico Design")
+            .put("Bastelmaterial Rico Design", "Bastelmaterial/Rico Design")
 
             .put("Rayher, Silikonformen", "Bastelmaterial/Rayher/Rayher Silikonformen")
             .put("Rayher", "Bastelmaterial/Rayher/Rayher Sonstiges")
             .put("HobbyFun", "Bastelmaterial/HobbyFun")
             .put("Creartec", "Bastelmaterial/Creartec")
-            .put("Subli Sonstiges", "Bastelmaterial/Sublimation")
-            .put("Subli Tassen, Gläser, Flaschen", "Bastelmaterial/Sublimation")
+            .put("Subli Sonstiges", "Sublimation")
+            .put("Subli Tassen, Gläser, Flaschen", "Sublimation")
             .put("Papier", "Bastelmaterial/Papier")
             .put("Klötzchen", "Bastelmaterial/Diverses")
             .put("Diverses", "Bastelmaterial/Diverses")
@@ -200,7 +202,7 @@ public class SumUpImporter implements ApplicationRunner {
     }
 
     private static SumUpArticleBook loadSumUpBook() throws IOException {
-        var bookPath = Path.of("/home/lordjaxom/Downloads/2025-06-01_10-42-50_items-export_MDS2FTSP.csv");
+        var bookPath = Path.of("/home/lordjaxom/Downloads/2025-06-02_13-30-53_items-export_MDS2FTSP.csv");
         try (var reader = Files.newBufferedReader(bookPath)) {
             return SumUpArticleBook.loadBook(reader);
         }

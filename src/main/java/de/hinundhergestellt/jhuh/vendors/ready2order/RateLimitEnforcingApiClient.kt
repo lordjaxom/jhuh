@@ -53,7 +53,7 @@ class RateLimitEnforcingApiClient(restTemplate: RestTemplate) : ApiClient(restTe
             .minus(Duration.between(requestTimes.first(), now))
             .plus(RATE_LIMIT_BUFFER)
 
-        logger.debug { "Enforce rate limit of $RATE_LIMIT_COUNT calls in ${RATE_LIMIT_DURATION.toLogString()}, delaying $delay" }
+        logger.debug { "Enforce rate limit of $RATE_LIMIT_COUNT calls in ${RATE_LIMIT_DURATION.toLogString()}, delaying ${delay.toLogString()}" }
 
         Thread.sleep(delay)
         enforceRateLimit()

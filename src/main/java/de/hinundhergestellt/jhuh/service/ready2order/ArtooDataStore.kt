@@ -19,7 +19,7 @@ class ArtooDataStore(
     val rootCategories by factory.rootCategories()
 
     fun findAllProducts() =
-        rootCategories.flatMap { it.findAllProducts() }
+        rootCategories.asSequence().flatMap { it.findAllProducts() }
 
     fun findProductById(id: String) =
         rootCategories.firstNotNullOfOrNull { it.findProductById(id) }
