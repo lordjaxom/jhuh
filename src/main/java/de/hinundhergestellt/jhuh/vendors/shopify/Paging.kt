@@ -2,7 +2,7 @@ package de.hinundhergestellt.jhuh.vendors.shopify
 
 import com.shopify.admin.types.PageInfo
 
-fun <T> pageAll(function: (String?) -> Pair<Sequence<T>, PageInfo>) = sequence {
+internal fun <T> pageAll(function: (String?) -> Pair<Sequence<T>, PageInfo>) = sequence {
     var lastPage: PageInfo? = null
     do {
         val (result, page) = function(lastPage?.endCursor)

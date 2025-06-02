@@ -23,7 +23,7 @@ private val logger = KotlinLogging.logger {}
 
 @Service
 @VaadinSessionScope
-class ArtooImportService(
+class ShopifyImportService(
     private val artooDataStore: ArtooDataStore,
     private val shopifyDataStore: ShopifyDataStore,
     private val syncProductRepository: SyncProductRepository,
