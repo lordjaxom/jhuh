@@ -91,7 +91,7 @@ class ShopifyImportService(
             artooDataStore.findAllProducts().forEach { reconcileFromArtoo(it) }
             artooDataStore.rootCategories.forEach { reconcileCategories(it) }
 
-//            syncProductRepository.findAllBySyncedIsTrue().forEach { synchronizeWithShopify(it) }
+            syncProductRepository.findAllBySyncedIsTrue().forEach { synchronizeWithShopify(it) }
 
             rootCategories.forEach { it.reset() }
         } catch (e: Exception) {
@@ -224,7 +224,7 @@ class ShopifyImportService(
 
         if (shopifyVariant == null) {
             logger.info { "Variant ${artooVariation.name} only in ready2order, create in Shopify" }
-            val unsavedShopifyVariant = buildShopifyVariant(shopifyProduct, artooProduct, artooVariation)
+            val unsavedShopifyVariant = buildShopifyVariant(shopifyProduct, artooVariation)
             return VariantBulkOperation.Create(unsavedShopifyVariant)
         } else if (updateShopifyVariant(shopifyVariant, artooVariation)) {
             logger.info { "Variant ${artooVariation.name} has changed, update in Shopify" }
@@ -239,7 +239,7 @@ class ShopifyImportService(
         artooProduct: ArtooMappedProduct
     ): UnsavedShopifyProduct {
         val tags = buildTags(syncProduct, artooProduct)
-                val options = when {
+        val options = when {
             artooProduct.hasOnlyDefaultVariant -> listOf()
             else -> listOf(
                 UnsavedShopifyProductOption(
@@ -267,10 +267,8 @@ class ShopifyImportService(
 
     private fun buildShopifyVariant(
         shopifyProduct: ShopifyProduct,
-        artooProduct: ArtooMappedProduct,
         artooVariation: ArtooMappedVariation
     ): UnsavedShopifyProductVariant {
-        val optionValue = artooVariation.name.removePrefix(artooProduct.name).trim()
         return UnsavedShopifyProductVariant(
             artooVariation.itemNumber ?: "",
             artooVariation.barcode!!,
@@ -278,7 +276,7 @@ class ShopifyImportService(
             listOf(
                 ShopifyProductVariantOption(
                     shopifyProduct.options[0].name,
-                    optionValue
+                    artooVariation.name
                 )
             )
         )
@@ -380,7 +378,7 @@ sealed class SyncProblem(val message: String) {
     override fun toString() = message
 }
 
-inline fun <reified T: SyncProblem> List<SyncProblem>.has() = any { it is T }
+inline fun <reified T : SyncProblem> List<SyncProblem>.has() = any { it is T }
 
 private fun toSyncProduct(shopifyProduct: ShopifyProduct) =
     SyncProduct(

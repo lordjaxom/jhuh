@@ -66,7 +66,7 @@ private class DataStoreBuilder(
     private fun toProduct(product: ArtooProduct) : ArtooMappedProduct {
         val variations = products.asSequence()
             .filter { it.baseId == product.id }
-            .map { ArtooMappedVariation(it) }
+            .map { ArtooMappedVariation(product, it) }
             .toList()
         return ArtooMappedProduct(product, variations)
     }
