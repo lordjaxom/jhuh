@@ -9,10 +9,7 @@ import com.vaadin.flow.component.combobox.ComboBox
 import com.vaadin.flow.component.grid.ColumnTextAlign
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.grid.GridVariant
-import com.vaadin.flow.component.html.Div
 import com.vaadin.flow.component.icon.VaadinIcon
-import com.vaadin.flow.component.menubar.MenuBar
-import com.vaadin.flow.component.menubar.MenuBarVariant
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
@@ -70,7 +67,7 @@ class LabelGeneratorView(
         articleComboBox.itemLabelGenerator = ItemLabelGenerator { it.label }
         articleComboBox.setWidthFull()
         articleComboBox.setItems { fetchArticles(it) }
-        articleComboBox.addValueChangeListener { validateInputs() }
+        articleComboBox.addValueChangeListener { validateInputs(); countTextField.focus() }
         articleComboBox.focus()
 
         countTextField.label = "Anzahl"
