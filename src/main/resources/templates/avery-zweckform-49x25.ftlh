@@ -21,21 +21,37 @@
             margin: 0;
             padding: 0;
             display: block;
+            background: lightgray;
         }
 
         .sheet {
             display: grid;
             grid-template-columns: repeat(4, 48.5mm);
             grid-template-rows: repeat(10, 25.4mm);
-            /*gap: 0;*/
             width: 194mm;
             height: 254mm;
-            margin: 21.5mm auto;
-            page-break-after: always;
+            margin: auto;
         }
 
-        .sheet:last-child {
-            page-break-after: auto;
+        @media print {
+            .sheet {
+                padding-top: 21.5mm;
+                box-sizing: border-box;
+                page-break-after: always;
+            }
+
+            .sheet:last-child {
+                page-break-after: auto;
+            }
+        }
+
+        @media screen {
+            .sheet {
+                margin: 5mm;
+                padding: 21.5mm 8mm;
+                box-shadow: 0 0 5mm rgba(0, 0, 0, 0.1);
+                background: white;
+            }
         }
 
         .label {
@@ -50,7 +66,7 @@
 
         @media screen {
             .label {
-                border: 1px dashed #ccc;
+                border: 1px dashed lightgray;
             }
         }
 
