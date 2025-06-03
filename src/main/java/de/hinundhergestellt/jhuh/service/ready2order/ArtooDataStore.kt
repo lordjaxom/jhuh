@@ -57,13 +57,16 @@ private class DataStoreBuilder(
             .map { toCategory(it) }
             .toList()
 
-        val productsWithVariations = groups.asSequence()
-            .filter { it.parent == group.id && it.typeId == 3 }
+//        val productsWithVariations = groups.asSequence()
+//            .filter { it.parent == group.id && it.typeId == 3 }
+//            .map { toProduct(it) }
+//        val singleProducts = products.asSequence()
+//            .filter { it.productGroupId == group.id }
+//            .map { ArtooMappedProduct.Single(it) }
+        val products = products.asSequence()
+            .filter { it.productGroupId == group.id && it.baseId == 0 }
             .map { toProduct(it) }
-        val singleProducts = products.asSequence()
-            .filter { it.productGroupId == group.id }
-            .map { ArtooMappedProduct.Single(it) }
-        val products = (productsWithVariations + singleProducts).toList()
+            .toList()
 
         return ArtooMappedCategory(group, children, products)
     }
@@ -75,5 +78,13 @@ private class DataStoreBuilder(
             .toList()
 
         return ArtooMappedProduct.Group(group, variations)
+    }
+
+    private fun toProduct(product: ArtooProduct) : ArtooMappedProduct {
+        val variations = products.asSequence()
+            .filter { it.baseId == product.id }
+            .map { ArtooMappedVariation(it) }
+            .toList()
+        return if (variations.isEmpty()) ArtooMappedProduct.Single(product) else ArtooMappedProduct.Variations(product, variations)
     }
 }

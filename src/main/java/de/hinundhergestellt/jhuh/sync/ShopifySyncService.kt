@@ -91,7 +91,7 @@ class ShopifyImportService(
             artooDataStore.findAllProducts().forEach { reconcileFromArtoo(it) }
             artooDataStore.rootCategories.forEach { reconcileCategories(it) }
 
-            syncProductRepository.findAllBySyncedIsTrue().forEach { synchronizeWithShopify(it) }
+//            syncProductRepository.findAllBySyncedIsTrue().forEach { synchronizeWithShopify(it) }
 
             rootCategories.forEach { it.reset() }
         } catch (e: Exception) {

@@ -97,8 +97,14 @@ class ArtooProduct {
     val stockValue: BigDecimal
         get() = BigDecimal(value.productStockValue!!).setScale(0)
 
+    val typeId: Int
+        get() = value.productTypeId ?: 0
+
     val productGroupId: Int
         get() = value.productgroupId!!
+
+    val baseId: Int
+        get() = value.productBaseId ?: 0
 
     fun save(api: ProductApi) {
         if (value.productId != null) {

@@ -172,6 +172,13 @@ public class SumUpImporter implements ApplicationRunner {
 
         long count = 0;
         for (var article : sumUpBook.articles()) {
+//            if (!article.itemName().contains("TURBO") &&
+//                    !article.itemName().contains("SUPERIOR") &&
+//                    !article.itemName().contains("Superior") &&
+//                    !article.itemName().contains("Weeder")) {
+//                continue;
+//            }
+
             count += 1;
 
             LOGGER.info("[{}/{}] Creating product {}", count, sumUpBook.articles().size(), article.itemName());
@@ -179,30 +186,37 @@ public class SumUpImporter implements ApplicationRunner {
             var categoryName = CATEGORIES_MAPPING.getOrDefault(article.category(), article.category());
             var productGroup = requireNonNull(productGroups.get(categoryName));
 
-            if (article.variants().size() == 1) {
-                var product = productMapper.mapArticleToProduct(article, productGroup);
-                productClient.save(product);
-                continue;
-            }
-
-            // Workaround: Since scanning barcodes of variations doesn't work, create a product group named after the article and create
-            // separate products for each variant
-
-            var articleGroup = productGroups.get(article.itemName());
-            if (articleGroup == null) {
-                articleGroup = productMapper.mapArticleToProductGroup(article, productGroup);
-                productGroupClient.save(articleGroup);
-                productGroups.put(article.itemName(), articleGroup);
-            }
+            var product = productMapper.mapArticleToProduct(article, productGroup);
+            productClient.save(product);
 
             productMapper
-                    .mapVariantsToProducts(article, articleGroup)
+                    .mapVariantsToProducts(article, product)
                     .forEach(productClient::save);
+
+//            if (article.variants().size() == 1) {
+//                var product = productMapper.mapArticleToProduct(article, productGroup);
+//                productClient.save(product);
+//                continue;
+//            }
+//
+//            // Workaround: Since scanning barcodes of variations doesn't work, create a product group named after the article and create
+//            // separate products for each variant
+//
+//            var articleGroup = productGroups.get(article.itemName());
+//            if (articleGroup == null) {
+//                articleGroup = productMapper.mapArticleToProductGroup(article, productGroup);
+//                productGroupClient.save(articleGroup);
+//                productGroups.put(article.itemName(), articleGroup);
+//            }
+//
+//            productMapper
+//                    .mapVariantsToProducts(article, articleGroup)
+//                    .forEach(productClient::save);
         }
     }
 
     private static SumUpArticleBook loadSumUpBook() throws IOException {
-        var bookPath = Path.of("/home/lordjaxom/Downloads/2025-06-02_13-30-53_items-export_MDS2FTSP.csv");
+        var bookPath = Path.of("/home/lordjaxom/Downloads/2025-06-02_16-24-11_items-export_MDS2FTSP.csv");
         try (var reader = Files.newBufferedReader(bookPath)) {
             return SumUpArticleBook.loadBook(reader);
         }

@@ -34,7 +34,7 @@ public class ProductMapper {
     }
 
     public ArtooProduct mapArticleToProduct(SumUpArticle article, ArtooProductGroup productGroup) {
-        Assert.isTrue(article.variants().size() == 1, "Article must have exactly one variant.");
+//        Assert.isTrue(article.variants().size() == 1, "Article must have exactly one variant.");
 
         return new ArtooProduct(
                 article.itemName(),

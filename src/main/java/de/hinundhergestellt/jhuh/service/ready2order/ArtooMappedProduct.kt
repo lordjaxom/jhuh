@@ -37,9 +37,20 @@ sealed class ArtooMappedProduct protected constructor(
         private val product: ArtooProduct
     ) : ArtooMappedProduct(listOf(ArtooMappedVariation(product))) {
 
-        override val id = "single-${product.id}"
+        override val id = "product-${product.id}"
         override val name by product::name
         override val description by product::description
         override val hasOnlyDefaultVariant = true
+    }
+
+    internal class Variations(
+        private val product: ArtooProduct,
+        variations: List<ArtooMappedVariation>
+    ) : ArtooMappedProduct(variations) {
+
+        override val id = "product-${product.id}"
+        override val name by product::name
+        override val description by product::description
+        override val hasOnlyDefaultVariant = false
     }
 }
