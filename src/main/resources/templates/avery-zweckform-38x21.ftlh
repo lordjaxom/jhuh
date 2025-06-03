@@ -25,12 +25,12 @@
 
         .sheet {
             display: grid;
-            grid-template-columns: repeat(4, 48.5mm);
-            grid-template-rows: repeat(10, 25.4mm);
+            grid-template-columns: repeat(5, 38mm);
+            grid-template-rows: repeat(13, 21.1mm);
             /*gap: 0;*/
-            width: 194mm;
-            height: 254mm;
-            margin: 21.5mm auto;
+            width: 190mm;
+            height: 274.3mm;
+            margin: 11.35mm auto;
             page-break-after: always;
         }
 
@@ -39,8 +39,8 @@
         }
 
         .label {
-            width: 48.5mm;
-            height: 25.4mm;
+            width: 38mm;
+            height: 21.1mm;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
@@ -84,7 +84,7 @@
     </style>
 </head>
 <body>
-<#list labels?chunk(40) as sheet>
+<#list labels?chunk(65) as sheet>
     <div class="sheet">
         <#list sheet as label>
             <div id="label-1" class="label">
