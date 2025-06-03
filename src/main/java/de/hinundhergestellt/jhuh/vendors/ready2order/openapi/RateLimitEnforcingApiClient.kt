@@ -1,4 +1,4 @@
-package de.hinundhergestellt.jhuh.vendors.ready2order
+package de.hinundhergestellt.jhuh.vendors.ready2order.openapi
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.core.ParameterizedTypeReference

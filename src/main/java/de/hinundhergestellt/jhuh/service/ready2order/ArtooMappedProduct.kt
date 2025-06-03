@@ -2,7 +2,6 @@ package de.hinundhergestellt.jhuh.service.ready2order
 
 import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductGroup
-import kotlin.getValue
 
 sealed class ArtooMappedProduct protected constructor(
     val variations: List<ArtooMappedVariation>

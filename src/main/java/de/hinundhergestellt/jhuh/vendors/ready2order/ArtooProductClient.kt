@@ -1,6 +1,7 @@
 package de.hinundhergestellt.jhuh.vendors.ready2order
 
-import de.hinundhergestellt.jhuh.vendors.ready2order.api.ProductApi
+import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.ApiClient
+import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.api.ProductApi
 import org.springframework.stereotype.Component
 
 @Component

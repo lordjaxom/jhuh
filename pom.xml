@@ -207,12 +207,12 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputSpec>${project.basedir}/src/main/openapi/ready2order-openapi-R2-2025.20.1+akv.json</inputSpec>
+                            <inputSpec>${project.basedir}/src/main/openapi/ready2order-openapi-R2-2025.22.2+akv.json</inputSpec>
                             <generatorName>java</generatorName>
                             <generateApiTests>false</generateApiTests>
                             <generateModelTests>false</generateModelTests>
-                            <apiPackage>de.hinundhergestellt.jhuh.vendors.ready2order.api</apiPackage>
-                            <modelPackage>de.hinundhergestellt.jhuh.vendors.ready2order.model</modelPackage>
+                            <apiPackage>de.hinundhergestellt.jhuh.vendors.ready2order.openapi.api</apiPackage>
+                            <modelPackage>de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model</modelPackage>
                             <configOptions>
                                 <library>resttemplate</library>
                                 <documentationProvider>none</documentationProvider>

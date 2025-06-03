@@ -1,9 +1,8 @@
 package de.hinundhergestellt.jhuh.vendors.ready2order
 
-import de.hinundhergestellt.jhuh.vendors.ready2order.api.ProductGroupApi
+import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.ApiClient
+import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.api.ProductGroupApi
 import org.springframework.stereotype.Component
-import java.util.function.Function
-import java.util.stream.Collectors
 
 @Component
 class ArtooProductGroupClient(

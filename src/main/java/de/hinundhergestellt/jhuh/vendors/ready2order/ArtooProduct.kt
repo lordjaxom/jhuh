@@ -1,11 +1,11 @@
 package de.hinundhergestellt.jhuh.vendors.ready2order
 
-import de.hinundhergestellt.jhuh.vendors.ready2order.api.ProductApi
-import de.hinundhergestellt.jhuh.vendors.ready2order.model.ProductsGet200ResponseInner
-import de.hinundhergestellt.jhuh.vendors.ready2order.model.ProductsIdPutRequest
-import de.hinundhergestellt.jhuh.vendors.ready2order.model.ProductsPostRequest
-import de.hinundhergestellt.jhuh.vendors.ready2order.model.ProductsPostRequestProductBase
-import de.hinundhergestellt.jhuh.vendors.ready2order.model.ProductsPostRequestProductgroup
+import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.api.ProductApi
+import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsGet200ResponseInner
+import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsIdPutRequest
+import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsPostRequest
+import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsPostRequestProductBase
+import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsPostRequestProductgroup
 import java.math.BigDecimal
 
 class ArtooProduct {

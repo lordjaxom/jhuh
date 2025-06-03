@@ -1,8 +1,8 @@
 package de.hinundhergestellt.jhuh.vendors.ready2order
 
-import de.hinundhergestellt.jhuh.vendors.ready2order.api.ProductGroupApi
-import de.hinundhergestellt.jhuh.vendors.ready2order.model.ProductgroupsGet200ResponseInner
-import de.hinundhergestellt.jhuh.vendors.ready2order.model.ProductgroupsPostRequest
+import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.api.ProductGroupApi
+import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductgroupsGet200ResponseInner
+import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductgroupsPostRequest
 import org.springframework.lang.Nullable
 
 class ArtooProductGroup {
