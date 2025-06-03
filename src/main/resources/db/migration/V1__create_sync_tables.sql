@@ -14,7 +14,7 @@ CREATE TABLE sync_category_tags
 CREATE TABLE sync_product
 (
     id         UUID    NOT NULL,
-    artoo_id   VARCHAR(255),
+    artoo_id   INT,
     shopify_id VARCHAR(255),
     vendor     VARCHAR(255),
     type       VARCHAR(255),

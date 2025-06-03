@@ -21,7 +21,7 @@ import java.util.UUID
 class SyncProduct(
 
     @Column(unique = true)
-    var artooId: String? = null,
+    var artooId: Int? = null,
 
     @Column(unique = true)
     var shopifyId: String? = null,

@@ -380,7 +380,7 @@ sealed class SyncProblem(val message: String) {
     override fun toString() = message
 }
 
-inline fun <reified T> List<SyncProblem>.has() = any { it is T }
+inline fun <reified T: SyncProblem> List<SyncProblem>.has() = any { it is T }
 
 private fun toSyncProduct(shopifyProduct: ShopifyProduct) =
     SyncProduct(
@@ -392,7 +392,7 @@ private fun toSyncProduct(shopifyProduct: ShopifyProduct) =
     )
 
 private sealed class VariantBulkOperation {
-    class Delete(val variant: ShopifyProductVariant) : VariantBulkOperation()
     class Create(val variant: UnsavedShopifyProductVariant) : VariantBulkOperation()
     class Update(val variant: ShopifyProductVariant) : VariantBulkOperation()
+    class Delete(val variant: ShopifyProductVariant) : VariantBulkOperation()
 }
