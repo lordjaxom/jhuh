@@ -16,17 +16,6 @@ class ArtooProductGroupClient(
             .map { group -> ArtooProductGroup(group) }
     }
 
-    fun findAllMappedByPath(): MutableMap<String, ArtooProductGroup> {
-        val productGroups = findAll().toMutableList()
-        return productGroups.stream()
-            .collect(
-                Collectors.toMap(
-                    Function { it: ArtooProductGroup? -> it!!.getPath(productGroups) },
-                    Function.identity<ArtooProductGroup?>()
-                )
-            )
-    }
-
     fun save(productGroup: ArtooProductGroup) {
         productGroup.save(api)
     }
