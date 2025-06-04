@@ -10,6 +10,7 @@ target/
 .idea/jarRepositories.xml
 .idea/compiler.xml
 .idea/kotlinc.xml
+.idea/dataSources.xml
 .idea/libraries/
 .idea/inspectionProfiles/
 *.iws

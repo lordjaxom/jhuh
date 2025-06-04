@@ -1,5 +1,5 @@
 spring:
   datasource:
-    url: jdbc:h2:file:./var/jhuh.h2
-    username: sa
-    password: ""
+    url: jdbc:mariadb://${MARIADB_HOSTNAME}:${MARIADB_PORT:3306}/hinundhergestellt
+    username: hinundhergestellt
+    password: ${MARIADB_PASSWORD}
