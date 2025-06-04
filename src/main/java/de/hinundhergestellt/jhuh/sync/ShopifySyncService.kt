@@ -1,5 +1,6 @@
 package de.hinundhergestellt.jhuh.sync
 
+import com.shopify.admin.types.ProductStatus
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.service.ready2order.ArtooDataStore
 import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedCategory
@@ -252,6 +253,7 @@ class ShopifyImportService(
             artooProduct.description.ifEmpty { artooProduct.name },
             syncProduct.vendor!!,
             syncProduct.type!!,
+            ProductStatus.DRAFT,
             tags,
             options
         )

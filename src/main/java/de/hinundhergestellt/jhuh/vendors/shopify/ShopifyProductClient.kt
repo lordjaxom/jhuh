@@ -112,6 +112,8 @@ class ShopifyProductClient(
                     .title()
                     .vendor()
                     .productType()
+                    .status()
+                        .parent()
                     .tags()
                     .variants(250, null, null, null, null, null)
                         .edges()
