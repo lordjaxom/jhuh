@@ -4,6 +4,8 @@ import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.service.ready2order.ArtooDataStore
 import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedProduct
 import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedVariation
+import de.hinundhergestellt.jhuh.sync.SyncProduct
+import de.hinundhergestellt.jhuh.sync.SyncProductRepository
 import org.springframework.context.annotation.Scope
 import org.springframework.context.annotation.ScopedProxyMode
 import org.springframework.stereotype.Service
@@ -12,31 +14,39 @@ import org.springframework.stereotype.Service
 @VaadinSessionScope
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 class LabelGeneratorService(
-    private val artooDataStore: ArtooDataStore
+    private val artooDataStore: ArtooDataStore,
+    private val syncProductRepository: SyncProductRepository
 ) {
     val articles
         get() = artooDataStore.findAllProducts().flatMap { product -> product.variations.asSequence().map { Article(product, it) } }
 
     val labels = mutableListOf<Label>()
+
+    fun createLabel(article: Article, count: Int) {
+        val syncProduct = syncProductRepository.findByArtooId(article.product.id)
+        labels.add(Label(article, syncProduct, count))
+    }
 }
 
 class Article(
-    product: ArtooMappedProduct,
-    private val variation: ArtooMappedVariation
+    val product: ArtooMappedProduct,
+    val variation: ArtooMappedVariation
 ) {
     val name = if (product.hasOnlyDefaultVariant) product.name else "${product.name} ${variation.name}"
     val label = "${variation.barcode} - $name"
-    val barcode by variation::barcode
+
+    internal fun filterBy(filter: String) =
+        if (filter.toUIntOrNull(10) != null) variation.barcode?.startsWith(filter) ?: false
+        else filter.split("""\s+""".toRegex()).all { name.contains(it, ignoreCase = true) }
 }
 
 class Label(
     private val article: Article,
+    syncProduct: SyncProduct?,
     val count: Int
 ) {
-    val barcode by article::barcode
+    val vendor = syncProduct?.vendor ?: ""
     val name by article::name
+    val variant = sequenceOf(article.variation.itemNumber, article.variation.name).filterNotNull().joinToString(" ")
+    val barcode by article.variation::barcode
 }
-
-internal fun Article.filterBy(filter: String) =
-    if (filter.toUIntOrNull(10) != null) barcode?.startsWith(filter) ?: false
-    else filter.split("""\s+""".toRegex()).all { name.contains(it, ignoreCase = true) }

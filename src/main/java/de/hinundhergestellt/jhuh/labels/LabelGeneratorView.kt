@@ -83,7 +83,7 @@ class LabelGeneratorView(
         addButton.text = "Hinzufügen"
         addButton.isEnabled = false
         addButton.addClickShortcut(Key.ENTER)
-        addButton.addClickListener { addLabels() }
+        addButton.addClickListener { createLabel() }
 
         val layout = HorizontalLayout(articleComboBox, countTextField, addButton)
         layout.alignItems = FlexComponent.Alignment.END
@@ -92,8 +92,20 @@ class LabelGeneratorView(
     }
 
     private fun configureLabelsGrid() {
+        labelsGrid.addColumn { it.vendor }
+            .setHeader("Hersteller")
+            .apply {
+                isSortable = false
+                flexGrow = 5
+            }
         labelsGrid.addColumn { it.name }
             .setHeader("Bezeichnung")
+            .apply {
+                isSortable = false
+                flexGrow = 5
+            }
+        labelsGrid.addColumn { it.variant }
+            .setHeader("Variante")
             .apply {
                 isSortable = false
                 flexGrow = 5
@@ -148,8 +160,8 @@ class LabelGeneratorView(
         addButton.isEnabled = articleSelected && countValid
     }
 
-    private fun addLabels() {
-        service.labels.add(Label(articleComboBox.value, countTextField.value.toInt(10)))
+    private fun createLabel() {
+        service.createLabel(articleComboBox.value, countTextField.value.toInt(10))
         validateActions()
         labelsGrid.dataProvider.refreshAll()
 
