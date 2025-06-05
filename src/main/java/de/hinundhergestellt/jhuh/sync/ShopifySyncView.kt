@@ -1,5 +1,6 @@
 package de.hinundhergestellt.jhuh.sync
 
+import com.vaadin.flow.component.AttachEvent
 import com.vaadin.flow.component.Component
 import com.vaadin.flow.component.Key
 import com.vaadin.flow.component.Text
@@ -27,6 +28,7 @@ import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery
 import com.vaadin.flow.dom.Style
 import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.task.AsyncTaskExecutor
 import java.util.concurrent.CompletableFuture
@@ -34,13 +36,16 @@ import java.util.stream.Stream
 import kotlin.jvm.optionals.getOrNull
 import kotlin.streams.asStream
 
+private val logger = KotlinLogging.logger { }
+
 @Route
-@PageTitle("Datenabgleich mit Shopify")
+@PageTitle("Produktverwaltung")
 class ShopifySyncView(
     private val importService: ShopifyImportService,
     @Qualifier("applicationTaskExecutor") private val taskExecutor: AsyncTaskExecutor
 ) : VerticalLayout() {
 
+    private val refreshButton = Button()
     private val markedForSyncCheckbox = Checkbox()
     private val withErrorsCheckbox = Checkbox()
     private val errorFreeCheckbox = Checkbox()
@@ -57,14 +62,24 @@ class ShopifySyncView(
         configureFilters()
         configureTreeGrid()
         configureProgressOverlay()
+
+        val stateChangedHandler: () -> Unit =
+            { ui.getOrNull()?.access { refreshButton.isEnabled = true; treeGrid.dataProvider.refreshAll() } }
+        addAttachListener { importService.stateChangeListeners += stateChangedHandler }
+        addDetachListener { importService.stateChangeListeners -= stateChangedHandler }
     }
 
     private fun configureHeader() {
-        val menuBar = MenuBar()
-        menuBar.setWidthFull()
-        menuBar.addThemeVariants(MenuBarVariant.LUMO_END_ALIGNED)
-        menuBar.addItem("Synchronisieren") { synchronize() }
-        add(menuBar)
+        refreshButton.text = "Aktualisieren"
+        refreshButton.isDisableOnClick = true
+        refreshButton.addClickListener { importService.refreshItems() }
+
+        val syncWithShopifyButton = Button("Mit Shopify synchronisieren") { synchronize() }
+
+        val layout = HorizontalLayout(refreshButton, syncWithShopifyButton)
+        layout.justifyContentMode = FlexComponent.JustifyContentMode.END
+        layout.setWidthFull()
+        add(layout)
     }
 
     private fun configureFilters() {
@@ -300,7 +315,7 @@ class ShopifySyncView(
     }
 
     private fun refreshTreeItem(item: SyncableItem, recurse: Boolean) {
-        treeGrid.dataProvider.refreshItem(item)
+        treeGrid.dataProvider.refreshItem(item, recurse)
         if (recurse && item is ShopifyImportService.Category) {
             item.childrenAndProducts.forEach { refreshTreeItem(it, true) }
         }
@@ -322,6 +337,9 @@ class ShopifySyncView(
 
         override fun getChildCount(query: HierarchicalQuery<SyncableItem, Void?>) =
             fetchChildren(query).count().toInt()
+
+        override fun getId(item: SyncableItem) =
+            item.itemId
     }
 }
 

@@ -2,66 +2,86 @@ package de.hinundhergestellt.jhuh.service.shopify
 
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProductClient
+import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProductOption
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProductVariantClient
 import de.hinundhergestellt.jhuh.vendors.shopify.UnsavedShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.UnsavedShopifyProductVariant
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.beans.factory.config.BeanDefinition
-import org.springframework.context.annotation.Scope
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.task.AsyncTaskExecutor
 import org.springframework.stereotype.Service
+import java.util.UUID
 import java.util.concurrent.Callable
+import java.util.concurrent.Future
 
 @Service
-@Scope(BeanDefinition.SCOPE_PROTOTYPE)
 class ShopifyDataStore(
-    factory: ShopifyDataStoreFactory,
     private val productClient: ShopifyProductClient,
-    private val variantClient: ShopifyProductVariantClient
+    private val variantClient: ShopifyProductVariantClient,
+    @Qualifier("applicationTaskExecutor") private val taskExecutor: AsyncTaskExecutor,
+    @Value("\${shopify.read-only}") private val readOnly: Boolean
 ) {
-    val products by factory.products()
+    private lateinit var productsFuture: Future<MutableList<ShopifyProduct>>
+    val products: MutableList<ShopifyProduct>
+        get() = productsFuture.get()
+
+    init {
+        refresh()
+    }
 
     fun findProductById(id: String) =
         products.find { it.id == id }
 
     fun create(product: UnsavedShopifyProduct): ShopifyProduct {
-        val created = productClient.create(product)
+        val created =
+            if (!readOnly) productClient.create(product)
+            else ShopifyProduct(
+                product,
+                "uid://${UUID.randomUUID()}",
+                product.options.map { ShopifyProductOption(it, "uid://${UUID.randomUUID()}") }
+            )
         products.add(created)
         return created
     }
 
     fun update(product: ShopifyProduct) {
-        productClient.update(product)
+        if (!readOnly) {
+            productClient.update(product)
+        }
     }
 
     fun delete(product: ShopifyProduct) {
-        productClient.delete(product)
+        if (!readOnly) {
+            productClient.delete(product)
+        }
         products.remove(product)
     }
 
     fun create(product: ShopifyProduct, variants: List<UnsavedShopifyProductVariant>) {
-        val created = variantClient.create(product, variants)
+        val created =
+            if (!readOnly) variantClient.create(product, variants)
+            else variants.map { ShopifyProductVariant(it, "uid://${UUID.randomUUID()}", it.options[0].value) }
         product.variants.addAll(created)
     }
 
     fun update(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
-        variantClient.update(product, variants)
+        if (!readOnly) {
+            variantClient.update(product, variants)
+        }
     }
 
     fun delete(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
-        variantClient.delete(product, variants)
+        if (!readOnly) {
+            variantClient.delete(product, variants)
+        }
         product.variants.removeAll(variants)
     }
-}
 
-@Service
-class ShopifyDataStoreFactory(
-    private val productClient: ShopifyProductClient,
-    @Qualifier("applicationTaskExecutor") private val taskExecutor: AsyncTaskExecutor
-) {
-    fun products(): Lazy<MutableList<ShopifyProduct>> =
-        taskExecutor
-            .submit(Callable { productClient.findAll().toMutableList() })
-            .let { lazy { it.get() } }
+    fun refresh() {
+        productsFuture = fetchProducts()
+    }
+
+    private fun fetchProducts() =
+        taskExecutor.submit(Callable { productClient.findAll().toMutableList() })
 }

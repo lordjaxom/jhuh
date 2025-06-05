@@ -5,18 +5,28 @@ import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductClient
 import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductGroup
 import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductGroupClient
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.beans.factory.config.BeanDefinition
-import org.springframework.context.annotation.Scope
 import org.springframework.core.task.AsyncTaskExecutor
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.util.concurrent.Callable
+import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
 
 @Service
-@Scope(BeanDefinition.SCOPE_PROTOTYPE)
 class ArtooDataStore(
-    factory: ArtooDataStoreFactory
+    private val productGroupClient: ArtooProductGroupClient,
+    private val productClient: ArtooProductClient,
+    @Qualifier("applicationTaskExecutor") private val taskExecutor: AsyncTaskExecutor
 ) {
-    val rootCategories by factory.rootCategories()
+    private lateinit var rootCategoriesFuture: Future<List<ArtooMappedCategory>>
+    val rootCategories: List<ArtooMappedCategory>
+        get() = rootCategoriesFuture.get()
+
+    val stateChangeListeners = mutableListOf<() -> Unit>()
+
+    init {
+        refresh()
+    }
 
     fun findAllProducts() =
         rootCategories.asSequence().flatMap { it.findAllProducts() }
@@ -24,20 +34,22 @@ class ArtooDataStore(
     fun findProductById(id: Int) =
         rootCategories.firstNotNullOfOrNull { it.findProductById(id) }
 
-    fun findParentCategoriesByProduct(product: ArtooMappedProduct) =
-        rootCategories.asSequence().flatMap { it.findAllCategoriesByProduct(product) }
-}
+    fun findCategoriesByProduct(product: ArtooMappedProduct) =
+        rootCategories.asSequence().flatMap { it.findCategoriesByProduct(product) }
 
-@Service
-class ArtooDataStoreFactory(
-    private val productGroupClient: ArtooProductGroupClient,
-    private val productClient: ArtooProductClient,
-    @Qualifier("applicationTaskExecutor") private val taskExecutor: AsyncTaskExecutor
-) {
-    fun rootCategories(): Lazy<List<ArtooMappedCategory>> {
+    @Scheduled(initialDelay = 15, fixedDelay = 15, timeUnit = TimeUnit.MINUTES)
+    fun refresh() {
+        rootCategoriesFuture = fetchRootCategories()
+    }
+
+    private fun fetchRootCategories(): Future<List<ArtooMappedCategory>> {
         val groups = taskExecutor.submit(Callable { productGroupClient.findAll().toList() })
-        val products = taskExecutor.submit(Callable { productClient.findAll().toList() })
-        return lazy { DataStoreBuilder(groups.get(), products.get()).rootCategories() }
+        return taskExecutor.submit(Callable {
+            val products = productClient.findAll().toList()
+            val groups = groups.get()
+            DataStoreBuilder(groups, products).rootCategories
+                .also { taskExecutor.submit { stateChangeListeners.forEach { it() } } }
+        })
     }
 }
 
@@ -45,29 +57,29 @@ private class DataStoreBuilder(
     private val groups: List<ArtooProductGroup>,
     private val products: List<ArtooProduct>
 ) {
-    fun rootCategories() =
+    val rootCategories =
         groups.asSequence()
             .filter { it.parent == 0 && it.typeId == 7 }
-            .map { toCategory(it) }
+            .map { it.toCategory() }
             .toList()
 
-    private fun toCategory(group: ArtooProductGroup): ArtooMappedCategory {
+    private fun ArtooProductGroup.toCategory(): ArtooMappedCategory {
         val children = groups.asSequence()
-            .filter { it.parent == group.id && it.typeId == 7 }
-            .map { toCategory(it) }
+            .filter { it.parent == id && it.typeId == 7 }
+            .map { it.toCategory() }
             .toList()
         val products = products.asSequence()
-            .filter { it.productGroupId == group.id && it.baseId == 0 }
-            .map { toProduct(it) }
+            .filter { it.productGroupId == id && it.baseId == 0 }
+            .map { it.toProduct() }
             .toList()
-        return ArtooMappedCategory(group, children, products)
+        return ArtooMappedCategory(this, children, products)
     }
 
-    private fun toProduct(product: ArtooProduct) : ArtooMappedProduct {
+    private fun ArtooProduct.toProduct(): ArtooMappedProduct {
         val variations = products.asSequence()
-            .filter { it.baseId == product.id }
-            .map { ArtooMappedVariation(product, it) }
+            .filter { it.baseId == id }
+            .map { ArtooMappedVariation(this, it) }
             .toList()
-        return ArtooMappedProduct(product, variations)
+        return ArtooMappedProduct(this, variations)
     }
 }

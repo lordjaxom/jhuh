@@ -25,10 +25,10 @@ class ArtooMappedCategory internal constructor(
         products.firstNotNullOfOrNull { it.findVariationByBarcode(barcode) }
             ?: children.firstNotNullOfOrNull { it.findVariationByBarcode(barcode) }
 
-    fun findAllCategoriesByProduct(product: ArtooMappedProduct): Sequence<ArtooMappedCategory> = sequence {
+    fun findCategoriesByProduct(product: ArtooMappedProduct): Sequence<ArtooMappedCategory> = sequence {
         var found = false
         children.asSequence()
-            .flatMap { it.findAllCategoriesByProduct(product) }
+            .flatMap { it.findCategoriesByProduct(product) }
             .onEach { found = true }
             .also { yieldAll(it) }
         if (found || products.contains(product)) {

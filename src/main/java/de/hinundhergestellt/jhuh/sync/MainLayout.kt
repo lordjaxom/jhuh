@@ -29,7 +29,7 @@ class MainLayout : AppLayout() {
         addToNavbar(toggle, pageTitle)
 
         val sideNav = SideNav()
-        sideNav.addItem(SideNavItem("Shopify-Abgleich", routeUrl<ShopifySyncView>(), VaadinIcon.UPLOAD.create()))
+        sideNav.addItem(SideNavItem("Produktverwaltung", routeUrl<ShopifySyncView>(), VaadinIcon.UPLOAD.create()))
         sideNav.addItem(SideNavItem("Etiketten erstellen", routeUrl<LabelGeneratorView>(), VaadinIcon.PRINT.create()))
 
         val scroller = Scroller(sideNav)

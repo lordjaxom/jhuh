@@ -1,7 +1,6 @@
 package de.hinundhergestellt.jhuh.sync
 
 import com.shopify.admin.types.ProductStatus
-import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.service.ready2order.ArtooDataStore
 import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedCategory
 import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedProduct
@@ -23,7 +22,6 @@ import kotlin.streams.asSequence
 private val logger = KotlinLogging.logger {}
 
 @Service
-@VaadinSessionScope
 class ShopifyImportService(
     private val artooDataStore: ArtooDataStore,
     private val shopifyDataStore: ShopifyDataStore,
@@ -31,7 +29,10 @@ class ShopifyImportService(
     private val syncVariantRepository: SyncVariantRepository,
     private val syncCategoryRepository: SyncCategoryRepository,
 ) {
-    val rootCategories = artooDataStore.rootCategories.map { Category(it) }
+    private val lazyRootCategories = lazyWithReset { artooDataStore.rootCategories.map { Category(it) }}
+    val rootCategories by lazyRootCategories
+
+    val stateChangeListeners by artooDataStore::stateChangeListeners
 
     @Transactional
     fun updateItem(item: SyncableItem, vendor: String?, type: String?, tags: String) {
@@ -71,7 +72,7 @@ class ShopifyImportService(
     fun markForSync(product: Product) {
         val syncProduct = product.syncProduct
             ?.apply { synced = true }
-            ?: run { SyncProduct(artooId = product.id, synced = true) }
+            ?: SyncProduct(artooId = product.id, synced = true)
         syncProductRepository.save(syncProduct)
         product.reset()
     }
@@ -88,17 +89,25 @@ class ShopifyImportService(
     @Transactional
     fun synchronize() {
         try {
+            artooDataStore.refresh()
+            shopifyDataStore.refresh()
+
             shopifyDataStore.products.forEach { reconcileFromShopify(it) }
             artooDataStore.findAllProducts().forEach { reconcileFromArtoo(it) }
             artooDataStore.rootCategories.forEach { reconcileCategories(it) }
 
             syncProductRepository.findAllBySyncedIsTrue().forEach { synchronizeWithShopify(it) }
 
-            rootCategories.forEach { it.reset() }
+            lazyRootCategories.reset()
         } catch (e: Exception) {
             logger.error(e) { "Synchronization failed" }
             throw e
         }
+    }
+
+    fun refreshItems() {
+        artooDataStore.refresh()
+        lazyRootCategories.reset()
     }
 
     private fun checkSyncProblems(product: ArtooMappedProduct, syncProduct: SyncProduct?) = buildList {
@@ -298,7 +307,7 @@ class ShopifyImportService(
     }
 
     private fun buildTags(syncProduct: SyncProduct, artooProduct: ArtooMappedProduct) = buildSet {
-        val categoryIds = artooDataStore.findParentCategoriesByProduct(artooProduct).map { it.id }.toList()
+        val categoryIds = artooDataStore.findCategoriesByProduct(artooProduct).map { it.id }.toList()
         addAll(syncCategoryRepository.findByArtooIdIn(categoryIds).asSequence().flatMap { it.tags })
         addAll(syncProduct.tags)
         add(syncProduct.vendor!!)
@@ -307,6 +316,7 @@ class ShopifyImportService(
 
     inner class Category(val value: ArtooMappedCategory) : SyncableItem {
 
+        // TODO: lazy probably unnecessary when just resetting lazyRootCategories above
         private val lazySyncCategory = lazyWithReset { syncCategoryRepository.findByArtooId(value.id) }
         internal val syncCategory by lazySyncCategory
 
@@ -314,6 +324,7 @@ class ShopifyImportService(
 
         val childrenAndProducts = value.run { children.map { Category(it) } + products.map { Product(it) } }
 
+        override val itemId = "category-$id"
         override val name by value::name
         override val vendor = null
         override val type = null
@@ -331,6 +342,7 @@ class ShopifyImportService(
 
     inner class Product(val value: ArtooMappedProduct) : SyncableItem {
 
+        // TODO: lazy probably unnecessary when just resetting lazyRootCategories above
         private val lazySyncProduct = lazyWithReset { syncProductRepository.findByArtooId(value.id) }
         internal val syncProduct by lazySyncProduct
 
@@ -340,6 +352,7 @@ class ShopifyImportService(
         private val lazySyncProblems = lazyWithReset { checkSyncProblems(value, syncProduct) }
         val syncProblems by lazySyncProblems
 
+        override val itemId = "product-$id"
         override val name by value::name
         override val vendor get() = syncProduct?.vendor
         override val type get() = syncProduct?.type
@@ -360,6 +373,7 @@ class ShopifyImportService(
 
 sealed interface SyncableItem {
 
+    val itemId: String
     val name: String
     val vendor: String?
     val type: String?
