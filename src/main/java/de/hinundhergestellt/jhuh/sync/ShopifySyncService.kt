@@ -29,6 +29,8 @@ class ShopifyImportService(
     private val syncVariantRepository: SyncVariantRepository,
     private val syncCategoryRepository: SyncCategoryRepository,
 ) {
+    // TODO: Better to add fetchChildren here and create SyncableItems on the fly? But refreshItem in TreeDataProvider doesn't reload the
+    // TODO: item, so clearing the database objects would still be required
     private val lazyRootCategories = lazyWithReset { artooDataStore.rootCategories.map { Category(it) }}
     val rootCategories by lazyRootCategories
 
@@ -107,7 +109,7 @@ class ShopifyImportService(
 
     fun refreshItems() {
         artooDataStore.refresh()
-        lazyRootCategories.reset()
+        lazyRootCategories.reset() // TODO: Better run this when stateUpdateListener is invoked?
     }
 
     private fun checkSyncProblems(product: ArtooMappedProduct, syncProduct: SyncProduct?) = buildList {

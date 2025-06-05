@@ -64,7 +64,7 @@ class ShopifySyncView(
         configureProgressOverlay()
 
         val stateChangedHandler: () -> Unit =
-            { ui.getOrNull()?.access { refreshButton.isEnabled = true; treeGrid.dataProvider.refreshAll() } }
+            { ui.getOrNull()?.access { treeGrid.dataProvider.refreshAll(); refreshButton.isEnabled = true } }
         addAttachListener { importService.stateChangeListeners += stateChangedHandler }
         addDetachListener { importService.stateChangeListeners -= stateChangedHandler }
     }
