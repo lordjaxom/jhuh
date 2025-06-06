@@ -36,7 +36,6 @@ class ArtooMappedCategory internal constructor(
         }
     }
 
-    override fun toString(): String {
-        return "ArtooMappedCategory(id=$id, name='$name')"
-    }
+    override fun toString() =
+        "ArtooMappedCategory(id=$id, name='$name')"
 }

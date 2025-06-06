@@ -8,6 +8,9 @@ open class UnsavedShopifyProductOption(
     var name: String,
     val values: List<String>
 ) {
+    override fun toString() =
+        "UnsavedShopifyProductOption(name='$name')"
+
     internal fun toOptionCreateInput() =
         OptionCreateInput().also {
             it.name = name
@@ -34,9 +37,9 @@ class ShopifyProductOption private constructor(
         unsaved.name,
         unsaved.values
     )
+
+    override fun toString() =
+        "ShopifyProductOption(id='$id', name='$name')"
 }
 
-private fun String.toOptionValueCreateInput() =
-    OptionValueCreateInput().also {
-        it.name = this
-    }
+private fun String.toOptionValueCreateInput() = OptionValueCreateInput().also { it.name = this }

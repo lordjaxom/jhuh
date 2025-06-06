@@ -15,7 +15,14 @@ class ArtooProductGroupClient(
             .map { group -> ArtooProductGroup(group) }
     }
 
-    fun save(productGroup: ArtooProductGroup) {
-        productGroup.save(api)
+    fun create(group: UnsavedArtooProductGroup) =
+        ArtooProductGroup(api.productgroupsPost(group.toProductgroupsPostRequest()))
+
+    fun update(group: ArtooProductGroup) {
+        api.productgroupsIdPut(group.id, group.toProductgroupsIdPutRequest())
+    }
+
+    fun delete(group: ArtooProductGroup) {
+        api.productgroupsIdDelete(group.id)
     }
 }

@@ -1,6 +1,6 @@
 package de.hinundhergestellt.jhuh.vendors.ready2order
 
-import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.api.ProductApi
+import de.hinundhergestellt.jhuh.util.fixedScale
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsGet200ResponseInner
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsIdPutRequest
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsPostRequest
@@ -8,176 +8,123 @@ import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsPostR
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsPostRequestProductgroup
 import java.math.BigDecimal
 
-class ArtooProduct {
+open class UnsavedArtooProduct(
+    var name: String,
+    var itemNumber: String?,
+    var barcode: String?,
+    var description: String,
+    price: BigDecimal,
+    var priceIncludesVat: Boolean,
+    vat: BigDecimal,
+    var stockEnabled: Boolean,
+    var variationsEnabled: Boolean,
+    stockValue: BigDecimal,
+    var stockUnit: String? = if (stockEnabled) "piece" else null,
+    stockReorderLevel: BigDecimal,
+    stockSafetyStock: BigDecimal,
+    var sortIndex: Int = 0,
+    var active: Boolean,
+    var discountable: Boolean,
+    var type: String? = null,
+    var baseId: Int? = null,
+    var productGroupId: Int
+) {
+    var price by fixedScale(price, 2)
+    var vat by fixedScale(vat, 2)
+    var stockValue by fixedScale(stockValue, 0)
+    var stockReorderLevel by fixedScale(stockReorderLevel, 0)
+    var stockSafetyStock by fixedScale(stockSafetyStock, 0)
 
-    private var value: ProductsGet200ResponseInner
+    override fun toString() =
+        "UnsavedArtooProduct(name='$name', description='$description', itemNumber='$itemNumber', barcode='$barcode')"
 
-    constructor(
-        name: String,
-        itemNumber: String?,
-        barcode: String?,
-        description: String?,
-        price: BigDecimal,
-        priceIncludesVat: Boolean,
-        vat: BigDecimal?,
-        stockEnabled: Boolean,
-        variationsEnabled: Boolean,
-        stockValue: BigDecimal,
-        stockUnit: String?,
-        stockReorderLevel: BigDecimal,
-        stockSafetyStock: BigDecimal,
-        sortIndex: Int,
-        active: Boolean,
-        discountable: Boolean,
-        type: String?,
-        baseId: Int?,
-        productGroupId: Int
-    ) {
-        value = ProductsGet200ResponseInner()
-        value.productName = name
-        // value.setProductExternalReference();
-        value.productItemnumber = itemNumber
-        value.productBarcode = barcode
-        value.productDescription = description
-        value.productPrice = price.toPlainString()
-        value.productPriceIncludesVat = priceIncludesVat
-        value.productVat = vat?.toPlainString()
-        //        value.setProductCustomPrice();
-//        value.setProductCustomQuantity();
-//        value.setProductFav();
-//        value.setProductHighlight();
-//        value.setProductExpressMode();
-        value.productStockEnabled = stockEnabled
-        //        value.setProductIngredientsEnabled();
-        value.productVariationsEnabled = variationsEnabled
-        value.productStockValue = stockValue.toPlainString()
-        value.productStockUnit = stockUnit
-        value.productStockReorderLevel = stockReorderLevel.toPlainString()
-        value.productStockSafetyStock = stockSafetyStock.toPlainString()
-        value.productSortIndex = sortIndex
-        value.productActive = active
-        //        value.setProductSoldOut();
-//        value.setProductSideDishOrder();
-        value.productDiscountable = discountable
-        //        value.setProductAccountingCode();
-//        value.setProductColorClass();
-//        value.setProductTypeId(typeId);
-        value.productType = type
-        //        value.setProductCreatedAt();
-//        value.setProductUpdatedAt();
-//        value.setProductAlternativeNameOnReceipts();
-//        value.setProductAlternativeNameInPos();
-        value.productBaseId = baseId
-        value.productgroupId = productGroupId
-    }
+    internal fun toProductsPostRequest() =
+        ProductsPostRequest().also {
+            it.productName = name
+            it.productItemnumber = itemNumber
+            it.productBarcode = barcode
+            it.productDescription = description
+            it.productPrice = price.toPlainString()
+            it.productPriceIncludesVat = priceIncludesVat
+            it.productActive = active
+            it.productDiscountable = discountable
+            it.productVat = vat.toPlainString()
+            it.productStockEnabled = stockEnabled
+            it.productVariationsEnabled = variationsEnabled
+            it.productStockValue = stockValue.toPlainString()
+            it.productStockReorderLevel = stockReorderLevel.toPlainString()
+            it.productStockSafetyStock = stockSafetyStock.toPlainString()
+            it.productStockUnit = stockUnit
+            it.productSortIndex = sortIndex
+            it.productType = type
+            it.productBase = toProductsPostRequestProductBase()
+            it.productgroup = toProductsPostRequestProductgroup()
+        }
 
-    internal constructor(value: ProductsGet200ResponseInner) {
-        this.value = value
-        fixUp()
-    }
+    private fun toProductsPostRequestProductBase() =
+        baseId?.let { baseId ->
+            ProductsPostRequestProductBase().also {
+                it.productId = baseId
+            }
+        }
+
+    protected fun toProductsPostRequestProductgroup() =
+        ProductsPostRequestProductgroup().also {
+            it.productgroupId = productGroupId
+        }
+}
+
+class ArtooProduct : UnsavedArtooProduct {
 
     val id: Int
-        get() = value.productId!!
 
-    val name: String
-        get() = value.productName!!
+    internal constructor(product: ProductsGet200ResponseInner) : super(
+        product.productName,
+        product.productItemnumber,
+        product.productBarcode,
+        product.productDescription,
+        BigDecimal(product.productPrice),
+        product.productPriceIncludesVat,
+        BigDecimal(product.productVat),
+        product.productStockEnabled,
+        product.productVariationsEnabled,
+        BigDecimal(product.productStockValue),
+        product.productStockUnit,
+        product.productStockReorderLevel?.let { BigDecimal(it) } ?: BigDecimal.ZERO,
+        product.productStockSafetyStock?.let { BigDecimal(it) } ?: BigDecimal.ZERO,
+        product.productSortIndex,
+        product.productActive,
+        product.productDiscountable,
+        product.productType,
+        product.productBaseId,
+        product.productgroup!!.productgroupId
+    ) {
+        id = product.productId
+    }
 
-    val description: String
-        get() = value.productDescription!!
+    override fun toString() =
+        "ArtooProduct(id=$id, name='$name', description='$description', itemNumber='$itemNumber', barcode='$barcode')"
 
-    val itemNumber: String?
-        get() = value.productItemnumber
-
-    val barcode: String?
-        get() = value.productBarcode
-
-    val price: BigDecimal
-        get() = BigDecimal(value.productPrice!!).setScale(2)
-
-    val stockValue: BigDecimal
-        get() = BigDecimal(value.productStockValue!!).setScale(0)
-
-    val typeId: Int
-        get() = value.productTypeId ?: 0
-
-    val productGroupId: Int
-        get() = value.productgroupId!!
-
-    val baseId: Int
-        get() = value.productBaseId ?: 0
-
-    fun save(api: ProductApi) {
-        if (value.productId != null) {
-            value = api.productsIdPut(value.productId, toPutRequest())
-        } else {
-            value = api.productsPost(toPostRequest())
+    internal fun toProductsIdPutRequest() =
+        ProductsIdPutRequest().also {
+            it.productName = name
+            it.productItemnumber = itemNumber
+            it.productBarcode = barcode
+            it.productDescription = description
+            it.productPrice = price.toPlainString()
+            it.productPriceIncludesVat = priceIncludesVat
+            it.productActive = active
+            it.productDiscountable = discountable
+            it.productVat = vat.toPlainString()
+            it.productStockEnabled = stockEnabled
+            it.productVariationsEnabled = variationsEnabled
+            it.productStockValue = stockValue.toPlainString()
+            it.productStockReorderLevel = stockReorderLevel.toPlainString()
+            it.productStockSafetyStock = stockSafetyStock.toPlainString()
+            it.productStockUnit = stockUnit
+            it.productSortIndex = sortIndex
+            it.productType = type
+            // productBaseId cannot be modified
+            it.productgroup = toProductsPostRequestProductgroup()
         }
-    }
-
-    override fun toString(): String {
-        return "ArtooProduct(id=$id, name='$name', description='$description', itemNumber='$itemNumber', barcode='$barcode')"
-    }
-
-    private fun fixUp() {
-        value.productgroupId = value.productgroup!!.productgroupId!!
-    }
-
-    private fun toPutRequest(): ProductsIdPutRequest {
-        val request = ProductsIdPutRequest()
-        request.productName = value.productName
-        request.productItemnumber = value.productItemnumber
-        request.productExternalReference = value.productExternalReference
-        request.productBarcode = value.productBarcode
-        request.productDescription = value.productDescription
-        request.productPrice = value.productPrice
-        request.productPriceIncludesVat = value.productPriceIncludesVat
-        request.productActive = value.productActive
-        request.productDiscountable = value.productDiscountable
-        request.productVat = value.productVat
-        request.productStockEnabled = value.productStockEnabled
-        request.productStockValue = value.productStockValue
-        request.productStockReorderLevel = value.productStockReorderLevel ?: "0"
-        request.productStockSafetyStock = value.productStockSafetyStock ?: "0"
-        request.productStockUnit = value.productStockUnit
-        request.productSortIndex = value.productSortIndex
-        request.productType = value.productType
-        // ProductBase cannot be modified
-        request.productgroup = toProductgroup()
-        request.productVariationsEnabled = value.productVariationsEnabled
-        return request
-    }
-
-    private fun toPostRequest(): ProductsPostRequest {
-        val request = ProductsPostRequest()
-        request.productName = value.productName
-        request.productPrice = value.productPrice
-        request.productVat = value.productVat
-        request.productItemnumber = value.productItemnumber
-        request.productExternalReference = value.productExternalReference
-        request.productBarcode = value.productBarcode
-        request.productDescription = value.productDescription
-        request.productPriceIncludesVat = value.productPriceIncludesVat
-        request.productActive = value.productActive
-        request.productDiscountable = value.productDiscountable
-        request.productStockEnabled = value.productStockEnabled
-        request.productStockValue = value.productStockValue
-        request.productStockReorderLevel = value.productStockReorderLevel
-        request.productStockSafetyStock = value.productStockSafetyStock
-        request.productStockUnit = value.productStockUnit
-        request.productSortIndex = value.productSortIndex
-        request.productType = value.productType
-        request.productBase = toProductBase()
-        request.productgroup = toProductgroup()
-        request.productVariationsEnabled = value.productVariationsEnabled
-        return request
-    }
-
-    private fun toProductBase(): ProductsPostRequestProductBase? =
-        value.productBaseId?.let { baseId -> ProductsPostRequestProductBase().apply { productId = baseId } }
-
-    private fun toProductgroup(): ProductsPostRequestProductgroup {
-        val productgroup = ProductsPostRequestProductgroup()
-        productgroup.productgroupId = value.productgroupId
-        return productgroup
-    }
 }

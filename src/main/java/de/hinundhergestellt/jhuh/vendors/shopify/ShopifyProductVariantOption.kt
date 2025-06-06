@@ -12,6 +12,9 @@ class ShopifyProductVariantOption(
         option.value
     )
 
+    override fun toString(): String =
+        "ShopifyProductVariantOption(name='$name', value='$value')"
+
     internal fun toVariantOptionValueInput() =
         VariantOptionValueInput().also {
             it.optionName = name

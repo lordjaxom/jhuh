@@ -1,73 +1,59 @@
 package de.hinundhergestellt.jhuh.vendors.ready2order
 
-import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.api.ProductGroupApi
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductgroupsGet200ResponseInner
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductgroupsPostRequest
-import org.springframework.lang.Nullable
 
-class ArtooProductGroup {
-    private var value: ProductgroupsGet200ResponseInner
+open class UnsavedArtooProductGroup(
+    var name: String,
+    var description: String,
+    var shortcut: String,
+    var active: Boolean,
+    var parent: Int? = null,
+    var sortIndex: Int = 0,
+    var typeId: Int = 7
+) {
+    override fun toString() =
+        "UnsavedArtooProductGroup(name='$name', description='$description')"
 
-    constructor(
-        name: String,
-        description: String,
-        shortcut: String,
-        active: Boolean,
-        parent: Int?,
-        sortIndex: Int,
-        typeId: Int
-    ) {
-        value = ProductgroupsGet200ResponseInner()
-        value.productgroupName = name
-        value.productgroupDescription = description
-        value.productgroupShortcut = shortcut
-        value.productgroupActive = active
-        value.productgroupParent = parent
-        value.productgroupSortIndex = sortIndex
-        value.productgroupTypeId = typeId
-    }
+    internal fun toProductgroupsPostRequest() =
+        ProductgroupsPostRequest().also {
+            it.productgroupName = name
+            it.productgroupDescription = description
+            it.productgroupShortcut = shortcut
+            it.productgroupActive = active
+            it.productgroupParent = parent
+            it.productgroupSortIndex = sortIndex
+            it.productgroupTypeId = typeId
+        }
+}
 
-    internal constructor(value: ProductgroupsGet200ResponseInner) {
-        this.value = value
-    }
+class ArtooProductGroup : UnsavedArtooProductGroup {
 
     val id: Int
-        get() = value.productgroupId
 
-    val name: String
-        get() = value.productgroupName
+    internal constructor(group: ProductgroupsGet200ResponseInner) : super(
+        group.productgroupName,
+        group.productgroupDescription,
+        group.productgroupShortcut,
+        group.productgroupActive,
+        group.productgroupParent,
+        group.productgroupSortIndex,
+        group.productgroupTypeId
+    ) {
+        id = group.productgroupId
+    }
 
-    val description: String
-        get() = value.productgroupDescription
+    override fun toString() =
+        "ArtooProductGroup(id=$id, name='$name', description='$description')"
 
-    val parent: Int
-        get() = value.productgroupParent ?: 0
-
-    val typeId: Int
-        get() = value.productgroupTypeId ?: 0
-
-    fun save(api: ProductGroupApi) {
-        val request = toPostRequest()
-        if (value.productgroupId != null) {
-            value = api.productgroupsIdPut(value.productgroupId, request)
-        } else {
-            value = api.productgroupsPost(request)
+    fun toProductgroupsIdPutRequest() =
+        ProductgroupsPostRequest().also {
+            it.productgroupName = name
+            it.productgroupDescription = description
+            it.productgroupShortcut = shortcut
+            it.productgroupActive = active
+            it.productgroupParent = parent
+            it.productgroupSortIndex = sortIndex
+            it.productgroupTypeId = typeId
         }
-    }
-
-    override fun toString(): String {
-        return "ArtooProductGroup(id=$id, name='$name', description='$description')"
-    }
-
-    private fun toPostRequest(): ProductgroupsPostRequest {
-        val request = ProductgroupsPostRequest()
-        request.productgroupName = value.productgroupName
-        request.productgroupDescription = value.productgroupDescription
-        request.productgroupShortcut = value.productgroupShortcut
-        request.productgroupActive = value.productgroupActive
-        request.productgroupParent = value.productgroupParent
-        request.productgroupSortIndex = value.productgroupSortIndex
-        request.productgroupTypeId = value.productgroupTypeId
-        return request
-    }
 }

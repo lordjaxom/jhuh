@@ -20,7 +20,6 @@ class ArtooMappedProduct internal constructor(
     fun findVariationByBarcode(barcode: String) =
         variations.firstOrNull { it.barcode == barcode }
 
-    override fun toString(): String {
-        return "ArtooMappedProduct(id=$id, name='$name', description='$description')"
-    }
+    override fun toString() =
+        "ArtooMappedProduct(id=$id, name='$name', description='$description')"
 }

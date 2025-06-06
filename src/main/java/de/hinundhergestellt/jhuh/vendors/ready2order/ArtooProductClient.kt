@@ -15,12 +15,14 @@ class ArtooProductClient(
             .map { product -> ArtooProduct(product) }
     }
 
-    fun findById(id: Int): ArtooProduct {
-        return ArtooProduct(api.productsIdGet(id, true, null, null))
-    }
+    fun findById(id: Int) =
+        ArtooProduct(api.productsIdGet(id, true, null, null))
 
-    fun save(product: ArtooProduct) {
-        product.save(api)
+    fun create(product: UnsavedArtooProduct) =
+        ArtooProduct(api.productsPost(product.toProductsPostRequest()))
+
+    fun update(product: ArtooProduct) {
+        api.productsIdPut(product.id, product.toProductsIdPutRequest())
     }
 
     fun delete(product: ArtooProduct) {

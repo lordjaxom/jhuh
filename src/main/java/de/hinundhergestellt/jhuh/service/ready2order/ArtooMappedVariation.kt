@@ -12,7 +12,6 @@ class ArtooMappedVariation internal constructor(
     val barcode by product::barcode
     val price = baseProduct?.let { product.price + it.price } ?: product.price
 
-    override fun toString(): String {
-        return "ArtooMappedVariation(id=$id, name='$name', itemNumber=$itemNumber, barcode=$barcode)"
-    }
+    override fun toString() =
+        "ArtooMappedVariation(id=$id, name='$name', itemNumber='$itemNumber', barcode='$barcode')"
 }

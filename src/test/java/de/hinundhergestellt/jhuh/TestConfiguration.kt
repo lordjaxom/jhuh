@@ -11,7 +11,7 @@ class TestConfiguration {
     @Bean
     @ServiceConnection
     fun mariaDBContainer(): MariaDBContainer<*> =
-        MariaDBContainer("mariadb")
+        MariaDBContainer("mariadb:latest")
             .withDatabaseName("hinundhergestellt")
             .withReuse(true)
 }

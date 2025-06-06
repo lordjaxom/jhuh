@@ -43,10 +43,10 @@ class ArtooDataStore(
     }
 
     private fun fetchRootCategories(): Future<List<ArtooMappedCategory>> {
-        val groups = taskExecutor.submit(Callable { productGroupClient.findAll().toList() })
+        val groupsFuture = taskExecutor.submit(Callable { productGroupClient.findAll().toList() })
         return taskExecutor.submit(Callable {
             val products = productClient.findAll().toList()
-            val groups = groups.get()
+            val groups = groupsFuture.get()
             DataStoreBuilder(groups, products).rootCategories
                 .also { taskExecutor.submit { stateChangeListeners.forEach { it() } } }
         })
@@ -59,7 +59,7 @@ private class DataStoreBuilder(
 ) {
     val rootCategories =
         groups.asSequence()
-            .filter { it.parent == 0 && it.typeId == 7 }
+            .filter { it.parent == null && it.typeId == 7 }
             .map { it.toCategory() }
             .toList()
 
@@ -69,7 +69,7 @@ private class DataStoreBuilder(
             .map { it.toCategory() }
             .toList()
         val products = products.asSequence()
-            .filter { it.productGroupId == id && it.baseId == 0 }
+            .filter { it.productGroupId == id && it.baseId == null }
             .map { it.toProduct() }
             .toList()
         return ArtooMappedCategory(this, children, products)

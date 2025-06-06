@@ -13,6 +13,9 @@ open class UnsavedShopifyProduct(
     var tags: Set<String>,
     open val options: List<UnsavedShopifyProductOption>
 ) {
+    override fun toString() =
+        "UnsavedShopifyProduct(title='$title', vendor='$vendor', productType='$productType', status=$status)"
+
     internal fun toProductCreateInput() =
         ProductCreateInput().also {
             it.title = title
@@ -65,6 +68,9 @@ class ShopifyProduct private constructor(
 
     fun findVariantByBarcode(barcode: String) =
         variants.firstOrNull { it.barcode == barcode }
+
+    override fun toString() =
+        "ShopifyProduct(id='$id', title='$title', vendor='$vendor', productType='$productType', status=$status)"
 
     internal fun toProductUpdateInput() =
         ProductUpdateInput().also {

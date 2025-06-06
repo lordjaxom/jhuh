@@ -3,17 +3,19 @@ package de.hinundhergestellt.jhuh.vendors.shopify
 import com.shopify.admin.types.InventoryItemInput
 import com.shopify.admin.types.ProductVariant
 import com.shopify.admin.types.ProductVariantsBulkInput
+import de.hinundhergestellt.jhuh.util.fixedScale
 import java.math.BigDecimal
 
 open class UnsavedShopifyProductVariant(
     var sku: String,
     var barcode: String,
-    var price: BigDecimal,
+    price: BigDecimal,
     val options: List<ShopifyProductVariantOption>
 ) {
-    init {
-        price = price.setScale(2)
-    }
+    var price by fixedScale(price, 2)
+
+    override fun toString() =
+        "UnsavedShopifyProductVariant(sku='$sku', barcode='$barcode')"
 
     internal open fun toProductVariantsBulkInput() =
         ProductVariantsBulkInput().also {
@@ -60,6 +62,9 @@ class ShopifyProductVariant private constructor(
         unsaved.price,
         unsaved.options
     )
+
+    override fun toString() =
+        "ShopifyProductVariant(id='$id', sku='$sku', barcode='$barcode')"
 
     override fun toProductVariantsBulkInput() =
         super.toProductVariantsBulkInput().also { it.id = id }
