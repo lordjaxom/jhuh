@@ -1,6 +1,5 @@
 package de.hinundhergestellt.jhuh.sync
 
-import com.vaadin.flow.component.AttachEvent
 import com.vaadin.flow.component.Component
 import com.vaadin.flow.component.Key
 import com.vaadin.flow.component.Text
@@ -13,8 +12,6 @@ import com.vaadin.flow.component.grid.GridVariant
 import com.vaadin.flow.component.html.Div
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.VaadinIcon
-import com.vaadin.flow.component.menubar.MenuBar
-import com.vaadin.flow.component.menubar.MenuBarVariant
 import com.vaadin.flow.component.notification.Notification
 import com.vaadin.flow.component.notification.NotificationVariant
 import com.vaadin.flow.component.orderedlayout.FlexComponent

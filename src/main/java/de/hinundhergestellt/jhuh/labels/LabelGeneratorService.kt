@@ -17,18 +17,26 @@ class LabelGeneratorService(
     private val artooDataStore: ArtooDataStore,
     private val syncProductRepository: SyncProductRepository
 ) {
-    val articles
-        get() = artooDataStore.findAllProducts().flatMap { product -> product.variations.asSequence().map { Article(product, it) } }
-
     val labels = mutableListOf<Label>()
 
-    fun createLabel(article: Article, count: Int) {
+    fun fetch(filter: String?, offset: Int, limit: Int): Sequence<LabelArticle> {
+        if (filter.isNullOrBlank()) {
+            return sequenceOf()
+        }
+        return artooDataStore.findAllProducts()
+            .flatMap { product -> product.variations.asSequence().map { LabelArticle(product, it) } }
+            .filter { it.filterBy(filter) }
+            .drop(offset)
+            .take(limit)
+    }
+
+    fun createLabel(article: LabelArticle, count: Int) {
         val syncProduct = syncProductRepository.findByArtooId(article.product.id)
         labels.add(Label(article, syncProduct, count))
     }
 }
 
-class Article(
+class LabelArticle(
     val product: ArtooMappedProduct,
     val variation: ArtooMappedVariation
 ) {
@@ -41,7 +49,7 @@ class Article(
 }
 
 class Label(
-    article: Article,
+    article: LabelArticle,
     syncProduct: SyncProduct?,
     val count: Int
 ) {

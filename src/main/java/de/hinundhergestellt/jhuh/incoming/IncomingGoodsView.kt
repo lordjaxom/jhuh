@@ -1,4 +1,4 @@
-package de.hinundhergestellt.jhuh.labels
+package de.hinundhergestellt.jhuh.incoming
 
 import com.vaadin.flow.component.Component
 import com.vaadin.flow.component.ItemLabelGenerator
@@ -18,20 +18,19 @@ import com.vaadin.flow.component.textfield.TextFieldVariant
 import com.vaadin.flow.data.value.ValueChangeMode
 import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
-import kotlin.streams.asStream
+import de.hinundhergestellt.jhuh.labels.setScannerCompatibleData
 
 @Route
-@PageTitle("Etiketten erstellen")
-class LabelGeneratorView(
-    private val service: LabelGeneratorService,
-) : VerticalLayout() {
+@PageTitle("Wareneingang")
+class IncomingGoodsView(
+    private val service: IncomingGoodsService
+): VerticalLayout() {
 
-    private val formatComboBox = ComboBox<String>()
-    private val barcodesButton = Button()
-    private val articleComboBox = ComboBox<LabelArticle>()
+    private val saveButton = Button()
+    private val articleComboBox = ComboBox<IncomingArticle>()
     private val countTextField = TextField()
     private val addButton = Button()
-    private val labelsGrid = Grid<Label>()
+    private val incomingGrid = Grid<Incoming>()
 
     init {
         setSizeFull()
@@ -40,20 +39,15 @@ class LabelGeneratorView(
 
         configureHeader()
         configureInputs()
-        configureLabelsGrid()
+        configureIncomingGrid()
     }
 
     private fun configureHeader() {
-        formatComboBox.width = "20em"
-        formatComboBox.setItems("avery-zweckform-38x21", "avery-zweckform-49x25")
-        formatComboBox.value = "avery-zweckform-38x21"
-        formatComboBox.addValueChangeListener { validateActions() }
+        saveButton.text = "An ready2order senden"
+        saveButton.isEnabled = false
+        saveButton.addClickListener {  }
 
-        barcodesButton.text = "Barcodes erstellen"
-        barcodesButton.isEnabled = false
-        barcodesButton.addClickListener { ui.get().page.open("/api/labels/${formatComboBox.value}", "_blank") }
-
-        val layout = HorizontalLayout(formatComboBox, barcodesButton)
+        val layout = HorizontalLayout(saveButton)
         layout.justifyContentMode = FlexComponent.JustifyContentMode.END
         layout.setWidthFull()
         add(layout)
@@ -81,7 +75,7 @@ class LabelGeneratorView(
         addButton.text = "Hinzufügen"
         addButton.isEnabled = false
         addButton.addClickShortcut(Key.ENTER)
-        addButton.addClickListener { createLabel() }
+        addButton.addClickListener { createIncoming() }
 
         val layout = HorizontalLayout(articleComboBox, countTextField, addButton)
         layout.alignItems = FlexComponent.Alignment.END
@@ -89,32 +83,14 @@ class LabelGeneratorView(
         add(layout)
     }
 
-    private fun configureLabelsGrid() {
-        labelsGrid.addColumn { it.vendor }
-            .setHeader("Hersteller")
-            .apply {
-                isSortable = false
-                flexGrow = 5
-            }
-        labelsGrid.addColumn { it.name }
-            .setHeader("Bezeichnung")
+    private fun configureIncomingGrid() {
+        incomingGrid.addColumn { it.label }
+            .setHeader("Artikel")
             .apply {
                 isSortable = false
                 flexGrow = 20
             }
-        labelsGrid.addColumn { it.variant }
-            .setHeader("Variante")
-            .apply {
-                isSortable = false
-                flexGrow = 10
-            }
-        labelsGrid.addColumn { it.barcode }
-            .setHeader("Barcode")
-            .apply {
-                isSortable = false
-                flexGrow = 5
-            }
-        labelsGrid.addColumn { it.count }
+        incomingGrid.addColumn { it.count }
             .setHeader("#")
             .apply {
                 isSortable = false
@@ -122,34 +98,34 @@ class LabelGeneratorView(
                 width = "4em"
                 flexGrow = 0
             }
-        labelsGrid.addComponentColumn { labelsItemActionsColumn(it) }
+        incomingGrid.addComponentColumn { incomingItemActionsColumn(it) }
             .setHeader("")
             .apply {
                 isSortable = false
                 width = "48px"
                 flexGrow = 0
             }
-        labelsGrid.setItems(service.labels)
-        labelsGrid.setSizeFull()
-        labelsGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES)
-        add(labelsGrid)
+        incomingGrid.setItems(service.incomings)
+        incomingGrid.setSizeFull()
+        incomingGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES)
+        add(incomingGrid)
     }
 
-    private fun labelsItemActionsColumn(label: Label): Component {
+    private fun incomingItemActionsColumn(incoming: Incoming): Component {
         val deleteIcon = VaadinIcon.TRASH.create()
         deleteIcon.setSize("20px")
         val deleteButton = Button(deleteIcon)
         deleteButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE)
         deleteButton.addClickListener {
-            service.labels.remove(label)
+            service.incomings.remove(incoming)
             validateActions()
-            labelsGrid.dataProvider.refreshAll()
+            incomingGrid.dataProvider.refreshAll()
         }
         return deleteButton
     }
 
     private fun validateActions() {
-        barcodesButton.isEnabled = formatComboBox.value != null && service.labels.isNotEmpty()
+        saveButton.isEnabled = service.incomings.isNotEmpty()
     }
 
     private fun validateInputs() {
@@ -158,45 +134,13 @@ class LabelGeneratorView(
         addButton.isEnabled = articleSelected && countValid
     }
 
-    private fun createLabel() {
-        service.createLabel(articleComboBox.value, countTextField.value.toInt(10))
+    private fun createIncoming() {
+        service.createIncoming(articleComboBox.value, countTextField.value.toInt(10))
         validateActions()
-        labelsGrid.dataProvider.refreshAll()
+        incomingGrid.dataProvider.refreshAll()
 
         articleComboBox.value = null
         countTextField.value = ""
         articleComboBox.focus()
     }
-}
-
-fun <T : Any> ComboBox<T>.setScannerCompatibleData(fetchItems: (String, Int, Int) -> Sequence<T>) {
-    setDataProvider(
-        { filter, offset, limit -> fetchItems(filter, offset, limit).asStream() },
-        { filter -> fetchItems(filter, 0, Int.MAX_VALUE).count() }
-    )
-
-    // @formatter:off
-    element.executeJs("""
-            const input = this.inputElement
-            input.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    this.dispatchEvent(new CustomEvent('enter-pressed', {
-                            detail: { inputValue: input.value },
-                            bubbles: true
-                    }));
-                }            
-            });
-            """.trimIndent())
-    // @formatter:on
-
-    val enterListener = element.addEventListener("enter-pressed") { event ->
-        event.eventData.getString("event.detail.inputValue")
-            ?.takeIf { it.toULongOrNull(10) != null }
-            ?.let { fetchItems(it, 0, 1).firstOrNull() }
-            ?.also {
-                isOpened = false
-                value = it
-            }
-    }
-    enterListener.addEventData("event.detail.inputValue")
 }

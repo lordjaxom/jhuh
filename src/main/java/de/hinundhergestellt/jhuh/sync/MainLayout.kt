@@ -12,6 +12,7 @@ import com.vaadin.flow.router.Layout
 import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.RouteConfiguration
 import com.vaadin.flow.theme.lumo.LumoUtility
+import de.hinundhergestellt.jhuh.incoming.IncomingGoodsView
 import de.hinundhergestellt.jhuh.labels.LabelGeneratorView
 
 @Layout
@@ -30,6 +31,7 @@ class MainLayout : AppLayout() {
 
         val sideNav = SideNav()
         sideNav.addItem(SideNavItem("Produktverwaltung", routeUrl<ShopifySyncView>(), VaadinIcon.UPLOAD.create()))
+        sideNav.addItem(SideNavItem("Wareneingang", routeUrl<IncomingGoodsView>(), VaadinIcon.ARROW_BACKWARD.create()))
         sideNav.addItem(SideNavItem("Etiketten erstellen", routeUrl<LabelGeneratorView>(), VaadinIcon.PRINT.create()))
 
         val scroller = Scroller(sideNav)
