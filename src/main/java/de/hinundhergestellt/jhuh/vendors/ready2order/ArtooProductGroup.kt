@@ -46,22 +46,6 @@ class ArtooProductGroup {
     val typeId: Int
         get() = value.productgroupTypeId ?: 0
 
-    fun getPath(productGroups: List<ArtooProductGroup>): String {
-        return sequenceOf(getParentPath(productGroups), name)
-            .filterNotNull()
-            .joinToString("/")
-    }
-
-    @Nullable
-    fun getParentPath(productGroups: List<ArtooProductGroup>): String? {
-        if (parent == 0) {
-            return null
-        }
-        return productGroups.asSequence()
-            .first { it.id == parent }
-            .getPath(productGroups)
-    }
-
     fun save(api: ProductGroupApi) {
         val request = toPostRequest()
         if (value.productgroupId != null) {
@@ -72,7 +56,7 @@ class ArtooProductGroup {
     }
 
     override fun toString(): String {
-        return value.toString()
+        return "ArtooProductGroup(id=$id, name='$name', description='$description')"
     }
 
     private fun toPostRequest(): ProductgroupsPostRequest {

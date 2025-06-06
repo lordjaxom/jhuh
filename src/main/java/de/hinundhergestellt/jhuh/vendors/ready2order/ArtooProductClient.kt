@@ -22,4 +22,8 @@ class ArtooProductClient(
     fun save(product: ArtooProduct) {
         product.save(api)
     }
+
+    fun delete(product: ArtooProduct) {
+        api.productsIdDelete(product.id)
+    }
 }

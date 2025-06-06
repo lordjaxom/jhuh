@@ -115,7 +115,7 @@ class ArtooProduct {
     }
 
     override fun toString(): String {
-        return value.toString()
+        return "ArtooProduct(id=$id, name='$name', description='$description', itemNumber='$itemNumber', barcode='$barcode')"
     }
 
     private fun fixUp() {

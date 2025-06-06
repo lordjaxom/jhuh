@@ -21,6 +21,6 @@ class ArtooMappedProduct internal constructor(
         variations.firstOrNull { it.barcode == barcode }
 
     override fun toString(): String {
-        return "ArtooMappedProduct(id='$id', name='$name', description='$description')"
+        return "ArtooMappedProduct(id=$id, name='$name', description='$description')"
     }
 }

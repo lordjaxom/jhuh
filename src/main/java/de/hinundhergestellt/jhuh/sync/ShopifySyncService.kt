@@ -21,6 +21,8 @@ import kotlin.streams.asSequence
 
 private val logger = KotlinLogging.logger {}
 
+private val INVALID_TAG_CHARACTERS = """[^A-Za-z0-9\\._ -]""".toRegex()
+
 @Service
 class ShopifyImportService(
     private val artooDataStore: ArtooDataStore,
@@ -31,7 +33,7 @@ class ShopifyImportService(
 ) {
     // TODO: Better to add fetchChildren here and create SyncableItems on the fly? But refreshItem in TreeDataProvider doesn't reload the
     // TODO: item, so clearing the database objects would still be required
-    private val lazyRootCategories = lazyWithReset { artooDataStore.rootCategories.map { Category(it) }}
+    private val lazyRootCategories = lazyWithReset { artooDataStore.rootCategories.map { Category(it) } }
     val rootCategories by lazyRootCategories
 
     val stateChangeListeners by artooDataStore::stateChangeListeners
@@ -95,6 +97,7 @@ class ShopifyImportService(
             shopifyDataStore.refresh()
 
             shopifyDataStore.products.forEach { reconcileFromShopify(it) }
+            // TODO: Using rootCategories might save a lot of duplicate database loads and conditions (like description.ifEmpty { name })
             artooDataStore.findAllProducts().forEach { reconcileFromArtoo(it) }
             artooDataStore.rootCategories.forEach { reconcileCategories(it) }
 
@@ -109,7 +112,9 @@ class ShopifyImportService(
 
     fun refreshItems() {
         artooDataStore.refresh()
-        lazyRootCategories.reset() // TODO: Better run this when stateUpdateListener is invoked?
+        // TODO: Better run this when stateUpdateListener is invoked? Not if synchronization uses rootCategories! But when ArtooDataStore
+        // TODO: does automatic refresh, so probably both
+        lazyRootCategories.reset()
     }
 
     private fun checkSyncProblems(product: ArtooMappedProduct, syncProduct: SyncProduct?) = buildList {
@@ -308,12 +313,15 @@ class ShopifyImportService(
         return false
     }
 
-    private fun buildTags(syncProduct: SyncProduct, artooProduct: ArtooMappedProduct) = buildSet {
-        val categoryIds = artooDataStore.findCategoriesByProduct(artooProduct).map { it.id }.toList()
-        addAll(syncCategoryRepository.findByArtooIdIn(categoryIds).asSequence().flatMap { it.tags })
-        addAll(syncProduct.tags)
-        add(syncProduct.vendor!!)
-        add(syncProduct.type!!)
+    private fun buildTags(syncProduct: SyncProduct, artooProduct: ArtooMappedProduct): Set<String> {
+        val tags = buildList {
+            val categoryIds = artooDataStore.findCategoriesByProduct(artooProduct).map { it.id }.toList()
+            addAll(syncCategoryRepository.findByArtooIdIn(categoryIds).asSequence().flatMap { it.tags })
+            addAll(syncProduct.tags)
+            add(syncProduct.vendor!!)
+            add(syncProduct.type!!)
+        }
+        return tags.map { it.replace(INVALID_TAG_CHARACTERS, "") }.toSet()
     }
 
     inner class Category(val value: ArtooMappedCategory) : SyncableItem {
@@ -355,7 +363,7 @@ class ShopifyImportService(
         val syncProblems by lazySyncProblems
 
         override val itemId = "product-$id"
-        override val name by value::name
+        override val name get() = value.description.ifEmpty { value.name }
         override val vendor get() = syncProduct?.vendor
         override val type get() = syncProduct?.type
         override val tagsAsSet get() = syncProduct?.tags?.toSet() ?: setOf()
