@@ -32,21 +32,21 @@ class Article(
     val product: ArtooMappedProduct,
     val variation: ArtooMappedVariation
 ) {
-    val name = if (product.hasOnlyDefaultVariant) product.name else "${product.name} ${variation.name}"
-    val label = "${variation.barcode} - $name"
+    val fullName = if (product.hasOnlyDefaultVariant) product.name else "${product.name} ${variation.name}"
+    val label = "${variation.barcode} - $fullName"
 
     internal fun filterBy(filter: String) =
-        if (filter.toUIntOrNull(10) != null) variation.barcode?.startsWith(filter) ?: false
-        else filter.split("""\s+""".toRegex()).all { name.contains(it, ignoreCase = true) }
+        if (filter.toULongOrNull(10) != null) variation.barcode?.startsWith(filter) ?: false
+        else filter.split("""\s+""".toRegex()).all { fullName.contains(it, ignoreCase = true) }
 }
 
 class Label(
-    private val article: Article,
+    article: Article,
     syncProduct: SyncProduct?,
     val count: Int
 ) {
     val vendor = syncProduct?.vendor ?: ""
-    val name by article::name
+    val name by article.product::name
     val variant = sequenceOf(article.variation.itemNumber, article.variation.name).filterNotNull().joinToString(" ")
     val barcode by article.variation::barcode
 }

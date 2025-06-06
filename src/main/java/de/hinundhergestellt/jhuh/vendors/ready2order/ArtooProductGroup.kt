@@ -10,7 +10,7 @@ open class UnsavedArtooProductGroup(
     var active: Boolean,
     var parent: Int? = null,
     var sortIndex: Int = 0,
-    var typeId: Int = 7
+    var typeId: Int? = 7 // can be null for Favoriten
 ) {
     override fun toString() =
         "UnsavedArtooProductGroup(name='$name', description='$description')"
@@ -46,7 +46,7 @@ class ArtooProductGroup : UnsavedArtooProductGroup {
     override fun toString() =
         "ArtooProductGroup(id=$id, name='$name', description='$description')"
 
-    fun toProductgroupsIdPutRequest() =
+    internal fun toProductgroupsIdPutRequest() =
         ProductgroupsPostRequest().also {
             it.productgroupName = name
             it.productgroupDescription = description

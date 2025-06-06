@@ -15,12 +15,9 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.component.textfield.TextFieldVariant
-import com.vaadin.flow.data.provider.Query
 import com.vaadin.flow.data.value.ValueChangeMode
 import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
-import java.util.stream.Stream
-import kotlin.jvm.optionals.getOrNull
 import kotlin.streams.asStream
 
 @Route
@@ -64,14 +61,15 @@ class LabelGeneratorView(
 
     private fun configureInputs() {
         articleComboBox.label = "Artikel"
+        articleComboBox.placeholder = "Barcode oder Suchbegriff eingeben"
         articleComboBox.itemLabelGenerator = ItemLabelGenerator { it.label }
         articleComboBox.setWidthFull()
-        articleComboBox.setItems { fetchArticles(it) }
+        articleComboBox.setScannerCompatibleData { filter, offset, limit -> fetchArticles(filter, offset, limit) }
         articleComboBox.addValueChangeListener { validateInputs(); countTextField.focus() }
         articleComboBox.focus()
 
         countTextField.label = "Anzahl"
-        countTextField.value = "0"
+        countTextField.placeholder = "0"
         countTextField.allowedCharPattern = "[0-9]"
         countTextField.maxLength = 5
         countTextField.valueChangeMode = ValueChangeMode.EAGER
@@ -102,13 +100,13 @@ class LabelGeneratorView(
             .setHeader("Bezeichnung")
             .apply {
                 isSortable = false
-                flexGrow = 5
+                flexGrow = 20
             }
         labelsGrid.addColumn { it.variant }
             .setHeader("Variante")
             .apply {
                 isSortable = false
-                flexGrow = 5
+                flexGrow = 10
             }
         labelsGrid.addColumn { it.barcode }
             .setHeader("Barcode")
@@ -170,18 +168,46 @@ class LabelGeneratorView(
         articleComboBox.focus()
     }
 
-    private fun fetchArticles(query: Query<Article, String>): Stream<Article> {
-        val filter = query.filter.getOrNull() ?: ""
-        if (filter.isEmpty()) {
-            return Stream.empty<Article>()
-                .skip(query.offset.toLong()) // to fulfill Query contracts?!
-                .limit(query.limit.toLong())
+    private fun fetchArticles(filter: String?, offset: Int = 0, limit: Int = Int.MAX_VALUE): Sequence<Article> {
+        if (filter.isNullOrBlank()) {
+            return sequenceOf()
         }
 
         return service.articles
             .filter { it.filterBy(filter) }
-            .asStream()
-            .skip(query.offset.toLong())
-            .limit(query.limit.toLong())
+            .drop(offset)
+            .take(limit)
     }
+}
+
+fun <T : Any> ComboBox<T>.setScannerCompatibleData(fetchItems: (String, Int, Int) -> Sequence<T>) {
+    setDataProvider(
+        { filter, offset, limit -> fetchItems(filter, offset, limit).asStream() },
+        { filter -> fetchItems(filter, 0, Int.MAX_VALUE).count() }
+    )
+
+    // @formatter:off
+    element.executeJs("""
+            const input = this.inputElement
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    this.dispatchEvent(new CustomEvent('enter-pressed', {
+                            detail: { inputValue: input.value },
+                            bubbles: true
+                    }));
+                }            
+            });
+            """.trimIndent())
+    // @formatter:on
+
+    val enterListener = element.addEventListener("enter-pressed") { event ->
+        event.eventData.getString("event.detail.inputValue")
+            ?.takeIf { it.toULongOrNull(10) != null }
+            ?.let { fetchItems(it, 0, 1).firstOrNull() }
+            ?.also {
+                isOpened = false
+                value = it
+            }
+    }
+    enterListener.addEventData("event.detail.inputValue")
 }
