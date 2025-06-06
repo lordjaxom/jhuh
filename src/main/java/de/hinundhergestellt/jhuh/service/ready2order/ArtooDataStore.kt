@@ -1,5 +1,6 @@
 package de.hinundhergestellt.jhuh.service.ready2order
 
+import de.hinundhergestellt.jhuh.util.asyncWithReset
 import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductClient
 import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductGroup
@@ -9,7 +10,6 @@ import org.springframework.core.task.AsyncTaskExecutor
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.util.concurrent.Callable
-import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 
 @Service
@@ -18,15 +18,10 @@ class ArtooDataStore(
     private val productClient: ArtooProductClient,
     @Qualifier("applicationTaskExecutor") private val taskExecutor: AsyncTaskExecutor
 ) {
-    private lateinit var rootCategoriesFuture: Future<List<ArtooMappedCategory>>
-    val rootCategories: List<ArtooMappedCategory>
-        get() = rootCategoriesFuture.get()
+    private val rootCategoriesAsync = asyncWithReset(taskExecutor) { fetchRootCategories() }
+    val rootCategories by rootCategoriesAsync
 
-    val stateChangeListeners = mutableListOf<() -> Unit>()
-
-    init {
-        refresh()
-    }
+    val stateChangeListeners by rootCategoriesAsync::stateChangeListeners
 
     fun findAllProducts() =
         rootCategories.asSequence().flatMap { it.findAllProducts() }
@@ -38,22 +33,17 @@ class ArtooDataStore(
         rootCategories.asSequence().flatMap { it.findCategoriesByProduct(product) }
 
     @Scheduled(initialDelay = 15, fixedDelay = 15, timeUnit = TimeUnit.MINUTES)
-    fun refresh() {
-        rootCategoriesFuture = fetchRootCategories()
-    }
+    fun refresh() = refresh(false)
+    fun refresh(wait: Boolean) = rootCategoriesAsync.refresh(wait)
 
-    private fun fetchRootCategories(): Future<List<ArtooMappedCategory>> {
-        val groupsFuture = taskExecutor.submit(Callable { productGroupClient.findAll().toList() })
-        return taskExecutor.submit(Callable {
-            val products = productClient.findAll().toList()
-            val groups = groupsFuture.get()
-            DataStoreBuilder(groups, products).rootCategories
-                .also { taskExecutor.submit { stateChangeListeners.forEach { it() } } }
-        })
+    private fun fetchRootCategories(): List<ArtooMappedCategory> {
+        val groups = taskExecutor.submit(Callable { productGroupClient.findAll().toList() })
+        val products = productClient.findAll().toList()
+        return CategoriesAndProductsBuilder(groups.get(), products).rootCategories
     }
 }
 
-private class DataStoreBuilder(
+private class CategoriesAndProductsBuilder(
     private val groups: List<ArtooProductGroup>,
     private val products: List<ArtooProduct>
 ) {
