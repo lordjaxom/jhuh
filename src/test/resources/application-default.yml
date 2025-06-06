@@ -1,3 +1,1 @@
-spring:
-  flyway:
-    enabled: false
+# empty file overrides application-default.yml from src/main/resources

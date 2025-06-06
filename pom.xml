@@ -20,7 +20,7 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <vaadin.version>24.7.4</vaadin.version>
+        <vaadin.version>24.7.6</vaadin.version>
     </properties>
 
     <dependencyManagement>
@@ -142,8 +142,13 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>mariadb</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
