@@ -93,9 +93,6 @@ class ShopifyImportService(
     @Transactional
     fun synchronize() {
         try {
-            artooDataStore.refresh(true)
-            shopifyDataStore.refresh(true)
-
             shopifyDataStore.products.forEach { reconcileFromShopify(it) }
             // TODO: Using rootCategories might save a lot of duplicate database loads and conditions (like description.ifEmpty { name })
             artooDataStore.findAllProducts().forEach { reconcileFromArtoo(it) }

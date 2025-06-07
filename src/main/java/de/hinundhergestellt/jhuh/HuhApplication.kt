@@ -10,6 +10,8 @@ import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsIdPut
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsIdPutRequestMixin
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsPostRequest
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsPostRequestMixin
+import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsPostRequestProductBase
+import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsPostRequestProductBaseMixin
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.Banner
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -35,6 +37,7 @@ class HuhApplication {
         val objectMapper = ObjectMapper()
         objectMapper.addMixIn(ProductsIdPutRequest::class.java, ProductsIdPutRequestMixin::class.java)
         objectMapper.addMixIn(ProductsPostRequest::class.java, ProductsPostRequestMixin::class.java)
+        objectMapper.addMixIn(ProductsPostRequestProductBase::class.java, ProductsPostRequestProductBaseMixin::class.java)
         objectMapper.setSerializationInclusion(JsonInclude.Include.ALWAYS)
 
         val messageConverter = MappingJackson2HttpMessageConverter(objectMapper)

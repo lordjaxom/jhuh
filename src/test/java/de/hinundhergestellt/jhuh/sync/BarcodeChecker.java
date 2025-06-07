@@ -20,7 +20,7 @@ class BarcodeChecker {
 
     @Test
     void testAllBarcodes() {
-        for (var product : (Iterable<ArtooProduct>) client.findAll()::iterator) {
+        for (var product : (Iterable<ArtooProduct>) client.findAll(null)::iterator) {
             if (product.getBarcode() == null) {
                 continue;
             }

@@ -25,9 +25,11 @@ open class UnsavedArtooProduct(
     var sortIndex: Int = 0,
     var active: Boolean,
     var discountable: Boolean,
-    var type: String? = null,
+    var type: ArtooProductType = ArtooProductType.INHERITED,
     var baseId: Int? = null,
-    var productGroupId: Int
+    var productGroupId: Int,
+    var alternativeNameOnReceipts: String,
+    var alternativeNameInPos: String
 ) {
     var price by fixedScale(price, 2)
     var vat by fixedScale(vat, 2)
@@ -56,16 +58,16 @@ open class UnsavedArtooProduct(
             it.productStockSafetyStock = stockSafetyStock.toPlainString()
             it.productStockUnit = stockUnit
             it.productSortIndex = sortIndex
-            it.productType = type
+            it.productType = type.type
             it.productBase = toProductsPostRequestProductBase()
             it.productgroup = toProductsPostRequestProductgroup()
+            it.productAlternativeNameOnReceipts = alternativeNameOnReceipts
+            it.productAlternativeNameInPos = alternativeNameInPos
         }
 
-    private fun toProductsPostRequestProductBase() =
-        baseId?.let { baseId ->
-            ProductsPostRequestProductBase().also {
-                it.productId = baseId
-            }
+    protected fun toProductsPostRequestProductBase() =
+        ProductsPostRequestProductBase().also {
+            it.productId = baseId
         }
 
     protected fun toProductsPostRequestProductgroup() =
@@ -77,6 +79,7 @@ open class UnsavedArtooProduct(
 class ArtooProduct : UnsavedArtooProduct {
 
     val id: Int
+    val typeId: Int?
 
     internal constructor(product: ProductsGet200ResponseInner) : super(
         product.productName,
@@ -95,11 +98,14 @@ class ArtooProduct : UnsavedArtooProduct {
         product.productSortIndex,
         product.productActive,
         product.productDiscountable,
-        product.productType,
+        ArtooProductType.valueOf(product.productTypeId),
         product.productBaseId,
-        product.productgroup!!.productgroupId
+        product.productgroup!!.productgroupId,
+        product.productAlternativeNameOnReceipts ?: "",
+        product.productAlternativeNameInPos ?: ""
     ) {
         id = product.productId
+        typeId = product.productTypeId
     }
 
     override fun toString() =
@@ -123,8 +129,23 @@ class ArtooProduct : UnsavedArtooProduct {
             it.productStockSafetyStock = stockSafetyStock.toPlainString()
             it.productStockUnit = stockUnit
             it.productSortIndex = sortIndex
-            it.productType = type
-            // productBaseId cannot be modified
+            it.productType = type.type
+            it.productBase = toProductsPostRequestProductBase()
             it.productgroup = toProductsPostRequestProductgroup()
+            it.productAlternativeNameOnReceipts = alternativeNameOnReceipts
+            it.productAlternativeNameInPos = alternativeNameInPos
         }
+}
+
+enum class ArtooProductType(
+    val id: Int?,
+    val type: String?
+) {
+    INHERITED(null, null),
+    VARIATION(5, "variation"),
+    STANDARD(7, "standard");
+
+    companion object {
+        fun valueOf(id: Int?) = entries.find { it.id == id }!!
+    }
 }

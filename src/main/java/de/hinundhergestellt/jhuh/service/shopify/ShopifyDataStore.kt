@@ -13,8 +13,6 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.task.AsyncTaskExecutor
 import org.springframework.stereotype.Service
 import java.util.UUID
-import java.util.concurrent.Callable
-import java.util.concurrent.Future
 
 @Service
 class ShopifyDataStore(
@@ -28,6 +26,8 @@ class ShopifyDataStore(
 
     fun findProductById(id: String) =
         products.find { it.id == id }
+
+    fun refresh() = productsAsync.refresh()
 
     fun create(product: UnsavedShopifyProduct): ShopifyProduct {
         val created =
@@ -72,9 +72,5 @@ class ShopifyDataStore(
             variantClient.delete(product, variants)
         }
         product.variants.removeAll(variants)
-    }
-
-    fun refresh(wait: Boolean = false) {
-        productsAsync.refresh(wait)
     }
 }

@@ -7,4 +7,7 @@ abstract class ProductsIdPutRequestMixin {
 
     @get:JsonIgnore
     abstract val productVatId: Int?
+
+    @get:JsonIgnore
+    abstract val productgroupId: Int?
 }

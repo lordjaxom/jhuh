@@ -10,8 +10,8 @@ class ArtooProductClient(
 ) {
     private val api = ProductApi(apiClient)
 
-    fun findAll() = pageAll {
-        api.productsGet(it, null, null, null, null, null, null, true, null, null)
+    fun findAll(name: String? = null) = pageAll {
+        api.productsGet(it, null, null, null, name, null, null, true, null, null)
             .map { product -> ArtooProduct(product) }
     }
 

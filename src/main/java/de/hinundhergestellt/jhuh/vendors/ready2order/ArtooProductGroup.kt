@@ -59,6 +59,6 @@ enum class ArtooProductGroupType(
     VOUCHERS(10);
 
     companion object {
-        fun valueOf(id: Int?) = ArtooProductGroupType.entries.find { it.id == id }!!
+        fun valueOf(id: Int?) = entries.find { it.id == id }!!
     }
 }

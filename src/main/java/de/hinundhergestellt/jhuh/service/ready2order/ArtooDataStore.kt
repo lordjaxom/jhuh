@@ -5,6 +5,7 @@ import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductClient
 import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductGroup
 import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductGroupClient
+import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductGroupType
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.task.AsyncTaskExecutor
 import org.springframework.scheduling.annotation.Scheduled
@@ -32,9 +33,8 @@ class ArtooDataStore(
     fun findCategoriesByProduct(product: ArtooMappedProduct) =
         rootCategories.asSequence().flatMap { it.findCategoriesByProduct(product) }
 
-    @Scheduled(initialDelay = 15, fixedDelay = 15, timeUnit = TimeUnit.MINUTES)
-    fun refresh() = refresh(false)
-    fun refresh(wait: Boolean) = rootCategoriesAsync.refresh(wait)
+    // @Scheduled(initialDelay = 15, fixedDelay = 15, timeUnit = TimeUnit.MINUTES)
+    fun refresh() = rootCategoriesAsync.refresh()
 
     private fun fetchRootCategories(): List<ArtooMappedCategory> {
         val groups = taskExecutor.submit(Callable { productGroupClient.findAll().toList() })
@@ -49,13 +49,13 @@ private class CategoriesAndProductsBuilder(
 ) {
     val rootCategories =
         groups.asSequence()
-            .filter { it.parent == null && it.typeId == 7 }
+            .filter { it.parent == null && it.type == ArtooProductGroupType.STANDARD }
             .map { it.toCategory() }
             .toList()
 
     private fun ArtooProductGroup.toCategory(): ArtooMappedCategory {
         val children = groups.asSequence()
-            .filter { it.parent == id && it.typeId == 7 }
+            .filter { it.parent == id && it.type == ArtooProductGroupType.STANDARD }
             .map { it.toCategory() }
             .toList()
         val products = products.asSequence()

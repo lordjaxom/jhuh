@@ -1,14 +1,24 @@
 package de.hinundhergestellt.jhuh
 
 import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductClient
+import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductGroupClient
+import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductGroupType
+import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductType
+import de.hinundhergestellt.jhuh.vendors.ready2order.UnsavedArtooProductGroup
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import java.math.BigDecimal
 
+private val logger = KotlinLogging.logger {}
+
 @SpringBootTest
 class ArtooProductFixTest {
+
+    @Autowired
+    private lateinit var artooProductGroupClient: ArtooProductGroupClient
 
     @Autowired
     private lateinit var artooProductClient: ArtooProductClient
@@ -33,13 +43,35 @@ class ArtooProductFixTest {
     }
 
     @Test
-    fun moveProductVariantsToVariantsGroup() {
+    fun moveVariantsToProducts() {
         val products = artooProductClient.findAll().toList()
-        val testprodukt = products.find { it.name == "Testprodukt" }!!
-        val variants = products.filter { it.baseId == testprodukt.id }
-        variants.forEach {
-            it.productGroupId = 2413780
-            artooProductClient.update(it)
-        }
+        products.asSequence()
+            .filter { it.baseId == null }
+            .map { it to products.filter { variant -> variant.baseId == it.id } }
+            .filter { (_, variants) -> variants.isNotEmpty() }
+            .forEach { (product, variants) ->
+                logger.info { "Moving product ${product.name} (${variants.size} variants)" }
+
+                val groupForProduct = artooProductGroupClient.create(
+                    UnsavedArtooProductGroup(
+                        product.name,
+                        product.description,
+                        "",
+                        true,
+                        product.productGroupId,
+                        type = ArtooProductGroupType.VARIANTS
+                    )
+                )
+                variants.forEach {
+                    it.baseId = null
+                    it.productGroupId = groupForProduct.id
+                    it.type = ArtooProductType.STANDARD
+                    it.alternativeNameInPos = it.name
+                    it.name = "${product.name} (${it.name})"
+                    it.variationsEnabled = false
+                    artooProductClient.update(it)
+                }
+                 artooProductClient.delete(product)
+            }
     }
 }

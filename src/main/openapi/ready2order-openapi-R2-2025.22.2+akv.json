@@ -9387,6 +9387,14 @@
                   "product_variations_enabled": {
                     "type": "boolean",
                     "example": true
+                  },
+                  "product_alternativeNameOnReceipts": {
+                    "type": "string",
+                    "example": "xxx cola"
+                  },
+                  "product_alternativeNameInPos": {
+                    "type": "string",
+                    "example": "yyy cola"
                   }
                 }
               }
@@ -10109,6 +10117,14 @@
                   "product_variations_enabled": {
                     "type": "boolean",
                     "example": true
+                  },
+                  "product_alternativeNameOnReceipts": {
+                    "type": "string",
+                    "example": "xxx cola"
+                  },
+                  "product_alternativeNameInPos": {
+                    "type": "string",
+                    "example": "yyy cola"
                   }
                 }
               }
