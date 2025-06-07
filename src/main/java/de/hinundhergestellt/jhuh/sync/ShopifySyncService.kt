@@ -6,6 +6,9 @@ import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedCategory
 import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedProduct
 import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedVariation
 import de.hinundhergestellt.jhuh.service.shopify.ShopifyDataStore
+import de.hinundhergestellt.jhuh.sync.VariantBulkOperation.Create
+import de.hinundhergestellt.jhuh.sync.VariantBulkOperation.Delete
+import de.hinundhergestellt.jhuh.sync.VariantBulkOperation.Update
 import de.hinundhergestellt.jhuh.util.lazyWithReset
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProductVariant
@@ -212,16 +215,12 @@ class ShopifyImportService(
             shopifyDataStore.update(shopifyProduct)
         }
 
-        val bulkOperations = syncProduct.variants.map { synchronizeWithShopify(it, artooProduct, shopifyProduct) }
-        bulkOperations
-            .mapNotNull { (it as? VariantBulkOperation.Delete)?.variant }
-            .also { if (it.isNotEmpty()) shopifyDataStore.delete(shopifyProduct, it) }
-        bulkOperations
-            .mapNotNull { (it as? VariantBulkOperation.Create)?.variant }
-            .also { if (it.isNotEmpty()) shopifyDataStore.create(shopifyProduct, it) }
-        bulkOperations
-            .mapNotNull { (it as? VariantBulkOperation.Update)?.variant }
-            .also { if (it.isNotEmpty()) shopifyDataStore.update(shopifyProduct, it) }
+        val bulkOperations = syncProduct.variants
+            .toList() // create copy to prevent concurrent modification when deleting variant
+            .map { synchronizeWithShopify(it, artooProduct, shopifyProduct) }
+        bulkOperations.allOf<Delete>()?.run { shopifyDataStore.delete(shopifyProduct, map { it.variant }) }
+        bulkOperations.allOf<Create>()?.run { shopifyDataStore.create(shopifyProduct, map { it.variant }) }
+        bulkOperations.allOf<Update>()?.run { shopifyDataStore.update(shopifyProduct, map { it.variant }) }
     }
 
     private fun synchronizeWithShopify(syncVariant: SyncVariant, artooProduct: ArtooMappedProduct, shopifyProduct: ShopifyProduct)
@@ -233,16 +232,16 @@ class ShopifyImportService(
             require(shopifyVariant != null) { "SyncVariant vanished from both ready2order and Shopify" }
             logger.info { "Variant ${shopifyVariant.title} of ${shopifyProduct.title} no longer in ready2order, delete from Shopify" }
             syncVariant.product.variants.remove(syncVariant)
-            return VariantBulkOperation.Delete(shopifyVariant)
+            return Delete(shopifyVariant)
         }
 
         if (shopifyVariant == null) {
             logger.info { "Variant ${artooVariation.name} only in ready2order, create in Shopify" }
             val unsavedShopifyVariant = buildShopifyVariant(shopifyProduct, artooVariation)
-            return VariantBulkOperation.Create(unsavedShopifyVariant)
+            return Create(unsavedShopifyVariant)
         } else if (updateShopifyVariant(shopifyVariant, artooVariation)) {
             logger.info { "Variant ${artooVariation.name} has changed, update in Shopify" }
-            return VariantBulkOperation.Update(shopifyVariant)
+            return Update(shopifyVariant)
         }
 
         return null
@@ -416,4 +415,8 @@ private sealed class VariantBulkOperation {
     class Create(val variant: UnsavedShopifyProductVariant) : VariantBulkOperation()
     class Update(val variant: ShopifyProductVariant) : VariantBulkOperation()
     class Delete(val variant: ShopifyProductVariant) : VariantBulkOperation()
+}
+
+private inline fun <reified T> List<VariantBulkOperation?>.allOf(): List<T>? {
+    return filterIsInstance<T>().takeIf { it.isNotEmpty() }
 }

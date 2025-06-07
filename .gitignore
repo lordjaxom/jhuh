@@ -11,6 +11,7 @@ target/
 .idea/compiler.xml
 .idea/kotlinc.xml
 .idea/dataSources.xml
+.idea/diff-generator.xml
 .idea/libraries/
 .idea/inspectionProfiles/
 *.iws

@@ -12,7 +12,7 @@ interface SyncProductRepository : JpaRepository<SyncProduct, UUID> {
 
     fun findByShopifyId(shopifyId: String): SyncProduct?
 
-    fun findByArtooId(artooId: Int): SyncProduct?
+    fun findByArtooId(artooId: String): SyncProduct?
 
     fun findByVariantsBarcodeIn(barcode: List<String>): SyncProduct?
 }

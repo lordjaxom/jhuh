@@ -21,7 +21,7 @@ import java.util.UUID
 class SyncProduct(
 
     @Column(unique = true)
-    var artooId: Int? = null,
+    var artooId: String? = null,
 
     @Column(unique = true)
     var shopifyId: String? = null,
@@ -38,7 +38,7 @@ class SyncProduct(
     @Column(nullable = false)
     var synced: Boolean = false,
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL], orphanRemoval = true)
+    @OneToMany(mappedBy = "product", fetch = FetchType.EAGER, cascade = [CascadeType.ALL], orphanRemoval = true)
     val variants: MutableList<SyncVariant> = mutableListOf(),
 
     @Id

@@ -25,7 +25,7 @@ class ArtooDataStore(
     fun findAllProducts() =
         rootCategories.asSequence().flatMap { it.findAllProducts() }
 
-    fun findProductById(id: Int) =
+    fun findProductById(id: String) =
         rootCategories.firstNotNullOfOrNull { it.findProductById(id) }
 
     fun findCategoriesByProduct(product: ArtooMappedProduct) =
@@ -56,18 +56,23 @@ private class CategoriesAndProductsBuilder(
             .filter { it.parent == id && it.type == ArtooProductGroupType.STANDARD }
             .map { it.toCategory() }
             .toList()
-        val products = products.asSequence()
-            .filter { it.productGroupId == id && it.baseId == null }
+
+        val productsWithVariations = groups.asSequence()
+            .filter { it.parent == id && it.type == ArtooProductGroupType.VARIANTS }
             .map { it.toProduct() }
-            .toList()
+        val singleProducts = products.asSequence()
+            .filter { it.productGroupId == id }
+            .map { ArtooMappedProduct.Single(it) }
+        val products = (productsWithVariations + singleProducts).toList()
+
         return ArtooMappedCategory(this, children, products)
     }
 
-    private fun ArtooProduct.toProduct(): ArtooMappedProduct {
+    private fun ArtooProductGroup.toProduct(): ArtooMappedProduct {
         val variations = products.asSequence()
-            .filter { it.baseId == id }
-            .map { ArtooMappedVariation(this, it) }
+            .filter { it.productGroupId == id }
+            .map { ArtooMappedVariation(it) }
             .toList()
-        return ArtooMappedProduct(this, variations)
+        return ArtooMappedProduct.Group(this, variations)
     }
 }
