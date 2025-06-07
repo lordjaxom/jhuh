@@ -31,4 +31,15 @@ class ArtooProductFixTest {
                 artooProductClient.update(product)
             }
     }
+
+    @Test
+    fun moveProductVariantsToVariantsGroup() {
+        val products = artooProductClient.findAll().toList()
+        val testprodukt = products.find { it.name == "Testprodukt" }!!
+        val variants = products.filter { it.baseId == testprodukt.id }
+        variants.forEach {
+            it.productGroupId = 2413780
+            artooProductClient.update(it)
+        }
+    }
 }

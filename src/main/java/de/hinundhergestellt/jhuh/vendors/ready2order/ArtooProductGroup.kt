@@ -10,7 +10,7 @@ open class UnsavedArtooProductGroup(
     var active: Boolean,
     var parent: Int? = null,
     var sortIndex: Int = 0,
-    var typeId: Int? = 7 // can be null for Favoriten
+    var type: ArtooProductGroupType = ArtooProductGroupType.STANDARD
 ) {
     override fun toString() =
         "UnsavedArtooProductGroup(name='$name', description='$description')"
@@ -23,7 +23,7 @@ open class UnsavedArtooProductGroup(
             it.productgroupActive = active
             it.productgroupParent = parent
             it.productgroupSortIndex = sortIndex
-            it.productgroupTypeId = typeId
+            it.productgroupTypeId = type.id
         }
 }
 
@@ -38,22 +38,27 @@ class ArtooProductGroup : UnsavedArtooProductGroup {
         group.productgroupActive,
         group.productgroupParent,
         group.productgroupSortIndex,
-        group.productgroupTypeId
+        ArtooProductGroupType.valueOf(group.productgroupTypeId)
     ) {
         id = group.productgroupId
     }
 
     override fun toString() =
         "ArtooProductGroup(id=$id, name='$name', description='$description')"
+}
 
-    internal fun toProductgroupsIdPutRequest() =
-        ProductgroupsPostRequest().also {
-            it.productgroupName = name
-            it.productgroupDescription = description
-            it.productgroupShortcut = shortcut
-            it.productgroupActive = active
-            it.productgroupParent = parent
-            it.productgroupSortIndex = sortIndex
-            it.productgroupTypeId = typeId
-        }
+enum class ArtooProductGroupType(
+    val id: Int?
+) {
+    FAVOURITES(null),
+    VARIANTS(3),
+    VARIATIONS(5),
+    INGREDIENTS(6),
+    STANDARD(7),
+    DISCOUNTS(8),
+    VOUCHERS(10);
+
+    companion object {
+        fun valueOf(id: Int?) = ArtooProductGroupType.entries.find { it.id == id }!!
+    }
 }

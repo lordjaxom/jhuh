@@ -19,7 +19,7 @@ class ArtooProductGroupClient(
         ArtooProductGroup(api.productgroupsPost(group.toProductgroupsPostRequest()))
 
     fun update(group: ArtooProductGroup) {
-        api.productgroupsIdPut(group.id, group.toProductgroupsIdPutRequest())
+        api.productgroupsIdPut(group.id, group.toProductgroupsPostRequest())
     }
 
     fun delete(group: ArtooProductGroup) {
