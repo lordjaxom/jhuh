@@ -1,6 +1,6 @@
 package de.hinundhergestellt.jhuh.service.shopify
 
-import de.hinundhergestellt.jhuh.util.asyncWithReset
+import de.hinundhergestellt.jhuh.util.asyncWithRefresh
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProductClient
 import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProductOption
@@ -21,7 +21,7 @@ class ShopifyDataStore(
     @Qualifier("applicationTaskExecutor") private val taskExecutor: AsyncTaskExecutor,
     @Value("\${shopify.read-only}") private val readOnly: Boolean
 ) {
-    private val productsAsync = asyncWithReset(taskExecutor) { productClient.findAll().toMutableList() }
+    private val productsAsync = asyncWithRefresh(taskExecutor) { productClient.findAll().toMutableList() }
     val products by productsAsync
 
     fun findProductById(id: String) =

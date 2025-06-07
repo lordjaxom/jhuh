@@ -1,6 +1,6 @@
 package de.hinundhergestellt.jhuh.service.ready2order
 
-import de.hinundhergestellt.jhuh.util.asyncWithReset
+import de.hinundhergestellt.jhuh.util.asyncWithRefresh
 import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductClient
 import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductGroup
@@ -8,10 +8,8 @@ import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductGroupClient
 import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductGroupType
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.task.AsyncTaskExecutor
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.util.concurrent.Callable
-import java.util.concurrent.TimeUnit
 
 @Service
 class ArtooDataStore(
@@ -19,7 +17,7 @@ class ArtooDataStore(
     private val productClient: ArtooProductClient,
     @Qualifier("applicationTaskExecutor") private val taskExecutor: AsyncTaskExecutor
 ) {
-    private val rootCategoriesAsync = asyncWithReset(taskExecutor) { fetchRootCategories() }
+    private val rootCategoriesAsync = asyncWithRefresh(taskExecutor) { fetchRootCategories() }
     val rootCategories by rootCategoriesAsync
 
     val stateChangeListeners by rootCategoriesAsync::stateChangeListeners
