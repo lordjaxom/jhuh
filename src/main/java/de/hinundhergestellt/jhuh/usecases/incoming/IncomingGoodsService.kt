@@ -1,4 +1,4 @@
-package de.hinundhergestellt.jhuh.incoming
+package de.hinundhergestellt.jhuh.usecases.incoming
 
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.components.Article

@@ -1,4 +1,4 @@
-package de.hinundhergestellt.jhuh.sync
+package de.hinundhergestellt.jhuh.components
 
 import com.vaadin.flow.component.Component
 import com.vaadin.flow.component.applayout.AppLayout
@@ -12,8 +12,9 @@ import com.vaadin.flow.router.Layout
 import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.RouteConfiguration
 import com.vaadin.flow.theme.lumo.LumoUtility
-import de.hinundhergestellt.jhuh.incoming.IncomingGoodsView
-import de.hinundhergestellt.jhuh.labels.LabelGeneratorView
+import de.hinundhergestellt.jhuh.usecases.incoming.IncomingGoodsView
+import de.hinundhergestellt.jhuh.usecases.labels.LabelGeneratorView
+import de.hinundhergestellt.jhuh.usecases.products.ShopifySyncView
 
 @Layout
 @Suppress("unused")

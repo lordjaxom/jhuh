@@ -1,4 +1,4 @@
-package de.hinundhergestellt.jhuh.labels
+package de.hinundhergestellt.jhuh.usecases.labels
 
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.components.Article

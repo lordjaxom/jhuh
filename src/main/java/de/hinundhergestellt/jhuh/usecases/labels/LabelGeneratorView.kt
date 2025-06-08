@@ -1,7 +1,6 @@
-package de.hinundhergestellt.jhuh.labels
+package de.hinundhergestellt.jhuh.usecases.labels
 
 import com.vaadin.flow.component.Component
-import com.vaadin.flow.component.ItemLabelGenerator
 import com.vaadin.flow.component.Key
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.button.ButtonVariant
@@ -19,7 +18,6 @@ import com.vaadin.flow.data.value.ValueChangeMode
 import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
 import de.hinundhergestellt.jhuh.components.ArticleComboBoxFactory
-import kotlin.streams.asStream
 
 @Route
 @PageTitle("Etiketten erstellen")

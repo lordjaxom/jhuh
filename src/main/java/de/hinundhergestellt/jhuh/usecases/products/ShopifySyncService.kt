@@ -1,21 +1,28 @@
-package de.hinundhergestellt.jhuh.sync
+package de.hinundhergestellt.jhuh.usecases.products
 
 import com.shopify.admin.types.ProductStatus
+import com.vaadin.flow.spring.annotation.VaadinSessionScope
+import de.hinundhergestellt.jhuh.sync.SyncCategory
+import de.hinundhergestellt.jhuh.sync.SyncCategoryRepository
+import de.hinundhergestellt.jhuh.sync.SyncProduct
+import de.hinundhergestellt.jhuh.sync.SyncProductRepository
+import de.hinundhergestellt.jhuh.sync.SyncVariant
+import de.hinundhergestellt.jhuh.sync.SyncVariantRepository
+import de.hinundhergestellt.jhuh.usecases.products.VariantBulkOperation.Create
+import de.hinundhergestellt.jhuh.usecases.products.VariantBulkOperation.Delete
+import de.hinundhergestellt.jhuh.usecases.products.VariantBulkOperation.Update
+import de.hinundhergestellt.jhuh.util.lazyWithReset
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedCategory
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedVariation
-import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
-import de.hinundhergestellt.jhuh.sync.VariantBulkOperation.Create
-import de.hinundhergestellt.jhuh.sync.VariantBulkOperation.Delete
-import de.hinundhergestellt.jhuh.sync.VariantBulkOperation.Update
-import de.hinundhergestellt.jhuh.util.lazyWithReset
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantOption
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductOption
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVariant
+import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -27,6 +34,7 @@ private val logger = KotlinLogging.logger {}
 private val INVALID_TAG_CHARACTERS = """[^A-Za-z0-9\\._ -]""".toRegex()
 
 @Service
+@VaadinSessionScope
 class ShopifyImportService(
     private val artooDataStore: ArtooDataStore,
     private val shopifyDataStore: ShopifyDataStore,

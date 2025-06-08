@@ -1,4 +1,4 @@
-package de.hinundhergestellt.jhuh.labels
+package de.hinundhergestellt.jhuh.usecases.labels
 
 import jakarta.servlet.http.HttpServletResponse
 import org.krysalis.barcode4j.impl.upcean.EAN13Bean

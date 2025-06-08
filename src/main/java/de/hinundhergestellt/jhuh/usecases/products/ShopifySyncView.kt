@@ -1,4 +1,4 @@
-package de.hinundhergestellt.jhuh.sync
+package de.hinundhergestellt.jhuh.usecases.products
 
 import com.vaadin.flow.component.Component
 import com.vaadin.flow.component.Key
@@ -20,7 +20,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.shared.Tooltip
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.component.treegrid.TreeGrid
-import com.vaadin.flow.data.provider.hierarchy.AbstractBackEndHierarchicalDataProvider
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery
 import com.vaadin.flow.dom.Style
 import com.vaadin.flow.router.PageTitle
@@ -318,7 +317,8 @@ class ShopifySyncView(
         }
     }
 
-    private inner class TreeDataProvider : AbstractBackEndHierarchicalDataProvider<SyncableItem, Void?>() {
+    private inner class TreeDataProvider :
+        com.vaadin.flow.data.provider.hierarchy.AbstractBackEndHierarchicalDataProvider<SyncableItem, Void?>() {
 
         override fun fetchChildrenFromBackEnd(query: HierarchicalQuery<SyncableItem, Void?>): Stream<SyncableItem> {
             val withErrors = if (withErrorsCheckbox.value) true else if (errorFreeCheckbox.value) false else null
