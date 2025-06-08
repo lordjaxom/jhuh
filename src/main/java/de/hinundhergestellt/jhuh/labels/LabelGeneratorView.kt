@@ -18,17 +18,19 @@ import com.vaadin.flow.component.textfield.TextFieldVariant
 import com.vaadin.flow.data.value.ValueChangeMode
 import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
+import de.hinundhergestellt.jhuh.components.ArticleComboBoxFactory
 import kotlin.streams.asStream
 
 @Route
 @PageTitle("Etiketten erstellen")
 class LabelGeneratorView(
     private val service: LabelGeneratorService,
+    articleComboBoxFactory: ArticleComboBoxFactory
 ) : VerticalLayout() {
 
     private val formatComboBox = ComboBox<String>()
     private val barcodesButton = Button()
-    private val articleComboBox = ComboBox<LabelArticle>()
+    private val articleComboBox = articleComboBoxFactory()
     private val countTextField = TextField()
     private val addButton = Button()
     private val labelsGrid = Grid<Label>()
@@ -60,11 +62,6 @@ class LabelGeneratorView(
     }
 
     private fun configureInputs() {
-        articleComboBox.label = "Artikel"
-        articleComboBox.placeholder = "Barcode oder Suchbegriff eingeben"
-        articleComboBox.itemLabelGenerator = ItemLabelGenerator { it.label }
-        articleComboBox.setWidthFull()
-        articleComboBox.setScannerCompatibleData { filter, offset, limit -> service.fetch(filter, offset, limit) }
         articleComboBox.addValueChangeListener { validateInputs(); countTextField.focus() }
         articleComboBox.focus()
 
@@ -167,36 +164,4 @@ class LabelGeneratorView(
         countTextField.value = ""
         articleComboBox.focus()
     }
-}
-
-fun <T : Any> ComboBox<T>.setScannerCompatibleData(fetchItems: (String, Int, Int) -> Sequence<T>) {
-    setDataProvider(
-        { filter, offset, limit -> fetchItems(filter, offset, limit).asStream() },
-        { filter -> fetchItems(filter, 0, Int.MAX_VALUE).count() }
-    )
-
-    // @formatter:off
-    element.executeJs("""
-            const input = this.inputElement
-            input.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    this.dispatchEvent(new CustomEvent('enter-pressed', {
-                            detail: { inputValue: input.value },
-                            bubbles: true
-                    }));
-                }            
-            });
-            """.trimIndent())
-    // @formatter:on
-
-    val enterListener = element.addEventListener("enter-pressed") { event ->
-        event.eventData.getString("event.detail.inputValue")
-            ?.takeIf { it.toULongOrNull(10) != null }
-            ?.let { fetchItems(it, 0, 1).firstOrNull() }
-            ?.also {
-                isOpened = false
-                value = it
-            }
-    }
-    enterListener.addEventData("event.detail.inputValue")
 }

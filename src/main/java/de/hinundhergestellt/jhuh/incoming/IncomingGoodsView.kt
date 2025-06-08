@@ -1,11 +1,9 @@
 package de.hinundhergestellt.jhuh.incoming
 
 import com.vaadin.flow.component.Component
-import com.vaadin.flow.component.ItemLabelGenerator
 import com.vaadin.flow.component.Key
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.button.ButtonVariant
-import com.vaadin.flow.component.combobox.ComboBox
 import com.vaadin.flow.component.grid.ColumnTextAlign
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.grid.GridVariant
@@ -18,16 +16,17 @@ import com.vaadin.flow.component.textfield.TextFieldVariant
 import com.vaadin.flow.data.value.ValueChangeMode
 import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
-import de.hinundhergestellt.jhuh.labels.setScannerCompatibleData
+import de.hinundhergestellt.jhuh.components.ArticleComboBoxFactory
 
 @Route
 @PageTitle("Wareneingang")
 class IncomingGoodsView(
-    private val service: IncomingGoodsService
+    private val service: IncomingGoodsService,
+    articleComboBoxFactory: ArticleComboBoxFactory,
 ): VerticalLayout() {
 
     private val saveButton = Button()
-    private val articleComboBox = ComboBox<IncomingArticle>()
+    private val articleComboBox = articleComboBoxFactory()
     private val countTextField = TextField()
     private val addButton = Button()
     private val incomingGrid = Grid<Incoming>()
@@ -54,11 +53,6 @@ class IncomingGoodsView(
     }
 
     private fun configureInputs() {
-        articleComboBox.label = "Artikel"
-        articleComboBox.placeholder = "Barcode oder Suchbegriff eingeben"
-        articleComboBox.itemLabelGenerator = ItemLabelGenerator { it.label }
-        articleComboBox.setWidthFull()
-        articleComboBox.setScannerCompatibleData { filter, offset, limit -> service.fetch(filter, offset, limit) }
         articleComboBox.addValueChangeListener { validateInputs(); countTextField.focus() }
         articleComboBox.focus()
 
