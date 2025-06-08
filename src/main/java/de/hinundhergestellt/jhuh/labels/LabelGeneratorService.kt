@@ -1,9 +1,9 @@
 package de.hinundhergestellt.jhuh.labels
 
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
-import de.hinundhergestellt.jhuh.service.ready2order.ArtooDataStore
-import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedProduct
-import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedVariation
+import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
+import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
+import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedVariation
 import de.hinundhergestellt.jhuh.sync.SyncProduct
 import de.hinundhergestellt.jhuh.sync.SyncProductRepository
 import org.springframework.context.annotation.Scope

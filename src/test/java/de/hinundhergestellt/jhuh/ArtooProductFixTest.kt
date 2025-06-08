@@ -1,10 +1,10 @@
 package de.hinundhergestellt.jhuh
 
-import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductClient
-import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductGroupClient
-import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductGroupType
-import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductType
-import de.hinundhergestellt.jhuh.vendors.ready2order.UnsavedArtooProductGroup
+import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductClient
+import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductGroupClient
+import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductGroupType
+import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductType
+import de.hinundhergestellt.jhuh.vendors.ready2order.client.UnsavedArtooProductGroup
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test

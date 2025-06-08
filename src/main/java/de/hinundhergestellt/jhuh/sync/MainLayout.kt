@@ -49,4 +49,4 @@ private inline fun <reified T : Component> routeUrl() =
     RouteConfiguration.forSessionScope().getUrl(T::class.java)
 
 private inline val <reified T: Component> T.pageTitle
-    get() = this::class.java.getAnnotation(PageTitle::class.java)?.value ?: "Seitentitel unbekannt"
+    get() = this::class.java.getAnnotation(PageTitle::class.java)?.value ?: "Unbenannt"

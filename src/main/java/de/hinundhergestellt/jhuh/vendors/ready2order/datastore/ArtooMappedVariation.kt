@@ -1,6 +1,6 @@
-package de.hinundhergestellt.jhuh.service.ready2order
+package de.hinundhergestellt.jhuh.vendors.ready2order.datastore
 
-import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProduct
+import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProduct
 
 class ArtooMappedVariation internal constructor(
     private val product: ArtooProduct

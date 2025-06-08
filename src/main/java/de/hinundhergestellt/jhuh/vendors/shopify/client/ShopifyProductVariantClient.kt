@@ -1,4 +1,4 @@
-package de.hinundhergestellt.jhuh.vendors.shopify
+package de.hinundhergestellt.jhuh.vendors.shopify.client
 
 import com.netflix.graphql.dgs.client.GraphQLClient
 import com.netflix.graphql.dgs.client.codegen.BaseSubProjectionNode

@@ -1,13 +1,13 @@
-package de.hinundhergestellt.jhuh.service.shopify
+package de.hinundhergestellt.jhuh.vendors.shopify.datastore
 
 import de.hinundhergestellt.jhuh.util.asyncWithRefresh
-import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProduct
-import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProductClient
-import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProductOption
-import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProductVariant
-import de.hinundhergestellt.jhuh.vendors.shopify.ShopifyProductVariantClient
-import de.hinundhergestellt.jhuh.vendors.shopify.UnsavedShopifyProduct
-import de.hinundhergestellt.jhuh.vendors.shopify.UnsavedShopifyProductVariant
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductClient
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOption
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantClient
+import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProduct
+import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVariant
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.task.AsyncTaskExecutor

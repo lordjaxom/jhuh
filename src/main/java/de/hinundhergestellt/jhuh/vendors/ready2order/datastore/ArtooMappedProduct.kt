@@ -1,7 +1,7 @@
-package de.hinundhergestellt.jhuh.service.ready2order
+package de.hinundhergestellt.jhuh.vendors.ready2order.datastore
 
-import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProduct
-import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductGroup
+import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProduct
+import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductGroup
 
 sealed class ArtooMappedProduct protected constructor(
     val variations: List<ArtooMappedVariation>

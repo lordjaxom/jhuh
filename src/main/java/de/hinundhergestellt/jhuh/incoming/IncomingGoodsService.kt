@@ -1,9 +1,9 @@
 package de.hinundhergestellt.jhuh.incoming
 
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
-import de.hinundhergestellt.jhuh.service.ready2order.ArtooDataStore
-import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedProduct
-import de.hinundhergestellt.jhuh.service.ready2order.ArtooMappedVariation
+import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
+import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
+import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedVariation
 import org.springframework.stereotype.Service
 
 @Service

@@ -1,7 +1,7 @@
 package de.hinundhergestellt.jhuh.sync;
 
-import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProduct;
-import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductClient;
+import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProduct;
+import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductClient;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,4 +1,4 @@
-package de.hinundhergestellt.jhuh.vendors.shopify
+package de.hinundhergestellt.jhuh.vendors.shopify.client
 
 import com.shopify.admin.types.OptionCreateInput
 import com.shopify.admin.types.OptionValueCreateInput

@@ -1,4 +1,4 @@
-package de.hinundhergestellt.jhuh.vendors.shopify
+package de.hinundhergestellt.jhuh.vendors.shopify.client
 
 import com.shopify.admin.types.InventoryItemInput
 import com.shopify.admin.types.ProductVariant

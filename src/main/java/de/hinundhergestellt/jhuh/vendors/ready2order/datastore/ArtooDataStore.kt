@@ -1,11 +1,11 @@
-package de.hinundhergestellt.jhuh.service.ready2order
+package de.hinundhergestellt.jhuh.vendors.ready2order.datastore
 
 import de.hinundhergestellt.jhuh.util.asyncWithRefresh
-import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProduct
-import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductClient
-import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductGroup
-import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductGroupClient
-import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductGroupType
+import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProduct
+import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductClient
+import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductGroup
+import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductGroupClient
+import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductGroupType
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.task.AsyncTaskExecutor
 import org.springframework.stereotype.Service

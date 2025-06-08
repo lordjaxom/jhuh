@@ -1,6 +1,6 @@
-package de.hinundhergestellt.jhuh.service.ready2order
+package de.hinundhergestellt.jhuh.vendors.ready2order.datastore
 
-import de.hinundhergestellt.jhuh.vendors.ready2order.ArtooProductGroup
+import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductGroup
 
 class ArtooMappedCategory internal constructor(
     private val group: ArtooProductGroup,

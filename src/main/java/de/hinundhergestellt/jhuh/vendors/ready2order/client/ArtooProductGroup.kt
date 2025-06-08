@@ -1,4 +1,4 @@
-package de.hinundhergestellt.jhuh.vendors.ready2order
+package de.hinundhergestellt.jhuh.vendors.ready2order.client
 
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductgroupsGet200ResponseInner
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductgroupsPostRequest
