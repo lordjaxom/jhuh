@@ -18,6 +18,7 @@ import com.vaadin.flow.data.value.ValueChangeMode
 import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
 import de.hinundhergestellt.jhuh.components.ArticleComboBoxFactory
+import de.hinundhergestellt.jhuh.components.CountTextField
 
 @Route
 @PageTitle("Etiketten erstellen")
@@ -29,7 +30,7 @@ class LabelGeneratorView(
     private val formatComboBox = ComboBox<String>()
     private val barcodesButton = Button()
     private val articleComboBox = articleComboBoxFactory()
-    private val countTextField = TextField()
+    private val countTextField = CountTextField()
     private val addButton = Button()
     private val labelsGrid = Grid<Label>()
 
@@ -63,14 +64,6 @@ class LabelGeneratorView(
         articleComboBox.addValueChangeListener { validateInputs(); countTextField.focus() }
         articleComboBox.focus()
 
-        countTextField.label = "Anzahl"
-        countTextField.placeholder = "0"
-        countTextField.allowedCharPattern = "[0-9]"
-        countTextField.maxLength = 5
-        countTextField.valueChangeMode = ValueChangeMode.EAGER
-        countTextField.isAutoselect = true
-        countTextField.width = "5em"
-        countTextField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT)
         countTextField.addValueChangeListener { validateInputs() }
 
         addButton.text = "Hinzufügen"

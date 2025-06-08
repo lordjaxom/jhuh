@@ -11,12 +11,10 @@ import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
-import com.vaadin.flow.component.textfield.TextField
-import com.vaadin.flow.component.textfield.TextFieldVariant
-import com.vaadin.flow.data.value.ValueChangeMode
 import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
 import de.hinundhergestellt.jhuh.components.ArticleComboBoxFactory
+import de.hinundhergestellt.jhuh.components.CountTextField
 
 @Route
 @PageTitle("Wareneingang")
@@ -27,7 +25,7 @@ class IncomingGoodsView(
 
     private val saveButton = Button()
     private val articleComboBox = articleComboBoxFactory()
-    private val countTextField = TextField()
+    private val countTextField = CountTextField()
     private val addButton = Button()
     private val incomingGrid = Grid<Incoming>()
 
@@ -56,14 +54,6 @@ class IncomingGoodsView(
         articleComboBox.addValueChangeListener { validateInputs(); countTextField.focus() }
         articleComboBox.focus()
 
-        countTextField.label = "Anzahl"
-        countTextField.placeholder = "0"
-        countTextField.allowedCharPattern = "[0-9]"
-        countTextField.maxLength = 5
-        countTextField.valueChangeMode = ValueChangeMode.EAGER
-        countTextField.isAutoselect = true
-        countTextField.width = "5em"
-        countTextField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT)
         countTextField.addValueChangeListener { validateInputs() }
 
         addButton.text = "Hinzufügen"

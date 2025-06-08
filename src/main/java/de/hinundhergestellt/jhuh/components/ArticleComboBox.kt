@@ -37,7 +37,7 @@ class ArticleComboBox(
             val found = event.eventData.getString("event.detail.inputValue")
                 ?.takeIf { it.toULongOrNull(10) != null }
                 ?.let { service.fetch(it).take(2).toList() }
-            if (found != null && found.size == 1) {
+            if (found?.size == 1) {
                 isOpened = false
                 value = found[0]
             }
