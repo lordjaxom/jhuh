@@ -36,8 +36,8 @@ private val logger = KotlinLogging.logger { }
 
 @Route
 @PageTitle("Produktverwaltung")
-class ShopifySyncView(
-    private val importService: ShopifyImportService,
+class ProductManagerView(
+    private val importService: ProductManagerService,
     @Qualifier("applicationTaskExecutor") private val taskExecutor: AsyncTaskExecutor
 ) : VerticalLayout() {
 
@@ -192,7 +192,7 @@ class ShopifySyncView(
     private fun editItem(item: SyncableItem) {
         val dialog = Dialog()
         dialog.width = "400px"
-        dialog.headerTitle = if (item is ShopifyImportService.Category) "Kategorie bearbeiten" else "Produkt bearbeiten"
+        dialog.headerTitle = if (item is ProductManagerService.Category) "Kategorie bearbeiten" else "Produkt bearbeiten"
 
         val closeButton = Button(VaadinIcon.CLOSE.create()) { dialog.close() }
         closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY)
@@ -207,11 +207,11 @@ class ShopifySyncView(
             val textField = TextField()
             textField.label = label
             textField.value = value
-            textField.isEnabled = item is ShopifyImportService.Product
+            textField.isEnabled = item is ProductManagerService.Product
             textField.setWidthFull()
             layout.add(textField)
 
-            if (item is ShopifyImportService.Product) {
+            if (item is ProductManagerService.Product) {
                 return Pair(textField, null)
             }
 
@@ -252,7 +252,7 @@ class ShopifySyncView(
     }
 
     private fun treeItemStatusColumn(item: SyncableItem): Component {
-        if (item !is ShopifyImportService.Product) {
+        if (item !is ProductManagerService.Product) {
             return Span()
         }
 
@@ -279,7 +279,7 @@ class ShopifySyncView(
         layout.themeList.add("spacing-s")
         layout.style.setWhiteSpace(Style.WhiteSpace.NOWRAP)
 
-        if (item is ShopifyImportService.Product) {
+        if (item is ProductManagerService.Product) {
             val marked = item.isMarkedForSync
             val problems = item.syncProblems
 
@@ -312,7 +312,7 @@ class ShopifySyncView(
 
     private fun refreshTreeItem(item: SyncableItem, recurse: Boolean) {
         treeGrid.dataProvider.refreshItem(item, recurse)
-        if (recurse && item is ShopifyImportService.Category) {
+        if (recurse && item is ProductManagerService.Category) {
             item.childrenAndProducts.forEach { refreshTreeItem(it, true) }
         }
     }
@@ -322,7 +322,7 @@ class ShopifySyncView(
 
         override fun fetchChildrenFromBackEnd(query: HierarchicalQuery<SyncableItem, Void?>): Stream<SyncableItem> {
             val withErrors = if (withErrorsCheckbox.value) true else if (errorFreeCheckbox.value) false else null
-            val children = (query.parent as ShopifyImportService.Category?)?.childrenAndProducts ?: importService.rootCategories
+            val children = (query.parent as ProductManagerService.Category?)?.childrenAndProducts ?: importService.rootCategories
             return children.asSequence()
                 .filter { it.filterBy(markedForSyncCheckbox.value, withErrors, filterTextField.value) }
                 .sortedBy { it.name }
@@ -330,7 +330,7 @@ class ShopifySyncView(
         }
 
         override fun hasChildren(item: SyncableItem) =
-            item is ShopifyImportService.Category
+            item is ProductManagerService.Category
 
         override fun getChildCount(query: HierarchicalQuery<SyncableItem, Void?>) =
             fetchChildren(query).count().toInt()

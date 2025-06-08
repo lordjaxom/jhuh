@@ -14,7 +14,7 @@ import com.vaadin.flow.router.RouteConfiguration
 import com.vaadin.flow.theme.lumo.LumoUtility
 import de.hinundhergestellt.jhuh.usecases.incoming.IncomingGoodsView
 import de.hinundhergestellt.jhuh.usecases.labels.LabelGeneratorView
-import de.hinundhergestellt.jhuh.usecases.products.ShopifySyncView
+import de.hinundhergestellt.jhuh.usecases.products.ProductManagerView
 
 @Layout
 @Suppress("unused")
@@ -31,7 +31,7 @@ class MainLayout : AppLayout() {
         addToNavbar(toggle, pageTitle)
 
         val sideNav = SideNav()
-        sideNav.addItem(SideNavItem("Produktverwaltung", routeUrl<ShopifySyncView>(), VaadinIcon.UPLOAD.create()))
+        sideNav.addItem(SideNavItem("Produktverwaltung", routeUrl<ProductManagerView>(), VaadinIcon.UPLOAD.create()))
         sideNav.addItem(SideNavItem("Wareneingang", routeUrl<IncomingGoodsView>(), VaadinIcon.ARROW_BACKWARD.create()))
         sideNav.addItem(SideNavItem("Etiketten erstellen", routeUrl<LabelGeneratorView>(), VaadinIcon.PRINT.create()))
 

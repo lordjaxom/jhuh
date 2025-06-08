@@ -35,7 +35,7 @@ private val INVALID_TAG_CHARACTERS = """[^A-Za-z0-9\\._ -]""".toRegex()
 
 @Service
 @VaadinSessionScope
-class ShopifyImportService(
+class ProductManagerService(
     private val artooDataStore: ArtooDataStore,
     private val shopifyDataStore: ShopifyDataStore,
     private val syncProductRepository: SyncProductRepository,
