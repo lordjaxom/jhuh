@@ -1,4 +1,4 @@
-package de.hinundhergestellt.jhuh.sync
+package de.hinundhergestellt.jhuh.backend.syncdb
 
 import jakarta.persistence.Column
 import jakarta.persistence.ElementCollection

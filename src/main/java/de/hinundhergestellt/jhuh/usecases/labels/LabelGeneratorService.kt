@@ -2,8 +2,8 @@ package de.hinundhergestellt.jhuh.usecases.labels
 
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.components.Article
-import de.hinundhergestellt.jhuh.sync.SyncProduct
-import de.hinundhergestellt.jhuh.sync.SyncProductRepository
+import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
+import de.hinundhergestellt.jhuh.backend.syncdb.SyncProductRepository
 import org.springframework.context.annotation.Scope
 import org.springframework.context.annotation.ScopedProxyMode
 import org.springframework.stereotype.Service

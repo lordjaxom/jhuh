@@ -2,12 +2,12 @@ package de.hinundhergestellt.jhuh.usecases.products
 
 import com.shopify.admin.types.ProductStatus
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
-import de.hinundhergestellt.jhuh.sync.SyncCategory
-import de.hinundhergestellt.jhuh.sync.SyncCategoryRepository
-import de.hinundhergestellt.jhuh.sync.SyncProduct
-import de.hinundhergestellt.jhuh.sync.SyncProductRepository
-import de.hinundhergestellt.jhuh.sync.SyncVariant
-import de.hinundhergestellt.jhuh.sync.SyncVariantRepository
+import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategory
+import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategoryRepository
+import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
+import de.hinundhergestellt.jhuh.backend.syncdb.SyncProductRepository
+import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariant
+import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariantRepository
 import de.hinundhergestellt.jhuh.usecases.products.VariantBulkOperation.Create
 import de.hinundhergestellt.jhuh.usecases.products.VariantBulkOperation.Delete
 import de.hinundhergestellt.jhuh.usecases.products.VariantBulkOperation.Update
