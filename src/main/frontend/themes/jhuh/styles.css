@@ -7,6 +7,10 @@ vaadin-grid::part(header-cell) {
     min-height: var(--lumo-size-m);
 }
 
+vaadin-grid::part(cell) {
+    min-height: var(--lumo-size-m);
+}
+
 .progress-overlay {
     position: fixed;
     top: 0;

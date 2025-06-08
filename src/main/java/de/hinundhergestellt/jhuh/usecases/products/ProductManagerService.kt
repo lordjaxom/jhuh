@@ -44,7 +44,7 @@ class ProductManagerService(
 ) {
     // TODO: Better to add fetchChildren here and create SyncableItems on the fly? But refreshItem in TreeDataProvider doesn't reload the
     // TODO: item, so clearing the database objects would still be required
-    private val lazyRootCategories = lazyWithReset { artooDataStore.rootCategories.map { Category(it) } }
+    private val lazyRootCategories = lazyWithReset { artooDataStore.rootCategories.map { CategoryItem(it) } }
     val rootCategories by lazyRootCategories
 
     val stateChangeListeners by artooDataStore::stateChangeListeners
@@ -53,7 +53,7 @@ class ProductManagerService(
     fun updateItem(item: SyncableItem, vendor: String?, type: String?, tags: String) {
         val tagsAsSet = tags.splitToSequence(",").map { it.trim() }.filter { it.isNotEmpty() }.toMutableSet()
         when (item) {
-            is Category -> {
+            is CategoryItem -> {
                 val syncCategory = item.syncCategory
                     ?.also { it.tags = tagsAsSet }
                     ?: tagsAsSet.takeIf { it.isNotEmpty() }?.let { SyncCategory(item.id, it) }
@@ -73,7 +73,7 @@ class ProductManagerService(
                 }
             }
 
-            is Product -> {
+            is ProductItem -> {
                 val syncProduct = item.syncProduct
                     ?.also { it.vendor = vendor; it.type = type; it.tags = tagsAsSet }
                     ?: SyncProduct(artooId = item.id, vendor = vendor, type = type, tags = tagsAsSet, synced = false)
@@ -84,7 +84,7 @@ class ProductManagerService(
     }
 
     @Transactional
-    fun markForSync(product: Product) {
+    fun markForSync(product: ProductItem) {
         val syncProduct = product.syncProduct
             ?.apply { synced = true }
             ?: SyncProduct(artooId = product.id, synced = true)
@@ -93,7 +93,7 @@ class ProductManagerService(
     }
 
     @Transactional
-    fun unmarkForSync(product: Product) {
+    fun unmarkForSync(product: ProductItem) {
         product.syncProduct?.also {
             it.synced = false
             syncProductRepository.save(it)
@@ -328,7 +328,7 @@ class ProductManagerService(
         return tags.map { it.replace(INVALID_TAG_CHARACTERS, "") }.toSet()
     }
 
-    inner class Category(val value: ArtooMappedCategory) : SyncableItem {
+    inner class CategoryItem(val value: ArtooMappedCategory) : SyncableItem {
 
         // TODO: lazy probably unnecessary when just resetting lazyRootCategories above
         private val lazySyncCategory = lazyWithReset { syncCategoryRepository.findByArtooId(value.id) }
@@ -336,7 +336,7 @@ class ProductManagerService(
 
         val id by value::id
 
-        val childrenAndProducts = value.run { children.map { Category(it) } + products.map { Product(it) } }
+        val childrenAndProducts = value.run { children.map { CategoryItem(it) } + products.map { ProductItem(it) } }
 
         override val itemId = "category-$id"
         override val name by value::name
@@ -354,7 +354,7 @@ class ProductManagerService(
         }
     }
 
-    inner class Product(val value: ArtooMappedProduct) : SyncableItem {
+    inner class ProductItem(val value: ArtooMappedProduct) : SyncableItem {
 
         // TODO: lazy probably unnecessary when just resetting lazyRootCategories above
         private val lazySyncProduct = lazyWithReset { syncProductRepository.findByArtooId(value.id) }

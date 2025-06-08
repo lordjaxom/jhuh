@@ -1,24 +1,22 @@
 package de.hinundhergestellt.jhuh.usecases.labels
 
-import com.vaadin.flow.component.Component
 import com.vaadin.flow.component.Key
 import com.vaadin.flow.component.button.Button
-import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.combobox.ComboBox
-import com.vaadin.flow.component.grid.ColumnTextAlign
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.grid.GridVariant
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
-import com.vaadin.flow.component.textfield.TextField
-import com.vaadin.flow.component.textfield.TextFieldVariant
-import com.vaadin.flow.data.value.ValueChangeMode
 import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
 import de.hinundhergestellt.jhuh.components.ArticleComboBoxFactory
 import de.hinundhergestellt.jhuh.components.CountTextField
+import de.hinundhergestellt.jhuh.components.GridActionButton
+import de.hinundhergestellt.jhuh.components.addActionsColumn
+import de.hinundhergestellt.jhuh.components.addCountColumn
+import de.hinundhergestellt.jhuh.components.addTextColumn
 
 @Route
 @PageTitle("Etiketten erstellen")
@@ -78,62 +76,16 @@ class LabelGeneratorView(
     }
 
     private fun configureLabelsGrid() {
-        labelsGrid.addColumn { it.vendor }
-            .setHeader("Hersteller")
-            .apply {
-                isSortable = false
-                flexGrow = 5
-            }
-        labelsGrid.addColumn { it.name }
-            .setHeader("Bezeichnung")
-            .apply {
-                isSortable = false
-                flexGrow = 20
-            }
-        labelsGrid.addColumn { it.variant }
-            .setHeader("Variante")
-            .apply {
-                isSortable = false
-                flexGrow = 10
-            }
-        labelsGrid.addColumn { it.barcode }
-            .setHeader("Barcode")
-            .apply {
-                isSortable = false
-                flexGrow = 5
-            }
-        labelsGrid.addColumn { it.count }
-            .setHeader("#")
-            .apply {
-                isSortable = false
-                textAlign = ColumnTextAlign.END
-                width = "4em"
-                flexGrow = 0
-            }
-        labelsGrid.addComponentColumn { labelsItemActionsColumn(it) }
-            .setHeader("")
-            .apply {
-                isSortable = false
-                width = "48px"
-                flexGrow = 0
-            }
+        labelsGrid.addTextColumn("Hersteller", flexGrow = 5) { it.vendor }
+        labelsGrid.addTextColumn("Bezeichnung", flexGrow = 20) { it.name }
+        labelsGrid.addTextColumn("Variante", flexGrow = 10) { it.variant }
+        labelsGrid.addTextColumn("Barcode", flexGrow = 5) { it.barcode }
+        labelsGrid.addCountColumn { it.count }
+        labelsGrid.addActionsColumn { GridActionButton(VaadinIcon.TRASH) { removeLabel(it) } }
         labelsGrid.setItems(service.labels)
         labelsGrid.setSizeFull()
         labelsGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES)
         add(labelsGrid)
-    }
-
-    private fun labelsItemActionsColumn(label: Label): Component {
-        val deleteIcon = VaadinIcon.TRASH.create()
-        deleteIcon.setSize("20px")
-        val deleteButton = Button(deleteIcon)
-        deleteButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE)
-        deleteButton.addClickListener {
-            service.labels.remove(label)
-            validateActions()
-            labelsGrid.dataProvider.refreshAll()
-        }
-        return deleteButton
     }
 
     private fun validateActions() {
@@ -154,5 +106,11 @@ class LabelGeneratorView(
         articleComboBox.value = null
         countTextField.value = ""
         articleComboBox.focus()
+    }
+
+    private fun removeLabel(label: Label) {
+        service.labels.remove(label)
+        validateActions()
+        labelsGrid.dataProvider.refreshAll()
     }
 }

@@ -7,7 +7,6 @@ import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.checkbox.Checkbox
 import com.vaadin.flow.component.dialog.Dialog
-import com.vaadin.flow.component.grid.ColumnTextAlign
 import com.vaadin.flow.component.grid.GridVariant
 import com.vaadin.flow.component.html.Div
 import com.vaadin.flow.component.html.Span
@@ -24,6 +23,14 @@ import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery
 import com.vaadin.flow.dom.Style
 import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
+import de.hinundhergestellt.jhuh.components.GridActionButton
+import de.hinundhergestellt.jhuh.components.addActionsColumn
+import de.hinundhergestellt.jhuh.components.addCountColumn
+import de.hinundhergestellt.jhuh.components.addHierarchyTextColumn
+import de.hinundhergestellt.jhuh.components.addTextColumn
+import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.CategoryItem
+import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.ProductItem
+import de.hinundhergestellt.jhuh.usecases.products.SyncProblem.Error
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.task.AsyncTaskExecutor
@@ -37,7 +44,7 @@ private val logger = KotlinLogging.logger { }
 @Route
 @PageTitle("Produktverwaltung")
 class ProductManagerView(
-    private val importService: ProductManagerService,
+    private val service: ProductManagerService,
     @Qualifier("applicationTaskExecutor") private val taskExecutor: AsyncTaskExecutor
 ) : VerticalLayout() {
 
@@ -61,14 +68,14 @@ class ProductManagerView(
 
         val stateChangedHandler: () -> Unit =
             { ui.getOrNull()?.access { treeGrid.dataProvider.refreshAll(); refreshButton.isEnabled = true } }
-        addAttachListener { importService.stateChangeListeners += stateChangedHandler }
-        addDetachListener { importService.stateChangeListeners -= stateChangedHandler }
+        addAttachListener { service.stateChangeListeners += stateChangedHandler }
+        addDetachListener { service.stateChangeListeners -= stateChangedHandler }
     }
 
     private fun configureHeader() {
         refreshButton.text = "Aktualisieren"
         refreshButton.isDisableOnClick = true
-        refreshButton.addClickListener { importService.refreshItems() }
+        refreshButton.addClickListener { service.refreshItems() }
 
         val syncWithShopifyButton = Button("Mit Shopify synchronisieren") { synchronize() }
 
@@ -111,38 +118,11 @@ class ProductManagerView(
     }
 
     private fun configureTreeGrid() {
-        treeGrid.addHierarchyColumn { it.name }
-            .setHeader("Bezeichnung")
-            .apply {
-                isSortable = false
-                flexGrow = 100
-            }
-        treeGrid.addColumn { it.vendor }
-            .setHeader("Hersteller")
-            .apply {
-                isSortable = false
-                flexGrow = 5
-            }
-        treeGrid.addColumn { it.type }
-            .setHeader("Produktart")
-            .apply {
-                isSortable = false
-                flexGrow = 5
-            }
-        treeGrid.addColumn { it.tags }
-            .setHeader("Weitere Tags")
-            .apply {
-                isSortable = false
-                flexGrow = 30
-            }
-        treeGrid.addColumn { it.variations }
-            .setHeader("V#")
-            .apply {
-                isSortable = false
-                textAlign = ColumnTextAlign.CENTER
-                width = "4em"
-                flexGrow = 0
-            }
+        treeGrid.addHierarchyTextColumn("Bezeichnung", flexGrow = 100) { it.name }
+        treeGrid.addTextColumn("Hersteller", flexGrow = 5) { it.vendor }
+        treeGrid.addTextColumn("Produktart", flexGrow = 5) { it.type }
+        treeGrid.addTextColumn("Weitere Tags", flexGrow = 30) { it.tags }
+        treeGrid.addCountColumn("V#") { it.variations }
         treeGrid.addComponentColumn { treeItemStatusColumn(it) }
             .setHeader("")
             .apply {
@@ -150,13 +130,7 @@ class ProductManagerView(
                 width = "32px"
                 flexGrow = 0
             }
-        treeGrid.addComponentColumn { treeItemActionsColumn(it) }
-            .setHeader("")
-            .apply {
-                isSortable = false
-                width = "72px"
-                flexGrow = 0
-            }
+        treeGrid.addActionsColumn(2) { treeItemActions(it) }
         treeGrid.setDataProvider(TreeDataProvider())
         treeGrid.expandRecursively(
             treeGrid.dataProvider.fetchChildren(HierarchicalQuery(null, null)),
@@ -179,7 +153,7 @@ class ProductManagerView(
     private fun synchronize() {
         progressOverlay.isVisible = true
         CompletableFuture
-            .runAsync({ importService.synchronize() }, taskExecutor)
+            .runAsync({ service.synchronize() }, taskExecutor)
             .whenComplete { _, throwable ->
                 ui.getOrNull()?.access {
                     throwable?.also { showErrorNotification(it) }
@@ -189,10 +163,20 @@ class ProductManagerView(
             }
     }
 
+    private fun markItem(product: ProductItem) {
+        service.markForSync(product)
+        treeGrid.dataProvider.refreshItem(product)
+    }
+
+    private fun unmarkItem(product: ProductItem) {
+        service.unmarkForSync(product)
+        treeGrid.dataProvider.refreshItem(product)
+    }
+
     private fun editItem(item: SyncableItem) {
         val dialog = Dialog()
         dialog.width = "400px"
-        dialog.headerTitle = if (item is ProductManagerService.Category) "Kategorie bearbeiten" else "Produkt bearbeiten"
+        dialog.headerTitle = if (item is CategoryItem) "Kategorie bearbeiten" else "Produkt bearbeiten"
 
         val closeButton = Button(VaadinIcon.CLOSE.create()) { dialog.close() }
         closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY)
@@ -207,11 +191,11 @@ class ProductManagerView(
             val textField = TextField()
             textField.label = label
             textField.value = value
-            textField.isEnabled = item is ProductManagerService.Product
+            textField.isEnabled = item is ProductItem
             textField.setWidthFull()
             layout.add(textField)
 
-            if (item is ProductManagerService.Product) {
+            if (item is ProductItem) {
                 return Pair(textField, null)
             }
 
@@ -243,7 +227,7 @@ class ProductManagerView(
             dialog.isEnabled = false
             val vendor = vendorTextField.value.takeIf { vendorCheckbox?.value ?: true }
             val type = typeTextField.value.takeIf { typeCheckbox?.value ?: true }
-            importService.updateItem(item, vendor, type, tagsTextField.value)
+            service.updateItem(item, vendor, type, tagsTextField.value)
             dialog.close()
             refreshTreeItem(item, vendor != null || type != null)
         }
@@ -252,13 +236,13 @@ class ProductManagerView(
     }
 
     private fun treeItemStatusColumn(item: SyncableItem): Component {
-        if (item !is ProductManagerService.Product) {
+        if (item !is ProductItem) {
             return Span()
         }
 
         val problems = item.syncProblems
         val icon = when {
-            problems.has<SyncProblem.Error>() -> VaadinIcon.WARNING.create().apply { style.setColor("var(--lumo-error-color") }
+            problems.has<Error>() -> VaadinIcon.WARNING.create().apply { style.setColor("var(--lumo-error-color") }
             problems.isNotEmpty() -> VaadinIcon.WARNING.create().apply { style.setColor("var(--lumo-warning-color") }
             item.isMarkedForSync -> VaadinIcon.CHECK.create().apply { style.setColor("var(--lumo-success-color") }
             else -> VaadinIcon.CIRCLE.create().apply { style.setColor("lightgrey") }
@@ -270,49 +254,20 @@ class ProductManagerView(
         return icon
     }
 
-    private fun treeItemActionsColumn(item: SyncableItem): Component {
-        val spacer = Span()
-        spacer.setWidthFull()
-
-        val layout = HorizontalLayout(spacer)
-        layout.isSpacing = false
-        layout.themeList.add("spacing-s")
-        layout.style.setWhiteSpace(Style.WhiteSpace.NOWRAP)
-
-        if (item is ProductManagerService.Product) {
-            val marked = item.isMarkedForSync
-            val problems = item.syncProblems
-
-            val markUnmarkIcon = if (marked) VaadinIcon.TRASH.create() else VaadinIcon.PLUS.create()
-            markUnmarkIcon.setSize("20px")
-            val markUnmarkButton = Button(markUnmarkIcon)
-            markUnmarkButton.isEnabled = marked || !problems.has<SyncProblem.Error>()
-            markUnmarkButton.height = "20px"
-            markUnmarkButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE)
-            markUnmarkButton.addClickListener {
-                if (marked) {
-                    importService.unmarkForSync(item)
-                } else {
-                    importService.markForSync(item)
-                }
-                treeGrid.dataProvider.refreshItem(item)
+    private fun treeItemActions(item: SyncableItem) =
+        buildList {
+            if (item is ProductItem) {
+                val markUnmarkButton =
+                    if (item.isMarkedForSync) GridActionButton(VaadinIcon.TRASH) { unmarkItem(item) }
+                    else GridActionButton(VaadinIcon.PLUS) { markItem(item) }.apply { isEnabled = !item.syncProblems.has<Error>() }
+                add(markUnmarkButton)
             }
-            layout.add(markUnmarkButton)
+            add(GridActionButton(VaadinIcon.EDIT) { editItem(item) })
         }
-
-        val editIcon = VaadinIcon.EDIT.create()
-        editIcon.setSize("20px")
-        val editButton = Button(editIcon) { editItem(item) }
-        editButton.height = "20px"
-        editButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE)
-        layout.add(editButton)
-
-        return layout
-    }
 
     private fun refreshTreeItem(item: SyncableItem, recurse: Boolean) {
         treeGrid.dataProvider.refreshItem(item, recurse)
-        if (recurse && item is ProductManagerService.Category) {
+        if (recurse && item is CategoryItem) {
             item.childrenAndProducts.forEach { refreshTreeItem(it, true) }
         }
     }
@@ -322,7 +277,7 @@ class ProductManagerView(
 
         override fun fetchChildrenFromBackEnd(query: HierarchicalQuery<SyncableItem, Void?>): Stream<SyncableItem> {
             val withErrors = if (withErrorsCheckbox.value) true else if (errorFreeCheckbox.value) false else null
-            val children = (query.parent as ProductManagerService.Category?)?.childrenAndProducts ?: importService.rootCategories
+            val children = (query.parent as CategoryItem?)?.childrenAndProducts ?: service.rootCategories
             return children.asSequence()
                 .filter { it.filterBy(markedForSyncCheckbox.value, withErrors, filterTextField.value) }
                 .sortedBy { it.name }
@@ -330,7 +285,7 @@ class ProductManagerView(
         }
 
         override fun hasChildren(item: SyncableItem) =
-            item is ProductManagerService.Category
+            item is CategoryItem
 
         override fun getChildCount(query: HierarchicalQuery<SyncableItem, Void?>) =
             fetchChildren(query).count().toInt()

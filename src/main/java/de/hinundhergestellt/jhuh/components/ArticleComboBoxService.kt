@@ -1,13 +1,11 @@
 package de.hinundhergestellt.jhuh.components
 
-import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedVariation
 import org.springframework.stereotype.Service
 
 @Service
-@VaadinSessionScope
 class ArticleComboBoxService(
     private val artooDataStore: ArtooDataStore
 ) {

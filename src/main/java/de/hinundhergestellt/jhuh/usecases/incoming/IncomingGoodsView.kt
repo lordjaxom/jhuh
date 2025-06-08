@@ -1,10 +1,7 @@
 package de.hinundhergestellt.jhuh.usecases.incoming
 
-import com.vaadin.flow.component.Component
 import com.vaadin.flow.component.Key
 import com.vaadin.flow.component.button.Button
-import com.vaadin.flow.component.button.ButtonVariant
-import com.vaadin.flow.component.grid.ColumnTextAlign
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.grid.GridVariant
 import com.vaadin.flow.component.icon.VaadinIcon
@@ -15,6 +12,10 @@ import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
 import de.hinundhergestellt.jhuh.components.ArticleComboBoxFactory
 import de.hinundhergestellt.jhuh.components.CountTextField
+import de.hinundhergestellt.jhuh.components.GridActionButton
+import de.hinundhergestellt.jhuh.components.addActionsColumn
+import de.hinundhergestellt.jhuh.components.addCountColumn
+import de.hinundhergestellt.jhuh.components.addTextColumn
 
 @Route
 @PageTitle("Wareneingang")
@@ -68,44 +69,13 @@ class IncomingGoodsView(
     }
 
     private fun configureIncomingGrid() {
-        incomingGrid.addColumn { it.label }
-            .setHeader("Artikel")
-            .apply {
-                isSortable = false
-                flexGrow = 20
-            }
-        incomingGrid.addColumn { it.count }
-            .setHeader("#")
-            .apply {
-                isSortable = false
-                textAlign = ColumnTextAlign.END
-                width = "4em"
-                flexGrow = 0
-            }
-        incomingGrid.addComponentColumn { incomingItemActionsColumn(it) }
-            .setHeader("")
-            .apply {
-                isSortable = false
-                width = "48px"
-                flexGrow = 0
-            }
+        incomingGrid.addTextColumn("Artikel", flexGrow = 20) { it.label }
+        incomingGrid.addCountColumn { it.count }
+        incomingGrid.addActionsColumn { GridActionButton(VaadinIcon.TRASH) { removeIncoming(it) } }
         incomingGrid.setItems(service.incomings)
         incomingGrid.setSizeFull()
         incomingGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES)
         add(incomingGrid)
-    }
-
-    private fun incomingItemActionsColumn(incoming: Incoming): Component {
-        val deleteIcon = VaadinIcon.TRASH.create()
-        deleteIcon.setSize("20px")
-        val deleteButton = Button(deleteIcon)
-        deleteButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE)
-        deleteButton.addClickListener {
-            service.incomings.remove(incoming)
-            validateActions()
-            incomingGrid.dataProvider.refreshAll()
-        }
-        return deleteButton
     }
 
     private fun validateActions() {
@@ -126,5 +96,11 @@ class IncomingGoodsView(
         articleComboBox.value = null
         countTextField.value = ""
         articleComboBox.focus()
+    }
+
+    private fun removeIncoming(incoming: Incoming) {
+        service.incomings.remove(incoming)
+        validateActions()
+        incomingGrid.dataProvider.refreshAll()
     }
 }
