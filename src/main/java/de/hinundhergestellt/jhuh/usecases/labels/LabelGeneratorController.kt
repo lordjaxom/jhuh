@@ -1,5 +1,7 @@
 package de.hinundhergestellt.jhuh.usecases.labels
 
+import de.hinundhergestellt.jhuh.components.Article
+import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
 import jakarta.servlet.http.HttpServletResponse
 import org.krysalis.barcode4j.impl.upcean.EAN13Bean
 import org.krysalis.barcode4j.output.bitmap.BitmapCanvasProvider
@@ -15,14 +17,15 @@ import java.awt.image.BufferedImage
 @RestController
 @RequestMapping("api/labels")
 class LabelGeneratorController(
-    private val service: LabelGeneratorService
+    private val service: LabelGeneratorService,
+    private val artooDataStore: ArtooDataStore
 ) {
     private val generator = EAN13Bean().apply { height = 8.0 }
 
-    @GetMapping("{format}", produces = [MediaType.TEXT_HTML_VALUE])
-    fun getLabels(@PathVariable format: String): ModelAndView {
+    @GetMapping("{format}/{type}", produces = [MediaType.TEXT_HTML_VALUE])
+    fun getLabels(@PathVariable format: String, @PathVariable type: String): ModelAndView {
         val labels = service.labels.flatMap { generateSequence { it }.take(it.count) }
-        return ModelAndView(format, "labels", labels)
+        return ModelAndView(format, mapOf("labels" to labels, "type" to type))
     }
 
     @GetMapping("barcode/{barcode}", produces = [MediaType.IMAGE_PNG_VALUE])
@@ -32,5 +35,19 @@ class LabelGeneratorController(
             generator.generateBarcode(canvas, barcode)
             canvas.finish()
         }
+    }
+
+    @GetMapping("prices", produces = [MediaType.TEXT_HTML_VALUE])
+    fun getPrices(): ModelAndView {
+        val labels = artooDataStore.findAllProducts().asSequence()
+            .filter { it.name.startsWith("myboshi") || it.name.startsWith("Gründl") }
+            .filter {
+                !it.name.contains("Dejavu") && !it.name.contains("Hot Socks") && !it.name.contains("Luminosa") &&
+                        !it.name.contains("nadel", ignoreCase = true) && !it.name.contains("watte")
+            }
+            .flatMap { it.variations.asSequence().map { variation -> Article(it, variation) } }
+            .map { Label(it, null, 1) }
+            .toList()
+        return ModelAndView("avery-zweckform-38x21", mapOf("labels" to labels, "type" to "price"))
     }
 }

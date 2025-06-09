@@ -22,20 +22,21 @@
             padding: 0;
             display: block;
             background: lightgray;
+            font-family: Arial, Helvetica, sans-serif;
         }
 
         .sheet {
             display: grid;
             grid-template-columns: repeat(5, 38mm);
-            grid-template-rows: repeat(13, 21.1mm);
+            grid-template-rows: repeat(13, 21.2mm);
             width: 190mm;
-            height: 274.3mm;
+            height: 275.6mm;
             margin: auto;
         }
 
         @media print {
             .sheet {
-                padding-top: 11.35mm;
+                padding-top: 10mm;
                 box-sizing: border-box;
                 page-break-after: always;
             }
@@ -56,12 +57,12 @@
 
         .label {
             width: 38mm;
-            height: 21.1mm;
+            height: 21.2mm;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 1mm;
+            padding-top: 1mm;
         }
 
         @media screen {
@@ -82,8 +83,22 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            font-size: 3mm;
+            /*font-size: 3mm;*/
             text-align: center;
+            padding-bottom: 1mm;
+        }
+
+        .line-name {
+            font-size: 4mm;
+        }
+
+        .line-variant {
+            font-size: 3mm;
+        }
+
+        .line-price {
+            font-weight: bold;
+            font-size: 9mm;
         }
 
         .barcode {
@@ -103,15 +118,8 @@
 <#list labels?chunk(65) as sheet>
     <div class="sheet">
         <#list sheet as label>
-            <div id="label-1" class="label">
-                <div class="label-text">
-                    <div class="line">${label.vendor}</div>
-                    <div class="line">${label.name}</div>
-                    <div class="line">${label.variant}</div>
-                </div>
-                <div class="barcode">
-                    <img src="/api/labels/barcode/${label.barcode}" alt="${label.barcode}"/>
-                </div>
+            <div class="label">
+                <#include "fragments/${type}.ftlh">
             </div>
         </#list>
     </div>

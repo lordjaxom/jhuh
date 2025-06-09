@@ -43,6 +43,7 @@ class ArtooProductFixTest {
     }
 
     @Test
+    @Disabled("Has run successfully")
     fun moveVariantsToProducts() {
         val products = artooProductClient.findAll().toList()
         products.asSequence()
@@ -72,6 +73,27 @@ class ArtooProductFixTest {
                     artooProductClient.update(it)
                 }
                  artooProductClient.delete(product)
+            }
+    }
+
+    @Test
+    fun updateProductsWithVariantsName() {
+        val oldName = "Gründl - Funny Mini 15g"
+        val newName = "Gründl Funny Mini"
+
+        val groups = artooProductGroupClient.findAll().toList()
+        val products = artooProductClient.findAll().toList()
+
+        val groupToUpdate = groups.find { it.name == oldName }!!
+        groupToUpdate.name = newName
+        groupToUpdate.description = groupToUpdate.description.replace(oldName, newName)
+        artooProductGroupClient.update(groupToUpdate)
+
+        products.asSequence()
+            .filter { it.productGroupId == groupToUpdate.id }
+            .forEach { product ->
+                product.name = product.name.replace(oldName, newName)
+                artooProductClient.update(product)
             }
     }
 }

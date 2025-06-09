@@ -103,7 +103,7 @@
 <#list labels?chunk(40) as sheet>
     <div class="sheet">
         <#list sheet as label>
-            <div id="label-1" class="label">
+            <div class="label">
                 <div class="label-text">
                     <div class="line">${label.vendor}</div>
                     <div class="line">${label.name}</div>

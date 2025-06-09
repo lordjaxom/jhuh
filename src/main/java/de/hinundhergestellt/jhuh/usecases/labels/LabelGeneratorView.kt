@@ -50,7 +50,7 @@ class LabelGeneratorView(
 
         barcodesButton.text = "Barcodes erstellen"
         barcodesButton.isEnabled = false
-        barcodesButton.addClickListener { ui.get().page.open("/api/labels/${formatComboBox.value}", "_blank") }
+        barcodesButton.addClickListener { ui.get().page.open("/api/labels/${formatComboBox.value}/barcode", "_blank") }
 
         val layout = HorizontalLayout(formatComboBox, barcodesButton)
         layout.justifyContentMode = FlexComponent.JustifyContentMode.END

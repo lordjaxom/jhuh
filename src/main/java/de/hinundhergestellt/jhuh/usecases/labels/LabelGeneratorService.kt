@@ -31,4 +31,5 @@ class Label(
     val name by article.product::name
     val variant = sequenceOf(article.variation.itemNumber, article.variation.name).filterNotNull().joinToString(" ")
     val barcode by article.variation::barcode
+    val price by article.variation::price
 }
