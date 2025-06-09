@@ -5,7 +5,7 @@ import com.shopify.admin.types.VariantOptionValueInput
 
 class ShopifyProductVariantOption(
     val name: String,
-    val value: String
+    var value: String
 ) {
     internal constructor(option: SelectedOption) : this(
         option.name,

@@ -51,9 +51,10 @@ class ShopifyProductClient(
         val payload = response.extractValueAsObject("productCreate", ProductCreatePayload::class.java)
         require(payload.userErrors.isEmpty()) { "Product create failed: " + payload.userErrors }
 
-        val options = product.options
-            .zip(payload.product.options)
+        val options = product.options.asSequence()
+            .zip(payload.product.options.asSequence())
             .map { (option, created) -> ShopifyProductOption(option, created.id) }
+            .toMutableList()
         return ShopifyProduct(product, payload.product.id, options)
     }
 
@@ -115,6 +116,7 @@ class ShopifyProductClient(
                     .status()
                         .parent()
                     .tags()
+                    .hasOnlyDefaultVariant()
                     .variants(250, null, null, null, null, null)
                         .edges()
                             .node()

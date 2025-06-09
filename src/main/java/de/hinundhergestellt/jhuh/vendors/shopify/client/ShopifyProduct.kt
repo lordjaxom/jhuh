@@ -34,8 +34,9 @@ class ShopifyProduct private constructor(
     productType: String,
     status: ProductStatus,
     tags: Set<String>,
-    override val options: List<ShopifyProductOption>,
+    override val options: MutableList<ShopifyProductOption>,
     val variants: MutableList<ShopifyProductVariant>,
+    val hasOnlyDefaultVariant: Boolean
 ) : UnsavedShopifyProduct(
     title,
     vendor,
@@ -51,11 +52,12 @@ class ShopifyProduct private constructor(
         product.productType,
         product.status,
         product.tags.toSet(),
-        product.options.map { ShopifyProductOption(it) },
-        product.variants.edges.asSequence().map { ShopifyProductVariant(it.node) }.toMutableList()
+        product.options.asSequence().map { ShopifyProductOption(it) }.toMutableList(),
+        product.variants.edges.asSequence().map { ShopifyProductVariant(it.node) }.toMutableList(),
+        product.hasOnlyDefaultVariant
     )
 
-    internal constructor(unsaved: UnsavedShopifyProduct, id: String, options: List<ShopifyProductOption>) : this(
+    internal constructor(unsaved: UnsavedShopifyProduct, id: String, options: MutableList<ShopifyProductOption>) : this(
         id,
         unsaved.title,
         unsaved.vendor,
@@ -63,7 +65,8 @@ class ShopifyProduct private constructor(
         unsaved.status,
         unsaved.tags,
         options,
-        mutableListOf()
+        mutableListOf(),
+        options.isEmpty()
     )
 
     fun findVariantByBarcode(barcode: String) =
