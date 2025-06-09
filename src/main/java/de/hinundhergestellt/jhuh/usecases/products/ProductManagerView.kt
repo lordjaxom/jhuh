@@ -10,6 +10,7 @@ import com.vaadin.flow.component.dialog.Dialog
 import com.vaadin.flow.component.grid.GridVariant
 import com.vaadin.flow.component.html.Div
 import com.vaadin.flow.component.html.Span
+import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.notification.Notification
 import com.vaadin.flow.component.notification.NotificationVariant
@@ -27,6 +28,7 @@ import de.hinundhergestellt.jhuh.components.GridActionButton
 import de.hinundhergestellt.jhuh.components.addActionsColumn
 import de.hinundhergestellt.jhuh.components.addCountColumn
 import de.hinundhergestellt.jhuh.components.addHierarchyTextColumn
+import de.hinundhergestellt.jhuh.components.addIconColumn
 import de.hinundhergestellt.jhuh.components.addTextColumn
 import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.CategoryItem
 import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.ProductItem
@@ -123,14 +125,8 @@ class ProductManagerView(
         treeGrid.addTextColumn("Produktart", flexGrow = 5) { it.type }
         treeGrid.addTextColumn("Weitere Tags", flexGrow = 30) { it.tags }
         treeGrid.addCountColumn("V#") { it.variations }
-        treeGrid.addComponentColumn { treeItemStatusColumn(it) }
-            .setHeader("")
-            .apply {
-                isSortable = false
-                width = "32px"
-                flexGrow = 0
-            }
-        treeGrid.addActionsColumn(2) { treeItemActions(it) }
+        treeGrid.addIconColumn { syncableItemStatus(it) }
+        treeGrid.addActionsColumn(2) { syncableItemActions(it) }
         treeGrid.setDataProvider(TreeDataProvider())
         treeGrid.expandRecursively(
             treeGrid.dataProvider.fetchChildren(HierarchicalQuery(null, null)),
@@ -235,26 +231,24 @@ class ProductManagerView(
         dialog.open()
     }
 
-    private fun treeItemStatusColumn(item: SyncableItem): Component {
-        if (item !is ProductItem) {
-            return Span()
+    private fun syncableItemStatus(item: SyncableItem): Icon =
+        if (item !is ProductItem) Icon()
+        else {
+            val problems = item.syncProblems
+            when {
+                problems.has<Error>() -> VaadinIcon.WARNING.create().apply { style.setColor("var(--lumo-error-color") }
+                problems.isNotEmpty() -> VaadinIcon.WARNING.create().apply { style.setColor("var(--lumo-warning-color") }
+                item.isMarkedForSync -> VaadinIcon.CHECK.create().apply { style.setColor("var(--lumo-success-color") }
+                else -> VaadinIcon.CIRCLE.create().apply { style.setColor("lightgrey") }
+            }.also {
+                it.setSize("16px")
+                if (problems.isNotEmpty()) {
+                    Tooltip.forComponent(it).withText(problems.joinToString("\n"))
+                }
+            }
         }
 
-        val problems = item.syncProblems
-        val icon = when {
-            problems.has<Error>() -> VaadinIcon.WARNING.create().apply { style.setColor("var(--lumo-error-color") }
-            problems.isNotEmpty() -> VaadinIcon.WARNING.create().apply { style.setColor("var(--lumo-warning-color") }
-            item.isMarkedForSync -> VaadinIcon.CHECK.create().apply { style.setColor("var(--lumo-success-color") }
-            else -> VaadinIcon.CIRCLE.create().apply { style.setColor("lightgrey") }
-        }
-        icon.setSize("16px")
-        if (problems.isNotEmpty()) {
-            Tooltip.forComponent(icon).withText(problems.joinToString("\n"))
-        }
-        return icon
-    }
-
-    private fun treeItemActions(item: SyncableItem) =
+    private fun syncableItemActions(item: SyncableItem) =
         buildList {
             if (item is ProductItem) {
                 val markUnmarkButton =
