@@ -7,6 +7,7 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOption
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProduct
+import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductOption
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVariant
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
@@ -32,11 +33,7 @@ class ShopifyDataStore(
     fun create(product: UnsavedShopifyProduct): ShopifyProduct {
         val created =
             if (!readOnly) productClient.create(product)
-            else ShopifyProduct(
-                product,
-                "uid://${UUID.randomUUID()}",
-                product.options.map { ShopifyProductOption(it, "uid://${UUID.randomUUID()}") }
-            )
+            else product.toDryRunShopifyProduct()
         products.add(created)
         return created
     }
@@ -57,7 +54,7 @@ class ShopifyDataStore(
     fun create(product: ShopifyProduct, variants: List<UnsavedShopifyProductVariant>) {
         val created =
             if (!readOnly) variantClient.create(product, variants)
-            else variants.map { ShopifyProductVariant(it, "uid://${UUID.randomUUID()}", it.options[0].value) }
+            else variants.map { it.toDryRunShopifyProductVariant() }
         product.variants.addAll(created)
     }
 
@@ -74,3 +71,22 @@ class ShopifyDataStore(
         product.variants.removeAll(variants)
     }
 }
+
+val ShopifyProduct.isDryRun get() = id.startsWith("uid://")
+
+private fun UnsavedShopifyProduct.toDryRunShopifyProduct() =
+    ShopifyProduct(
+        this,
+        "uid://${UUID.randomUUID()}",
+        options.asSequence().map { it.toDryRunShopifyProductOption() }.toMutableList()
+    )
+
+private fun UnsavedShopifyProductOption.toDryRunShopifyProductOption() =
+    ShopifyProductOption(this, "uid://${UUID.randomUUID()}")
+
+private fun UnsavedShopifyProductVariant.toDryRunShopifyProductVariant() =
+    ShopifyProductVariant(
+        this,
+        "uid://${UUID.randomUUID()}",
+        options.firstOrNull()?.value ?: "Default Title"
+    )

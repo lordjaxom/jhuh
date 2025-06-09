@@ -1,6 +1,5 @@
 package de.hinundhergestellt.jhuh
 
-import arrow.core.raise.option
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOptionClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantClient
@@ -20,10 +19,7 @@ class ShopifyProductsFixTest {
 
     @Test
     fun makeVariantDefault() {
-        var product = productClient.findAll().find { it.title.contains("Übertragungsfolie") }!!
-        println(product.hasOnlyDefaultVariant)
-        optionClient.delete(product, product.options.subList(0, 1))
-        product = productClient.findAll().find { it.title.contains("Übertragungsfolie") }!!
+        val product = productClient.findAll().find { it.title.contains("Übertragungsfolie") }!!
         println(product.hasOnlyDefaultVariant)
     }
 }

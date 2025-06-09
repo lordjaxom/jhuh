@@ -8,6 +8,8 @@ import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProductRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariant
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariantRepository
+import de.hinundhergestellt.jhuh.usecases.products.SyncProblem.Error
+import de.hinundhergestellt.jhuh.usecases.products.SyncProblem.Warning
 import de.hinundhergestellt.jhuh.usecases.products.VariantBulkOperation.Create
 import de.hinundhergestellt.jhuh.usecases.products.VariantBulkOperation.Delete
 import de.hinundhergestellt.jhuh.usecases.products.VariantBulkOperation.Update
@@ -23,6 +25,7 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductOption
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
+import de.hinundhergestellt.jhuh.vendors.shopify.datastore.isDryRun
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -109,6 +112,7 @@ class ProductManagerService(
             artooDataStore.findAllProducts().forEach { reconcileFromArtoo(it) }
             artooDataStore.rootCategories.forEach { reconcileCategories(it) }
 
+            // TODO: Potentially deactivate products in Shopify when synced=false
             syncProductRepository.findAllBySyncedIsTrue().forEach { synchronizeWithShopify(it) }
 
             lazyRootCategories.reset()
@@ -128,21 +132,21 @@ class ProductManagerService(
     private fun checkSyncProblems(product: ArtooMappedProduct, syncProduct: SyncProduct?) = buildList {
         val barcodes = product.barcodes
         if (barcodes.isEmpty()) {
-            add(SyncProblem.Error("Produkt hat keine Barcodes"))
+            add(Error("Produkt hat keine Barcodes"))
         } else if (barcodes.size < product.variations.size) {
-            add(SyncProblem.Warning("Nicht alle Variationen haben einen Barcode"))
+            add(Warning("Nicht alle Variationen haben einen Barcode"))
         }
         if (syncProduct?.vendor == null) {
-            add(SyncProblem.Error("Produkt hat keinen Hersteller"))
+            add(Error("Produkt hat keinen Hersteller"))
         }
         if (syncProduct?.type == null) {
-            add(SyncProblem.Error("Produkt hat keine Produktart"))
+            add(Error("Produkt hat keine Produktart"))
         }
     }
 
     private fun reconcileFromShopify(shopifyProduct: ShopifyProduct) {
         // all products in Shopify are considered synced
-        val syncProduct = syncProductRepository.findByShopifyId(shopifyProduct.id) ?: toSyncProduct(shopifyProduct)
+        val syncProduct = syncProductRepository.findByShopifyId(shopifyProduct.id) ?: shopifyProduct.toSyncProduct()
         shopifyProduct.variants.forEach { reconcileFromShopify(it, syncProduct) }
         syncProductRepository.save(syncProduct) // for later retrieval in same transaction
     }
@@ -200,16 +204,16 @@ class ProductManagerService(
         val artooProduct = syncProduct.artooId?.let { artooDataStore.findProductById(it) }
         var shopifyProduct = syncProduct.shopifyId?.let { shopifyDataStore.findProductById(it) }
 
-        if (artooProduct != null && checkSyncProblems(artooProduct, syncProduct).has<SyncProblem.Error>()) {
+        if (artooProduct != null && checkSyncProblems(artooProduct, syncProduct).has<Error>()) {
             logger.warn { "Product ${artooProduct.name} has errors, skipping synchronization" }
             return
         }
 
-        if (artooProduct == null || !syncProduct.synced) {
+        if (artooProduct == null) {
             require(shopifyProduct != null) { "SyncProduct vanished from both ready2order and Shopify" }
-            logger.info { "Product ${shopifyProduct!!.title} no longer in ready2order or not synced, delete from Shopify" }
+            logger.info { "Product ${shopifyProduct!!.title} no longer in ready2order, delete from Shopify" }
             shopifyDataStore.delete(shopifyProduct)
-            artooProduct?.apply { syncProductRepository.delete(syncProduct) }
+            syncProductRepository.delete(syncProduct)
             return
         }
 
@@ -217,7 +221,9 @@ class ProductManagerService(
             logger.info { "Product ${artooProduct.name} only in ready2order, create in Shopify" }
             val unsavedShopifyProduct = buildShopifyProduct(syncProduct, artooProduct)
             shopifyProduct = shopifyDataStore.create(unsavedShopifyProduct)
-            syncProduct.shopifyId = shopifyProduct.id
+            if (!shopifyProduct.isDryRun) {
+                syncProduct.shopifyId = shopifyProduct.id
+            }
         } else if (updateShopifyProduct(syncProduct, shopifyProduct, artooProduct)) {
             logger.info { "Product ${artooProduct.name} has changed, update in Shopify" }
             shopifyDataStore.update(shopifyProduct)
@@ -226,9 +232,9 @@ class ProductManagerService(
         val bulkOperations = syncProduct.variants
             .toList() // create copy to prevent concurrent modification when deleting variant
             .map { synchronizeWithShopify(it, artooProduct, shopifyProduct) }
-        bulkOperations.allOf<Delete>()?.run { shopifyDataStore.delete(shopifyProduct, map { it.variant }) }
         bulkOperations.allOf<Create>()?.run { shopifyDataStore.create(shopifyProduct, map { it.variant }) }
         bulkOperations.allOf<Update>()?.run { shopifyDataStore.update(shopifyProduct, map { it.variant }) }
+        bulkOperations.allOf<Delete>()?.run { shopifyDataStore.delete(shopifyProduct, map { it.variant }) }
     }
 
     private fun synchronizeWithShopify(syncVariant: SyncVariant, artooProduct: ArtooMappedProduct, shopifyProduct: ShopifyProduct)
@@ -255,58 +261,58 @@ class ProductManagerService(
         return null
     }
 
-    private fun buildShopifyProduct(
-        syncProduct: SyncProduct,
-        artooProduct: ArtooMappedProduct
-    ): UnsavedShopifyProduct {
-        val tags = buildTags(syncProduct, artooProduct)
-        val options = when {
-            artooProduct.hasOnlyDefaultVariant -> listOf()
-            else -> listOf(
-                UnsavedShopifyProductOption(
-                    "Farbe",
-                    artooProduct.variations.map { it.name.removePrefix(artooProduct.name).trim() }
-                )
-            )
-        }
-        return UnsavedShopifyProduct(
+    private fun buildShopifyProduct(syncProduct: SyncProduct, artooProduct: ArtooMappedProduct) =
+        UnsavedShopifyProduct(
             artooProduct.description.ifEmpty { artooProduct.name },
             syncProduct.vendor!!,
             syncProduct.type!!,
             ProductStatus.DRAFT,
-            tags,
-            options
+            buildTags(syncProduct, artooProduct),
+            when {
+                artooProduct.hasOnlyDefaultVariant -> listOf()
+                else -> listOf(
+                    UnsavedShopifyProductOption(
+                        "Farbe", // TODO
+                        artooProduct.variations.map { it.name }
+                    )
+                )
+            }
         )
-    }
 
     private fun updateShopifyProduct(syncProduct: SyncProduct, shopifyProduct: ShopifyProduct, artooProduct: ArtooMappedProduct): Boolean {
-        val tags = buildTags(syncProduct, artooProduct)
+        require(shopifyProduct.hasOnlyDefaultVariant == artooProduct.hasOnlyDefaultVariant) { "Switching variants and standalone not supported yet" }
         return updateProperty(shopifyProduct::title, artooProduct.description.ifEmpty { artooProduct.name }) or
                 updateProperty(shopifyProduct::vendor, syncProduct.vendor!!) or
                 updateProperty(shopifyProduct::productType, syncProduct.type!!) or
-                updateProperty(shopifyProduct::tags, tags)
+                updateProperty(shopifyProduct::tags, buildTags(syncProduct, artooProduct))
     }
 
-    private fun buildShopifyVariant(
-        shopifyProduct: ShopifyProduct,
-        artooVariation: ArtooMappedVariation
-    ): UnsavedShopifyProductVariant {
-        return UnsavedShopifyProductVariant(
+    private fun buildShopifyVariant(shopifyProduct: ShopifyProduct, artooVariation: ArtooMappedVariation) =
+        UnsavedShopifyProductVariant(
             artooVariation.itemNumber ?: "",
             artooVariation.barcode!!,
             artooVariation.price,
-            listOf(
-                ShopifyProductVariantOption(
-                    shopifyProduct.options[0].name,
-                    artooVariation.name
+            when {
+                shopifyProduct.hasOnlyDefaultVariant -> listOf()
+                else -> listOf(
+                    ShopifyProductVariantOption(
+                        shopifyProduct.options[0].name,
+                        artooVariation.name
+                    )
                 )
-            )
+            }
         )
-    }
 
     private fun updateShopifyVariant(shopifyVariant: ShopifyProductVariant, artooVariation: ArtooMappedVariation) =
+        // @formatter:off
+        updateShopifyVariantOptions(shopifyVariant, artooVariation) or
         updateProperty(shopifyVariant::sku, artooVariation.itemNumber ?: "") or
-                updateProperty(shopifyVariant::price, artooVariation.price)
+        updateProperty(shopifyVariant::price, artooVariation.price)
+        // @formatter:on
+
+    private fun updateShopifyVariantOptions(shopifyVariant: ShopifyProductVariant, artooVariation: ArtooMappedVariation) =
+        if (artooVariation.isDefaultVariant) false
+        else updateProperty(shopifyVariant.options[0]::value, artooVariation.name)
 
     private fun <T> updateProperty(property: KMutableProperty0<T>, value: T): Boolean {
         if (property.get() != value) {
@@ -410,15 +416,6 @@ sealed class SyncProblem(val message: String) {
 
 inline fun <reified T : SyncProblem> List<SyncProblem>.has() = any { it is T }
 
-private fun toSyncProduct(shopifyProduct: ShopifyProduct) =
-    SyncProduct(
-        shopifyId = shopifyProduct.id,
-        vendor = shopifyProduct.vendor,
-        type = shopifyProduct.productType,
-        tags = (shopifyProduct.tags - listOf(shopifyProduct.vendor, shopifyProduct.productType)).toMutableSet(),
-        synced = true
-    )
-
 private sealed class VariantBulkOperation {
     class Create(val variant: UnsavedShopifyProductVariant) : VariantBulkOperation()
     class Update(val variant: ShopifyProductVariant) : VariantBulkOperation()
@@ -428,3 +425,12 @@ private sealed class VariantBulkOperation {
 private inline fun <reified T> List<VariantBulkOperation?>.allOf(): List<T>? {
     return filterIsInstance<T>().takeIf { it.isNotEmpty() }
 }
+
+private fun ShopifyProduct.toSyncProduct() =
+    SyncProduct(
+        shopifyId = id,
+        vendor = vendor,
+        type = productType,
+        tags = (tags - listOf(vendor, productType)).toMutableSet(),
+        synced = true
+    )

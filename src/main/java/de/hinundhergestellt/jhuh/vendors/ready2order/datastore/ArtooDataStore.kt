@@ -71,7 +71,7 @@ private class CategoriesAndProductsBuilder(
     private fun ArtooProductGroup.toProduct(): ArtooMappedProduct {
         val variations = products.asSequence()
             .filter { it.productGroupId == id }
-            .map { ArtooMappedVariation(it) }
+            .map { ArtooMappedVariation(it, false) }
             .toList()
         return ArtooMappedProduct.Group(this, variations)
     }

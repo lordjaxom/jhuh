@@ -20,11 +20,9 @@ class RefreshableAsync<T>(
     val stateChangeListeners: MutableList<() -> Unit> = synchronizedList(mutableListOf())
 
     operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
-        errorOrValue
-            ?.getOrElse { throw it } // if there's a stored error, throw it, otherwise...
-            ?.let { return it } // ...if there's a stored value, return it, otherwise...
+        errorOrValue?.apply { return getOrElse { throw it } }  // if there's a stored result, throw or return it, otherwise...
         future.get().get() // ...there's a future that will set valueOrError when finished, so...
-        return errorOrValue!!.getOrElse { throw it }  // ...if there's a stored error, throw it, otherwise there's a value to return
+        return errorOrValue!!.getOrElse { throw it }  // ...throw or return the now guaranteed result
     }
 
     fun refresh() {

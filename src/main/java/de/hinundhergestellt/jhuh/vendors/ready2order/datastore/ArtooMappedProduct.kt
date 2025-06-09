@@ -33,7 +33,7 @@ sealed class ArtooMappedProduct protected constructor(
 
     internal class Single(
         private val product: ArtooProduct
-    ) : ArtooMappedProduct(listOf(ArtooMappedVariation(product))) {
+    ) : ArtooMappedProduct(listOf(ArtooMappedVariation(product, true))) {
 
         override val id = "product-${product.id}"
         override val name by product::name
