@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.servlet.ModelAndView
+import reactor.core.publisher.Sinks
 import java.awt.image.BufferedImage
 
 @RestController
@@ -40,14 +41,17 @@ class LabelGeneratorController(
     @GetMapping("prices", produces = [MediaType.TEXT_HTML_VALUE])
     fun getPrices(): ModelAndView {
         val labels = artooDataStore.findAllProducts().asSequence()
-            .filter { it.name.startsWith("myboshi") || it.name.startsWith("Gründl") }
-            .filter {
-                !it.name.contains("Dejavu") && !it.name.contains("Hot Socks") && !it.name.contains("Luminosa") &&
-                        !it.name.contains("nadel", ignoreCase = true) && !it.name.contains("watte")
-            }
+//            .filter { it.name.startsWith("myboshi") || it.name.startsWith("Gründl") }
+//            .filter {
+//                !it.name.contains("Dejavu") && !it.name.contains("Hot Socks") && !it.name.contains("Luminosa") &&
+//                        !it.name.contains("nadel", ignoreCase = true) && !it.name.contains("watte")
+//            }
+            .filter { it.name == "myboshi No.2" }
             .flatMap { it.variations.asSequence().map { variation -> Article(it, variation) } }
-            .map { Label(it, null, 1) }
+            .filter { it.variation.name in listOf("smaragd", "titangrau", "tomate", "türkis", "weiß") }
+            .map { ArticleLabel(it, null, 1) }
             .toList()
-        return ModelAndView("avery-zweckform-38x21", mapOf("labels" to labels, "type" to "price"))
+        val empty = generateSequence { EmptyLabel(1) }.take(54).toList()
+        return ModelAndView("avery-zweckform-38x21", mapOf("labels" to (empty + labels), "type" to "price"))
     }
 }

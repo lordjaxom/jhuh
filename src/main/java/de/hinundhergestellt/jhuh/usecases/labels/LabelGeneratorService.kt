@@ -7,6 +7,7 @@ import de.hinundhergestellt.jhuh.components.Article
 import org.springframework.context.annotation.Scope
 import org.springframework.context.annotation.ScopedProxyMode
 import org.springframework.stereotype.Service
+import java.math.BigDecimal
 
 @Service
 @VaadinSessionScope
@@ -18,18 +19,37 @@ class LabelGeneratorService(
 
     fun createLabel(article: Article, count: Int) {
         val syncProduct = syncProductRepository.findByArtooId(article.product.id)
-        labels.add(Label(article, syncProduct, count))
+        labels.add(ArticleLabel(article, syncProduct, count))
     }
 }
 
-class Label(
+sealed interface Label {
+    val vendor: String
+    val name: String
+    val variant: String
+    val barcode: String?
+    val price: String
+    val count: Int
+}
+
+class EmptyLabel(
+    override val count: Int
+): Label {
+    override val vendor = ""
+    override val name = ""
+    override val variant = ""
+    override val barcode = ""
+    override val price = ""
+}
+
+class ArticleLabel(
     article: Article,
     syncProduct: SyncProduct?,
-    val count: Int
-) {
-    val vendor = syncProduct?.vendor ?: ""
-    val name by article.product::name
-    val variant = sequenceOf(article.variation.itemNumber, article.variation.name).filterNotNull().joinToString(" ")
-    val barcode by article.variation::barcode
-    val price by article.variation::price
+    override val count: Int
+) : Label {
+    override val vendor = syncProduct?.vendor ?: ""
+    override val name by article.product::name
+    override val variant = sequenceOf(article.variation.itemNumber, article.variation.name).filterNotNull().joinToString(" ")
+    override val barcode by article.variation::barcode
+    override val price: String = "${article.variation.price.toPlainString()} €"
 }

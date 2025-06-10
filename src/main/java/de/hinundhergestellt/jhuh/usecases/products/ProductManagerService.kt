@@ -34,7 +34,7 @@ import kotlin.streams.asSequence
 
 private val logger = KotlinLogging.logger {}
 
-private val INVALID_TAG_CHARACTERS = """[^A-Za-z0-9\\._ -]""".toRegex()
+private val INVALID_TAG_CHARACTERS = """[^A-ZÄÖÜa-zäöüß0-9\\._ -]""".toRegex()
 
 @Service
 @VaadinSessionScope
