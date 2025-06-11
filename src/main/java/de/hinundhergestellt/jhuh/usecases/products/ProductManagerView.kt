@@ -1,6 +1,5 @@
 package de.hinundhergestellt.jhuh.usecases.products
 
-import com.vaadin.flow.component.Component
 import com.vaadin.flow.component.Key
 import com.vaadin.flow.component.Text
 import com.vaadin.flow.component.button.Button
@@ -9,7 +8,6 @@ import com.vaadin.flow.component.checkbox.Checkbox
 import com.vaadin.flow.component.dialog.Dialog
 import com.vaadin.flow.component.grid.GridVariant
 import com.vaadin.flow.component.html.Div
-import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.notification.Notification
@@ -25,6 +23,7 @@ import com.vaadin.flow.dom.Style
 import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
 import de.hinundhergestellt.jhuh.components.GridActionButton
+import de.hinundhergestellt.jhuh.components.MoreGridActionButton
 import de.hinundhergestellt.jhuh.components.addActionsColumn
 import de.hinundhergestellt.jhuh.components.addCountColumn
 import de.hinundhergestellt.jhuh.components.addHierarchyTextColumn
@@ -126,7 +125,7 @@ class ProductManagerView(
         treeGrid.addTextColumn("Weitere Tags", flexGrow = 30) { it.tags }
         treeGrid.addCountColumn("V#") { it.variations }
         treeGrid.addIconColumn { syncableItemStatus(it) }
-        treeGrid.addActionsColumn(2) { syncableItemActions(it) }
+        treeGrid.addActionsColumn(3) { syncableItemActions(it) }
         treeGrid.setDataProvider(TreeDataProvider())
         treeGrid.expandRecursively(
             treeGrid.dataProvider.fetchChildren(HierarchicalQuery(null, null)),
@@ -257,6 +256,10 @@ class ProductManagerView(
                 add(markUnmarkButton)
             }
             add(GridActionButton(VaadinIcon.EDIT) { editItem(item) })
+            add(MoreGridActionButton().apply {
+                addItem("Etikett für Produkt") {}
+                addItem("Etiketten für Varianten") {}
+            })
         }
 
     private fun refreshTreeItem(item: SyncableItem, recurse: Boolean) {

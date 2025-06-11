@@ -2,11 +2,13 @@ package de.hinundhergestellt.jhuh.components
 
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.button.ButtonVariant
+import com.vaadin.flow.component.contextmenu.ContextMenu
+import com.vaadin.flow.component.html.Hr
 import com.vaadin.flow.component.icon.VaadinIcon
 
-class GridActionButton(
+open class GridActionButton(
     icon: VaadinIcon,
-    clickListener: () -> Unit
+    clickListener: () -> Unit = {}
 ) : Button(icon.create().apply { setSize("24px") }) {
 
     init {
@@ -15,4 +17,20 @@ class GridActionButton(
         addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE)
         addClickListener { clickListener() }
     }
+}
+
+class MoreGridActionButton : GridActionButton(VaadinIcon.ELLIPSIS_DOTS_H) {
+
+    private val contextMenu = ContextMenu()
+
+    init {
+        contextMenu.target = this
+        contextMenu.isOpenOnClick = true
+    }
+
+    fun addItem(text: String, action: () -> Unit) =
+        apply { contextMenu.addItem(text) { action() } }
+
+    fun addDivider() =
+        apply { contextMenu.addItem(Hr()) }
 }
