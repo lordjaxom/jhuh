@@ -3,6 +3,8 @@ package de.hinundhergestellt.jhuh.vendors.shopify.client
 import com.netflix.graphql.dgs.client.GraphQLClient
 import com.netflix.graphql.dgs.client.codegen.BaseSubProjectionNode
 import com.netflix.graphql.dgs.client.codegen.GraphQLQueryRequest
+import com.shopify.admin.client.MetafieldsDeleteGraphQLQuery
+import com.shopify.admin.client.MetafieldsDeleteProjectionRoot
 import com.shopify.admin.client.ProductCreateGraphQLQuery
 import com.shopify.admin.client.ProductCreateProjectionRoot
 import com.shopify.admin.client.ProductDeleteGraphQLQuery
@@ -11,6 +13,9 @@ import com.shopify.admin.client.ProductUpdateGraphQLQuery
 import com.shopify.admin.client.ProductUpdateProjectionRoot
 import com.shopify.admin.client.ProductsGraphQLQuery
 import com.shopify.admin.client.ProductsProjectionRoot
+import com.shopify.admin.types.MetafieldIdentifierInput
+import com.shopify.admin.types.MetafieldInput
+import com.shopify.admin.types.MetafieldsDeletePayload
 import com.shopify.admin.types.PageInfo
 import com.shopify.admin.types.ProductConnection
 import com.shopify.admin.types.ProductCreatePayload
@@ -139,6 +144,21 @@ class ShopifyProductClient(
                         .id()
                         .name()
                         .values()
+                        .parent()
+                    .metafields(null, null, 100, null, null, null, null)
+                        .edges()
+                            .node()
+                                .id()
+                                .namespace()
+                                .key()
+                                .value()
+                                .type()
+                                .parent()
+                            .parent()
+                        .pageInfo()
+                            .hasNextPage()
+                            .endCursor()
+                            .parent()
                         .parent()
                     .parent()
                 .parent()
