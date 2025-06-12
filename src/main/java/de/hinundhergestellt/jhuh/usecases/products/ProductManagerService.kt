@@ -21,12 +21,16 @@ import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedCategory
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedVariation
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafield
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafieldType
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantOption
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductOption
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVariant
+import de.hinundhergestellt.jhuh.vendors.shopify.client.containsId
+import de.hinundhergestellt.jhuh.vendors.shopify.client.findById
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.isDryRun
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -142,8 +146,12 @@ class ProductManagerService(
         } else if (barcodes.size < product.variations.size) {
             add(Warning("Nicht alle Variationen haben einen Barcode"))
         }
-        if (syncProduct?.vendor == null) {
-            add(Error("Produkt hat keinen Hersteller"))
+        syncProduct?.vendor.also {
+            if (it == null) {
+                add(Error("Produkt hat keinen Hersteller"))
+            } else if (it.email == null || it.address == null) {
+                add(Error("Herstellerangaben unvollständig"))
+            }
         }
         if (syncProduct?.type == null) {
             add(Error("Produkt hat keine Produktart"))
@@ -274,23 +282,38 @@ class ProductManagerService(
             syncProduct.type!!,
             ProductStatus.DRAFT,
             buildTags(syncProduct, artooProduct),
-            when {
-                artooProduct.hasOnlyDefaultVariant -> listOf()
-                else -> listOf(
-                    UnsavedShopifyProductOption(
-                        "Farbe", // TODO
-                        artooProduct.variations.map { it.name }
-                    )
-                )
-            }
+            buildShopifyProductOptions(artooProduct),
+            buildShopifyMetafields(syncProduct)
         )
+
+    private fun buildShopifyProductOptions(artooProduct: ArtooMappedProduct) =
+        if (!artooProduct.hasOnlyDefaultVariant) listOf(UnsavedShopifyProductOption("Farbe", artooProduct.variations.map { it.name }))
+        else listOf()
 
     private fun updateShopifyProduct(syncProduct: SyncProduct, shopifyProduct: ShopifyProduct, artooProduct: ArtooMappedProduct): Boolean {
         require(shopifyProduct.hasOnlyDefaultVariant == artooProduct.hasOnlyDefaultVariant) { "Switching variants and standalone not supported yet" }
         return updateProperty(shopifyProduct::title, artooProduct.description.ifEmpty { artooProduct.name }) or
                 updateProperty(shopifyProduct::vendor, syncProduct.vendor!!.name) or
                 updateProperty(shopifyProduct::productType, syncProduct.type!!) or
-                updateProperty(shopifyProduct::tags, buildTags(syncProduct, artooProduct))
+                updateProperty(shopifyProduct::tags, buildTags(syncProduct, artooProduct)) or
+                updateShopifyMetafields(syncProduct, shopifyProduct)
+    }
+
+    private fun buildShopifyMetafields(syncProduct: SyncProduct) =
+        listOf(
+            metafield("vendor_address", syncProduct.vendor!!.address!!, ShopifyMetafieldType.MULTI_LINE_TEXT_FIELD),
+            metafield("vendor_email", syncProduct.vendor!!.email!!, ShopifyMetafieldType.SINGLE_LINE_TEXT_FIELD),
+        )
+
+    private fun updateShopifyMetafields(syncProduct: SyncProduct, shopifyProduct: ShopifyProduct): Boolean {
+        val metafields = buildShopifyMetafields(syncProduct)
+        return shopifyProduct.metafields.removeAll { !metafields.containsId(it) } or
+                shopifyProduct.metafields.addAll(metafields.filter { !shopifyProduct.metafields.containsId(it) }) or
+                shopifyProduct.metafields.asSequence()
+                    .map { it to metafields.findById(it)!! }
+                    .map { (old, new) -> updateProperty(old::value, new.value) or updateProperty(old::type, new.type) }
+                    .toList() // enforce terminal operation
+                    .any { it }
     }
 
     private fun buildShopifyVariant(shopifyProduct: ShopifyProduct, artooVariation: ArtooMappedVariation) =
@@ -298,15 +321,7 @@ class ProductManagerService(
             artooVariation.itemNumber ?: "",
             artooVariation.barcode!!,
             artooVariation.price,
-            when {
-                shopifyProduct.hasOnlyDefaultVariant -> listOf()
-                else -> listOf(
-                    ShopifyProductVariantOption(
-                        shopifyProduct.options[0].name,
-                        artooVariation.name
-                    )
-                )
-            }
+            buildShopifyVariantOptions(shopifyProduct, artooVariation)
         )
 
     private fun updateShopifyVariant(shopifyVariant: ShopifyProductVariant, artooVariation: ArtooMappedVariation) =
@@ -316,9 +331,13 @@ class ProductManagerService(
         updateProperty(shopifyVariant::price, artooVariation.price)
         // @formatter:on
 
+    private fun buildShopifyVariantOptions(shopifyProduct: ShopifyProduct, artooVariation: ArtooMappedVariation) =
+        if (!shopifyProduct.hasOnlyDefaultVariant) listOf(ShopifyProductVariantOption(shopifyProduct.options[0].name, artooVariation.name))
+        else listOf()
+
     private fun updateShopifyVariantOptions(shopifyVariant: ShopifyProductVariant, artooVariation: ArtooMappedVariation) =
-        if (artooVariation.isDefaultVariant) false
-        else updateProperty(shopifyVariant.options[0]::value, artooVariation.name)
+        if (!artooVariation.isDefaultVariant) updateProperty(shopifyVariant.options[0]::value, artooVariation.name)
+        else false
 
     private fun <T> updateProperty(property: KMutableProperty0<T>, value: T): Boolean {
         if (property.get() != value) {
@@ -441,3 +460,5 @@ private fun ShopifyProduct.toSyncProduct() =
         tags = (tags - listOf(vendor, productType)).toMutableSet(),
         synced = true
     )
+
+fun metafield(key: String, value: String, type: ShopifyMetafieldType) = ShopifyMetafield("hinundhergestellt", key, value, type)
