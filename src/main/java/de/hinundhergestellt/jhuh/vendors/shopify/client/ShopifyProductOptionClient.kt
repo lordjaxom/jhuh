@@ -2,7 +2,6 @@ package de.hinundhergestellt.jhuh.vendors.shopify.client
 
 import com.netflix.graphql.dgs.client.GraphQLClient
 import com.netflix.graphql.dgs.client.codegen.BaseSubProjectionNode
-import com.netflix.graphql.dgs.client.codegen.GraphQLQueryRequest
 import com.shopify.admin.client.ProductOptionsDeleteGraphQLQuery
 import com.shopify.admin.client.ProductOptionsDeleteProjectionRoot
 import com.shopify.admin.types.ProductOptionsDeletePayload
@@ -25,10 +24,6 @@ class ShopifyProductOptionClient(
                 .field()
         // @formatter:on
 
-        val request = GraphQLQueryRequest(query, root)
-        val response = apiClient.executeQuery(request.serialize())
-        require(!response.hasErrors()) { "Product options delete failed: " + response.errors }
-        val payload = response.extractValueAsObject("productOptionsDelete", ProductOptionsDeletePayload::class.java)
-        require(payload.userErrors.isEmpty()) { "Product options delete failed: " + payload.userErrors }
+        apiClient.executeMutation(query, root, ProductOptionsDeletePayload::getUserErrors)
     }
 }

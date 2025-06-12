@@ -2,7 +2,6 @@ package de.hinundhergestellt.jhuh.vendors.shopify.client
 
 import com.netflix.graphql.dgs.client.GraphQLClient
 import com.netflix.graphql.dgs.client.codegen.BaseSubProjectionNode
-import com.netflix.graphql.dgs.client.codegen.GraphQLQueryRequest
 import com.shopify.admin.client.ProductVariantsBulkCreateGraphQLQuery
 import com.shopify.admin.client.ProductVariantsBulkCreateProjectionRoot
 import com.shopify.admin.client.ProductVariantsBulkDeleteGraphQLQuery
@@ -39,12 +38,7 @@ class ShopifyProductVariantClient(
                 .field()
         // @formatter:on
 
-        val request = GraphQLQueryRequest(query, root)
-        val response = apiClient.executeQuery(request.serialize())
-        require(!response.hasErrors()) { "Product variants bulk create failed: " + response.errors }
-        val payload = response.extractValueAsObject("productVariantsBulkCreate", ProductVariantsBulkCreatePayload::class.java)
-        require((payload.userErrors.isEmpty())) { "Product variants bulk create failed: " + payload.userErrors }
-
+        val payload = apiClient.executeMutation(query, root, ProductVariantsBulkCreatePayload::getUserErrors)
         return variants
             .zip(payload.productVariants)
             .map { (variant, created) -> ShopifyProductVariant(variant, created.id, created.title) }
@@ -63,11 +57,7 @@ class ShopifyProductVariantClient(
                 .field()
         // @formatter:on
 
-        val request = GraphQLQueryRequest(query, root)
-        val response = apiClient.executeQuery(request.serialize())
-        require(!response.hasErrors()) { "Product variants bulk update failed: " + response.errors }
-        val payload = response.extractValueAsObject("productVariantsBulkUpdate", ProductVariantsBulkUpdatePayload::class.java)
-        require(payload.userErrors.isEmpty()) { "Product variants bulk update failed: " + payload.userErrors }
+        apiClient.executeMutation(query, root, ProductVariantsBulkUpdatePayload::getUserErrors)
     }
 
     fun delete(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
@@ -83,10 +73,6 @@ class ShopifyProductVariantClient(
                 .field()
         // @formatter:on
 
-        val request = GraphQLQueryRequest(query, root)
-        val response = apiClient.executeQuery(request.serialize())
-        require(!response.hasErrors()) { "Product variants delete failed: " + response.errors }
-        val payload = response.extractValueAsObject("productVariantsBulkDelete", ProductVariantsBulkDeletePayload::class.java)
-        require(payload.userErrors.isEmpty()) { "Product variants delete failed: " + payload.userErrors }
+        apiClient.executeMutation(query, root, ProductVariantsBulkDeletePayload::getUserErrors)
     }
 }

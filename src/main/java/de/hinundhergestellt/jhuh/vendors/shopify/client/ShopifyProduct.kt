@@ -2,6 +2,7 @@ package de.hinundhergestellt.jhuh.vendors.shopify.client
 
 import com.shopify.admin.types.Product
 import com.shopify.admin.types.ProductCreateInput
+import com.shopify.admin.types.ProductDeleteInput
 import com.shopify.admin.types.ProductStatus
 import com.shopify.admin.types.ProductUpdateInput
 import de.hinundhergestellt.jhuh.util.RemoveProtectedMutableList
@@ -95,5 +96,10 @@ class ShopifyProduct private constructor(
             it.status = status
             it.tags = tags.toList()
             it.metafields = metafields.map { metafield -> metafield.toMetafieldInput() }
+        }
+
+    internal fun toProductDeleteInput() =
+        ProductDeleteInput().also {
+            it.id = id
         }
 }
