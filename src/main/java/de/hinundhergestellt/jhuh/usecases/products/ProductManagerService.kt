@@ -307,10 +307,9 @@ class ProductManagerService(
 
     private fun updateShopifyMetafields(syncProduct: SyncProduct, shopifyProduct: ShopifyProduct): Boolean {
         val metafields = buildShopifyMetafields(syncProduct)
-        return shopifyProduct.metafields.removeAll { !metafields.containsId(it) } or
-                shopifyProduct.metafields.addAll(metafields.filter { !shopifyProduct.metafields.containsId(it) }) or
+        return shopifyProduct.metafields.addAll(metafields.filter { !shopifyProduct.metafields.containsId(it) }) or
                 shopifyProduct.metafields.asSequence()
-                    .map { it to metafields.findById(it)!! }
+                    .mapNotNull { old -> metafields.findById(old)?.let { new -> old to new } }
                     .map { (old, new) -> updateProperty(old::value, new.value) or updateProperty(old::type, new.type) }
                     .toList() // enforce terminal operation
                     .any { it }

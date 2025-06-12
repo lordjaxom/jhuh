@@ -200,6 +200,7 @@ class ProductManagerView(
             add(MoreGridActionButton().apply {
                 addItem("Etikett für Produkt") {}
                 addItem("Etiketten für Varianten") {}
+                isEnabled = item is ProductItem
             })
         }
 
