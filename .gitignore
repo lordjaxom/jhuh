@@ -12,6 +12,7 @@ target/
 .idea/kotlinc.xml
 .idea/dataSources.xml
 .idea/diff-generator.xml
+.idea/jpa-buddy-datasource.xml
 .idea/libraries/
 .idea/inspectionProfiles/
 *.iws

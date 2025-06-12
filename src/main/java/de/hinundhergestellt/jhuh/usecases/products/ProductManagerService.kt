@@ -1,5 +1,6 @@
 package de.hinundhergestellt.jhuh.usecases.products
 
+import arrow.core.Option
 import com.shopify.admin.types.ProductStatus
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategory
@@ -8,6 +9,8 @@ import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProductRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariant
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariantRepository
+import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendor
+import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendorRepository
 import de.hinundhergestellt.jhuh.usecases.products.SyncProblem.Error
 import de.hinundhergestellt.jhuh.usecases.products.SyncProblem.Warning
 import de.hinundhergestellt.jhuh.usecases.products.VariantBulkOperation.Create
@@ -44,16 +47,19 @@ class ProductManagerService(
     private val syncProductRepository: SyncProductRepository,
     private val syncVariantRepository: SyncVariantRepository,
     private val syncCategoryRepository: SyncCategoryRepository,
+    private val syncVendorRepository: SyncVendorRepository
 ) {
     // TODO: Better to add fetchChildren here and create SyncableItems on the fly? But refreshItem in TreeDataProvider doesn't reload the
     // TODO: item, so clearing the database objects would still be required
     private val lazyRootCategories = lazyWithReset { artooDataStore.rootCategories.map { CategoryItem(it) } }
     val rootCategories by lazyRootCategories
 
+    val vendors get(): List<SyncVendor> = syncVendorRepository.findAll()
+
     val stateChangeListeners by artooDataStore::stateChangeListeners
 
     @Transactional
-    fun updateItem(item: SyncableItem, vendor: String?, type: String?, tags: String) {
+    fun updateItem(item: SyncableItem, vendor: Option<SyncVendor>?, type: String?, tags: String) {
         val tagsAsSet = tags.splitToSequence(",").map { it.trim() }.filter { it.isNotEmpty() }.toMutableSet()
         when (item) {
             is CategoryItem -> {
@@ -66,10 +72,10 @@ class ProductManagerService(
                     item.value.findAllProducts().forEach { product ->
                         var syncProduct = syncProductRepository.findByArtooId(product.id)
                         if (syncProduct != null) {
-                            if (vendor != null) syncProduct.vendor = vendor.ifEmpty { null }
+                            if (vendor != null) syncProduct.vendor = vendor.getOrNull()
                             if (type != null) syncProduct.type = type.ifEmpty { null }
                         } else {
-                            syncProduct = SyncProduct(artooId = product.id, vendor = vendor, type = type, synced = false)
+                            syncProduct = SyncProduct(artooId = product.id, vendor = vendor?.getOrNull(), type = type, synced = false)
                         }
                         syncProductRepository.save(syncProduct)
                     }
@@ -78,8 +84,8 @@ class ProductManagerService(
 
             is ProductItem -> {
                 val syncProduct = item.syncProduct
-                    ?.also { it.vendor = vendor; it.type = type; it.tags = tagsAsSet }
-                    ?: SyncProduct(artooId = item.id, vendor = vendor, type = type, tags = tagsAsSet, synced = false)
+                    ?.also { it.vendor = vendor!!.getOrNull(); it.type = type; it.tags = tagsAsSet }
+                    ?: SyncProduct(artooId = item.id, vendor = vendor!!.getOrNull(), type = type, tags = tagsAsSet, synced = false)
                 syncProductRepository.save(syncProduct)
             }
         }
@@ -264,7 +270,7 @@ class ProductManagerService(
     private fun buildShopifyProduct(syncProduct: SyncProduct, artooProduct: ArtooMappedProduct) =
         UnsavedShopifyProduct(
             artooProduct.description.ifEmpty { artooProduct.name },
-            syncProduct.vendor!!,
+            syncProduct.vendor!!.name,
             syncProduct.type!!,
             ProductStatus.DRAFT,
             buildTags(syncProduct, artooProduct),
@@ -282,7 +288,7 @@ class ProductManagerService(
     private fun updateShopifyProduct(syncProduct: SyncProduct, shopifyProduct: ShopifyProduct, artooProduct: ArtooMappedProduct): Boolean {
         require(shopifyProduct.hasOnlyDefaultVariant == artooProduct.hasOnlyDefaultVariant) { "Switching variants and standalone not supported yet" }
         return updateProperty(shopifyProduct::title, artooProduct.description.ifEmpty { artooProduct.name }) or
-                updateProperty(shopifyProduct::vendor, syncProduct.vendor!!) or
+                updateProperty(shopifyProduct::vendor, syncProduct.vendor!!.name) or
                 updateProperty(shopifyProduct::productType, syncProduct.type!!) or
                 updateProperty(shopifyProduct::tags, buildTags(syncProduct, artooProduct))
     }
@@ -328,7 +334,7 @@ class ProductManagerService(
             val categoryIds = artooDataStore.findCategoriesByProduct(artooProduct).map { it.id }.toList()
             addAll(syncCategoryRepository.findByArtooIdIn(categoryIds).asSequence().flatMap { it.tags })
             addAll(syncProduct.tags)
-            add(syncProduct.vendor!!)
+            add(syncProduct.vendor!!.name)
             add(syncProduct.type!!)
         }
         return tags.map { it.replace(INVALID_TAG_CHARACTERS, "") }.toSet()
@@ -395,7 +401,7 @@ sealed interface SyncableItem {
 
     val itemId: String
     val name: String
-    val vendor: String?
+    val vendor: SyncVendor?
     val type: String?
     val tagsAsSet: Set<String>
     val variations: Int?
@@ -426,10 +432,11 @@ private inline fun <reified T> List<VariantBulkOperation?>.allOf(): List<T>? {
     return filterIsInstance<T>().takeIf { it.isNotEmpty() }
 }
 
+@Suppress("KotlinUnreachableCode")
 private fun ShopifyProduct.toSyncProduct() =
     SyncProduct(
         shopifyId = id,
-        vendor = vendor,
+        vendor = throw NotImplementedError("vendor from ShopifyProduct"),
         type = productType,
         tags = (tags - listOf(vendor, productType)).toMutableSet(),
         synced = true

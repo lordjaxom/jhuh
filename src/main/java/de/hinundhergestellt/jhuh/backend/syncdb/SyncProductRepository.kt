@@ -15,4 +15,6 @@ interface SyncProductRepository : JpaRepository<SyncProduct, UUID> {
     fun findByArtooId(artooId: String): SyncProduct?
 
     fun findByVariantsBarcodeIn(barcode: List<String>): SyncProduct?
+
+    fun existsByVendor(vendor: SyncVendor): Boolean
 }

@@ -8,6 +8,7 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.Id
 import jakarta.persistence.Index
 import jakarta.persistence.OneToMany
+import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import java.util.UUID
 
@@ -26,8 +27,8 @@ class SyncProduct(
     @Column(unique = true)
     var shopifyId: String? = null,
 
-    @Column
-    var vendor: String? = null,
+    @OneToOne(optional = true, fetch = FetchType.EAGER)
+    var vendor: SyncVendor? = null,
 
     @Column
     var type: String? = null,

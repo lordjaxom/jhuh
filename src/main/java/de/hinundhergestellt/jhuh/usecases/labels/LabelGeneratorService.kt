@@ -7,7 +7,6 @@ import de.hinundhergestellt.jhuh.components.Article
 import org.springframework.context.annotation.Scope
 import org.springframework.context.annotation.ScopedProxyMode
 import org.springframework.stereotype.Service
-import java.math.BigDecimal
 
 @Service
 @VaadinSessionScope
@@ -47,7 +46,7 @@ class ArticleLabel(
     syncProduct: SyncProduct?,
     override val count: Int
 ) : Label {
-    override val vendor = syncProduct?.vendor ?: ""
+    override val vendor = syncProduct?.vendor?.name ?: ""
     override val name by article.product::name
     override val variant = sequenceOf(article.variation.itemNumber, article.variation.name).filterNotNull().joinToString(" ")
     override val barcode by article.variation::barcode

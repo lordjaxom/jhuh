@@ -5,6 +5,8 @@ import com.vaadin.flow.component.grid.ColumnTextAlign
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.Icon
+import com.vaadin.flow.component.orderedlayout.FlexComponent
+import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.treegrid.TreeGrid
 import com.vaadin.flow.dom.Style
@@ -56,13 +58,11 @@ fun <T, V> TreeGrid<T>.addHierarchyTextColumn(header: String, flexGrow: Int, val
             it.flexGrow = flexGrow
         }
 
-private fun buildActionsLayout(count: Int, components: List<Button>): HorizontalLayout {
-    val spacer = Span().apply { setWidthFull() }
-    return HorizontalLayout(spacer, *components.toTypedArray()).apply {
-        width = "${count * 30}px"
+private fun buildActionsLayout(count: Int, components: List<Button>) =
+    HorizontalLayout().apply {
         isSpacing = false
-//        themeList.add("spacing-s")
+        width = "${count * 30}px"
+        justifyContentMode = JustifyContentMode.END
         style.setWhiteSpace(Style.WhiteSpace.NOWRAP)
-//        style.setBorder("1px solid red")
+        add(components)
     }
-}

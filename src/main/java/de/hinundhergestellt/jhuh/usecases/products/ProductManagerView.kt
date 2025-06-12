@@ -1,11 +1,9 @@
 package de.hinundhergestellt.jhuh.usecases.products
 
-import com.vaadin.flow.component.Key
 import com.vaadin.flow.component.Text
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.checkbox.Checkbox
-import com.vaadin.flow.component.dialog.Dialog
 import com.vaadin.flow.component.grid.GridVariant
 import com.vaadin.flow.component.html.Div
 import com.vaadin.flow.component.icon.Icon
@@ -18,6 +16,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.shared.Tooltip
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.component.treegrid.TreeGrid
+import com.vaadin.flow.data.provider.hierarchy.AbstractBackEndHierarchicalDataProvider
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery
 import com.vaadin.flow.dom.Style
 import com.vaadin.flow.router.PageTitle
@@ -32,15 +31,12 @@ import de.hinundhergestellt.jhuh.components.addTextColumn
 import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.CategoryItem
 import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.ProductItem
 import de.hinundhergestellt.jhuh.usecases.products.SyncProblem.Error
-import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.task.AsyncTaskExecutor
 import java.util.concurrent.CompletableFuture
 import java.util.stream.Stream
 import kotlin.jvm.optionals.getOrNull
 import kotlin.streams.asStream
-
-private val logger = KotlinLogging.logger { }
 
 @Route
 @PageTitle("Produktverwaltung")
@@ -120,7 +116,7 @@ class ProductManagerView(
 
     private fun configureTreeGrid() {
         treeGrid.addHierarchyTextColumn("Bezeichnung", flexGrow = 100) { it.name }
-        treeGrid.addTextColumn("Hersteller", flexGrow = 5) { it.vendor }
+        treeGrid.addTextColumn("Hersteller", flexGrow = 5) { it.vendor?.name }
         treeGrid.addTextColumn("Produktart", flexGrow = 5) { it.type }
         treeGrid.addTextColumn("Weitere Tags", flexGrow = 30) { it.tags }
         treeGrid.addCountColumn("V#") { it.variations }
@@ -169,65 +165,10 @@ class ProductManagerView(
     }
 
     private fun editItem(item: SyncableItem) {
-        val dialog = Dialog()
-        dialog.width = "400px"
-        dialog.headerTitle = if (item is CategoryItem) "Kategorie bearbeiten" else "Produkt bearbeiten"
-
-        val closeButton = Button(VaadinIcon.CLOSE.create()) { dialog.close() }
-        closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY)
-        dialog.header.add(closeButton)
-
-        val layout = VerticalLayout()
-        layout.isSpacing = false
-        layout.isPadding = false
-        dialog.add(layout)
-
-        fun textFieldWithCheckboxForCategory(label: String, value: String): Pair<TextField, Checkbox?> {
-            val textField = TextField()
-            textField.label = label
-            textField.value = value
-            textField.isEnabled = item is ProductItem
-            textField.setWidthFull()
-            layout.add(textField)
-
-            if (item is ProductItem) {
-                return Pair(textField, null)
-            }
-
-            val checkbox = Checkbox("Für alle Produkte ersetzen?")
-            checkbox.value = false
-            checkbox.addValueChangeListener {
-                textField.isEnabled = it.value
-                if (it.value) textField.focus()
-            }
-            layout.add(checkbox)
-            return Pair(textField, checkbox)
-        }
-
-        val (vendorTextField, vendorCheckbox) = textFieldWithCheckboxForCategory("Hersteller", item.vendor ?: "")
-        val (typeTextField, typeCheckbox) = textFieldWithCheckboxForCategory("Produktart", item.type ?: "")
-
-        val tagsTextField = TextField()
-        tagsTextField.label = "Tags"
-        tagsTextField.value = item.tags
-        tagsTextField.setWidthFull()
-        layout.add(tagsTextField)
-
-        sequenceOf(vendorTextField, tagsTextField).first { it.isEnabled }.focus()
-
-        val saveButton = Button("Speichern")
-        saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY)
-        saveButton.addClickShortcut(Key.ENTER)
-        saveButton.addClickListener {
-            dialog.isEnabled = false
-            val vendor = vendorTextField.value.takeIf { vendorCheckbox?.value ?: true }
-            val type = typeTextField.value.takeIf { typeCheckbox?.value ?: true }
-            service.updateItem(item, vendor, type, tagsTextField.value)
-            dialog.close()
+        EditItemDialog(item, service.vendors) { vendor, type, tags ->
+            service.updateItem(item, vendor, type, tags)
             refreshTreeItem(item, vendor != null || type != null)
         }
-        dialog.footer.add(saveButton)
-        dialog.open()
     }
 
     private fun syncableItemStatus(item: SyncableItem): Icon =
@@ -269,8 +210,7 @@ class ProductManagerView(
         }
     }
 
-    private inner class TreeDataProvider :
-        com.vaadin.flow.data.provider.hierarchy.AbstractBackEndHierarchicalDataProvider<SyncableItem, Void?>() {
+    private inner class TreeDataProvider : AbstractBackEndHierarchicalDataProvider<SyncableItem, Void?>() {
 
         override fun fetchChildrenFromBackEnd(query: HierarchicalQuery<SyncableItem, Void?>): Stream<SyncableItem> {
             val withErrors = if (withErrorsCheckbox.value) true else if (errorFreeCheckbox.value) false else null
