@@ -49,12 +49,14 @@ private class CategoriesAndProductsBuilder(
         groups.asSequence()
             .filter { it.parent == null && it.type == ArtooProductGroupType.STANDARD }
             .map { it.toCategory() }
+            .sortedBy { it.name }
             .toList()
 
     private fun ArtooProductGroup.toCategory(): ArtooMappedCategory {
         val children = groups.asSequence()
             .filter { it.parent == id && it.type == ArtooProductGroupType.STANDARD }
             .map { it.toCategory() }
+            .sortedBy { it.name }
             .toList()
 
         val productsWithVariations = groups.asSequence()
@@ -63,7 +65,7 @@ private class CategoriesAndProductsBuilder(
         val singleProducts = products.asSequence()
             .filter { it.productGroupId == id }
             .map { ArtooMappedProduct.Single(it) }
-        val products = (productsWithVariations + singleProducts).toList()
+        val products = (productsWithVariations + singleProducts).sortedBy { it.name }.toList()
 
         return ArtooMappedCategory(this, children, products)
     }
@@ -72,6 +74,7 @@ private class CategoriesAndProductsBuilder(
         val variations = products.asSequence()
             .filter { it.productGroupId == id }
             .map { ArtooMappedVariation(it, false) }
+            .sortedBy { it.name }
             .toList()
         return ArtooMappedProduct.Group(this, variations)
     }

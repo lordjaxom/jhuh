@@ -79,7 +79,6 @@ class VendorManagerView(
 
         override fun fetchFromBackEnd(query: Query<VendorItem, Void?>) =
             service.vendors.asSequence().drop(query.offset).take(query.limit).asStream()
-
         override fun sizeInBackEnd(query: Query<VendorItem, Void?>) = fetchFromBackEnd(query).count().toInt()
         override fun getId(item: VendorItem) = item.id
     }

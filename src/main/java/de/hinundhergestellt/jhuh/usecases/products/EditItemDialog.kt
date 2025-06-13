@@ -1,6 +1,8 @@
 package de.hinundhergestellt.jhuh.usecases.products
 
 import arrow.core.Option
+import arrow.core.Some
+import arrow.core.none
 import com.vaadin.flow.component.Focusable
 import com.vaadin.flow.component.ItemLabelGenerator
 import com.vaadin.flow.component.Key
@@ -19,7 +21,7 @@ import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.Product
 class EditItemDialog(
     private val item: SyncableItem,
     private val vendors: List<SyncVendor>,
-    private val saveListener: (vendor: Option<SyncVendor>?, type: String?, tags: String) -> Unit
+    private val saveListener: (vendor: Option<SyncVendor>?, type: Option<String>?, tags: String) -> Unit
 ) : Dialog() {
 
     init {
@@ -73,7 +75,10 @@ class EditItemDialog(
                 val vendor =
                     if (vendorCheckbox != null && !vendorCheckbox.value) null
                     else Option.fromNullable(vendorComboBox.value)
-                val type = typeTextField.value.takeIf { typeCheckbox?.value ?: true }
+                val type =
+                    if (typeCheckbox != null && !typeCheckbox.value) null
+                    else if (typeTextField.value.isNotEmpty()) Some(typeTextField.value)
+                    else none()
                 saveListener(vendor, type, tagsTextField.value)
                 close()
             }
@@ -94,7 +99,7 @@ class EditItemDialog(
     private fun textField(label: String, value: String?, enabled: Boolean = true) =
         TextField().also {
             it.label = label
-            it.value = value
+            it.value = value ?: ""
             it.isEnabled = enabled
             it.setWidthFull()
         }

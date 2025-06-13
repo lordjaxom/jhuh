@@ -63,8 +63,9 @@ class ProductManagerView(
         configureTreeGrid()
         configureProgressOverlay()
 
-        val stateChangedHandler: () -> Unit =
-            { ui.getOrNull()?.access { treeGrid.dataProvider.refreshAll(); refreshButton.isEnabled = true } }
+        val stateChangedHandler: () -> Unit = {
+            ui.getOrNull()?.access { treeGrid.dataProvider.refreshAll(); refreshButton.isEnabled = true }
+        }
         addAttachListener { service.stateChangeListeners += stateChangedHandler }
         addDetachListener { service.stateChangeListeners -= stateChangedHandler }
     }
@@ -72,7 +73,7 @@ class ProductManagerView(
     private fun configureHeader() {
         refreshButton.text = "Aktualisieren"
         refreshButton.isDisableOnClick = true
-        refreshButton.addClickListener { service.refreshItems() }
+        refreshButton.addClickListener { service.refresh() }
 
         val syncWithShopifyButton = Button("Mit Shopify synchronisieren") { synchronize() }
 
@@ -167,7 +168,7 @@ class ProductManagerView(
     private fun editItem(item: SyncableItem) {
         EditItemDialog(item, service.vendors) { vendor, type, tags ->
             service.updateItem(item, vendor, type, tags)
-            refreshTreeItem(item, vendor != null || type != null)
+            treeGrid.dataProvider.refreshItem(item, vendor != null || type != null)
         }
     }
 
@@ -204,32 +205,21 @@ class ProductManagerView(
             })
         }
 
-    private fun refreshTreeItem(item: SyncableItem, recurse: Boolean) {
-        treeGrid.dataProvider.refreshItem(item, recurse)
-        if (recurse && item is CategoryItem) {
-            item.childrenAndProducts.forEach { refreshTreeItem(it, true) }
-        }
-    }
-
     private inner class TreeDataProvider : AbstractBackEndHierarchicalDataProvider<SyncableItem, Void?>() {
 
         override fun fetchChildrenFromBackEnd(query: HierarchicalQuery<SyncableItem, Void?>): Stream<SyncableItem> {
             val withErrors = if (withErrorsCheckbox.value) true else if (errorFreeCheckbox.value) false else null
-            val children = (query.parent as CategoryItem?)?.childrenAndProducts ?: service.rootCategories
+            val children = (query.parent as CategoryItem?)?.children ?: service.rootCategories
             return children.asSequence()
                 .filter { it.filterBy(markedForSyncCheckbox.value, withErrors, filterTextField.value) }
-                .sortedBy { it.name }
+                .drop(query.offset)
+                .take(query.limit)
                 .asStream()
         }
 
-        override fun hasChildren(item: SyncableItem) =
-            item is CategoryItem
-
-        override fun getChildCount(query: HierarchicalQuery<SyncableItem, Void?>) =
-            fetchChildren(query).count().toInt()
-
-        override fun getId(item: SyncableItem) =
-            item.itemId
+        override fun hasChildren(item: SyncableItem) = item is CategoryItem
+        override fun getChildCount(query: HierarchicalQuery<SyncableItem, Void?>) = fetchChildren(query).count().toInt()
+        override fun getId(item: SyncableItem) = item.itemId
     }
 }
 

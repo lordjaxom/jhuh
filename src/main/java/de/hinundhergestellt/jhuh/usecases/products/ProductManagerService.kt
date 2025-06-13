@@ -15,29 +15,22 @@ import de.hinundhergestellt.jhuh.usecases.products.SyncProblem.Warning
 import de.hinundhergestellt.jhuh.usecases.products.VariantBulkOperation.Create
 import de.hinundhergestellt.jhuh.usecases.products.VariantBulkOperation.Delete
 import de.hinundhergestellt.jhuh.usecases.products.VariantBulkOperation.Update
-import de.hinundhergestellt.jhuh.util.lazyWithReset
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedCategory
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedVariation
-import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafield
-import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafieldType
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
-import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantOption
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.isDryRun
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import kotlin.reflect.KMutableProperty0
 import kotlin.reflect.KProperty1
 import kotlin.streams.asSequence
 
 private val logger = KotlinLogging.logger {}
-
-private val INVALID_TAG_CHARACTERS = """[^A-ZÄÖÜa-zäöüß0-9\\._ -]""".toRegex()
 
 @Service
 @VaadinSessionScope
@@ -50,65 +43,73 @@ class ProductManagerService(
     private val syncVariantRepository: SyncVariantRepository,
     private val syncCategoryRepository: SyncCategoryRepository,
     private val syncVendorRepository: SyncVendorRepository
-) {
-    // TODO: Better to add fetchChildren here and create SyncableItems on the fly? But refreshItem in TreeDataProvider doesn't reload the
-    // TODO: item, so clearing the database objects would still be required
-    private val lazyRootCategories = lazyWithReset { artooDataStore.rootCategories.map { CategoryItem(it) } }
-    val rootCategories by lazyRootCategories
+): AutoCloseable {
+
+    private lateinit var _rootCategories: List<CategoryItem>
+    val rootCategories get() = _rootCategories
 
     val vendors get(): List<SyncVendor> = syncVendorRepository.findAll()
 
     val stateChangeListeners by artooDataStore::stateChangeListeners
 
+    init {
+        buildRootCategories()
+        stateChangeListeners += this::buildRootCategories
+    }
+
+    override fun close() {
+        stateChangeListeners -= this::buildRootCategories
+    }
+
     @Transactional
-    fun updateItem(item: SyncableItem, vendor: Option<SyncVendor>?, type: String?, tags: String) {
-        val tagsAsSet = tags.splitToSequence(",").map { it.trim() }.filter { it.isNotEmpty() }.toMutableSet()
+    fun updateItem(item: SyncableItem, vendor: Option<SyncVendor>?, type: Option<String>?, tags: String?) {
+        val tagsAsSet = tags?.run { splitToSequence(",").map { it.trim() }.filter { it.isNotEmpty() }.toMutableSet() }
         when (item) {
             is CategoryItem -> {
-                val syncCategory = item.syncCategory
-                    ?.also { it.tags = tagsAsSet }
-                    ?: tagsAsSet.takeIf { it.isNotEmpty() }?.let { SyncCategory(item.id, it) }
-                syncCategory?.also { syncCategoryRepository.save(it) }
+                if (tagsAsSet != null) {
+                    val syncCategory = item.syncCategory?.also { it.tags = tagsAsSet }
+                        ?: SyncCategory(item.id, tagsAsSet).also { item.syncCategory = it }
+                    syncCategoryRepository.save(syncCategory)
+                }
 
                 if (vendor != null || type != null) {
-                    item.value.findAllProducts().forEach { product ->
-                        var syncProduct = syncProductRepository.findByArtooId(product.id)
-                        if (syncProduct != null) {
-                            if (vendor != null) syncProduct.vendor = vendor.getOrNull()
-                            if (type != null) syncProduct.type = type.ifEmpty { null }
-                        } else {
-                            syncProduct = SyncProduct(artooId = product.id, vendor = vendor?.getOrNull(), type = type, synced = false)
-                        }
-                        syncProductRepository.save(syncProduct)
-                    }
+                    item.children.forEach { updateItem(it, vendor, type, null) }
                 }
             }
 
             is ProductItem -> {
-                val syncProduct = item.syncProduct
-                    ?.also { it.vendor = vendor!!.getOrNull(); it.type = type; it.tags = tagsAsSet }
-                    ?: SyncProduct(artooId = item.id, vendor = vendor!!.getOrNull(), type = type, tags = tagsAsSet, synced = false)
+                var syncProduct = item.syncProduct
+                if (syncProduct != null) {
+                    if (vendor != null) syncProduct.vendor = vendor.getOrNull()
+                    if (type != null) syncProduct.type = type.getOrNull()
+                    if (tagsAsSet != null) syncProduct.tags = tagsAsSet
+                } else {
+                    syncProduct = SyncProduct(
+                        artooId = item.id,
+                        vendor = vendor?.getOrNull(),
+                        type = type?.getOrNull(),
+                        tags = tagsAsSet ?: mutableSetOf(),
+                        synced = false
+                    )
+                    item.syncProduct = syncProduct
+                }
                 syncProductRepository.save(syncProduct)
             }
         }
-        item.reset()
     }
 
     @Transactional
     fun markForSync(product: ProductItem) {
-        val syncProduct = product.syncProduct
-            ?.apply { synced = true }
-            ?: SyncProduct(artooId = product.id, synced = true)
+        val syncProduct = product.syncProduct?.also { it.synced = true }
+            ?: SyncProduct(artooId = product.id, synced = true).also { product.syncProduct = it }
         syncProductRepository.save(syncProduct)
-        product.reset()
     }
 
     @Transactional
     fun unmarkForSync(product: ProductItem) {
-        product.syncProduct?.also {
+        product.syncProduct!!.also {
             it.synced = false
             syncProductRepository.save(it)
-            product.reset()
         }
     }
 
@@ -122,19 +123,16 @@ class ProductManagerService(
 
             // TODO: Potentially deactivate products in Shopify when synced=false
             syncProductRepository.findAllBySyncedIsTrue().forEach { synchronizeWithShopify(it) }
-
-            lazyRootCategories.reset()
         } catch (e: Exception) {
             logger.error(e) { "Synchronization failed" }
             throw e
         }
     }
 
-    fun refreshItems() {
-        artooDataStore.refresh()
-        // TODO: Better run this when stateUpdateListener is invoked? Not if synchronization uses rootCategories! But when ArtooDataStore
-        // TODO: does automatic refresh, so probably both
-        lazyRootCategories.reset()
+    fun refresh() = artooDataStore.refresh()
+
+    private fun buildRootCategories() {
+        _rootCategories = artooDataStore.rootCategories.map { CategoryItem(it) }
     }
 
     private fun checkSyncProblems(product: ArtooMappedProduct, syncProduct: SyncProduct?) = buildList {
@@ -275,13 +273,11 @@ class ProductManagerService(
 
     inner class CategoryItem(val value: ArtooMappedCategory) : SyncableItem {
 
-        // TODO: lazy probably unnecessary when just resetting lazyRootCategories above
-        private val lazySyncCategory = lazyWithReset { syncCategoryRepository.findByArtooId(value.id) }
-        internal val syncCategory by lazySyncCategory
+        internal var syncCategory = syncCategoryRepository.findByArtooId(value.id)
 
         val id by value::id
 
-        val childrenAndProducts = value.run { children.map { CategoryItem(it) } + products.map { ProductItem(it) } }
+        val children = value.run { children.map { CategoryItem(it) } + products.map { ProductItem(it) } }
 
         override val itemId = "category-$id"
         override val name by value::name
@@ -291,25 +287,17 @@ class ProductManagerService(
         override val variations = null
 
         override fun filterBy(markedForSync: Boolean, withErrors: Boolean?, text: String) =
-            childrenAndProducts.any { it.filterBy(markedForSync, withErrors, text) }
-
-        override fun reset() {
-            lazySyncCategory.reset()
-            childrenAndProducts.forEach { it.reset() }
-        }
+            children.any { it.filterBy(markedForSync, withErrors, text) }
     }
 
     inner class ProductItem(val value: ArtooMappedProduct) : SyncableItem {
 
-        // TODO: lazy probably unnecessary when just resetting lazyRootCategories above
-        private val lazySyncProduct = lazyWithReset { syncProductRepository.findByArtooId(value.id) }
-        internal val syncProduct by lazySyncProduct
+        internal var syncProduct = syncProductRepository.findByArtooId(value.id)
 
         val id by value::id
         val isMarkedForSync get() = syncProduct?.synced ?: false
 
-        private val lazySyncProblems = lazyWithReset { checkSyncProblems(value, syncProduct) }
-        val syncProblems by lazySyncProblems
+        val syncProblems get() = checkSyncProblems(value, syncProduct)
 
         override val itemId = "product-$id"
         override val name get() = value.description.ifEmpty { value.name }
@@ -322,11 +310,6 @@ class ProductManagerService(
             (!markedForSync || isMarkedForSync) &&
                     (withErrors == null || syncProblems.isNotEmpty() == withErrors) &&
                     (text.isEmpty() || name.contains(text, ignoreCase = true))
-
-        override fun reset() {
-            lazySyncProblems.reset()
-            lazySyncProduct.reset()
-        }
     }
 }
 
@@ -342,8 +325,6 @@ sealed interface SyncableItem {
     val tags get() = tagsAsSet.sorted().joinToString(", ")
 
     fun filterBy(markedForSync: Boolean, withErrors: Boolean?, text: String): Boolean
-
-    fun reset()
 }
 
 sealed class SyncProblem(val message: String) {
