@@ -42,6 +42,7 @@ class EditItemDialog(
 
         val vendorComboBox = ComboBox<SyncVendor>().apply {
             label = "Hersteller"
+            isClearButtonVisible = true
             itemLabelGenerator = ItemLabelGenerator { it.name }
             setItems(vendors)
             value = item.vendor
