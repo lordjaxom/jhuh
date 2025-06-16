@@ -17,6 +17,10 @@
             <groupId>de.akvsoft</groupId>
             <artifactId>hinundhergestellt-vendor-api-ready2order</artifactId>
         </dependency>
+        <dependency>
+            <groupId>de.akvsoft</groupId>
+            <artifactId>hinundhergestellt-vendor-api-shopify</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -185,43 +189,6 @@
                     </execution>
                 </executions>
             </plugin>
-<!--            <plugin>-->
-<!--                <groupId>io.github.deweyjose</groupId>-->
-<!--                <artifactId>graphqlcodegen-maven-plugin</artifactId>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <goals>-->
-<!--                            <goal>generate</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--                <configuration>-->
-<!--                    <packageName>de.hinundhergestellt.jhuh.vendors.shopify.graphql</packageName>-->
-<!--                    <language>kotlin</language>-->
-<!--                    <generateClientApi>true</generateClientApi>-->
-<!--                    <generateKotlinNullableClasses>true</generateKotlinNullableClasses>-->
-<!--&lt;!&ndash;                    <generateKotlinClosureProjections>true</generateKotlinClosureProjections>&ndash;&gt;-->
-<!--                    <outputDir>${project.build.directory}/generated-sources/graphql</outputDir>-->
-<!--                    <schemaPaths>-->
-<!--                        <param>src/main/graphql/schema.graphql</param>-->
-<!--                    </schemaPaths>-->
-<!--                    <typeMapping>-->
-<!--                        <ARN>kotlin.String</ARN>-->
-<!--                        <BigInt>kotlin.String</BigInt>-->
-<!--                        <Color>kotlin.String</Color>-->
-<!--                        <Decimal>kotlin.String</Decimal>-->
-<!--                        <FormattedString>String</FormattedString>-->
-<!--                        <HTML>kotlin.String</HTML>-->
-<!--                        <JSON>kotlin.String</JSON>-->
-<!--                        <Money>kotlin.String</Money>-->
-<!--                        <Query>kotlin.String</Query>-->
-<!--                        <StorefrontID>kotlin.String</StorefrontID>-->
-<!--                        <UnsignedInt64>kotlin.String</UnsignedInt64>-->
-<!--                        <URL>kotlin.String</URL>-->
-<!--                        <UtcOffset>kotlin.String</UtcOffset>-->
-<!--                    </typeMapping>-->
-<!--                </configuration>-->
-<!--            </plugin>-->
         </plugins>
     </build>
 </project>
