@@ -7,7 +7,6 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantOpt
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVariant
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
-import kotlin.reflect.KMutableProperty0
 
 private val logger = KotlinLogging.logger {}
 

@@ -1,8 +1,8 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
-import com.shopify.admin.types.OptionCreateInput
-import com.shopify.admin.types.OptionValueCreateInput
-import com.shopify.admin.types.ProductOption
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.OptionCreateInput
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.OptionValueCreateInput
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductOption
 
 open class UnsavedShopifyProductOption(
     var name: String,
@@ -12,10 +12,10 @@ open class UnsavedShopifyProductOption(
         "UnsavedShopifyProductOption(name='$name')"
 
     internal fun toOptionCreateInput() =
-        OptionCreateInput().also {
-            it.name = name
-            it.values = values.map { value -> value.toOptionValueCreateInput() }
-        }
+        OptionCreateInput(
+            name = name,
+            values = values.map { it.toOptionValueCreateInput() }
+        )
 }
 
 class ShopifyProductOption private constructor(
@@ -42,4 +42,4 @@ class ShopifyProductOption private constructor(
         "ShopifyProductOption(id='$id', name='$name')"
 }
 
-private fun String.toOptionValueCreateInput() = OptionValueCreateInput().also { it.name = this }
+private fun String.toOptionValueCreateInput() = OptionValueCreateInput(this)

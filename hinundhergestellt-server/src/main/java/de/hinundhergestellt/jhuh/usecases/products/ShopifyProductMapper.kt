@@ -1,6 +1,5 @@
 package de.hinundhergestellt.jhuh.usecases.products
 
-import com.shopify.admin.types.ProductStatus
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategoryRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
@@ -12,11 +11,10 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductOption
 import de.hinundhergestellt.jhuh.vendors.shopify.client.containsId
 import de.hinundhergestellt.jhuh.vendors.shopify.client.findById
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductStatus
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
-import kotlin.reflect.KMutableProperty0
 import kotlin.streams.asSequence
-import kotlin.text.ifEmpty
 
 private const val METAFIELD_NAMESPACE = "hinundhergestellt"
 private val INVALID_TAG_CHARACTERS = """[^A-ZÄÖÜa-zäöüß0-9\\._ -]""".toRegex()

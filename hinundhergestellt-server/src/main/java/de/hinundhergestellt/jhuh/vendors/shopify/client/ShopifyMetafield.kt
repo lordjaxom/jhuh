@@ -1,8 +1,8 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
-import com.shopify.admin.types.Metafield
-import com.shopify.admin.types.MetafieldIdentifierInput
-import com.shopify.admin.types.MetafieldInput
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.Metafield
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.MetafieldIdentifierInput
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.MetafieldInput
 
 class ShopifyMetafield(
     val namespace: String,
@@ -10,7 +10,7 @@ class ShopifyMetafield(
     var value: String,
     var type: ShopifyMetafieldType
 ) {
-    internal constructor(metafield: Metafield): this(
+    internal constructor(metafield: Metafield) : this(
         metafield.namespace,
         metafield.key,
         metafield.value,
@@ -20,19 +20,19 @@ class ShopifyMetafield(
     fun matchesId(other: ShopifyMetafield) = namespace == other.namespace && key == other.key
 
     internal fun toMetafieldInput() =
-        MetafieldInput().also {
-            it.namespace = namespace
-            it.key = key
-            it.value = value
-            it.type = type.name.lowercase()
-        }
+        MetafieldInput(
+            namespace = namespace,
+            key = key,
+            value = value,
+            type = type.name.lowercase()
+        )
 
-    internal fun toMetafieldIdentifierInput(ownerId: String)=
-        MetafieldIdentifierInput().also {
-            it.ownerId = ownerId
-            it.namespace = namespace
-            it.key = key
-        }
+    internal fun toMetafieldIdentifierInput(ownerId: String) =
+        MetafieldIdentifierInput(
+            ownerId = ownerId,
+            namespace = namespace,
+            key = key
+        )
 
     override fun toString(): String {
         return "ShopifyMetafield(namespace='$namespace', key='$key', value='$value', type=$type)"

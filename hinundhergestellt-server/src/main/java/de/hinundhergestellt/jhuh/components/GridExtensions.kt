@@ -3,9 +3,7 @@ package de.hinundhergestellt.jhuh.components
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.grid.ColumnTextAlign
 import com.vaadin.flow.component.grid.Grid
-import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.Icon
-import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.treegrid.TreeGrid

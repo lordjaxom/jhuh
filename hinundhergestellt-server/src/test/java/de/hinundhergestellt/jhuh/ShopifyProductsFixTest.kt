@@ -4,6 +4,8 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafieldsClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOptionClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantClient
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 
@@ -19,4 +21,9 @@ class ShopifyProductsFixTest {
     @Autowired
     private lateinit var metafieldsClient: ShopifyMetafieldsClient
 
+    @Test
+    fun findsAll() {
+        val products = productClient.findAll().toList()
+        assertThat(products).isNotEmpty()
+    }
 }

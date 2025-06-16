@@ -1,7 +1,7 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
-import com.shopify.admin.types.SelectedOption
-import com.shopify.admin.types.VariantOptionValueInput
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.SelectedOption
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.VariantOptionValueInput
 
 class ShopifyProductVariantOption(
     val name: String,
@@ -16,8 +16,8 @@ class ShopifyProductVariantOption(
         "ShopifyProductVariantOption(name='$name', value='$value')"
 
     internal fun toVariantOptionValueInput() =
-        VariantOptionValueInput().also {
-            it.optionName = name
-            it.name = value
-        }
+        VariantOptionValueInput(
+            optionName = name,
+            name = value
+        )
 }

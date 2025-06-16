@@ -1,12 +1,12 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
-import com.shopify.admin.types.Product
-import com.shopify.admin.types.ProductCreateInput
-import com.shopify.admin.types.ProductDeleteInput
-import com.shopify.admin.types.ProductStatus
-import com.shopify.admin.types.ProductUpdateInput
 import de.hinundhergestellt.jhuh.util.RemoveProtectedMutableList
 import de.hinundhergestellt.jhuh.util.toRemoveProtectedMutableList
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.Product
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductCreateInput
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductDeleteInput
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductStatus
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductUpdateInput
 
 open class UnsavedShopifyProduct(
     var title: String,
@@ -21,15 +21,15 @@ open class UnsavedShopifyProduct(
         "UnsavedShopifyProduct(title='$title', vendor='$vendor', productType='$productType', status=$status)"
 
     internal fun toProductCreateInput() =
-        ProductCreateInput().also {
-            it.title = title
-            it.vendor = vendor
-            it.productType = productType
-            it.status = status
-            it.tags = tags.toList()
-            it.productOptions = options.map { option -> option.toOptionCreateInput() }
-            it.metafields = metafields.map { metafield -> metafield.toMetafieldInput() }
-        }
+        ProductCreateInput(
+            title = title,
+            vendor = vendor,
+            productType = productType,
+            status = status,
+            tags = tags.toList(),
+            productOptions = options.map { option -> option.toOptionCreateInput() },
+            metafields = metafields.map { metafield -> metafield.toMetafieldInput() }
+        )
 }
 
 class ShopifyProduct private constructor(
@@ -88,18 +88,16 @@ class ShopifyProduct private constructor(
         "ShopifyProduct(id='$id', title='$title', vendor='$vendor', productType='$productType', status=$status)"
 
     internal fun toProductUpdateInput() =
-        ProductUpdateInput().also {
-            it.id = id
-            it.title = title
-            it.vendor = vendor
-            it.productType = productType
-            it.status = status
-            it.tags = tags.toList()
-            it.metafields = metafields.map { metafield -> metafield.toMetafieldInput() }
-        }
+        ProductUpdateInput(
+            id = id,
+            title = title,
+            vendor = vendor,
+            productType = productType,
+            status = status,
+            tags = tags.toList(),
+            metafields = metafields.map { it.toMetafieldInput() }
+        )
 
     internal fun toProductDeleteInput() =
-        ProductDeleteInput().also {
-            it.id = id
-        }
+        ProductDeleteInput(id)
 }

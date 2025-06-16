@@ -1,9 +1,9 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
-import com.shopify.admin.types.InventoryItemInput
-import com.shopify.admin.types.ProductVariant
-import com.shopify.admin.types.ProductVariantsBulkInput
 import de.hinundhergestellt.jhuh.util.fixedScale
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.InventoryItemInput
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductVariant
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductVariantsBulkInput
 import java.math.BigDecimal
 
 open class UnsavedShopifyProductVariant(
@@ -18,18 +18,22 @@ open class UnsavedShopifyProductVariant(
         "UnsavedShopifyProductVariant(sku='$sku', barcode='$barcode')"
 
     internal open fun toProductVariantsBulkInput() =
-        ProductVariantsBulkInput().also {
-            it.barcode = barcode
-            it.price = price.toPlainString()
-            it.optionValues = options.map { option -> option.toVariantOptionValueInput() }
-            it.inventoryItem = toInventoryItemInput()
-        }
+        toProductVariantsBulkInput(null)
+
+    protected fun toProductVariantsBulkInput(id: String?) =
+        ProductVariantsBulkInput(
+            id = id,
+            barcode = barcode,
+            price = price.toPlainString(),
+            optionValues = options.map { it.toVariantOptionValueInput() },
+            inventoryItem = toInventoryItemInput()
+        )
 
     private fun toInventoryItemInput() =
-        InventoryItemInput().also {
-            it.sku = sku
-            it.tracked = true
-        }
+        InventoryItemInput(
+            sku = sku,
+            tracked = true
+        )
 }
 
 class ShopifyProductVariant private constructor(
@@ -49,7 +53,7 @@ class ShopifyProductVariant private constructor(
         variant.id,
         variant.title,
         variant.sku ?: "",
-        variant.barcode,
+        variant.barcode!!,
         BigDecimal(variant.price),
         variant.selectedOptions.map { ShopifyProductVariantOption(it) }
     )
@@ -67,5 +71,5 @@ class ShopifyProductVariant private constructor(
         "ShopifyProductVariant(id='$id', sku='$sku', barcode='$barcode')"
 
     override fun toProductVariantsBulkInput() =
-        super.toProductVariantsBulkInput().also { it.id = id }
+        super.toProductVariantsBulkInput(id)
 }

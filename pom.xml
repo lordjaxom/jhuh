@@ -62,11 +62,6 @@
                 <version>33.4.6-jre</version>
             </dependency>
             <dependency>
-                <groupId>io.github.mores</groupId>
-                <artifactId>java-shopify-graphql-admin</artifactId>
-                <version>2025.04.001</version>
-            </dependency>
-            <dependency>
                 <groupId>com.netflix.graphql.dgs</groupId>
                 <artifactId>graphql-dgs-client</artifactId>
                 <version>10.2.1</version>

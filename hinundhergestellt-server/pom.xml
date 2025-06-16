@@ -90,16 +90,8 @@
             <artifactId>guava</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.github.mores</groupId>
-            <artifactId>java-shopify-graphql-admin</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.netflix.graphql.dgs</groupId>
             <artifactId>graphql-dgs-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.netflix.graphql.dgs.codegen</groupId>
-            <artifactId>graphql-dgs-codegen-shared-core</artifactId>
         </dependency>
         <dependency>
             <groupId>io.github.oshai</groupId>
@@ -133,6 +125,10 @@
             <groupId>org.testcontainers</groupId>
             <artifactId>mariadb</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.akvsoft</groupId>
+            <artifactId>hinundhergestellt-vendor-api-shopify</artifactId>
         </dependency>
     </dependencies>
 
