@@ -15,6 +15,7 @@ import java.math.BigDecimal
 private val logger = KotlinLogging.logger {}
 
 @SpringBootTest
+@Disabled("Only run manually")
 class ArtooProductFixTest {
 
     @Autowired
@@ -77,6 +78,7 @@ class ArtooProductFixTest {
     }
 
     @Test
+    @Disabled("Has run successfully")
     fun updateProductsWithVariantsName() {
         val oldName = "Gründl - Funny Mini 15g"
         val newName = "Gründl Funny Mini"
