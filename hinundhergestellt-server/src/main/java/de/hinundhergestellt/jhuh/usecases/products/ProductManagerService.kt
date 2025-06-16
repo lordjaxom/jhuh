@@ -130,6 +130,7 @@ class ProductManagerService(
     }
 
     fun refresh() = artooDataStore.refresh()
+    suspend fun refreshAndAwait() = artooDataStore.refreshAndAwait()
 
     private fun buildRootCategories() {
         _rootCategories = artooDataStore.rootCategories.map { CategoryItem(it) }

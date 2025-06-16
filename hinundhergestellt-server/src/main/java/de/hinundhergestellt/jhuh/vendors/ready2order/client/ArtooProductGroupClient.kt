@@ -1,28 +1,30 @@
 package de.hinundhergestellt.jhuh.vendors.ready2order.client
 
-import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.ApiClient
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.api.ProductGroupApi
+import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.stereotype.Component
+import org.springframework.web.reactive.function.client.WebClient
 
 @Component
 class ArtooProductGroupClient(
-    apiClient: ApiClient
+    ready2orderWebClient: WebClient
 ) {
-    private val api: ProductGroupApi = ProductGroupApi(apiClient)
+    private val api: ProductGroupApi = ProductGroupApi(ready2orderWebClient)
 
-    fun findAll() = pageAll {
+    suspend fun findAll() = pageAll {
         api.productgroupsGet(it, null)
+            .awaitSingle()
             .map { group -> ArtooProductGroup(group) }
     }
 
-    fun create(group: UnsavedArtooProductGroup) =
-        ArtooProductGroup(api.productgroupsPost(group.toProductgroupsPostRequest()))
+    suspend fun create(group: UnsavedArtooProductGroup) =
+        ArtooProductGroup(api.productgroupsPost(group.toProductgroupsPostRequest()).awaitSingle())
 
-    fun update(group: ArtooProductGroup) {
-        api.productgroupsIdPut(group.id, group.toProductgroupsPostRequest())
+    suspend fun update(group: ArtooProductGroup) {
+        api.productgroupsIdPut(group.id, group.toProductgroupsPostRequest()).awaitSingle()
     }
 
-    fun delete(group: ArtooProductGroup) {
-        api.productgroupsIdDelete(group.id)
+    suspend fun delete(group: ArtooProductGroup) {
+        api.productgroupsIdDelete(group.id).awaitSingle()
     }
 }

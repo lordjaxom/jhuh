@@ -17,22 +17,22 @@ class BarcodeChecker {
 
     @Autowired
     private ArtooProductClient client;
-
-    @Test
-    void testAllBarcodes() {
-        for (var product : (Iterable<ArtooProduct>) client.findAll(null)::iterator) {
-            if (product.getBarcode() == null) {
-                continue;
-            }
-
-            if (product.getBarcode().length() != 13) {
-                LOGGER.info("Not an EAN-13 Barcode: {}", product.getName());
-                continue;
-            }
-            var expected = calcChecksum(product.getBarcode().substring(0, 12));
-            if (expected != product.getBarcode().charAt(12)) {
-                LOGGER.info("Invalid checksum: {}", product.getName());
-            }
-        }
-    }
+//
+//    @Test
+//    void testAllBarcodes() {
+//        for (var product : (Iterable<ArtooProduct>) client.findAll(null)::iterator) {
+//            if (product.getBarcode() == null) {
+//                continue;
+//            }
+//
+//            if (product.getBarcode().length() != 13) {
+//                LOGGER.info("Not an EAN-13 Barcode: {}", product.getName());
+//                continue;
+//            }
+//            var expected = calcChecksum(product.getBarcode().substring(0, 12));
+//            if (expected != product.getBarcode().charAt(12)) {
+//                LOGGER.info("Invalid checksum: {}", product.getName());
+//            }
+//        }
+//    }
 }

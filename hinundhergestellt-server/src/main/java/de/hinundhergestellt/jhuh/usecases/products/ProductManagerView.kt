@@ -28,22 +28,29 @@ import de.hinundhergestellt.jhuh.components.addCountColumn
 import de.hinundhergestellt.jhuh.components.addHierarchyTextColumn
 import de.hinundhergestellt.jhuh.components.addIconColumn
 import de.hinundhergestellt.jhuh.components.addTextColumn
+import de.hinundhergestellt.jhuh.components.vaadinContext
 import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.CategoryItem
 import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.ProductItem
 import de.hinundhergestellt.jhuh.usecases.products.SyncProblem.Error
+import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.task.AsyncTaskExecutor
 import java.util.concurrent.CompletableFuture
 import java.util.stream.Stream
+import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.optionals.getOrNull
 import kotlin.streams.asStream
+
+private val logger = KotlinLogging.logger { }
 
 @Route
 @PageTitle("Produktverwaltung")
 class ProductManagerView(
     private val service: ProductManagerService,
     @Qualifier("applicationTaskExecutor") private val taskExecutor: AsyncTaskExecutor
-) : VerticalLayout() {
+) : VerticalLayout(), CoroutineScope {
 
     private val refreshButton = Button()
     private val markedForSyncCheckbox = Checkbox()
@@ -52,6 +59,8 @@ class ProductManagerView(
     private val filterTextField = TextField()
     private val treeGrid = TreeGrid<SyncableItem>()
     private val progressOverlay = Div()
+
+    override val coroutineContext: CoroutineContext = vaadinContext(this)
 
     init {
         setHeightFull()
@@ -63,17 +72,26 @@ class ProductManagerView(
         configureTreeGrid()
         configureProgressOverlay()
 
-        val stateChangedHandler: () -> Unit = {
-            ui.getOrNull()?.access { treeGrid.dataProvider.refreshAll(); refreshButton.isEnabled = true }
-        }
-        addAttachListener { service.stateChangeListeners += stateChangedHandler }
-        addDetachListener { service.stateChangeListeners -= stateChangedHandler }
+//        val stateChangedHandler: () -> Unit = {
+//            ui.getOrNull()?.access { treeGrid.dataProvider.refreshAll(); refreshButton.isEnabled = true }
+//        }
+//        addAttachListener { service.stateChangeListeners += stateChangedHandler }
+//        addDetachListener { service.stateChangeListeners -= stateChangedHandler }
     }
 
     private fun configureHeader() {
         refreshButton.text = "Aktualisieren"
         refreshButton.isDisableOnClick = true
-        refreshButton.addClickListener { service.refresh() }
+        refreshButton.addClickListener {
+            logger.info { "Launching coroutine" }
+            launch {
+                logger.info { "Calling refreshAndAwait" }
+                service.refreshAndAwait()
+                logger.info { "Updating tree and enabling button" }
+                treeGrid.dataProvider.refreshAll()
+                refreshButton.isEnabled = true
+            }
+        }
 
         val syncWithShopifyButton = Button("Mit Shopify synchronisieren") { synchronize() }
 
@@ -165,8 +183,8 @@ class ProductManagerView(
         treeGrid.dataProvider.refreshItem(product)
     }
 
-    private fun editItem(item: SyncableItem) {
-        EditItemDialog(item, service.vendors) { vendor, type, tags ->
+    private fun editItem(item: SyncableItem) = launch {
+        editItemDialog(item, service.vendors)?.apply {
             service.updateItem(item, vendor, type, tags)
             treeGrid.dataProvider.refreshItem(item, vendor != null || type != null)
         }

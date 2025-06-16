@@ -6,18 +6,26 @@ import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductClient
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductGroup
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductGroupClient
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductGroupType
+import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.task.AsyncTaskExecutor
 import org.springframework.stereotype.Service
 import java.util.concurrent.Callable
 
+private val logger = KotlinLogging.logger {}
+
 @Service
 class ArtooDataStore(
     private val productGroupClient: ArtooProductGroupClient,
-    private val productClient: ArtooProductClient,
-    @Qualifier("applicationTaskExecutor") private val taskExecutor: AsyncTaskExecutor
+    private val productClient: ArtooProductClient
 ) {
-    private val rootCategoriesAsync = asyncWithRefresh(taskExecutor) { fetchRootCategories() }
+    private val rootCategoriesAsync = asyncWithRefresh { fetchRootCategories() }
     val rootCategories by rootCategoriesAsync
 
     val stateChangeListeners by rootCategoriesAsync::stateChangeListeners
@@ -34,10 +42,21 @@ class ArtooDataStore(
     // @Scheduled(initialDelay = 15, fixedDelay = 15, timeUnit = TimeUnit.MINUTES)
     fun refresh() = rootCategoriesAsync.refresh()
 
-    private fun fetchRootCategories(): List<ArtooMappedCategory> {
-        val groups = taskExecutor.submit(Callable { productGroupClient.findAll().toList() })
+    suspend fun refreshAndAwait() {
+        rootCategoriesAsync.refreshAndGet()
+    }
+
+    private suspend fun fetchRootCategories(): List<ArtooMappedCategory> = coroutineScope {
+        logger.info { "Fetching all root-categories in runBlocking" }
+        val groups = async {
+            logger.info { "Fetching groups in async" }
+            val r = productGroupClient.findAll().toList()
+            logger.info { "Done fetching groups in async" }
+            r
+        }
         val products = productClient.findAll().toList()
-        return CategoriesAndProductsBuilder(groups.get(), products).rootCategories
+        logger.info { "Done fetching products, building tree" }
+        CategoriesAndProductsBuilder(groups.await(), products).rootCategories
     }
 }
 

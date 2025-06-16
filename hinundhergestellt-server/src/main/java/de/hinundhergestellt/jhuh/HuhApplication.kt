@@ -1,17 +1,15 @@
 package de.hinundhergestellt.jhuh
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.netflix.graphql.dgs.client.GraphQLClient
 import com.netflix.graphql.dgs.client.HttpResponse
-import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.ApiClient
-import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.RateLimitEnforcingApiClient
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsIdPutRequest
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsIdPutRequestMixin
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsPostRequest
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsPostRequestMixin
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsPostRequestProductBase
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsPostRequestProductBaseMixin
+import org.openapitools.client.infrastructure.Serializer
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.Banner
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -20,10 +18,10 @@ import org.springframework.context.annotation.Bean
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.scheduling.annotation.EnableAsync
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.web.client.RestTemplate
+import org.springframework.web.reactive.function.client.WebClient
 
 @SpringBootApplication
 @EnableAsync
@@ -31,22 +29,21 @@ import org.springframework.web.client.RestTemplate
 class HuhApplication {
 
     @Bean
-    fun ready2orderApiClient(
+    fun ready2orderWebClient(
         @Value("\${ready2order.apikey}") apikey: String
-    ): ApiClient {
-        val objectMapper = ObjectMapper()
-        objectMapper.addMixIn(ProductsIdPutRequest::class.java, ProductsIdPutRequestMixin::class.java)
-        objectMapper.addMixIn(ProductsPostRequest::class.java, ProductsPostRequestMixin::class.java)
-        objectMapper.addMixIn(ProductsPostRequestProductBase::class.java, ProductsPostRequestProductBaseMixin::class.java)
-        objectMapper.setSerializationInclusion(JsonInclude.Include.ALWAYS)
+    ): WebClient {
+        Serializer.jacksonObjectMapper.apply {
+            addMixIn(ProductsIdPutRequest::class.java, ProductsIdPutRequestMixin::class.java)
+            addMixIn(ProductsPostRequest::class.java, ProductsPostRequestMixin::class.java)
+            addMixIn(ProductsPostRequestProductBase::class.java, ProductsPostRequestProductBaseMixin::class.java)
+            setSerializationInclusion(JsonInclude.Include.ALWAYS)
+        }
 
-        val messageConverter = MappingJackson2HttpMessageConverter(objectMapper)
-        val restTemplate = RestTemplate(listOf(messageConverter))
-
-        val apiClient = RateLimitEnforcingApiClient(restTemplate)
-        apiClient.setBasePath("https://api.ready2order.com/v1")
-        apiClient.setApiKey(apikey)
-        return apiClient
+        return WebClient.builder()
+            .baseUrl("https://api.ready2order.com/v1")
+            .defaultHeader("Authorization", "Bearer $apikey")
+            .codecs { it.defaultCodecs().maxInMemorySize(5 * 1024 * 1024) }
+            .build()
     }
 
     @Bean

@@ -16,15 +16,15 @@ open class UnsavedArtooProductGroup(
         "UnsavedArtooProductGroup(name='$name', description='$description')"
 
     internal fun toProductgroupsPostRequest() =
-        ProductgroupsPostRequest().also {
-            it.productgroupName = name
-            it.productgroupDescription = description
-            it.productgroupShortcut = shortcut
-            it.productgroupActive = active
-            it.productgroupParent = parent
-            it.productgroupSortIndex = sortIndex
-            it.productgroupTypeId = type.id
-        }
+        ProductgroupsPostRequest(
+            productgroupName = name,
+            productgroupDescription = description,
+            productgroupShortcut = shortcut,
+            productgroupActive = active,
+            productgroupParent = parent,
+            productgroupSortIndex = sortIndex,
+            productgroupTypeId = type.id
+        )
 }
 
 class ArtooProductGroup : UnsavedArtooProductGroup {
@@ -32,15 +32,15 @@ class ArtooProductGroup : UnsavedArtooProductGroup {
     val id: Int
 
     internal constructor(group: ProductgroupsGet200ResponseInner) : super(
-        group.productgroupName,
-        group.productgroupDescription,
-        group.productgroupShortcut,
-        group.productgroupActive,
+        group.productgroupName!!,
+        group.productgroupDescription!!,
+        group.productgroupShortcut!!,
+        group.productgroupActive!!,
         group.productgroupParent,
-        group.productgroupSortIndex,
+        group.productgroupSortIndex!!,
         ArtooProductGroupType.valueOf(group.productgroupTypeId)
     ) {
-        id = group.productgroupId
+        id = group.productgroupId!!
     }
 
     override fun toString() =

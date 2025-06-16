@@ -15,13 +15,16 @@ import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.textfield.TextField
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendor
+import de.hinundhergestellt.jhuh.components.checkUIThread
 import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.CategoryItem
 import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.ProductItem
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 
-class EditItemDialog(
+private class EditItemDialog(
     private val item: SyncableItem,
     private val vendors: List<SyncVendor>,
-    private val saveListener: (vendor: Option<SyncVendor>?, type: Option<String>?, tags: String) -> Unit
+    private val response: (EditItemDialogResponse?) -> Unit
 ) : Dialog() {
 
     init {
@@ -30,7 +33,7 @@ class EditItemDialog(
 
         val closeButton = Button(VaadinIcon.CLOSE.create()).apply {
             addThemeVariants(ButtonVariant.LUMO_TERTIARY)
-            addClickListener { close() }
+            addClickListener { close(); response(null) }
         }
         header.add(closeButton)
 
@@ -80,7 +83,7 @@ class EditItemDialog(
                     if (typeCheckbox != null && !typeCheckbox.value) null
                     else if (typeTextField.value.isNotEmpty()) Some(typeTextField.value)
                     else none()
-                saveListener(vendor, type, tagsTextField.value)
+                response(EditItemDialogResponse(vendor, type, tagsTextField.value))
                 close()
             }
         }
@@ -105,3 +108,15 @@ class EditItemDialog(
             it.setWidthFull()
         }
 }
+
+class EditItemDialogResponse(
+    val vendor: Option<SyncVendor>?,
+    val type: Option<String>?,
+    val tags: String
+)
+
+suspend fun editItemDialog(item: SyncableItem, vendors: List<SyncVendor>) =
+    suspendCancellableCoroutine {
+        checkUIThread()
+        EditItemDialog(item, vendors) { response -> it.resume(response) }
+    }

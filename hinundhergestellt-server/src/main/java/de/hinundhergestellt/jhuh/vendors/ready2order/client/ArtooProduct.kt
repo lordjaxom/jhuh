@@ -41,39 +41,35 @@ open class UnsavedArtooProduct(
         "UnsavedArtooProduct(name='$name', description='$description', itemNumber='$itemNumber', barcode='$barcode')"
 
     internal fun toProductsPostRequest() =
-        ProductsPostRequest().also {
-            it.productName = name
-            it.productItemnumber = itemNumber
-            it.productBarcode = barcode
-            it.productDescription = description
-            it.productPrice = price.toPlainString()
-            it.productPriceIncludesVat = priceIncludesVat
-            it.productActive = active
-            it.productDiscountable = discountable
-            it.productVat = vat.toPlainString()
-            it.productStockEnabled = stockEnabled
-            it.productVariationsEnabled = variationsEnabled
-            it.productStockValue = stockValue.toPlainString()
-            it.productStockReorderLevel = stockReorderLevel.toPlainString()
-            it.productStockSafetyStock = stockSafetyStock.toPlainString()
-            it.productStockUnit = stockUnit
-            it.productSortIndex = sortIndex
-            it.productType = type.type
-            it.productBase = toProductsPostRequestProductBase()
-            it.productgroup = toProductsPostRequestProductgroup()
-            it.productAlternativeNameOnReceipts = alternativeNameOnReceipts
-            it.productAlternativeNameInPos = alternativeNameInPos
-        }
+        ProductsPostRequest(
+            productName = name,
+            productItemnumber = itemNumber,
+            productBarcode = barcode,
+            productDescription = description,
+            productPrice = price.toPlainString(),
+            productPriceIncludesVat = priceIncludesVat,
+            productActive = active,
+            productDiscountable = discountable,
+            productVat = vat.toPlainString(),
+            productStockEnabled = stockEnabled,
+            productVariationsEnabled = variationsEnabled,
+            productStockValue = stockValue.toPlainString(),
+            productStockReorderLevel = stockReorderLevel.toPlainString(),
+            productStockSafetyStock = stockSafetyStock.toPlainString(),
+            productStockUnit = stockUnit,
+            productSortIndex = sortIndex,
+            productType = type.type,
+            productBase = toProductsPostRequestProductBase(),
+            productgroup = toProductsPostRequestProductgroup(),
+            productAlternativeNameOnReceipts = alternativeNameOnReceipts,
+            productAlternativeNameInPos = alternativeNameInPos,
+        )
 
     protected fun toProductsPostRequestProductBase() =
-        ProductsPostRequestProductBase().also {
-            it.productId = baseId
-        }
+        ProductsPostRequestProductBase(baseId)
 
     protected fun toProductsPostRequestProductgroup() =
-        ProductsPostRequestProductgroup().also {
-            it.productgroupId = productGroupId
-        }
+        ProductsPostRequestProductgroup(productGroupId)
 }
 
 class ArtooProduct : UnsavedArtooProduct {
@@ -82,29 +78,29 @@ class ArtooProduct : UnsavedArtooProduct {
     val typeId: Int?
 
     internal constructor(product: ProductsGet200ResponseInner) : super(
-        product.productName,
+        product.productName!!,
         product.productItemnumber,
         product.productBarcode,
-        product.productDescription,
+        product.productDescription!!,
         BigDecimal(product.productPrice),
-        product.productPriceIncludesVat,
+        product.productPriceIncludesVat!!,
         BigDecimal(product.productVat),
-        product.productStockEnabled,
-        product.productVariationsEnabled,
+        product.productStockEnabled!!,
+        product.productVariationsEnabled!!,
         BigDecimal(product.productStockValue),
         product.productStockUnit,
         product.productStockReorderLevel?.let { BigDecimal(it) } ?: BigDecimal.ZERO,
         product.productStockSafetyStock?.let { BigDecimal(it) } ?: BigDecimal.ZERO,
-        product.productSortIndex,
-        product.productActive,
-        product.productDiscountable,
+        product.productSortIndex!!,
+        product.productActive!!,
+        product.productDiscountable!!,
         ArtooProductType.valueOf(product.productTypeId),
         product.productBaseId,
-        product.productgroup!!.productgroupId,
+        product.productgroup!!.productgroupId!!,
         product.productAlternativeNameOnReceipts ?: "",
         product.productAlternativeNameInPos ?: ""
     ) {
-        id = product.productId
+        id = product.productId!!
         typeId = product.productTypeId
     }
 
@@ -112,29 +108,29 @@ class ArtooProduct : UnsavedArtooProduct {
         "ArtooProduct(id=$id, name='$name', description='$description', itemNumber='$itemNumber', barcode='$barcode')"
 
     internal fun toProductsIdPutRequest() =
-        ProductsIdPutRequest().also {
-            it.productName = name
-            it.productItemnumber = itemNumber
-            it.productBarcode = barcode
-            it.productDescription = description
-            it.productPrice = price.toPlainString()
-            it.productPriceIncludesVat = priceIncludesVat
-            it.productActive = active
-            it.productDiscountable = discountable
-            it.productVat = vat.toPlainString()
-            it.productStockEnabled = stockEnabled
-            it.productVariationsEnabled = variationsEnabled
-            it.productStockValue = stockValue.toPlainString()
-            it.productStockReorderLevel = stockReorderLevel.toPlainString()
-            it.productStockSafetyStock = stockSafetyStock.toPlainString()
-            it.productStockUnit = stockUnit
-            it.productSortIndex = sortIndex
-            it.productType = type.type
-            it.productBase = toProductsPostRequestProductBase()
-            it.productgroup = toProductsPostRequestProductgroup()
-            it.productAlternativeNameOnReceipts = alternativeNameOnReceipts
-            it.productAlternativeNameInPos = alternativeNameInPos
-        }
+        ProductsIdPutRequest(
+            productName = name,
+            productItemnumber = itemNumber,
+            productBarcode = barcode,
+            productDescription = description,
+            productPrice = price.toPlainString(),
+            productPriceIncludesVat = priceIncludesVat,
+            productActive = active,
+            productDiscountable = discountable,
+            productVat = vat.toPlainString(),
+            productStockEnabled = stockEnabled,
+            productVariationsEnabled = variationsEnabled,
+            productStockValue = stockValue.toPlainString(),
+            productStockReorderLevel = stockReorderLevel.toPlainString(),
+            productStockSafetyStock = stockSafetyStock.toPlainString(),
+            productStockUnit = stockUnit,
+            productSortIndex = sortIndex,
+            productType = type.type,
+            productBase = toProductsPostRequestProductBase(),
+            productgroup = toProductsPostRequestProductgroup(),
+            productAlternativeNameOnReceipts = alternativeNameOnReceipts,
+            productAlternativeNameInPos = alternativeNameInPos,
+        )
 }
 
 enum class ArtooProductType(

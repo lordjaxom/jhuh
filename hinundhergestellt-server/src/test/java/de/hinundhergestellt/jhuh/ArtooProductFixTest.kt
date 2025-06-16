@@ -6,6 +6,9 @@ import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductGroupTyp
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductType
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.UnsavedArtooProductGroup
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,7 +29,7 @@ class ArtooProductFixTest {
 
     @Test
     @Disabled("Has run successfully")
-    fun restructureProductsWithVariants() {
+    fun restructureProductsWithVariants() = runBlocking {
         val products = artooProductClient.findAll().toList()
         products.asSequence()
             .filter { it.baseId == null }
@@ -45,7 +48,7 @@ class ArtooProductFixTest {
 
     @Test
     @Disabled("Has run successfully")
-    fun moveVariantsToProducts() {
+    fun moveVariantsToProducts() = runBlocking {
         val products = artooProductClient.findAll().toList()
         products.asSequence()
             .filter { it.baseId == null }
@@ -73,13 +76,13 @@ class ArtooProductFixTest {
                     it.variationsEnabled = false
                     artooProductClient.update(it)
                 }
-                 artooProductClient.delete(product)
+                artooProductClient.delete(product)
             }
     }
 
     @Test
     @Disabled("Has run successfully")
-    fun updateProductsWithVariantsName() {
+    fun updateProductsWithVariantsName() = runBlocking {
         val oldName = "Gründl - Funny Mini 15g"
         val newName = "Gründl Funny Mini"
 
