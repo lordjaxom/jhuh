@@ -18,6 +18,7 @@ import kotlin.reflect.KMutableProperty0
 import kotlin.streams.asSequence
 import kotlin.text.ifEmpty
 
+private const val METAFIELD_NAMESPACE = "hinundhergestellt"
 private val INVALID_TAG_CHARACTERS = """[^A-ZÄÖÜa-zäöüß0-9\\._ -]""".toRegex()
 
 private val logger = KotlinLogging.logger { }
@@ -97,14 +98,4 @@ class ShopifyProductMapper(
     }
 }
 
-// TODO: Duplication
-private fun <T> updateProperty(property: KMutableProperty0<T>, value: T): Boolean {
-    if (property.get() != value) {
-        logger.info { "Property ${property.name} changed from ${property.get()} to $value" }
-        property.set(value)
-        return true
-    }
-    return false
-}
-
-private fun metafield(key: String, value: String, type: ShopifyMetafieldType) = ShopifyMetafield("hinundhergestellt", key, value, type)
+private fun metafield(key: String, value: String, type: ShopifyMetafieldType) = ShopifyMetafield(METAFIELD_NAMESPACE, key, value, type)
