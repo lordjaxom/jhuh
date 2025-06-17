@@ -1,7 +1,6 @@
 package de.hinundhergestellt.jhuh
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.google.common.util.concurrent.RateLimiter
 import com.netflix.graphql.dgs.client.GraphQLClient
 import com.netflix.graphql.dgs.client.HttpResponse
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.RateLimitEnforcingFilter
@@ -11,6 +10,11 @@ import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsPostR
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsPostRequestMixin
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsPostRequestProductBase
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsPostRequestProductBaseMixin
+import kotlinx.coroutines.CloseableCoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.SupervisorJob
 import org.openapitools.client.infrastructure.Serializer
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.Banner
@@ -65,6 +69,9 @@ class HuhApplication {
             HttpResponse(response.statusCode.value(), response.getBody())
         }
     }
+
+    @Bean // TODO: Cancellation
+    fun applicationCoroutineScope() = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 }
 
 fun main(args: Array<String>) {

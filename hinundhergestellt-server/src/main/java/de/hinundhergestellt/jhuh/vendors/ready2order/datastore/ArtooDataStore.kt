@@ -1,34 +1,28 @@
 package de.hinundhergestellt.jhuh.vendors.ready2order.datastore
 
-import de.hinundhergestellt.jhuh.util.asyncWithRefresh
+import de.hinundhergestellt.jhuh.util.deferredWithRefresh
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductClient
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductGroup
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductGroupClient
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductGroupType
-import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.runBlocking
-import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.core.task.AsyncTaskExecutor
 import org.springframework.stereotype.Service
-import java.util.concurrent.Callable
-
-private val logger = KotlinLogging.logger {}
+import java.util.concurrent.CopyOnWriteArrayList
 
 @Service
 class ArtooDataStore(
     private val productGroupClient: ArtooProductGroupClient,
-    private val productClient: ArtooProductClient
+    private val productClient: ArtooProductClient,
+    private val applicationCoroutineScope: CoroutineScope
 ) {
-    private val rootCategoriesAsync = asyncWithRefresh { fetchRootCategories() }
-    val rootCategories by rootCategoriesAsync
+    private val rootCategoriesDeferred = deferredWithRefresh(applicationCoroutineScope) { fetchRootCategories() }
+    val rootCategories by rootCategoriesDeferred
 
-    val stateChangeListeners by rootCategoriesAsync::stateChangeListeners
+    val refreshListeners = CopyOnWriteArrayList<() -> Unit>()
 
     fun findAllProducts() =
         rootCategories.asSequence().flatMap { it.findAllProducts() }
@@ -40,23 +34,17 @@ class ArtooDataStore(
         rootCategories.asSequence().flatMap { it.findCategoriesByProduct(product) }
 
     // @Scheduled(initialDelay = 15, fixedDelay = 15, timeUnit = TimeUnit.MINUTES)
-    fun refresh() = rootCategoriesAsync.refresh()
-
-    suspend fun refreshAndAwait() {
-        rootCategoriesAsync.refreshAndGet()
+    fun refresh() {
+        applicationCoroutineScope.async {
+            rootCategoriesDeferred.refreshAndAwait()
+            refreshListeners.forEach { it() }
+        }
     }
 
-    private suspend fun fetchRootCategories(): List<ArtooMappedCategory> = coroutineScope {
-        logger.info { "Fetching all root-categories in runBlocking" }
-        val groups = async {
-            logger.info { "Fetching groups in async" }
-            val r = productGroupClient.findAll().toList()
-            logger.info { "Done fetching groups in async" }
-            r
-        }
+    private suspend fun fetchRootCategories() = coroutineScope {
+        val groups = async { productGroupClient.findAll().toList() }
         val products = productClient.findAll().toList()
-        logger.info { "Done fetching products, building tree" }
-        CategoriesAndProductsBuilder(groups.await(), products).rootCategories
+        CategoriesAndProductsBuilder(groups.await(), products).build()
     }
 }
 
@@ -64,7 +52,7 @@ private class CategoriesAndProductsBuilder(
     private val groups: List<ArtooProductGroup>,
     private val products: List<ArtooProduct>
 ) {
-    val rootCategories =
+    fun build() =
         groups.asSequence()
             .filter { it.parent == null && it.type == ArtooProductGroupType.STANDARD }
             .map { it.toCategory() }

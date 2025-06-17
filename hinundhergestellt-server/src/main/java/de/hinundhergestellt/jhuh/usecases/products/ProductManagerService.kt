@@ -15,6 +15,7 @@ import de.hinundhergestellt.jhuh.usecases.products.SyncProblem.Warning
 import de.hinundhergestellt.jhuh.usecases.products.VariantBulkOperation.Create
 import de.hinundhergestellt.jhuh.usecases.products.VariantBulkOperation.Delete
 import de.hinundhergestellt.jhuh.usecases.products.VariantBulkOperation.Update
+import de.hinundhergestellt.jhuh.util.lazyWithReset
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedCategory
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
@@ -45,20 +46,19 @@ class ProductManagerService(
     private val syncVendorRepository: SyncVendorRepository
 ): AutoCloseable {
 
-    private lateinit var _rootCategories: List<CategoryItem>
-    val rootCategories get() = _rootCategories
+    private val rootCategoriesLazy = lazyWithReset { artooDataStore.rootCategories.map { CategoryItem(it) } }
+    val rootCategories by rootCategoriesLazy
 
     val vendors get(): List<SyncVendor> = syncVendorRepository.findAll()
 
-    val stateChangeListeners by artooDataStore::stateChangeListeners
+    val refreshListeners by artooDataStore::refreshListeners
 
     init {
-        buildRootCategories()
-        stateChangeListeners += this::buildRootCategories
+        refreshListeners += rootCategoriesLazy::reset
     }
 
     override fun close() {
-        stateChangeListeners -= this::buildRootCategories
+        refreshListeners -= rootCategoriesLazy::reset
     }
 
     @Transactional
@@ -130,11 +130,6 @@ class ProductManagerService(
     }
 
     fun refresh() = artooDataStore.refresh()
-    suspend fun refreshAndAwait() = artooDataStore.refreshAndAwait()
-
-    private fun buildRootCategories() {
-        _rootCategories = artooDataStore.rootCategories.map { CategoryItem(it) }
-    }
 
     private fun checkSyncProblems(product: ArtooMappedProduct, syncProduct: SyncProduct?) = buildList {
         val barcodes = product.barcodes

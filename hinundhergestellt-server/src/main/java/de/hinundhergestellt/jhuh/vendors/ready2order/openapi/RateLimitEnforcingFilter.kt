@@ -32,7 +32,7 @@ class RateLimitEnforcingFilter : (ClientRequest, ExchangeFunction) -> Mono<Clien
         synchronized(requestTimes) {
             requestTimes.headSet(now.minus(RATE_LIMIT_DURATION)).clear()
             if (requestTimes.size < RATE_LIMIT_COUNT) {
-                logger.debug { "Check rate limit, ${requestTimes.size} requests in ${RATE_LIMIT_DURATION.toLogString()}" }
+                logger.trace { "Check rate limit, ${requestTimes.size} requests in ${RATE_LIMIT_DURATION.toLogString()}" }
                 requestTimes.add(now)
                 return next.exchange(request)
             }

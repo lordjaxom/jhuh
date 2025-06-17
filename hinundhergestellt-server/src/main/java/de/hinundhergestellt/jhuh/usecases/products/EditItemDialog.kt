@@ -15,7 +15,6 @@ import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.textfield.TextField
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendor
-import de.hinundhergestellt.jhuh.components.checkUIThread
 import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.CategoryItem
 import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.ProductItem
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -24,7 +23,7 @@ import kotlin.coroutines.resume
 private class EditItemDialog(
     private val item: SyncableItem,
     private val vendors: List<SyncVendor>,
-    private val response: (EditItemDialogResponse?) -> Unit
+    private val result: (EditItemResult?) -> Unit
 ) : Dialog() {
 
     init {
@@ -33,7 +32,7 @@ private class EditItemDialog(
 
         val closeButton = Button(VaadinIcon.CLOSE.create()).apply {
             addThemeVariants(ButtonVariant.LUMO_TERTIARY)
-            addClickListener { close(); response(null) }
+            addClickListener { close(); result(null) }
         }
         header.add(closeButton)
 
@@ -83,13 +82,11 @@ private class EditItemDialog(
                     if (typeCheckbox != null && !typeCheckbox.value) null
                     else if (typeTextField.value.isNotEmpty()) Some(typeTextField.value)
                     else none()
-                response(EditItemDialogResponse(vendor, type, tagsTextField.value))
+                result(EditItemResult(vendor, type, tagsTextField.value))
                 close()
             }
         }
         footer.add(saveButton)
-
-        open()
     }
 
     private fun replaceForAllCheckbox(component: Focusable<*>) =
@@ -109,7 +106,7 @@ private class EditItemDialog(
         }
 }
 
-class EditItemDialogResponse(
+class EditItemResult(
     val vendor: Option<SyncVendor>?,
     val type: Option<String>?,
     val tags: String
@@ -117,6 +114,7 @@ class EditItemDialogResponse(
 
 suspend fun editItemDialog(item: SyncableItem, vendors: List<SyncVendor>) =
     suspendCancellableCoroutine {
-        checkUIThread()
-        EditItemDialog(item, vendors) { response -> it.resume(response) }
+        val dialog = EditItemDialog(item, vendors) { result -> it.resume(result) }
+        it.invokeOnCancellation { dialog.close() }
+        dialog.open()
     }

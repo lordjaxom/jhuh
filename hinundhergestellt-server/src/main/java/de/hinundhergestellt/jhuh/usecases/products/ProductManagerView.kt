@@ -28,29 +28,25 @@ import de.hinundhergestellt.jhuh.components.addCountColumn
 import de.hinundhergestellt.jhuh.components.addHierarchyTextColumn
 import de.hinundhergestellt.jhuh.components.addIconColumn
 import de.hinundhergestellt.jhuh.components.addTextColumn
-import de.hinundhergestellt.jhuh.components.vaadinContext
+import de.hinundhergestellt.jhuh.components.vaadinCoroutineScope
 import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.CategoryItem
 import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.ProductItem
 import de.hinundhergestellt.jhuh.usecases.products.SyncProblem.Error
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.task.AsyncTaskExecutor
 import java.util.concurrent.CompletableFuture
 import java.util.stream.Stream
-import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.optionals.getOrNull
 import kotlin.streams.asStream
-
-private val logger = KotlinLogging.logger { }
 
 @Route
 @PageTitle("Produktverwaltung")
 class ProductManagerView(
     private val service: ProductManagerService,
     @Qualifier("applicationTaskExecutor") private val taskExecutor: AsyncTaskExecutor
-) : VerticalLayout(), CoroutineScope {
+) : VerticalLayout() {
 
     private val refreshButton = Button()
     private val markedForSyncCheckbox = Checkbox()
@@ -60,7 +56,7 @@ class ProductManagerView(
     private val treeGrid = TreeGrid<SyncableItem>()
     private val progressOverlay = Div()
 
-    override val coroutineContext: CoroutineContext = vaadinContext(this)
+    private val coroutineScope = vaadinCoroutineScope(this)
 
     init {
         setHeightFull()
@@ -72,26 +68,15 @@ class ProductManagerView(
         configureTreeGrid()
         configureProgressOverlay()
 
-//        val stateChangedHandler: () -> Unit = {
-//            ui.getOrNull()?.access { treeGrid.dataProvider.refreshAll(); refreshButton.isEnabled = true }
-//        }
-//        addAttachListener { service.stateChangeListeners += stateChangedHandler }
-//        addDetachListener { service.stateChangeListeners -= stateChangedHandler }
+        val refreshHandler: () -> Unit = { coroutineScope.launch { treeGrid.dataProvider.refreshAll(); refreshButton.isEnabled = true } }
+        addAttachListener { service.refreshListeners += refreshHandler }
+        addDetachListener { service.refreshListeners -= refreshHandler }
     }
 
     private fun configureHeader() {
         refreshButton.text = "Aktualisieren"
         refreshButton.isDisableOnClick = true
-        refreshButton.addClickListener {
-            logger.info { "Launching coroutine" }
-            launch {
-                logger.info { "Calling refreshAndAwait" }
-                service.refreshAndAwait()
-                logger.info { "Updating tree and enabling button" }
-                treeGrid.dataProvider.refreshAll()
-                refreshButton.isEnabled = true
-            }
-        }
+        refreshButton.addClickListener { service.refresh() }
 
         val syncWithShopifyButton = Button("Mit Shopify synchronisieren") { synchronize() }
 
@@ -110,9 +95,7 @@ class ProductManagerView(
             checkbox.value = value
             checkbox.style.setWhiteSpace(Style.WhiteSpace.NOWRAP)
             checkbox.addValueChangeListener {
-                if (it.value) {
-                    others.forEach { other -> other.value = false }
-                }
+                if (it.value) others.forEach { other -> other.value = false }
                 treeGrid.dataProvider.refreshAll()
             }
         }
@@ -183,7 +166,7 @@ class ProductManagerView(
         treeGrid.dataProvider.refreshItem(product)
     }
 
-    private fun editItem(item: SyncableItem) = launch {
+    private fun editItem(item: SyncableItem) = coroutineScope.launch {
         editItemDialog(item, service.vendors)?.apply {
             service.updateItem(item, vendor, type, tags)
             treeGrid.dataProvider.refreshItem(item, vendor != null || type != null)
