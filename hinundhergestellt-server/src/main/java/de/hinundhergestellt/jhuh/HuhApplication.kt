@@ -1,8 +1,10 @@
 package de.hinundhergestellt.jhuh
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.google.common.util.concurrent.RateLimiter
 import com.netflix.graphql.dgs.client.GraphQLClient
 import com.netflix.graphql.dgs.client.HttpResponse
+import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.RateLimitEnforcingFilter
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsIdPutRequest
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsIdPutRequestMixin
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsPostRequest
@@ -43,6 +45,7 @@ class HuhApplication {
             .baseUrl("https://api.ready2order.com/v1")
             .defaultHeader("Authorization", "Bearer $apikey")
             .codecs { it.defaultCodecs().maxInMemorySize(5 * 1024 * 1024) }
+            .filter(RateLimitEnforcingFilter())
             .build()
     }
 

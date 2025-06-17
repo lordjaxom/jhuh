@@ -6,7 +6,6 @@ import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductGroupTyp
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductType
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.UnsavedArtooProductGroup
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Disabled
