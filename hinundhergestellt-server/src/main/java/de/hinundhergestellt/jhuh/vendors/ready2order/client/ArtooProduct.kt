@@ -17,18 +17,18 @@ open class UnsavedArtooProduct(
     var priceIncludesVat: Boolean,
     vat: BigDecimal,
     var stockEnabled: Boolean,
-    var variationsEnabled: Boolean,
+    var variationsEnabled: Boolean = false,
     stockValue: BigDecimal,
     var stockUnit: String? = if (stockEnabled) "piece" else null,
-    stockReorderLevel: BigDecimal,
-    stockSafetyStock: BigDecimal,
+    stockReorderLevel: BigDecimal = BigDecimal.ZERO,
+    stockSafetyStock: BigDecimal = BigDecimal.ZERO,
     var sortIndex: Int = 0,
     var active: Boolean,
-    var discountable: Boolean,
+    var discountable: Boolean = true,
     var type: ArtooProductType = ArtooProductType.INHERITED,
     var baseId: Int? = null,
     var productGroupId: Int,
-    var alternativeNameOnReceipts: String,
+    var alternativeNameOnReceipts: String = "",
     var alternativeNameInPos: String
 ) {
     var price by fixedScale(price, 2)
@@ -75,7 +75,6 @@ open class UnsavedArtooProduct(
 class ArtooProduct : UnsavedArtooProduct {
 
     val id: Int
-    val typeId: Int?
 
     internal constructor(product: ProductsGet200ResponseInner) : super(
         product.productName!!,
@@ -96,12 +95,11 @@ class ArtooProduct : UnsavedArtooProduct {
         product.productDiscountable!!,
         ArtooProductType.valueOf(product.productTypeId),
         product.productBaseId,
-        product.productgroup!!.productgroupId!!,
+        product.productgroupId ?: product.productgroup!!.productgroupId!!,
         product.productAlternativeNameOnReceipts ?: "",
         product.productAlternativeNameInPos ?: ""
     ) {
         id = product.productId!!
-        typeId = product.productTypeId
     }
 
     override fun toString() =

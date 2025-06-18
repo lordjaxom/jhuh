@@ -1,17 +1,25 @@
 package de.hinundhergestellt.jhuh
 
+import arrow.core.zip
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductClient
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductGroupClient
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductGroupType
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductType
+import de.hinundhergestellt.jhuh.vendors.ready2order.client.UnsavedArtooProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.UnsavedArtooProductGroup
+import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
+import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.bean.override.mockito.MockitoBean
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import java.math.BigDecimal
 
 private val logger = KotlinLogging.logger {}
@@ -19,6 +27,11 @@ private val logger = KotlinLogging.logger {}
 @SpringBootTest
 @Disabled("Only run manually")
 class ArtooProductFixTest {
+
+    @MockitoBean
+    private lateinit var artooDataStore: ArtooDataStore
+    @MockitoBean
+    private lateinit var shopifyDataStore: ShopifyDataStore
 
     @Autowired
     private lateinit var artooProductGroupClient: ArtooProductGroupClient
@@ -99,5 +112,73 @@ class ArtooProductFixTest {
                 product.name = product.name.replace(oldName, newName)
                 artooProductClient.update(product)
             }
+    }
+
+    @Test
+    fun addNewMyboshiProducts(): Unit = runBlocking {
+        val group = artooProductGroupClient.findAll().filter { it.name == "myboshi" }.single()
+
+        val groupForProduct = artooProductGroupClient.findAll().filter { it.name == "myboshi Dream" }.single()
+//            artooProductGroupClient.create(
+//            UnsavedArtooProductGroup(
+//                "myboshi Dream",
+//                "myboshi Dream, 50g, 76% Baumwolle, 22% Baby-Alpaka, 2% Merino",
+//                "",
+//                true,
+//                group.id,
+//                type = ArtooProductGroupType.VARIANTS
+//            )
+//        )
+
+        val skus = """
+            WDR001
+            WDR002
+            WDR003
+            WDR004
+            WDR005
+            WDR006
+        """.trimIndent().split("\n")
+        val names = """
+            Himmelblau
+            Bergsee
+            Ozean
+            Morgentau
+            Sanddüne
+            Wolke
+        """.trimIndent().split("\n")
+        val barcodes = """
+            4251260517869
+            4251260517876
+            4251260517883
+            4251260517890
+            4251260517906
+            4251260517913
+        """.trimIndent().split("\n")
+        val price = BigDecimal("6.99")
+
+        names.zip(barcodes, skus) { name, barcode, sku ->
+            try {
+                artooProductClient.create(
+                    UnsavedArtooProduct(
+                        name = "myboshi Dream ($name)",
+                        itemNumber = sku,
+                        barcode = barcode,
+                        description = "",
+                        price = price,
+                        priceIncludesVat = true,
+                        vat = BigDecimal("19"),
+                        stockEnabled = true,
+                        stockValue = BigDecimal("10"),
+                        active = true,
+                        productGroupId = groupForProduct.id,
+                        type = ArtooProductType.STANDARD,
+                        alternativeNameInPos = name
+                    )
+                )
+            } catch (e: WebClientResponseException) {
+                println(e.getResponseBodyAs(String::class.java))
+                throw e
+            }
+        }
     }
 }
