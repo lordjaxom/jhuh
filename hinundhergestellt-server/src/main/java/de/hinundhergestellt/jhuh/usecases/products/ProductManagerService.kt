@@ -26,8 +26,12 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVar
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.isDryRun
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.flow.forEach
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.stream.consumeAsFlow
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.support.TransactionSynchronizationManager
 import kotlin.reflect.KProperty1
 import kotlin.streams.asSequence
 
@@ -44,7 +48,7 @@ class ProductManagerService(
     private val syncVariantRepository: SyncVariantRepository,
     private val syncCategoryRepository: SyncCategoryRepository,
     private val syncVendorRepository: SyncVendorRepository
-): AutoCloseable {
+) : AutoCloseable {
 
     private val rootCategoriesLazy = lazyWithReset { artooDataStore.rootCategories.map { CategoryItem(it) } }
     val rootCategories by rootCategoriesLazy
@@ -218,28 +222,28 @@ class ProductManagerService(
         if (artooProduct == null) {
             require(shopifyProduct != null) { "SyncProduct vanished from both ready2order and Shopify" }
             logger.info { "Product ${shopifyProduct!!.title} no longer in ready2order, delete from Shopify" }
-            shopifyDataStore.delete(shopifyProduct)
+            runBlocking { shopifyDataStore.delete(shopifyProduct!!) }
             syncProductRepository.delete(syncProduct)
             return
         }
 
         if (shopifyProduct == null) {
             logger.info { "Product ${artooProduct.name} only in ready2order, create in Shopify" }
-            shopifyProduct = shopifyDataStore.create(shopifyProductMapper.mapToProduct(syncProduct, artooProduct))
+            shopifyProduct = runBlocking { shopifyDataStore.create(shopifyProductMapper.mapToProduct(syncProduct, artooProduct)) }
             if (!shopifyProduct.isDryRun) {
                 syncProduct.shopifyId = shopifyProduct.id
             }
         } else if (shopifyProductMapper.updateProduct(syncProduct, artooProduct, shopifyProduct)) {
             logger.info { "Product ${artooProduct.name} has changed, update in Shopify" }
-            shopifyDataStore.update(shopifyProduct)
+            runBlocking { shopifyDataStore.update(shopifyProduct) }
         }
 
         val bulkOperations = syncProduct.variants
             .toList() // create copy to prevent concurrent modification when deleting variants
             .map { synchronizeWithShopify(it, artooProduct, shopifyProduct) }
-        bulkOperations.allOf(Create::variant)?.let { shopifyDataStore.create(shopifyProduct, it) }
-        bulkOperations.allOf(Update::variant)?.let { shopifyDataStore.update(shopifyProduct, it) }
-        bulkOperations.allOf(Delete::variant)?.let { shopifyDataStore.delete(shopifyProduct, it) }
+        bulkOperations.allOf(Create::variant)?.let { runBlocking { shopifyDataStore.create(shopifyProduct, it) } }
+        bulkOperations.allOf(Update::variant)?.let { runBlocking { shopifyDataStore.update(shopifyProduct, it) } }
+        bulkOperations.allOf(Delete::variant)?.let { runBlocking { shopifyDataStore.delete(shopifyProduct, it) } }
     }
 
     private fun synchronizeWithShopify(syncVariant: SyncVariant, artooProduct: ArtooMappedProduct, shopifyProduct: ShopifyProduct)

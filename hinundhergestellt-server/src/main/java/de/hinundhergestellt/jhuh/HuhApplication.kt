@@ -1,8 +1,7 @@
 package de.hinundhergestellt.jhuh
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.netflix.graphql.dgs.client.GraphQLClient
-import com.netflix.graphql.dgs.client.HttpResponse
+import com.netflix.graphql.dgs.client.WebClientGraphQLClient
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.RateLimitEnforcingFilter
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsIdPutRequest
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsIdPutRequestMixin
@@ -20,12 +19,8 @@ import org.springframework.boot.Banner
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpMethod
 import org.springframework.scheduling.annotation.EnableAsync
 import org.springframework.scheduling.annotation.EnableScheduling
-import org.springframework.web.client.RestTemplate
 import org.springframework.web.reactive.function.client.WebClient
 
 @SpringBootApplication
@@ -53,20 +48,16 @@ class HuhApplication {
     }
 
     @Bean
-    fun shopifyApiClient(
+    fun shopifyGraphQLClient(
         @Value("\${shopify.domain}") domain: String,
         @Value("\${shopify.token}") token: String
-    ): GraphQLClient {
-        val baseUrl = "https://$domain.myshopify.com/admin/api/2025-04/graphql.json"
-        val restTemplate = RestTemplate()
-        return GraphQLClient.createCustom(baseUrl) { url, headers, body ->
-            val httpHeaders = HttpHeaders()
-            httpHeaders.putAll(headers)
-            httpHeaders.add("X-Shopify-Access-Token", token)
-
-            val response = restTemplate.exchange(url, HttpMethod.POST, HttpEntity<String>(body, httpHeaders), String::class.java)
-            HttpResponse(response.statusCode.value(), response.getBody())
-        }
+    ): WebClientGraphQLClient {
+        val webClient = WebClient.builder()
+            .baseUrl("https://$domain.myshopify.com/admin/api/2025-04/graphql.json")
+            .defaultHeader("X-Shopify-Access-Token", token)
+            .codecs { it.defaultCodecs().maxInMemorySize(5 * 1024 * 1024) }
+            .build()
+        return WebClientGraphQLClient(webClient)
     }
 
     @Bean // TODO: Cancellation

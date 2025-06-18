@@ -1,6 +1,7 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.datastore
 
 import de.hinundhergestellt.jhuh.util.asyncWithRefresh
+import de.hinundhergestellt.jhuh.util.deferredWithRefresh
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOption
@@ -9,6 +10,9 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantCli
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductOption
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVariant
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.toCollection
+import kotlinx.coroutines.flow.toList
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.task.AsyncTaskExecutor
@@ -20,9 +24,10 @@ class ShopifyDataStore(
     private val productClient: ShopifyProductClient,
     private val variantClient: ShopifyProductVariantClient,
     @Qualifier("applicationTaskExecutor") private val taskExecutor: AsyncTaskExecutor,
+    private val applicationCoroutineScope: CoroutineScope,
     @Value("\${shopify.read-only}") private val readOnly: Boolean
 ) {
-    private val productsAsync = asyncWithRefresh(taskExecutor) { productClient.findAll().toMutableList() }
+    private val productsAsync = deferredWithRefresh(applicationCoroutineScope) { productClient.findAll().toCollection(mutableListOf()) }
     val products by productsAsync
 
     fun findProductById(id: String) =
@@ -30,7 +35,7 @@ class ShopifyDataStore(
 
     fun refresh() = productsAsync.refresh()
 
-    fun create(product: UnsavedShopifyProduct): ShopifyProduct {
+    suspend fun create(product: UnsavedShopifyProduct): ShopifyProduct {
         val created =
             if (!readOnly) productClient.create(product)
             else product.toDryRunShopifyProduct()
@@ -38,33 +43,33 @@ class ShopifyDataStore(
         return created
     }
 
-    fun update(product: ShopifyProduct) {
+    suspend fun update(product: ShopifyProduct) {
         if (!readOnly) {
             productClient.update(product)
         }
     }
 
-    fun delete(product: ShopifyProduct) {
+    suspend fun delete(product: ShopifyProduct) {
         if (!readOnly) {
             productClient.delete(product)
         }
         products.remove(product)
     }
 
-    fun create(product: ShopifyProduct, variants: List<UnsavedShopifyProductVariant>) {
+    suspend fun create(product: ShopifyProduct, variants: List<UnsavedShopifyProductVariant>) {
         val created =
             if (!readOnly) variantClient.create(product, variants)
             else variants.map { it.toDryRunShopifyProductVariant() }
         product.variants.addAll(created)
     }
 
-    fun update(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
+    suspend fun update(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
         if (!readOnly) {
             variantClient.update(product, variants)
         }
     }
 
-    fun delete(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
+    suspend fun delete(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
         if (!readOnly) {
             variantClient.delete(product, variants)
         }

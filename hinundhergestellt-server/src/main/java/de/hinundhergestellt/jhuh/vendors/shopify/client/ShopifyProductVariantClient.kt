@@ -1,6 +1,6 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
-import com.netflix.graphql.dgs.client.GraphQLClient
+import com.netflix.graphql.dgs.client.WebClientGraphQLClient
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.DgsClient.buildMutation
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductVariantsBulkCreatePayload
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductVariantsBulkCreateStrategy
@@ -10,9 +10,9 @@ import org.springframework.stereotype.Component
 
 @Component
 class ShopifyProductVariantClient(
-    private val apiClient: GraphQLClient
+    private val shopifyGraphQLClient: WebClientGraphQLClient
 ) {
-    fun create(product: ShopifyProduct, variants: List<UnsavedShopifyProductVariant>): List<ShopifyProductVariant> {
+    suspend fun create(product: ShopifyProduct, variants: List<UnsavedShopifyProductVariant>): List<ShopifyProductVariant> {
         val strategy =
             if (product.variants.isEmpty()) ProductVariantsBulkCreateStrategy.REMOVE_STANDALONE_VARIANT
             else ProductVariantsBulkCreateStrategy.DEFAULT
@@ -27,29 +27,29 @@ class ShopifyProductVariantClient(
             }
         }
 
-        val payload = apiClient.executeMutation(request, ProductVariantsBulkCreatePayload::userErrors)
+        val payload = shopifyGraphQLClient.executeMutation(request, ProductVariantsBulkCreatePayload::userErrors)
         return variants
             .zip(payload.productVariants!!)
             .map { (variant, created) -> ShopifyProductVariant(variant, created.id, created.title) }
     }
 
-    fun update(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
+    suspend fun update(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
         val request = buildMutation {
             productVariantsBulkUpdate(productId = product.id, variants = variants.map { it.toProductVariantsBulkInput() }) {
                 userErrors { message; field }
             }
         }
 
-        apiClient.executeMutation(request, ProductVariantsBulkUpdatePayload::userErrors)
+        shopifyGraphQLClient.executeMutation(request, ProductVariantsBulkUpdatePayload::userErrors)
     }
 
-    fun delete(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
+    suspend fun delete(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
         val request = buildMutation {
             productVariantsBulkDelete(productId = product.id, variantsIds = variants.map { it.id }) {
                 userErrors { message;field }
             }
         }
 
-        apiClient.executeMutation(request, ProductVariantsBulkDeletePayload::userErrors)
+        shopifyGraphQLClient.executeMutation(request, ProductVariantsBulkDeletePayload::userErrors)
     }
 }

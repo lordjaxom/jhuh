@@ -1,6 +1,7 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
 import com.netflix.graphql.dgs.client.GraphQLClient
+import com.netflix.graphql.dgs.client.WebClientGraphQLClient
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.DgsClient.buildMutation
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.DgsClient.buildQuery
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.PageInfo
@@ -8,17 +9,18 @@ import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductConnection
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductCreatePayload
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductDeletePayload
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductUpdatePayload
+import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.stereotype.Component
 
 @Component
 class ShopifyProductClient(
-    private val apiClient: GraphQLClient
+    private val shopifyGraphQLClient: WebClientGraphQLClient
 ) {
     fun findAll() = pageAll {
         findAll(it)
     }
 
-    fun create(product: UnsavedShopifyProduct): ShopifyProduct {
+    suspend fun create(product: UnsavedShopifyProduct): ShopifyProduct {
         val request = buildMutation {
             productCreate(product.toProductCreateInput()) {
                 product {
@@ -29,7 +31,7 @@ class ShopifyProductClient(
             }
         }
 
-        val payload = apiClient.executeMutation(request, ProductCreatePayload::userErrors)
+        val payload = shopifyGraphQLClient.executeMutation(request, ProductCreatePayload::userErrors)
         val options = product.options.asSequence()
             .zip(payload.product!!.options.asSequence())
             .map { (option, created) -> ShopifyProductOption(option, created.id) }
@@ -37,27 +39,27 @@ class ShopifyProductClient(
         return ShopifyProduct(product, payload.product!!.id, options)
     }
 
-    fun update(product: ShopifyProduct) {
+    suspend fun update(product: ShopifyProduct) {
         val request = buildMutation {
             productUpdate(product.toProductUpdateInput()) {
                 userErrors { message; field }
             }
         }
 
-        apiClient.executeMutation(request, ProductUpdatePayload::userErrors)
+        shopifyGraphQLClient.executeMutation(request, ProductUpdatePayload::userErrors)
     }
 
-    fun delete(product: ShopifyProduct) {
+    suspend fun delete(product: ShopifyProduct) {
         val request = buildMutation {
             productDelete(product.toProductDeleteInput()) {
                 userErrors { message; field }
             }
         }
 
-        apiClient.executeMutation(request, ProductDeletePayload::userErrors)
+        shopifyGraphQLClient.executeMutation(request, ProductDeletePayload::userErrors)
     }
 
-    private fun findAll(after: String?): Pair<List<ShopifyProduct>, PageInfo> {
+    private suspend fun findAll(after: String?): Pair<List<ShopifyProduct>, PageInfo> {
         val request = buildQuery {
             products(first = 250, after = after) {
                 edges {
@@ -85,7 +87,7 @@ class ShopifyProductClient(
             }
         }
 
-        val response = apiClient.executeQuery(request)
+        val response = shopifyGraphQLClient.reactiveExecuteQuery(request).awaitSingle()
         require(!response.hasErrors()) { "Query products failed: " + response.errors }
         val payload = response.extractValueAsObject("products", ProductConnection::class.java)
         return Pair(

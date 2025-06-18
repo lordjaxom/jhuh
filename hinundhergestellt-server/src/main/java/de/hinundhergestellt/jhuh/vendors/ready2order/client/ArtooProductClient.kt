@@ -1,6 +1,7 @@
 package de.hinundhergestellt.jhuh.vendors.ready2order.client
 
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.api.ProductApi
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
@@ -11,7 +12,7 @@ class ArtooProductClient(
 ) {
     private val api = ProductApi(ready2orderWebClient)
 
-    suspend fun findAll(name: String? = null) = pageAll {
+    fun findAll(name: String? = null) = pageAll {
         api.productsGet(it, null, null, null, name, null, null, true, null, null)
             .awaitSingle()
             .map { product -> ArtooProduct(product) }

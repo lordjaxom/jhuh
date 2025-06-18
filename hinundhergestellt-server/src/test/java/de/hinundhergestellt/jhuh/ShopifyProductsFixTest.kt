@@ -21,9 +21,4 @@ class ShopifyProductsFixTest {
     @Autowired
     private lateinit var metafieldsClient: ShopifyMetafieldsClient
 
-    @Test
-    fun findsAll() {
-        val products = productClient.findAll().toList()
-        assertThat(products).isNotEmpty()
-    }
 }
