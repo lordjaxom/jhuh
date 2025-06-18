@@ -9,7 +9,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
-import kotlin.coroutines.CoroutineContext
 import kotlin.reflect.KProperty
 
 fun <T> deferredWithRefresh(coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.IO), initializer: suspend () -> T) =

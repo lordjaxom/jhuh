@@ -82,8 +82,8 @@ private class EditItemDialog(
                     if (typeCheckbox != null && !typeCheckbox.value) null
                     else if (typeTextField.value.isNotEmpty()) Some(typeTextField.value)
                     else none()
-                result(EditItemResult(vendor, type, tagsTextField.value))
                 close()
+                result(EditItemResult(vendor, type, tagsTextField.value))
             }
         }
         footer.add(saveButton)

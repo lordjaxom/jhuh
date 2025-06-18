@@ -32,7 +32,6 @@ import de.hinundhergestellt.jhuh.components.vaadinCoroutineScope
 import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.CategoryItem
 import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.ProductItem
 import de.hinundhergestellt.jhuh.usecases.products.SyncProblem.Error
-import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.launch
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.task.AsyncTaskExecutor

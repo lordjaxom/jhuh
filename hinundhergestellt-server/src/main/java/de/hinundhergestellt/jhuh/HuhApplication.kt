@@ -10,7 +10,6 @@ import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsPostR
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsPostRequestMixin
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsPostRequestProductBase
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsPostRequestProductBaseMixin
-import kotlinx.coroutines.CloseableCoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
