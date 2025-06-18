@@ -14,32 +14,28 @@ open class UnsavedShopifyProductOption(
     internal fun toOptionCreateInput() =
         OptionCreateInput(
             name = name,
-            values = values.map { it.toOptionValueCreateInput() }
+            values = values.map { OptionValueCreateInput(it) }
         )
 }
 
-class ShopifyProductOption private constructor(
-    val id: String,
-    name: String,
-    values: List<String>
-) : UnsavedShopifyProductOption(
-    name,
-    values
-) {
-    internal constructor(option: ProductOption) : this(
-        option.id,
+class ShopifyProductOption : UnsavedShopifyProductOption {
+
+    val id: String
+
+    internal constructor(option: ProductOption) : super(
         option.name,
         option.values
-    )
+    ) {
+        id = option.id
+    }
 
-    internal constructor(unsaved: UnsavedShopifyProductOption, id: String) : this(
-        id,
+    internal constructor(unsaved: UnsavedShopifyProductOption, id: String) : super(
         unsaved.name,
         unsaved.values
-    )
+    ) {
+        this.id = id
+    }
 
     override fun toString() =
         "ShopifyProductOption(id='$id', name='$name')"
 }
-
-private fun String.toOptionValueCreateInput() = OptionValueCreateInput(this)

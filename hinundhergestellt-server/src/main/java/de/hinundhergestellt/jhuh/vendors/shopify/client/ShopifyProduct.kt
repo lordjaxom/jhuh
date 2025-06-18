@@ -1,6 +1,5 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
-import de.hinundhergestellt.jhuh.util.RemoveProtectedMutableList
 import de.hinundhergestellt.jhuh.util.toRemoveProtectedMutableList
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.Product
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductCreateInput
@@ -14,7 +13,7 @@ open class UnsavedShopifyProduct(
     var productType: String,
     var status: ProductStatus,
     var tags: Set<String>,
-    open val options: List<UnsavedShopifyProductOption>,
+    open val options: List<UnsavedShopifyProductOption> = listOf(),
     open val metafields: List<ShopifyMetafield> = listOf()
 ) {
     override fun toString() =
@@ -32,54 +31,45 @@ open class UnsavedShopifyProduct(
         )
 }
 
-class ShopifyProduct private constructor(
-    val id: String,
-    title: String,
-    vendor: String,
-    productType: String,
-    status: ProductStatus,
-    tags: Set<String>,
-    override val options: MutableList<ShopifyProductOption>,
-    val variants: MutableList<ShopifyProductVariant>,
-    val hasOnlyDefaultVariant: Boolean,
-    override val metafields: RemoveProtectedMutableList<ShopifyMetafield>
-) : UnsavedShopifyProduct(
-    title,
-    vendor,
-    productType,
-    status,
-    tags,
-    options,
-    metafields
-) {
-    internal constructor(product: Product) : this(
-        product.id,
+class ShopifyProduct : UnsavedShopifyProduct {
+
+    val id: String
+    val variants: MutableList<ShopifyProductVariant>
+    val hasOnlyDefaultVariant: Boolean
+
+    override val options: MutableList<ShopifyProductOption>
+    override val metafields: MutableList<ShopifyMetafield>
+
+    internal constructor(product: Product) : super(
         product.title,
         product.vendor,
         product.productType,
         product.status,
-        product.tags.toSet(),
-        product.options.asSequence().map { ShopifyProductOption(it) }.toMutableList(),
-        product.variants.edges.asSequence().map { ShopifyProductVariant(it.node) }.toMutableList(),
-        product.hasOnlyDefaultVariant,
-        product.metafields.edges.asSequence().map { ShopifyMetafield(it.node) }.toRemoveProtectedMutableList(),
+        product.tags.toSet()
     ) {
         require(!product.variants.pageInfo.hasNextPage) { "Product has more variants than were loaded" }
         require(!product.metafields.pageInfo.hasNextPage) { "Product has more metafields than were loaded" }
+
+        id = product.id
+        variants = product.variants.edges.asSequence().map { ShopifyProductVariant(it.node) }.toMutableList()
+        hasOnlyDefaultVariant = product.hasOnlyDefaultVariant
+        options = product.options.asSequence().map { ShopifyProductOption(it) }.toMutableList()
+        metafields = product.metafields.edges.asSequence().map { ShopifyMetafield(it.node) }.toRemoveProtectedMutableList()
     }
 
-    internal constructor(unsaved: UnsavedShopifyProduct, id: String, options: MutableList<ShopifyProductOption>) : this(
-        id,
+    internal constructor(unsaved: UnsavedShopifyProduct, id: String, options: MutableList<ShopifyProductOption>) : super(
         unsaved.title,
         unsaved.vendor,
         unsaved.productType,
         unsaved.status,
-        unsaved.tags,
-        options,
-        mutableListOf(),
-        options.isEmpty(),
-        unsaved.metafields.toRemoveProtectedMutableList()
-    )
+        unsaved.tags
+    ) {
+        this.id = id
+        variants = mutableListOf()
+        hasOnlyDefaultVariant = options.isEmpty()
+        this.options = options
+        this.metafields = unsaved.metafields.toRemoveProtectedMutableList()
+    }
 
     fun findVariantByBarcode(barcode: String) =
         variants.firstOrNull { it.barcode == barcode }

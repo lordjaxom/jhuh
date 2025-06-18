@@ -36,36 +36,30 @@ open class UnsavedShopifyProductVariant(
         )
 }
 
-class ShopifyProductVariant private constructor(
-    val id: String,
-    val title: String,
-    sku: String,
-    barcode: String,
-    price: BigDecimal,
-    options: List<ShopifyProductVariantOption>
-) : UnsavedShopifyProductVariant(
-    sku,
-    barcode,
-    price,
-    options
-) {
-    internal constructor(variant: ProductVariant) : this(
-        variant.id,
-        variant.title,
+class ShopifyProductVariant : UnsavedShopifyProductVariant {
+
+    val id: String
+    val title: String
+
+    internal constructor(variant: ProductVariant) : super(
         variant.sku ?: "",
         variant.barcode!!,
         BigDecimal(variant.price),
         variant.selectedOptions.map { ShopifyProductVariantOption(it) }
-    )
+    ) {
+        id = variant.id
+        title = variant.title
+    }
 
-    internal constructor(unsaved: UnsavedShopifyProductVariant, id: String, title: String) : this(
-        id,
-        title,
+    internal constructor(unsaved: UnsavedShopifyProductVariant, id: String, title: String) : super(
         unsaved.sku,
         unsaved.barcode,
         unsaved.price,
         unsaved.options
-    )
+    ) {
+        this.id = id
+        this.title = title
+    }
 
     override fun toString() =
         "ShopifyProductVariant(id='$id', sku='$sku', barcode='$barcode')"
