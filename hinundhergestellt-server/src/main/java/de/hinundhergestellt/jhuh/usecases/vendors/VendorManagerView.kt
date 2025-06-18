@@ -14,7 +14,7 @@ import com.vaadin.flow.router.Route
 import de.hinundhergestellt.jhuh.components.GridActionButton
 import de.hinundhergestellt.jhuh.components.addActionsColumn
 import de.hinundhergestellt.jhuh.components.addTextColumn
-import de.hinundhergestellt.jhuh.components.vaadinCoroutineScope
+import de.hinundhergestellt.jhuh.components.vaadinScope
 import kotlinx.coroutines.launch
 import kotlin.streams.asStream
 
@@ -27,7 +27,7 @@ class VendorManagerView(
     private val addButton = Button()
     private val vendorsGrid = Grid<VendorItem>()
 
-    private val coroutineScope = vaadinCoroutineScope(this)
+    private val vaadinScope = vaadinScope(this)
 
     init {
         setHeightFull()
@@ -61,7 +61,7 @@ class VendorManagerView(
         add(vendorsGrid)
     }
 
-    private fun editVendor(vendor: VendorItem) = coroutineScope.launch {
+    private fun editVendor(vendor: VendorItem) = vaadinScope.launch {
         if (editVendorDialog(vendor)) {
             service.saveVendor(vendor)
             if (vendor.id != null) vendorsGrid.dataProvider.refreshItem(vendor)

@@ -1,6 +1,5 @@
 package de.hinundhergestellt.jhuh.usecases.products
 
-import arrow.core.Option
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategory
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategoryRepository
@@ -26,12 +25,9 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVar
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.isDryRun
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.flow.forEach
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.stream.consumeAsFlow
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.transaction.support.TransactionSynchronizationManager
 import kotlin.reflect.KProperty1
 import kotlin.streams.asSequence
 
@@ -229,7 +225,8 @@ class ProductManagerService(
 
         if (shopifyProduct == null) {
             logger.info { "Product ${artooProduct.name} only in ready2order, create in Shopify" }
-            shopifyProduct = runBlocking { shopifyDataStore.create(shopifyProductMapper.mapToProduct(syncProduct, artooProduct)) }
+            val unsavedShopifyProduct = shopifyProductMapper.mapToProduct(syncProduct, artooProduct)
+            shopifyProduct = runBlocking { shopifyDataStore.create(unsavedShopifyProduct) }
             if (!shopifyProduct.isDryRun) {
                 syncProduct.shopifyId = shopifyProduct.id
             }

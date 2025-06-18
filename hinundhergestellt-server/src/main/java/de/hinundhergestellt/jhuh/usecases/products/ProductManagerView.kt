@@ -28,23 +28,21 @@ import de.hinundhergestellt.jhuh.components.addCountColumn
 import de.hinundhergestellt.jhuh.components.addHierarchyTextColumn
 import de.hinundhergestellt.jhuh.components.addIconColumn
 import de.hinundhergestellt.jhuh.components.addTextColumn
-import de.hinundhergestellt.jhuh.components.vaadinCoroutineScope
+import de.hinundhergestellt.jhuh.components.vaadinScope
 import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.CategoryItem
 import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.ProductItem
 import de.hinundhergestellt.jhuh.usecases.products.SyncProblem.Error
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.core.task.AsyncTaskExecutor
-import java.util.concurrent.CompletableFuture
+import kotlinx.coroutines.withContext
 import java.util.stream.Stream
-import kotlin.jvm.optionals.getOrNull
 import kotlin.streams.asStream
 
 @Route
 @PageTitle("Produktverwaltung")
 class ProductManagerView(
     private val service: ProductManagerService,
-    @Qualifier("applicationTaskExecutor") private val taskExecutor: AsyncTaskExecutor
+    private val applicationScope: CoroutineScope
 ) : VerticalLayout() {
 
     private val refreshButton = Button()
@@ -55,7 +53,7 @@ class ProductManagerView(
     private val treeGrid = TreeGrid<SyncableItem>()
     private val progressOverlay = Div()
 
-    private val coroutineScope = vaadinCoroutineScope(this)
+    private val vaadinScope = vaadinScope(this)
 
     init {
         setHeightFull()
@@ -67,7 +65,7 @@ class ProductManagerView(
         configureTreeGrid()
         configureProgressOverlay()
 
-        val refreshHandler: () -> Unit = { coroutineScope.launch { treeGrid.dataProvider.refreshAll(); refreshButton.isEnabled = true } }
+        val refreshHandler: () -> Unit = { vaadinScope.launch { treeGrid.dataProvider.refreshAll(); refreshButton.isEnabled = true } }
         addAttachListener { service.refreshListeners += refreshHandler }
         addDetachListener { service.refreshListeners -= refreshHandler }
     }
@@ -142,17 +140,16 @@ class ProductManagerView(
         add(progressOverlay)
     }
 
-    private fun synchronize() {
+    private fun synchronize() = vaadinScope.launch {
         progressOverlay.isVisible = true
-        CompletableFuture
-            .runAsync({ service.synchronize() }, taskExecutor)
-            .whenComplete { _, throwable ->
-                ui.getOrNull()?.access {
-                    throwable?.also { showErrorNotification(it) }
-                    progressOverlay.isVisible = false
-                    treeGrid.dataProvider.refreshAll()
-                }
-            }
+        try {
+            withContext(applicationScope.coroutineContext) { service.synchronize() }
+        } catch (e: Throwable) {
+            showErrorNotification(e)
+        } finally {
+            progressOverlay.isVisible = false
+            treeGrid.dataProvider.refreshAll()
+        }
     }
 
     private fun markItem(product: ProductItem) {
@@ -165,7 +162,7 @@ class ProductManagerView(
         treeGrid.dataProvider.refreshItem(product)
     }
 
-    private fun editItem(item: SyncableItem) = coroutineScope.launch {
+    private fun editItem(item: SyncableItem) = vaadinScope.launch {
         editItemDialog(item, service.vendors)?.apply {
             service.updateItem(item, vendor, replaceVendor, type.ifEmpty { null }, replaceType, tags)
             treeGrid.dataProvider.refreshItem(item, replaceVendor || replaceType)

@@ -28,7 +28,7 @@ private class VaadinDispatcher(
     }
 }
 
-fun vaadinCoroutineScope(component: Component): CoroutineScope {
+fun vaadinScope(component: Component): CoroutineScope {
     val job = SupervisorJob()
     component.addDetachListener { job.cancel() }
     return CoroutineScope(job + VaadinDispatcher())

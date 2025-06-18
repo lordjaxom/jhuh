@@ -61,7 +61,7 @@ class HuhApplication {
     }
 
     @Bean // TODO: Cancellation
-    fun applicationCoroutineScope() = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    fun applicationScope() = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 }
 
 fun main(args: Array<String>) {
