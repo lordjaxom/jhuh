@@ -8,6 +8,7 @@ import com.vaadin.flow.data.binder.ValidationException
 import com.vaadin.flow.data.value.ValueChangeMode
 import de.hinundhergestellt.jhuh.components.beanValidationBinder
 import de.hinundhergestellt.jhuh.components.bind
+import de.hinundhergestellt.jhuh.components.to
 import de.hinundhergestellt.jhuh.components.button
 import de.hinundhergestellt.jhuh.components.footer
 import de.hinundhergestellt.jhuh.components.header
@@ -41,13 +42,13 @@ private class EditVendorDialog(
             textField("Bezeichnung") {
                 isRequired = true
                 setWidthFull()
-                binder.forField(this).bind(VendorItem::name)
+                bind(binder).to(VendorItem::name)
                 focus()
             }
             textField("E-Mail") {
                 isRequired = true
                 setWidthFull()
-                binder.forField(this).bind(VendorItem::email)
+                bind(binder).to(VendorItem::email)
             }
             textArea("Adresse") {
                 isRequired = true
@@ -57,7 +58,7 @@ private class EditVendorDialog(
                 valueChangeMode = ValueChangeMode.EAGER
                 setWidthFull()
                 addValueChangeListener { helperText = "${value.length}/${maxLength}" }
-                binder.forField(this).bind(VendorItem::address)
+                bind(binder).to(VendorItem::address)
 
                 // @formatter:off
                 element.executeJs("""

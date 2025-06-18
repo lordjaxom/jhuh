@@ -167,8 +167,8 @@ class ProductManagerView(
 
     private fun editItem(item: SyncableItem) = coroutineScope.launch {
         editItemDialog(item, service.vendors)?.apply {
-            service.updateItem(item, vendor, type, tags)
-            treeGrid.dataProvider.refreshItem(item, vendor != null || type != null)
+            service.updateItem(item, vendor, replaceVendor, type.ifEmpty { null }, replaceType, tags)
+            treeGrid.dataProvider.refreshItem(item, replaceVendor || replaceType)
         }
     }
 

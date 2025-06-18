@@ -62,7 +62,7 @@ class ProductManagerService(
     }
 
     @Transactional
-    fun updateItem(item: SyncableItem, vendor: Option<SyncVendor>?, type: Option<String>?, tags: String?) {
+    fun updateItem(item: SyncableItem, vendor: SyncVendor?, replaceVendor: Boolean, type: String?, replaceType: Boolean, tags: String?) {
         val tagsAsSet = tags?.run { splitToSequence(",").map { it.trim() }.filter { it.isNotEmpty() }.toMutableSet() }
         when (item) {
             is CategoryItem -> {
@@ -72,22 +72,22 @@ class ProductManagerService(
                     syncCategoryRepository.save(syncCategory)
                 }
 
-                if (vendor != null || type != null) {
-                    item.children.forEach { updateItem(it, vendor, type, null) }
+                if (replaceVendor || replaceType) {
+                    item.children.forEach { updateItem(it, vendor, replaceVendor, type, replaceType, null) }
                 }
             }
 
             is ProductItem -> {
                 var syncProduct = item.syncProduct
                 if (syncProduct != null) {
-                    if (vendor != null) syncProduct.vendor = vendor.getOrNull()
-                    if (type != null) syncProduct.type = type.getOrNull()
+                    if (replaceVendor) syncProduct.vendor = vendor
+                    if (replaceType) syncProduct.type = type
                     if (tagsAsSet != null) syncProduct.tags = tagsAsSet
                 } else {
                     syncProduct = SyncProduct(
                         artooId = item.id,
-                        vendor = vendor?.getOrNull(),
-                        type = type?.getOrNull(),
+                        vendor = vendor,
+                        type = type,
                         tags = tagsAsSet ?: mutableSetOf(),
                         synced = false
                     )
