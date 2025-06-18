@@ -8,7 +8,6 @@ import com.vaadin.flow.data.binder.ValidationException
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendor
 import de.hinundhergestellt.jhuh.components.bind
 import de.hinundhergestellt.jhuh.components.binder
-import de.hinundhergestellt.jhuh.components.to
 import de.hinundhergestellt.jhuh.components.button
 import de.hinundhergestellt.jhuh.components.checkbox
 import de.hinundhergestellt.jhuh.components.comboBox
@@ -16,6 +15,7 @@ import de.hinundhergestellt.jhuh.components.footer
 import de.hinundhergestellt.jhuh.components.header
 import de.hinundhergestellt.jhuh.components.itemLabelGenerator
 import de.hinundhergestellt.jhuh.components.textField
+import de.hinundhergestellt.jhuh.components.to
 import de.hinundhergestellt.jhuh.components.verticalLayout
 import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.CategoryItem
 import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.ProductItem

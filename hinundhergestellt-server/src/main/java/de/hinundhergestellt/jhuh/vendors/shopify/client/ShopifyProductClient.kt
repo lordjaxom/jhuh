@@ -1,6 +1,5 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
-import com.netflix.graphql.dgs.client.GraphQLClient
 import com.netflix.graphql.dgs.client.WebClientGraphQLClient
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.DgsClient.buildMutation
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.DgsClient.buildQuery

@@ -8,12 +8,12 @@ import com.vaadin.flow.data.binder.ValidationException
 import com.vaadin.flow.data.value.ValueChangeMode
 import de.hinundhergestellt.jhuh.components.beanValidationBinder
 import de.hinundhergestellt.jhuh.components.bind
-import de.hinundhergestellt.jhuh.components.to
 import de.hinundhergestellt.jhuh.components.button
 import de.hinundhergestellt.jhuh.components.footer
 import de.hinundhergestellt.jhuh.components.header
 import de.hinundhergestellt.jhuh.components.textArea
 import de.hinundhergestellt.jhuh.components.textField
+import de.hinundhergestellt.jhuh.components.to
 import de.hinundhergestellt.jhuh.components.verticalLayout
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume

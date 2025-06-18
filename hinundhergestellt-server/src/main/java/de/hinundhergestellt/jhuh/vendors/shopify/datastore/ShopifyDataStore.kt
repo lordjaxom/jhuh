@@ -1,6 +1,5 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.datastore
 
-import de.hinundhergestellt.jhuh.util.asyncWithRefresh
 import de.hinundhergestellt.jhuh.util.deferredWithRefresh
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductClient
@@ -12,7 +11,6 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductOpt
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVariant
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.toCollection
-import kotlinx.coroutines.flow.toList
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.task.AsyncTaskExecutor

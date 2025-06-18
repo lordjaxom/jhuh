@@ -1,7 +1,6 @@
 package de.hinundhergestellt.jhuh.vendors.ready2order.client
 
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.api.ProductApi
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
