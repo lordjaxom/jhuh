@@ -1,6 +1,7 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
 import de.hinundhergestellt.jhuh.util.toRemoveProtectedMutableList
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.MediaImage
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.Product
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductCreateInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductDeleteInput
@@ -36,6 +37,7 @@ class ShopifyProduct : UnsavedShopifyProduct {
     val id: String
     val variants: MutableList<ShopifyProductVariant>
     val hasOnlyDefaultVariant: Boolean
+    val images: List<ShopifyImage>
 
     override val options: MutableList<ShopifyProductOption>
     override val metafields: MutableList<ShopifyMetafield>
@@ -49,10 +51,12 @@ class ShopifyProduct : UnsavedShopifyProduct {
     ) {
         require(!product.variants.pageInfo.hasNextPage) { "Product has more variants than were loaded" }
         require(!product.metafields.pageInfo.hasNextPage) { "Product has more metafields than were loaded" }
+        require(!product.media.pageInfo.hasNextPage) { "Product has more medias than were loaded" }
 
         id = product.id
         variants = product.variants.edges.asSequence().map { ShopifyProductVariant(it.node) }.toMutableList()
         hasOnlyDefaultVariant = product.hasOnlyDefaultVariant
+        images = product.media.edges.map { ShopifyImage(it.node as MediaImage) }
         options = product.options.asSequence().map { ShopifyProductOption(it) }.toMutableList()
         metafields = product.metafields.edges.asSequence().map { ShopifyMetafield(it.node) }.toRemoveProtectedMutableList()
     }
@@ -67,6 +71,7 @@ class ShopifyProduct : UnsavedShopifyProduct {
         this.id = id
         variants = mutableListOf()
         hasOnlyDefaultVariant = options.isEmpty()
+        images = listOf()
         this.options = options
         this.metafields = unsaved.metafields.toRemoveProtectedMutableList()
     }

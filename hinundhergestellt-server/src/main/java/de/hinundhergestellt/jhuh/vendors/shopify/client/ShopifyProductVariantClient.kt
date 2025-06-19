@@ -2,6 +2,7 @@ package de.hinundhergestellt.jhuh.vendors.shopify.client
 
 import com.netflix.graphql.dgs.client.WebClientGraphQLClient
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.DgsClient.buildMutation
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductVariantAppendMediaPayload
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductVariantsBulkCreatePayload
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductVariantsBulkCreateStrategy
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductVariantsBulkDeletePayload
@@ -46,7 +47,7 @@ class ShopifyProductVariantClient(
     suspend fun delete(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
         val request = buildMutation {
             productVariantsBulkDelete(productId = product.id, variantsIds = variants.map { it.id }) {
-                userErrors { message;field }
+                userErrors { message; field }
             }
         }
 

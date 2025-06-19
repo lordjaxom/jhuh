@@ -60,23 +60,35 @@ class ShopifyProductClient(
 
     private suspend fun findAll(after: String?): Pair<List<ShopifyProduct>, PageInfo> {
         val request = buildQuery {
-            products(first = 250, after = after) {
+            products(first = 50, after = after) {
                 edges {
                     node {
                         handle; id; title; vendor; productType; status; tags; hasOnlyDefaultVariant
-                        variants(first = 250) {
+                        variants(first = 100) {
                             edges {
                                 node {
                                     id; title; price; sku; barcode
                                     selectedOptions { name; value }
+                                    image { id }
                                 }
                             }
                             pageInfo { hasNextPage }
                         }
                         options { id; name; values }
-                        metafields(first = 100) {
+                        metafields(first = 50) {
                             edges {
-                                node { id;namespace;key;value;type }
+                                node { id; namespace; key; value; type }
+                            }
+                            pageInfo { hasNextPage }
+                        }
+                        media(first = 100) {
+                            edges {
+                                node {
+                                    onMediaImage {
+                                        id
+                                        image { id; src }
+                                    }
+                                }
                             }
                             pageInfo { hasNextPage }
                         }

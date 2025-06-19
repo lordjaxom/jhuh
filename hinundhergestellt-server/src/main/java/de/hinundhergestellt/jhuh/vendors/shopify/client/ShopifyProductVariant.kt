@@ -18,15 +18,16 @@ open class UnsavedShopifyProductVariant(
         "UnsavedShopifyProductVariant(sku='$sku', barcode='$barcode')"
 
     internal open fun toProductVariantsBulkInput() =
-        toProductVariantsBulkInput(null)
+        toProductVariantsBulkInput(null, null)
 
-    protected fun toProductVariantsBulkInput(id: String?) =
+    protected fun toProductVariantsBulkInput(id: String?, imageId: String?) =
         ProductVariantsBulkInput(
             id = id,
             barcode = barcode,
             price = price.toPlainString(),
             optionValues = options.map { it.toVariantOptionValueInput() },
-            inventoryItem = toInventoryItemInput()
+            inventoryItem = toInventoryItemInput(),
+            mediaId = imageId,
         )
 
     private fun toInventoryItemInput() =
@@ -40,6 +41,7 @@ class ShopifyProductVariant : UnsavedShopifyProductVariant {
 
     val id: String
     val title: String
+    var mediaId: String?
 
     internal constructor(variant: ProductVariant) : super(
         variant.sku ?: "",
@@ -49,6 +51,7 @@ class ShopifyProductVariant : UnsavedShopifyProductVariant {
     ) {
         id = variant.id
         title = variant.title
+        mediaId = variant.image?.id
     }
 
     internal constructor(unsaved: UnsavedShopifyProductVariant, id: String, title: String) : super(
@@ -59,11 +62,12 @@ class ShopifyProductVariant : UnsavedShopifyProductVariant {
     ) {
         this.id = id
         this.title = title
+        mediaId = null
     }
 
     override fun toString() =
         "ShopifyProductVariant(id='$id', sku='$sku', barcode='$barcode')"
 
     override fun toProductVariantsBulkInput() =
-        super.toProductVariantsBulkInput(id)
+        super.toProductVariantsBulkInput(id, mediaId)
 }
