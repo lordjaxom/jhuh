@@ -15,7 +15,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.shared.Tooltip
 import com.vaadin.flow.component.textfield.TextField
-import com.vaadin.flow.component.treegrid.TreeGrid
 import com.vaadin.flow.data.provider.hierarchy.AbstractBackEndHierarchicalDataProvider
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery
 import com.vaadin.flow.dom.Style
@@ -23,11 +22,17 @@ import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
 import de.hinundhergestellt.jhuh.components.GridActionButton
 import de.hinundhergestellt.jhuh.components.MoreGridActionButton
-import de.hinundhergestellt.jhuh.components.addActionsColumn
-import de.hinundhergestellt.jhuh.components.addCountColumn
-import de.hinundhergestellt.jhuh.components.addHierarchyTextColumn
-import de.hinundhergestellt.jhuh.components.addIconColumn
-import de.hinundhergestellt.jhuh.components.addTextColumn
+import de.hinundhergestellt.jhuh.components.actionsColumn
+import de.hinundhergestellt.jhuh.components.button
+import de.hinundhergestellt.jhuh.components.checkbox
+import de.hinundhergestellt.jhuh.components.countColumn
+import de.hinundhergestellt.jhuh.components.div
+import de.hinundhergestellt.jhuh.components.hierarchyTextColumn
+import de.hinundhergestellt.jhuh.components.horizontalLayout
+import de.hinundhergestellt.jhuh.components.iconColumn
+import de.hinundhergestellt.jhuh.components.textColumn
+import de.hinundhergestellt.jhuh.components.textField
+import de.hinundhergestellt.jhuh.components.treeGrid
 import de.hinundhergestellt.jhuh.components.vaadinScope
 import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.CategoryItem
 import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.ProductItem
@@ -45,13 +50,14 @@ class ProductManagerView(
     private val applicationScope: CoroutineScope
 ) : VerticalLayout() {
 
-    private val refreshButton = Button()
-    private val markedForSyncCheckbox = Checkbox()
-    private val withErrorsCheckbox = Checkbox()
-    private val errorFreeCheckbox = Checkbox()
-    private val filterTextField = TextField()
-    private val treeGrid = TreeGrid<SyncableItem>()
-    private val progressOverlay = Div()
+    private val refreshButton: Button
+    private val markedForSyncCheckbox: Checkbox
+    private val withErrorsCheckbox: Checkbox
+    private val errorFreeCheckbox: Checkbox
+    private val filterTextField: TextField
+    private val progressOverlay: Div
+
+    private val treeDataProvider = TreeDataProvider()
 
     private val vaadinScope = vaadinScope(this)
 
@@ -60,84 +66,71 @@ class ProductManagerView(
         width = "1170px"
         style.setMargin("0 auto")
 
-        configureHeader()
-        configureFilters()
-        configureTreeGrid()
-        configureProgressOverlay()
+        horizontalLayout {
+            justifyContentMode = FlexComponent.JustifyContentMode.END
+            setWidthFull()
 
-        val refreshHandler: () -> Unit = { vaadinScope.launch { treeGrid.dataProvider.refreshAll(); refreshButton.isEnabled = true } }
-        addAttachListener { service.refreshListeners += refreshHandler }
-        addDetachListener { service.refreshListeners -= refreshHandler }
-    }
-
-    private fun configureHeader() {
-        refreshButton.text = "Aktualisieren"
-        refreshButton.isDisableOnClick = true
-        refreshButton.addClickListener { service.refresh() }
-
-        val syncWithShopifyButton = Button("Mit Shopify synchronisieren") { synchronize() }
-
-        val layout = HorizontalLayout(refreshButton, syncWithShopifyButton)
-        layout.justifyContentMode = FlexComponent.JustifyContentMode.END
-        layout.setWidthFull()
-        add(layout)
-    }
-
-    private fun configureFilters() {
-        markedForSyncCheckbox.label = "Nur synchronisiert"
-        withErrorsCheckbox.label = "Nur fehlerhaft"
-        errorFreeCheckbox.label = "Nur fehlerfrei"
-
-        fun mutualExclusiveFilterCheckbox(checkbox: Checkbox, value: Boolean, vararg others: Checkbox) {
-            checkbox.value = value
-            checkbox.style.setWhiteSpace(Style.WhiteSpace.NOWRAP)
-            checkbox.addValueChangeListener {
-                if (it.value) others.forEach { other -> other.value = false }
-                treeGrid.dataProvider.refreshAll()
+            refreshButton = button("Aktualisieren") {
+                isDisableOnClick = true
+                addClickListener { service.refresh() }
+            }
+            button("Mit Shopify synchronisieren") {
+                addClickListener { synchronize() }
             }
         }
+        horizontalLayout {
+            alignItems = FlexComponent.Alignment.CENTER
+            setWidthFull()
 
-        mutualExclusiveFilterCheckbox(markedForSyncCheckbox, true)
-        mutualExclusiveFilterCheckbox(withErrorsCheckbox, false, errorFreeCheckbox)
-        mutualExclusiveFilterCheckbox(errorFreeCheckbox, false, withErrorsCheckbox)
+            markedForSyncCheckbox = checkbox("Nur synchronisiert") {
+                value = true
+                style.setWhiteSpace(Style.WhiteSpace.NOWRAP)
+                addValueChangeListener { treeDataProvider.refreshAll() }
+            }
+            withErrorsCheckbox = checkbox("Nur fehlerhaft") {
+                value = false
+                style.setWhiteSpace(Style.WhiteSpace.NOWRAP)
+            }
+            errorFreeCheckbox = checkbox("Nur fehlerfrei") {
+                value = false
+                style.setWhiteSpace(Style.WhiteSpace.NOWRAP)
+            }
+            filterTextField = textField() {
+                placeholder = "Suche..."
+                prefixComponent = VaadinIcon.SEARCH.create()
+                isClearButtonVisible = true
+                setWidthFull()
+                addValueChangeListener { treeDataProvider.refreshAll() }
+            }
 
-        filterTextField.placeholder = "Suche..."
-        filterTextField.prefixComponent = VaadinIcon.SEARCH.create()
-        filterTextField.isClearButtonVisible = true
-        filterTextField.setWidthFull()
-        filterTextField.addValueChangeListener { treeGrid.dataProvider.refreshAll() }
+            withErrorsCheckbox.addValueChangeListener { if (it.value) errorFreeCheckbox.value = false }
+            errorFreeCheckbox.addValueChangeListener { if (it.value) withErrorsCheckbox.value = false }
+        }
+        treeGrid<SyncableItem> {
+            hierarchyTextColumn("Bezeichnung", flexGrow = 100) { it.name }
+            textColumn("Hersteller", flexGrow = 5) { it.vendor?.name }
+            textColumn("Produktart", flexGrow = 5) { it.type }
+            textColumn("Weitere Tags", flexGrow = 30) { it.tags }
+            countColumn("V#") { it.variations }
+            iconColumn { syncableItemStatus(it) }
+            actionsColumn(3) { syncableItemActions(it) }
+            setDataProvider(treeDataProvider)
+            expandRecursively(
+                treeDataProvider.fetchChildren(HierarchicalQuery(null, null)),
+                Int.Companion.MAX_VALUE
+            )
+            setSizeFull()
+            addThemeVariants(GridVariant.LUMO_ROW_STRIPES)
+        }
+        progressOverlay = div {
+            isVisible = false
+            classNames += "progress-overlay"
+            div { classNames += "progress-spinner" }
+        }
 
-        val filtersLayout = HorizontalLayout(markedForSyncCheckbox, withErrorsCheckbox, errorFreeCheckbox, filterTextField)
-        filtersLayout.setWidthFull()
-        filtersLayout.alignItems = FlexComponent.Alignment.CENTER
-        add(filtersLayout)
-    }
-
-    private fun configureTreeGrid() {
-        treeGrid.addHierarchyTextColumn("Bezeichnung", flexGrow = 100) { it.name }
-        treeGrid.addTextColumn("Hersteller", flexGrow = 5) { it.vendor?.name }
-        treeGrid.addTextColumn("Produktart", flexGrow = 5) { it.type }
-        treeGrid.addTextColumn("Weitere Tags", flexGrow = 30) { it.tags }
-        treeGrid.addCountColumn("V#") { it.variations }
-        treeGrid.addIconColumn { syncableItemStatus(it) }
-        treeGrid.addActionsColumn(3) { syncableItemActions(it) }
-        treeGrid.setDataProvider(TreeDataProvider())
-        treeGrid.expandRecursively(
-            treeGrid.dataProvider.fetchChildren(HierarchicalQuery(null, null)),
-            Int.Companion.MAX_VALUE
-        )
-        treeGrid.setSizeFull()
-        treeGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES)
-        add(treeGrid)
-    }
-
-    private fun configureProgressOverlay() {
-        val progressSpinner = Div()
-        progressSpinner.className = "progress-spinner"
-        progressOverlay.add(progressSpinner)
-        progressOverlay.addClassName("progress-overlay")
-        progressOverlay.isVisible = false
-        add(progressOverlay)
+        val refreshHandler: () -> Unit = { vaadinScope.launch { treeDataProvider.refreshAll(); refreshButton.isEnabled = true } }
+        addAttachListener { service.refreshListeners += refreshHandler }
+        addDetachListener { service.refreshListeners -= refreshHandler }
     }
 
     private fun synchronize() = vaadinScope.launch {
@@ -148,24 +141,24 @@ class ProductManagerView(
             showErrorNotification(e)
         } finally {
             progressOverlay.isVisible = false
-            treeGrid.dataProvider.refreshAll()
+            treeDataProvider.refreshAll()
         }
     }
 
     private fun markItem(product: ProductItem) {
         service.markForSync(product)
-        treeGrid.dataProvider.refreshItem(product)
+        treeDataProvider.refreshItem(product)
     }
 
     private fun unmarkItem(product: ProductItem) {
         service.unmarkForSync(product)
-        treeGrid.dataProvider.refreshItem(product)
+        treeDataProvider.refreshItem(product)
     }
 
     private fun editItem(item: SyncableItem) = vaadinScope.launch {
         editItemDialog(item, service.vendors)?.apply {
             service.updateItem(item, vendor, replaceVendor, type.ifEmpty { null }, replaceType, tags)
-            treeGrid.dataProvider.refreshItem(item, replaceVendor || replaceType)
+            treeDataProvider.refreshItem(item, replaceVendor || replaceType)
         }
     }
 

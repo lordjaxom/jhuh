@@ -10,22 +10,23 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
-import de.hinundhergestellt.jhuh.components.ArticleComboBoxFactory
+import de.hinundhergestellt.jhuh.components.ArticleComboBox
+import de.hinundhergestellt.jhuh.components.ArticleComboBoxService
 import de.hinundhergestellt.jhuh.components.CountTextField
 import de.hinundhergestellt.jhuh.components.GridActionButton
-import de.hinundhergestellt.jhuh.components.addActionsColumn
-import de.hinundhergestellt.jhuh.components.addCountColumn
-import de.hinundhergestellt.jhuh.components.addTextColumn
+import de.hinundhergestellt.jhuh.components.actionsColumn
+import de.hinundhergestellt.jhuh.components.countColumn
+import de.hinundhergestellt.jhuh.components.textColumn
 
 @Route
 @PageTitle("Wareneingang")
 class IncomingGoodsView(
     private val service: IncomingGoodsService,
-    articleComboBoxFactory: ArticleComboBoxFactory,
+    articleComboBoxService: ArticleComboBoxService,
 ): VerticalLayout() {
 
     private val saveButton = Button()
-    private val articleComboBox = articleComboBoxFactory()
+    private val articleComboBox = ArticleComboBox(articleComboBoxService)
     private val countTextField = CountTextField()
     private val addButton = Button()
     private val incomingGrid = Grid<Incoming>()
@@ -69,9 +70,9 @@ class IncomingGoodsView(
     }
 
     private fun configureIncomingGrid() {
-        incomingGrid.addTextColumn("Artikel", flexGrow = 20) { it.label }
-        incomingGrid.addCountColumn { it.count }
-        incomingGrid.addActionsColumn { GridActionButton(VaadinIcon.TRASH) { removeIncoming(it) } }
+        incomingGrid.textColumn("Artikel", flexGrow = 20) { it.label }
+        incomingGrid.countColumn { it.count }
+        incomingGrid.actionsColumn { GridActionButton(VaadinIcon.TRASH) { removeIncoming(it) } }
         incomingGrid.setItems(service.incomings)
         incomingGrid.setSizeFull()
         incomingGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES)

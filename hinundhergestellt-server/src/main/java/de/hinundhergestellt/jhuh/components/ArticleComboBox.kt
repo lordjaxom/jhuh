@@ -1,8 +1,13 @@
+@file:OptIn(ExperimentalContracts::class)
+
 package de.hinundhergestellt.jhuh.components
 
+import com.vaadin.flow.component.HasComponents
 import com.vaadin.flow.component.ItemLabelGenerator
 import com.vaadin.flow.component.combobox.ComboBox
-import org.springframework.stereotype.Component
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.streams.asStream
 
 class ArticleComboBox(
@@ -46,10 +51,7 @@ class ArticleComboBox(
     }
 }
 
-@Component
-class ArticleComboBoxFactory(
-    private val service: ArticleComboBoxService
-) : () -> ArticleComboBox {
-
-    override fun invoke() = ArticleComboBox(service)
+inline fun HasComponents.articleComboBox(service: ArticleComboBoxService, block: ArticleComboBox.() -> Unit): ArticleComboBox {
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    return init(ArticleComboBox(service), block)
 }
