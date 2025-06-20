@@ -36,7 +36,7 @@ class ShopifyProductsFixTest {
 
     @Test
     fun associateMedia(): Unit = runBlocking {
-        val product = productClient.findAll().first { it.title.startsWith("myboshi Bamboo") }
+        val product = productClient.findAll().first { it.title.startsWith("myboshi Dream") }
         val changedVariants = product.variants.asSequence()
             .filter { it.options.isNotEmpty() && it.mediaId == null }
             .map {

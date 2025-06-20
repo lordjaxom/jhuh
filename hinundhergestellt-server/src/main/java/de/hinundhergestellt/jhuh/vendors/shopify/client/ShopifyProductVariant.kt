@@ -18,19 +18,14 @@ open class UnsavedShopifyProductVariant(
         "UnsavedShopifyProductVariant(sku='$sku', barcode='$barcode')"
 
     internal open fun toProductVariantsBulkInput() =
-        toProductVariantsBulkInput(null, null)
-
-    protected fun toProductVariantsBulkInput(id: String?, imageId: String?) =
         ProductVariantsBulkInput(
-            id = id,
             barcode = barcode,
             price = price.toPlainString(),
             optionValues = options.map { it.toVariantOptionValueInput() },
             inventoryItem = toInventoryItemInput(),
-            mediaId = imageId,
         )
 
-    private fun toInventoryItemInput() =
+    protected fun toInventoryItemInput() =
         InventoryItemInput(
             sku = sku,
             tracked = true
@@ -69,5 +64,12 @@ class ShopifyProductVariant : UnsavedShopifyProductVariant {
         "ShopifyProductVariant(id='$id', sku='$sku', barcode='$barcode')"
 
     override fun toProductVariantsBulkInput() =
-        super.toProductVariantsBulkInput(id, mediaId)
+        ProductVariantsBulkInput(
+            id = id,
+            barcode = barcode,
+            price = price.toPlainString(),
+            optionValues = options.map { it.toVariantOptionValueInput() },
+            inventoryItem = toInventoryItemInput(),
+            mediaId = mediaId
+        )
 }
