@@ -145,6 +145,12 @@ class ProductManagerService(
         } else if (barcodes.size < product.variations.size) {
             add(Warning("Nicht alle Variationen haben einen Barcode"))
         }
+        if (product.variations.groupingBy { it.name }.eachCount().any { (_, count) -> count > 1 }) {
+            add(Error("Produkt hat Variationen mit gleichem Namen"))
+        }
+        if (!product.hasOnlyDefaultVariant && product.variations.any { it.name.isEmpty() }) {
+            add(Warning("Nicht alle Variationen haben einen Namen"))
+        }
         syncProduct?.vendor.also {
             if (it == null) {
                 add(Error("Produkt hat keinen Hersteller"))
@@ -154,9 +160,6 @@ class ProductManagerService(
         }
         if (syncProduct?.type == null) {
             add(Error("Produkt hat keine Produktart"))
-        }
-        if (product.variations.groupingBy { it.name }.eachCount().any { (_, count) -> count > 1 }) {
-            add(Error("Produkt hat Optionen mit gleichem Namen"))
         }
     }
 
@@ -266,6 +269,11 @@ class ProductManagerService(
             logger.info { "Variant ${shopifyVariant.title} of ${shopifyProduct.title} no longer in ready2order, delete from Shopify" }
             syncVariant.product.variants.remove(syncVariant)
             return Delete(shopifyVariant)
+        }
+
+        if (!artooProduct.hasOnlyDefaultVariant && artooVariation.name.isEmpty()) {
+            logger.warn { "Variant of ${artooProduct.name} with barcode ${artooVariation.barcode} has no name, skipping synchronization" }
+            return null
         }
 
         if (shopifyVariant == null) {

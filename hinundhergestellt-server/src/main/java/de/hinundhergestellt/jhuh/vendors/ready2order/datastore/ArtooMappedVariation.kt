@@ -7,7 +7,7 @@ class ArtooMappedVariation internal constructor(
     val isDefaultVariant: Boolean
 ) {
     val id by product::id
-    val name get() = product.alternativeNameInPos.ifEmpty { product.name }
+    val name by product::alternativeNameInPos
     val itemNumber by product::itemNumber
     val barcode by product::barcode
     val price by product::price
