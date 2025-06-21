@@ -44,9 +44,11 @@ class ShopifyProductVariant : UnsavedShopifyProductVariant {
         BigDecimal(variant.price),
         variant.selectedOptions.map { ShopifyProductVariantOption(it) }
     ) {
+        require(variant.media.edges.size <= 1) { "ProductVariant has more media than is supported" }
+
         id = variant.id
         title = variant.title
-        mediaId = variant.image?.id
+        mediaId = variant.media.edges.asSequence().map { it.node.id }.firstOrNull()
     }
 
     internal constructor(unsaved: UnsavedShopifyProductVariant, id: String, title: String) : super(

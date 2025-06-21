@@ -7,7 +7,9 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOptionClie
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantClient
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -35,6 +37,12 @@ class ShopifyProductsFixTest {
     private lateinit var metafieldsClient: ShopifyMetafieldsClient
 
     @Test
+    fun findAllProducts(): Unit = runBlocking{
+        productClient.findAll().toList()
+    }
+
+    @Test
+    @Disabled("Has run successfully")
     fun associateMedia(): Unit = runBlocking {
         val product = productClient.findAll().first { it.title.startsWith("myboshi Dream") }
         val changedVariants = product.variants.asSequence()

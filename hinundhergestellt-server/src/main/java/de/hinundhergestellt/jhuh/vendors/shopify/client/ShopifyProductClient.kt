@@ -69,7 +69,13 @@ class ShopifyProductClient(
                                 node {
                                     id; title; price; sku; barcode
                                     selectedOptions { name; value }
-                                    image { id }
+                                    media(first = 2) {
+                                        edges {
+                                            node {
+                                                onMediaImage { id }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                             pageInfo { hasNextPage }

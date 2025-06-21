@@ -11,9 +11,7 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductOpt
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVariant
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.toCollection
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.core.task.AsyncTaskExecutor
 import org.springframework.stereotype.Service
 import java.util.UUID
 
@@ -21,8 +19,7 @@ import java.util.UUID
 class ShopifyDataStore(
     private val productClient: ShopifyProductClient,
     private val variantClient: ShopifyProductVariantClient,
-    @Qualifier("applicationTaskExecutor") private val taskExecutor: AsyncTaskExecutor,
-    private val applicationCoroutineScope: CoroutineScope,
+    applicationCoroutineScope: CoroutineScope,
     @Value("\${shopify.read-only}") private val readOnly: Boolean
 ) {
     private val productsAsync = deferredWithRefresh(applicationCoroutineScope) { productClient.findAll().toCollection(mutableListOf()) }
@@ -31,7 +28,9 @@ class ShopifyDataStore(
     fun findProductById(id: String) =
         products.find { it.id == id }
 
-    fun refresh() = productsAsync.refresh()
+    fun refresh() {
+        productsAsync.refresh()
+    }
 
     suspend fun create(product: UnsavedShopifyProduct): ShopifyProduct {
         val created =

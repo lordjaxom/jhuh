@@ -129,7 +129,10 @@ class ProductManagerService(
         }
     }
 
-    fun refresh() = artooDataStore.refresh()
+    fun refresh() {
+        artooDataStore.refresh()
+        shopifyDataStore.refresh()
+    }
 
     private fun checkSyncProblems(product: ArtooMappedProduct, syncProduct: SyncProduct?) = buildList {
         val barcodes = product.barcodes

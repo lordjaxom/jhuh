@@ -95,8 +95,8 @@ class ArtooProductFixTest {
     @Test
     @Disabled("Has run successfully")
     fun updateProductsWithVariantsName() = runBlocking {
-        val oldName = "Gründl - Funny Mini 15g"
-        val newName = "Gründl Funny Mini"
+        val oldName = "SUPERIOR Holo-Brushed Vinylfolie"
+        val newName = "SUPERIOR® Holo-Brushed"
 
         val groups = artooProductGroupClient.findAll().toList()
         val products = artooProductClient.findAll().toList()
@@ -115,6 +115,7 @@ class ArtooProductFixTest {
     }
 
     @Test
+    @Disabled("Has run successfully")
     fun addNewMyboshiProducts(): Unit = runBlocking {
         val group = artooProductGroupClient.findAll().filter { it.name == "myboshi" }.single()
 
