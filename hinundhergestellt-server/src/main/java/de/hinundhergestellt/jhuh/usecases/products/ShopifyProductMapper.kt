@@ -12,14 +12,11 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductOpt
 import de.hinundhergestellt.jhuh.vendors.shopify.client.containsId
 import de.hinundhergestellt.jhuh.vendors.shopify.client.findById
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductStatus
-import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
 import kotlin.streams.asSequence
 
 private const val METAFIELD_NAMESPACE = "hinundhergestellt"
 private val INVALID_TAG_CHARACTERS = """[^A-ZÄÖÜa-zäöüß0-9\\._ -]""".toRegex()
-
-private val logger = KotlinLogging.logger { }
 
 @Component
 class ShopifyProductMapper(

@@ -6,6 +6,7 @@ import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.checkbox.Checkbox
 import com.vaadin.flow.component.grid.GridVariant
 import com.vaadin.flow.component.html.Div
+import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.notification.Notification
@@ -101,11 +102,11 @@ class ProductManagerView(
                 addValueChangeListener { treeDataProvider.refreshAll() }
             }
 
-            withErrorsCheckbox.addValueChangeListener { if (it.value) errorFreeCheckbox.value = false }
-            errorFreeCheckbox.addValueChangeListener { if (it.value) withErrorsCheckbox.value = false }
+            withErrorsCheckbox.addValueChangeListener { if (it.value) errorFreeCheckbox.value = false; treeDataProvider.refreshAll() }
+            errorFreeCheckbox.addValueChangeListener { if (it.value) withErrorsCheckbox.value = false; treeDataProvider.refreshAll() }
         }
         treeGrid<SyncableItem> {
-            hierarchyTextColumn("Bezeichnung", flexGrow = 100) { it.name }
+            hierarchyTextColumn("Bezeichnung", flexGrow = 100) { it.name }.setTooltipGenerator { it.name }
             textColumn("Hersteller", flexGrow = 5) { it.vendor?.name }
             textColumn("Produktart", flexGrow = 5) { it.type }
             textColumn("Weitere Tags", flexGrow = 30) { it.tags }

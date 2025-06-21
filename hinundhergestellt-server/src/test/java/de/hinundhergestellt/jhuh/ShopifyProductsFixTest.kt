@@ -44,12 +44,12 @@ class ShopifyProductsFixTest {
     @Test
     @Disabled("Has run successfully")
     fun associateMedia(): Unit = runBlocking {
-        val product = productClient.findAll().first { it.title.startsWith("myboshi Dream") }
+        val product = productClient.findAll().first { it.title.startsWith("craftcut® glänzend") }
         val changedVariants = product.variants.asSequence()
             .filter { it.options.isNotEmpty() && it.mediaId == null }
             .map {
                 it to product.images.filter { image ->
-                    image.src.contains("""\b${Regex.fromLiteral(it.options[0].value)}\b""".toRegex(RegexOption.IGNORE_CASE))
+                    image.src.contains("""\b${Regex.fromLiteral(it.sku)}\b""".toRegex(RegexOption.IGNORE_CASE))
                 }
             }
             .filter { (_, images) -> images.size == 1 }

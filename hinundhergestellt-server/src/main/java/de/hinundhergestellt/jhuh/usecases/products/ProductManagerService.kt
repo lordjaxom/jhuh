@@ -155,6 +155,9 @@ class ProductManagerService(
         if (syncProduct?.type == null) {
             add(Error("Produkt hat keine Produktart"))
         }
+        if (product.variations.groupingBy { it.name }.eachCount().any { (_, count) -> count > 1 }) {
+            add(Error("Produkt hat Optionen mit gleichem Namen"))
+        }
     }
 
     private fun reconcileFromShopify(shopifyProduct: ShopifyProduct) {
@@ -225,7 +228,10 @@ class ProductManagerService(
         if (artooProduct == null) {
             require(shopifyProduct != null) { "SyncProduct vanished from both ready2order and Shopify" }
             logger.info { "Product ${shopifyProduct!!.title} no longer in ready2order, delete from Shopify" }
-            runBlocking { shopifyDataStore.delete(shopifyProduct!!) }
+            runBlocking {
+                @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
+                shopifyDataStore.delete(shopifyProduct!!)
+            }
             syncProductRepository.delete(syncProduct)
             return
         }

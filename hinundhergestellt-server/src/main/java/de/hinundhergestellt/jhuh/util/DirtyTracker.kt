@@ -30,8 +30,8 @@ class DirtyTracker {
             override fun getValue(thisRef: Any?, property: KProperty<*>) = tracked.getValue(thisRef, property)
             override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
                 val oldValue = tracked.getValue(thisRef, property)
-                if (oldValue != value) {
-                    tracked.setValue(thisRef, property, value)
+                tracked.setValue(thisRef, property, value)
+                if (oldValue != tracked.getValue(thisRef, property)) {
                     dirties += property.name
                 }
             }
