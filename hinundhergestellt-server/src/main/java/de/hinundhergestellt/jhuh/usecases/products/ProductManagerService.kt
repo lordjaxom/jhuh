@@ -129,6 +129,10 @@ class ProductManagerService(
         }
     }
 
+    suspend fun rename(product: ArtooMappedProduct) {
+        artooDataStore.rename(product)
+    }
+
     fun refresh() {
         artooDataStore.refresh()
         shopifyDataStore.refresh()

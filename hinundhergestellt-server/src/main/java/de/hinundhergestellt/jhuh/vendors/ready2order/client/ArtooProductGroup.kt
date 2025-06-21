@@ -1,17 +1,30 @@
 package de.hinundhergestellt.jhuh.vendors.ready2order.client
 
+import de.hinundhergestellt.jhuh.util.DirtyTracker
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductgroupsGet200ResponseInner
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductgroupsPostRequest
 
 open class UnsavedArtooProductGroup(
-    var name: String,
-    var description: String,
-    var shortcut: String,
-    var active: Boolean,
-    var parent: Int? = null,
-    var sortIndex: Int = 0,
-    var type: ArtooProductGroupType = ArtooProductGroupType.STANDARD
+    name: String,
+    description: String,
+    shortcut: String,
+    active: Boolean,
+    parent: Int? = null,
+    sortIndex: Int = 0,
+    type: ArtooProductGroupType = ArtooProductGroupType.STANDARD
 ) {
+    private val dirtyTracker = DirtyTracker()
+
+    var name by dirtyTracker.track(name)
+    var description by dirtyTracker.track(description)
+    var shortcut by dirtyTracker.track(shortcut)
+    var active by dirtyTracker.track(active)
+    var parent by dirtyTracker.track(parent)
+    var sortIndex by dirtyTracker.track(sortIndex)
+    var type by dirtyTracker.track(type)
+
+    fun getDirtyAndReset() = dirtyTracker.getDirtyAndReset()
+
     override fun toString() =
         "UnsavedArtooProductGroup(name='$name', description='$description')"
 

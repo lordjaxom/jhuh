@@ -15,7 +15,7 @@ import de.hinundhergestellt.jhuh.components.footer
 import de.hinundhergestellt.jhuh.components.header
 import de.hinundhergestellt.jhuh.components.itemLabelGenerator
 import de.hinundhergestellt.jhuh.components.textField
-import de.hinundhergestellt.jhuh.components.to
+import de.hinundhergestellt.jhuh.components.toProperty
 import de.hinundhergestellt.jhuh.components.verticalLayout
 import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.CategoryItem
 import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.ProductItem
@@ -52,31 +52,31 @@ private class EditItemDialog(
                     itemLabelGenerator { it.name }
                     setWidthFull()
                     setItems(vendors)
-                    bind(binder).to(EditItemResult::vendor)
+                    bind(binder).toProperty(EditItemResult::vendor)
                     if (item is ProductItem) focus()
                     // TODO: Focus next on value change
                 }
                 if (item is CategoryItem) {
                     checkbox("Für alle Produkte ersetzen?") {
                         addValueChangeListener { vendorComboBox.isEnabled = value; if (value) vendorComboBox.focus() }
-                        bind(binder).to(EditItemResult::replaceVendor)
+                        bind(binder).toProperty(EditItemResult::replaceVendor)
                     }
                 }
                 val typeTextField = textField("Produktart") {
                     isEnabled = item is ProductItem
                     setWidthFull()
-                    bind(binder).to(EditItemResult::type)
+                    bind(binder).toProperty(EditItemResult::type)
                 }
                 if (item is CategoryItem) {
                     checkbox("Für alle Produkte ersetzen?") {
                         addValueChangeListener { typeTextField.isEnabled = value; if (value) typeTextField.focus() }
-                        bind(binder).to(EditItemResult::replaceType)
+                        bind(binder).toProperty(EditItemResult::replaceType)
                     }
                 }
             }
             textField("Tags") {
                 setWidthFull()
-                bind(binder).to(EditItemResult::tags)
+                bind(binder).toProperty(EditItemResult::tags)
                 if (item is CategoryItem) focus()
             }
         }

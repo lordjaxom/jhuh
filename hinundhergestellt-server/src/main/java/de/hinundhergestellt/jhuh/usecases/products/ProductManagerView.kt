@@ -50,7 +50,6 @@ class ProductManagerView(
     private val applicationScope: CoroutineScope
 ) : VerticalLayout() {
 
-    private val refreshButton: Button
     private val markedForSyncCheckbox: Checkbox
     private val withErrorsCheckbox: Checkbox
     private val errorFreeCheckbox: Checkbox
@@ -70,9 +69,8 @@ class ProductManagerView(
             justifyContentMode = FlexComponent.JustifyContentMode.END
             setWidthFull()
 
-            refreshButton = button("Aktualisieren") {
-                isDisableOnClick = true
-                addClickListener { service.refresh() }
+            button("Aktualisieren") {
+                addClickListener { refresh() }
             }
             button("Mit Shopify synchronisieren") {
                 addClickListener { synchronize() }
@@ -128,9 +126,14 @@ class ProductManagerView(
             div { classNames += "progress-spinner" }
         }
 
-        val refreshHandler: () -> Unit = { vaadinScope.launch { treeDataProvider.refreshAll(); refreshButton.isEnabled = true } }
+        val refreshHandler: () -> Unit = { vaadinScope.launch { treeDataProvider.refreshAll(); progressOverlay.isVisible = false } }
         addAttachListener { service.refreshListeners += refreshHandler }
         addDetachListener { service.refreshListeners -= refreshHandler }
+    }
+
+    private fun refresh() {
+        progressOverlay.isVisible = true
+        service.refresh()
     }
 
     private fun synchronize() = vaadinScope.launch {
@@ -162,6 +165,20 @@ class ProductManagerView(
         }
     }
 
+    private fun renameProduct(product: ProductItem) = vaadinScope.launch {
+        if (renameProductDialog(product.value)) {
+            progressOverlay.isVisible = true
+            try {
+                withContext(applicationScope.coroutineContext) { service.rename(product.value) }
+            } catch (e: Throwable) {
+                showErrorNotification(e)
+            } finally {
+                progressOverlay.isVisible = false
+                treeDataProvider.refreshItem(product)
+            }
+        }
+    }
+
     private fun syncableItemStatus(item: SyncableItem): Icon =
         if (item !is ProductItem) Icon()
         else {
@@ -189,8 +206,12 @@ class ProductManagerView(
             }
             add(GridActionButton(VaadinIcon.EDIT) { editItem(item) })
             add(MoreGridActionButton().apply {
-                addItem("Etikett für Produkt") {}
-                addItem("Etiketten für Varianten") {}
+                if (item is ProductItem) {
+                    addItem("Umbenennen") { renameProduct(item) }
+                    addDivider()
+                    addItem("Etikett für Produkt") {}
+                    addItem("Etiketten für Varianten") {}
+                }
                 isEnabled = item is ProductItem
             })
         }

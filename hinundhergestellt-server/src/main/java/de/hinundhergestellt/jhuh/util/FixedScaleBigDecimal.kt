@@ -1,6 +1,7 @@
 package de.hinundhergestellt.jhuh.util
 
 import java.math.BigDecimal
+import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 fun fixedScale(value: BigDecimal, scale: Int) = FixedScaleBigDecimal(value, scale)
@@ -8,10 +9,11 @@ fun fixedScale(value: BigDecimal, scale: Int) = FixedScaleBigDecimal(value, scal
 class FixedScaleBigDecimal(
     value: BigDecimal,
     private val scale: Int
-) {
+) : ReadWriteProperty<Any?, BigDecimal> {
+
     private var value = value.setScale(scale)
-    operator fun getValue(ref: Any?, property: KProperty<*>): BigDecimal = value
-    operator fun setValue(ref: Any?, property: KProperty<*>, value: BigDecimal) {
+    override fun getValue(thisRef: Any?, property: KProperty<*>): BigDecimal = value
+    override fun setValue(thisRef: Any?, property: KProperty<*>, value: BigDecimal) {
         this.value = value.setScale(scale)
     }
 }

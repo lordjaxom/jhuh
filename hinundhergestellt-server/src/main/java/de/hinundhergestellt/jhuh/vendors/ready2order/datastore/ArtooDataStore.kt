@@ -33,6 +33,22 @@ class ArtooDataStore(
     fun findCategoriesByProduct(product: ArtooMappedProduct) =
         rootCategories.asSequence().flatMap { it.findCategoriesByProduct(product) }
 
+    suspend fun rename(product: ArtooMappedProduct) {
+        when (product) {
+            is ArtooMappedProduct.Single -> {
+                productClient.update(product.product)
+            }
+
+            is ArtooMappedProduct.Group -> {
+                if (product.group.getDirtyAndReset())
+                    productGroupClient.update(product.group)
+                product.variations.forEach {
+                    productClient.update(it.product)
+                }
+            }
+        }
+    }
+
     // @Scheduled(initialDelay = 15, fixedDelay = 15, timeUnit = TimeUnit.MINUTES)
     fun refresh() {
         applicationCoroutineScope.async {

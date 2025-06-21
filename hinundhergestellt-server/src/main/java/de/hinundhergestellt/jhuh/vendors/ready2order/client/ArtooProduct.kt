@@ -1,5 +1,6 @@
 package de.hinundhergestellt.jhuh.vendors.ready2order.client
 
+import de.hinundhergestellt.jhuh.util.DirtyTracker
 import de.hinundhergestellt.jhuh.util.fixedScale
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsGet200ResponseInner
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsIdPutRequest
@@ -31,7 +32,9 @@ open class UnsavedArtooProduct(
     var alternativeNameOnReceipts: String = "",
     var alternativeNameInPos: String
 ) {
-    var price by fixedScale(price, 2)
+    private val dirtyTracker = DirtyTracker()
+
+    var price by dirtyTracker.track(fixedScale(price, 2))
     var vat by fixedScale(vat, 2)
     var stockValue by fixedScale(stockValue, 0)
     var stockReorderLevel by fixedScale(stockReorderLevel, 0)

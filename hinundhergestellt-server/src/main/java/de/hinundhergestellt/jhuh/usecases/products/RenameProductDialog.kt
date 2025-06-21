@@ -1,33 +1,32 @@
-package de.hinundhergestellt.jhuh.usecases.vendors
+package de.hinundhergestellt.jhuh.usecases.products
 
 import com.vaadin.flow.component.Key
 import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.dialog.Dialog
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.data.binder.ValidationException
-import com.vaadin.flow.data.value.ValueChangeMode
-import de.hinundhergestellt.jhuh.components.beanValidationBinder
 import de.hinundhergestellt.jhuh.components.bind
+import de.hinundhergestellt.jhuh.components.binder
 import de.hinundhergestellt.jhuh.components.button
 import de.hinundhergestellt.jhuh.components.footer
 import de.hinundhergestellt.jhuh.components.header
-import de.hinundhergestellt.jhuh.components.textArea
 import de.hinundhergestellt.jhuh.components.textField
 import de.hinundhergestellt.jhuh.components.toProperty
 import de.hinundhergestellt.jhuh.components.verticalLayout
+import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
-private class EditVendorDialog(
-    private val vendor: VendorItem,
+private class RenameProductDialog(
+    private val product: ArtooMappedProduct,
     private val callback: (Boolean) -> Unit
 ) : Dialog() {
 
-    private val binder = beanValidationBinder<VendorItem>()
+    private val binder = binder<ArtooMappedProduct>()
 
     init {
         width = "500px"
-        headerTitle = "Hersteller bearbeiten"
+        headerTitle = "Produkt umbenennen"
 
         header {
             button(VaadinIcon.CLOSE) {
@@ -39,37 +38,14 @@ private class EditVendorDialog(
             isSpacing = false
             isPadding = false
 
-            textField("Bezeichnung") {
-                isRequired = true
+            textField("Name") {
                 setWidthFull()
-                bind(binder).toProperty(VendorItem::name)
+                bind(binder).asRequired("Produktname darf nicht leer sein.").toProperty(ArtooMappedProduct::name)
                 focus()
             }
-            textField("E-Mail") {
-                isRequired = true
+            textField("Beschreibung") {
                 setWidthFull()
-                bind(binder).toProperty(VendorItem::email)
-            }
-            textArea("Adresse") {
-                isRequired = true
-                maxLength = 255
-                minRows = 5
-                maxRows = 5
-                valueChangeMode = ValueChangeMode.EAGER
-                setWidthFull()
-                addValueChangeListener { helperText = "${value.length}/${maxLength}" }
-                bind(binder).toProperty(VendorItem::address)
-
-                // @formatter:off
-                element.executeJs("""
-                    const input = this.inputElement
-                    input.addEventListener('keydown', function(e) {
-                        if (e.key === 'Enter') {
-                            e.stopPropagation()
-                        }            
-                    });
-                """.trimIndent())
-                // @formatter:on
+                bind(binder).toProperty(ArtooMappedProduct::description)
             }
         }
         footer {
@@ -80,12 +56,12 @@ private class EditVendorDialog(
             }
         }
 
-        binder.readBean(vendor)
+        binder.readBean(product)
     }
 
     private fun save() {
         try {
-            binder.writeBean(vendor)
+            binder.writeBean(product)
             close()
             callback(true)
         } catch (_: ValidationException) {
@@ -93,9 +69,9 @@ private class EditVendorDialog(
     }
 }
 
-suspend fun editVendorDialog(vendor: VendorItem) =
+suspend fun renameProductDialog(product: ArtooMappedProduct) =
     suspendCancellableCoroutine {
-        val dialog = EditVendorDialog(vendor) { result -> it.resume(result) }
+        val dialog = RenameProductDialog(product) { result -> it.resume(result) }
         it.invokeOnCancellation { dialog.close() }
         dialog.open()
     }

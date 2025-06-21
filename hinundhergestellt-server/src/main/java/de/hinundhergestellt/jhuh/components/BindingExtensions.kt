@@ -8,7 +8,7 @@ import kotlin.reflect.KMutableProperty1
 fun <BEAN, FIELDVALUE> HasValue<*, FIELDVALUE>.bind(binder: Binder<BEAN>): Binder.BindingBuilder<BEAN, FIELDVALUE> =
     binder.forField(this)
 
-fun <BEAN, FIELDVALUE> Binder.BindingBuilder<BEAN, FIELDVALUE>.to(property: KMutableProperty1<BEAN, FIELDVALUE>)
+fun <BEAN, FIELDVALUE> Binder.BindingBuilder<BEAN, FIELDVALUE>.toProperty(property: KMutableProperty1<BEAN, FIELDVALUE>)
         : Binder.Binding<BEAN, FIELDVALUE> =
     bind(property.name) // bind by name so bean validation works
 

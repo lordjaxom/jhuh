@@ -3,7 +3,7 @@ package de.hinundhergestellt.jhuh.vendors.ready2order.datastore
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProduct
 
 class ArtooMappedVariation internal constructor(
-    private val product: ArtooProduct,
+    internal val product: ArtooProduct,
     val isDefaultVariant: Boolean
 ) {
     val id by product::id
