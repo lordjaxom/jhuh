@@ -1,6 +1,7 @@
 package de.hinundhergestellt.jhuh.vendors.ready2order.client
 
 import de.hinundhergestellt.jhuh.util.DirtyTracker
+import de.hinundhergestellt.jhuh.util.HasDirtyTracker
 import de.hinundhergestellt.jhuh.util.fixedScale
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsGet200ResponseInner
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsIdPutRequest
@@ -10,35 +11,50 @@ import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsPostR
 import java.math.BigDecimal
 
 open class UnsavedArtooProduct(
-    var name: String,
-    var itemNumber: String?,
-    var barcode: String?,
-    var description: String,
+    name: String,
+    itemNumber: String?,
+    barcode: String?,
+    description: String,
     price: BigDecimal,
-    var priceIncludesVat: Boolean,
+    priceIncludesVat: Boolean,
     vat: BigDecimal,
-    var stockEnabled: Boolean,
-    var variationsEnabled: Boolean = false,
+    stockEnabled: Boolean,
+    variationsEnabled: Boolean = false,
     stockValue: BigDecimal,
-    var stockUnit: String? = if (stockEnabled) "piece" else null,
+    stockUnit: String? = if (stockEnabled) "piece" else null,
     stockReorderLevel: BigDecimal = BigDecimal.ZERO,
     stockSafetyStock: BigDecimal = BigDecimal.ZERO,
-    var sortIndex: Int = 0,
-    var active: Boolean,
-    var discountable: Boolean = true,
-    var type: ArtooProductType = ArtooProductType.INHERITED,
-    var baseId: Int? = null,
-    var productGroupId: Int,
-    var alternativeNameOnReceipts: String = "",
-    var alternativeNameInPos: String
-) {
-    private val dirtyTracker = DirtyTracker()
+    sortIndex: Int = 0,
+    active: Boolean,
+    discountable: Boolean = true,
+    type: ArtooProductType = ArtooProductType.INHERITED,
+    baseId: Int? = null,
+    productGroupId: Int,
+    alternativeNameInPos: String
+): HasDirtyTracker {
 
+    override val dirtyTracker = DirtyTracker()
+
+    var name by dirtyTracker.track(name)
+    var itemNumber by dirtyTracker.track(itemNumber)
+    var barcode by dirtyTracker.track(barcode)
+    var description by dirtyTracker.track(description)
+    var priceIncludesVat by dirtyTracker.track(priceIncludesVat)
     var price by dirtyTracker.track(fixedScale(price, 2))
-    var vat by fixedScale(vat, 2)
+    var vat by dirtyTracker.track(fixedScale(vat, 2))
+    var stockEnabled by dirtyTracker.track(stockEnabled)
+    var variationsEnabled by dirtyTracker.track(variationsEnabled)
     var stockValue by fixedScale(stockValue, 0)
+    var stockUnit by dirtyTracker.track(stockUnit)
     var stockReorderLevel by fixedScale(stockReorderLevel, 0)
     var stockSafetyStock by fixedScale(stockSafetyStock, 0)
+    var sortIndex by dirtyTracker.track(sortIndex)
+    var active by dirtyTracker.track(active)
+    var discountable by dirtyTracker.track(discountable)
+    var type by dirtyTracker.track(type)
+    var baseId by dirtyTracker.track(baseId)
+    var productGroupId by dirtyTracker.track(productGroupId)
+    var alternativeNameInPos by dirtyTracker.track(alternativeNameInPos)
 
     override fun toString() =
         "UnsavedArtooProduct(name='$name', description='$description', itemNumber='$itemNumber', barcode='$barcode')"
@@ -64,7 +80,6 @@ open class UnsavedArtooProduct(
             productType = type.type,
             productBase = toProductsPostRequestProductBase(),
             productgroup = toProductsPostRequestProductgroup(),
-            productAlternativeNameOnReceipts = alternativeNameOnReceipts,
             productAlternativeNameInPos = alternativeNameInPos,
         )
 
@@ -99,7 +114,6 @@ class ArtooProduct : UnsavedArtooProduct {
         ArtooProductType.valueOf(product.productTypeId),
         product.productBaseId,
         product.productgroupId ?: product.productgroup!!.productgroupId!!,
-        product.productAlternativeNameOnReceipts ?: "",
         product.productAlternativeNameInPos ?: ""
     ) {
         id = product.productId!!
@@ -129,7 +143,6 @@ class ArtooProduct : UnsavedArtooProduct {
             productType = type.type,
             productBase = toProductsPostRequestProductBase(),
             productgroup = toProductsPostRequestProductgroup(),
-            productAlternativeNameOnReceipts = alternativeNameOnReceipts,
             productAlternativeNameInPos = alternativeNameInPos,
         )
 }

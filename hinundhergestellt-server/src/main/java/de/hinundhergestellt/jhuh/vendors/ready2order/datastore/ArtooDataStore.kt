@@ -1,6 +1,7 @@
 package de.hinundhergestellt.jhuh.vendors.ready2order.datastore
 
 import de.hinundhergestellt.jhuh.util.deferredWithRefresh
+import de.hinundhergestellt.jhuh.util.ifDirty
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductClient
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductGroup
@@ -33,18 +34,14 @@ class ArtooDataStore(
     fun findCategoriesByProduct(product: ArtooMappedProduct) =
         rootCategories.asSequence().flatMap { it.findCategoriesByProduct(product) }
 
-    suspend fun rename(product: ArtooMappedProduct) {
+    suspend fun update(product: ArtooMappedProduct) {
         when (product) {
-            is ArtooMappedProduct.Single -> {
-                productClient.update(product.product)
-            }
+            is ArtooMappedProduct.Single ->
+                product.product.ifDirty { productClient.update(it) }
 
             is ArtooMappedProduct.Group -> {
-                if (product.group.getDirtyAndReset())
-                    productGroupClient.update(product.group)
-                product.variations.forEach {
-                    productClient.update(it.product)
-                }
+                product.group.ifDirty { productGroupClient.update(it) }
+                product.variations.forEach { variation -> variation.product.ifDirty { productClient.update(it) } }
             }
         }
     }

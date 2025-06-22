@@ -131,12 +131,12 @@ class ProductManagerService(
         }
     }
 
-    suspend fun rename(product: ArtooMappedProduct) {
-        artooDataStore.rename(product)
-    }
-
     fun refresh() {
         artooDataStore.refresh()
+    }
+
+    suspend fun update(product: ArtooMappedProduct) {
+        artooDataStore.update(product)
     }
 
     private fun checkSyncProblems(product: ArtooMappedProduct, syncProduct: SyncProduct?) = buildList {

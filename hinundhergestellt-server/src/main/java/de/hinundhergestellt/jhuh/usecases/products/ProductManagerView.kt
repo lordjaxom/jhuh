@@ -6,7 +6,6 @@ import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.checkbox.Checkbox
 import com.vaadin.flow.component.grid.GridVariant
 import com.vaadin.flow.component.html.Div
-import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.notification.Notification
@@ -170,7 +169,7 @@ class ProductManagerView(
         if (renameProductDialog(product.value)) {
             progressOverlay.isVisible = true
             try {
-                withContext(applicationScope.coroutineContext) { service.rename(product.value) }
+                withContext(applicationScope.coroutineContext) { service.update(product.value) }
             } catch (e: Throwable) {
                 showErrorNotification(e)
             } finally {
