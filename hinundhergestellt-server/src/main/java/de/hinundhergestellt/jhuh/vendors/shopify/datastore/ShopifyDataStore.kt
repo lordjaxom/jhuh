@@ -10,10 +10,14 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductOption
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVariant
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.toCollection
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.util.UUID
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 @Service
 class ShopifyDataStore(
@@ -22,17 +26,23 @@ class ShopifyDataStore(
     applicationCoroutineScope: CoroutineScope,
     @Value("\${shopify.read-only}") private val readOnly: Boolean
 ) {
-    private val productsAsync = deferredWithRefresh(applicationCoroutineScope) { productClient.findAll().toCollection(mutableListOf()) }
-    val products by productsAsync
+    private val productsDeferred = deferredWithRefresh(applicationCoroutineScope) { fetchProducts() }
+    val products by productsDeferred
+
+    private val lock = ReentrantLock()
 
     fun findProductById(id: String) =
         products.find { it.id == id }
 
-    fun refresh() {
-        productsAsync.refresh()
+    fun withLockAndRefresh(block: () -> Unit) {
+        lock.withLock {
+            runBlocking { productsDeferred.refreshAndAwait() }
+            block()
+        }
     }
 
     suspend fun create(product: UnsavedShopifyProduct): ShopifyProduct {
+        requireLock()
         val created =
             if (!readOnly) productClient.create(product)
             else product.toDryRunShopifyProduct()
@@ -41,12 +51,14 @@ class ShopifyDataStore(
     }
 
     suspend fun update(product: ShopifyProduct) {
+        requireLock()
         if (!readOnly) {
             productClient.update(product)
         }
     }
 
     suspend fun delete(product: ShopifyProduct) {
+        requireLock()
         if (!readOnly) {
             productClient.delete(product)
         }
@@ -54,6 +66,7 @@ class ShopifyDataStore(
     }
 
     suspend fun create(product: ShopifyProduct, variants: List<UnsavedShopifyProductVariant>) {
+        requireLock()
         val created =
             if (!readOnly) variantClient.create(product, variants)
             else variants.map { it.toDryRunShopifyProductVariant() }
@@ -61,17 +74,23 @@ class ShopifyDataStore(
     }
 
     suspend fun update(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
+        requireLock()
         if (!readOnly) {
             variantClient.update(product, variants)
         }
     }
 
     suspend fun delete(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
+        requireLock()
         if (!readOnly) {
             variantClient.delete(product, variants)
         }
         product.variants.removeAll(variants)
     }
+
+    private suspend fun fetchProducts() = CopyOnWriteArrayList(productClient.findAll().toList())
+
+    private fun requireLock() = require(lock.isLocked) { "Write operations require a lock" }
 }
 
 val ShopifyProduct.isDryRun get() = id.startsWith("uid://")

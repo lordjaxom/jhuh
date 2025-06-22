@@ -116,13 +116,15 @@ class ProductManagerService(
     @Transactional
     fun synchronize() {
         try {
-            shopifyDataStore.products.forEach { reconcileFromShopify(it) }
-            // TODO: Using rootCategories might save a lot of duplicate database loads and conditions (like description.ifEmpty { name })
-            artooDataStore.findAllProducts().forEach { reconcileFromArtoo(it) }
-            artooDataStore.rootCategories.forEach { reconcileCategories(it) }
+            shopifyDataStore.withLockAndRefresh {
+                shopifyDataStore.products.forEach { reconcileFromShopify(it) }
+                // TODO: Using rootCategories might save a lot of duplicate database loads and conditions (like description.ifEmpty { name })
+                artooDataStore.findAllProducts().forEach { reconcileFromArtoo(it) }
+                artooDataStore.rootCategories.forEach { reconcileCategories(it) }
 
-            // TODO: Potentially deactivate products in Shopify when synced=false
-            syncProductRepository.findAllBySyncedIsTrue().forEach { synchronizeWithShopify(it) }
+                // TODO: Potentially deactivate products in Shopify when synced=false
+                syncProductRepository.findAllBySyncedIsTrue().forEach { synchronizeWithShopify(it) }
+            }
         } catch (e: Exception) {
             logger.error(e) { "Synchronization failed" }
             throw e
@@ -135,7 +137,6 @@ class ProductManagerService(
 
     fun refresh() {
         artooDataStore.refresh()
-        shopifyDataStore.refresh()
     }
 
     private fun checkSyncProblems(product: ArtooMappedProduct, syncProduct: SyncProduct?) = buildList {

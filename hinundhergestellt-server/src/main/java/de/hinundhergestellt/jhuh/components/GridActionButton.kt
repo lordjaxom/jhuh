@@ -28,9 +28,11 @@ class MoreGridActionButton : GridActionButton(VaadinIcon.ELLIPSIS_DOTS_H) {
         contextMenu.isOpenOnClick = true
     }
 
-    fun addItem(text: String, action: () -> Unit): Unit =
-        run { contextMenu.addItem(text) { action() } }
+    fun addItem(text: String, action: () -> Unit) {
+        contextMenu.addItem(text) { action() }
+    }
 
-    fun addDivider(): Unit =
-        run { contextMenu.addItem(Hr()) }
+    fun addDivider() {
+        contextMenu.add(Hr())
+    }
 }
