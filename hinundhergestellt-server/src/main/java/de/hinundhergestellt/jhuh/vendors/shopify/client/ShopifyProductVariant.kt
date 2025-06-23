@@ -63,7 +63,7 @@ class ShopifyProductVariant : UnsavedShopifyProductVariant {
     }
 
     override fun toString() =
-        "ShopifyProductVariant(id='$id', sku='$sku', barcode='$barcode')"
+        "ShopifyProductVariant(id='$id', sku='$sku', barcode='$barcode', title='$title')"
 
     override fun toProductVariantsBulkInput() =
         ProductVariantsBulkInput(

@@ -7,6 +7,7 @@ import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductCreateInpu
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductDeleteInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductStatus
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductUpdateInput
+import java.util.concurrent.CopyOnWriteArrayList
 
 open class UnsavedShopifyProduct(
     var title: String,
@@ -42,26 +43,25 @@ class ShopifyProduct : UnsavedShopifyProduct {
     override val options: MutableList<ShopifyProductOption>
     override val metafields: MutableList<ShopifyMetafield>
 
-    internal constructor(product: Product) : super(
+    internal constructor(product: Product, variants: List<ShopifyProductVariant>) : super(
         product.title,
         product.vendor,
         product.productType,
         product.status,
         product.tags.toSet()
     ) {
-        require(!product.variants.pageInfo.hasNextPage) { "Product has more variants than were loaded" }
         require(!product.metafields.pageInfo.hasNextPage) { "Product has more metafields than were loaded" }
         require(!product.media.pageInfo.hasNextPage) { "Product has more medias than were loaded" }
 
         id = product.id
-        variants = product.variants.edges.asSequence().map { ShopifyProductVariant(it.node) }.toMutableList()
+        this.variants = CopyOnWriteArrayList(variants)
         hasOnlyDefaultVariant = product.hasOnlyDefaultVariant
         images = product.media.edges.map { ShopifyImage(it.node as MediaImage) }
-        options = product.options.asSequence().map { ShopifyProductOption(it) }.toMutableList()
-        metafields = product.metafields.edges.asSequence().map { ShopifyMetafield(it.node) }.toRemoveProtectedMutableList()
+        options = CopyOnWriteArrayList(product.options.map { ShopifyProductOption(it) })
+        metafields = product.metafields.edges.asSequence().map { ShopifyMetafield(it.node) }.toRemoveProtectedMutableList() // TODO
     }
 
-    internal constructor(unsaved: UnsavedShopifyProduct, id: String, options: MutableList<ShopifyProductOption>) : super(
+    internal constructor(unsaved: UnsavedShopifyProduct, id: String, options: List<ShopifyProductOption>) : super(
         unsaved.title,
         unsaved.vendor,
         unsaved.productType,
@@ -69,10 +69,10 @@ class ShopifyProduct : UnsavedShopifyProduct {
         unsaved.tags
     ) {
         this.id = id
-        variants = mutableListOf()
+        variants = CopyOnWriteArrayList()
         hasOnlyDefaultVariant = options.isEmpty()
         images = listOf()
-        this.options = options
+        this.options = CopyOnWriteArrayList(options)
         this.metafields = unsaved.metafields.toRemoveProtectedMutableList()
     }
 
