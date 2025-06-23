@@ -20,6 +20,7 @@ import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery
 import com.vaadin.flow.dom.Style
 import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
+import de.hinundhergestellt.jhuh.components.Article
 import de.hinundhergestellt.jhuh.components.GridActionButton
 import de.hinundhergestellt.jhuh.components.MoreGridActionButton
 import de.hinundhergestellt.jhuh.components.actionsColumn
@@ -34,6 +35,7 @@ import de.hinundhergestellt.jhuh.components.textColumn
 import de.hinundhergestellt.jhuh.components.textField
 import de.hinundhergestellt.jhuh.components.treeGrid
 import de.hinundhergestellt.jhuh.components.vaadinScope
+import de.hinundhergestellt.jhuh.usecases.labels.LabelGeneratorService
 import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.CategoryItem
 import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.ProductItem
 import de.hinundhergestellt.jhuh.usecases.products.SyncProblem.Error
@@ -47,6 +49,7 @@ import kotlin.streams.asStream
 @PageTitle("Produktverwaltung")
 class ProductManagerView(
     private val service: ProductManagerService,
+    private val labelService: LabelGeneratorService,
     private val applicationScope: CoroutineScope
 ) : VerticalLayout() {
 
@@ -179,6 +182,10 @@ class ProductManagerView(
         }
     }
 
+    private fun createLabelsForVariations(product: ProductItem) {
+        product.value.variations.forEach { labelService.createLabel(Article(product.value, it), 1) }
+    }
+
     private fun syncableItemStatus(item: SyncableItem): Icon =
         if (item !is ProductItem) Icon()
         else {
@@ -210,7 +217,7 @@ class ProductManagerView(
                     addItem("Umbenennen") { renameProduct(item) }
                     addDivider()
                     addItem("Etikett für Produkt") {}
-                    addItem("Etiketten für Varianten") {}
+                    addItem("Etiketten für Varianten") { createLabelsForVariations(item) }
                 }
                 isEnabled = item is ProductItem
             })

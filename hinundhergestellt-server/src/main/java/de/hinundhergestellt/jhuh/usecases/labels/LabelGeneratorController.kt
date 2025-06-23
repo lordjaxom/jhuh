@@ -4,6 +4,7 @@ import de.hinundhergestellt.jhuh.components.Article
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
 import jakarta.servlet.http.HttpServletResponse
 import org.krysalis.barcode4j.impl.upcean.EAN13Bean
+import org.krysalis.barcode4j.impl.upcean.UPCEANLogicImpl.calcChecksum
 import org.krysalis.barcode4j.output.bitmap.BitmapCanvasProvider
 import org.krysalis.barcode4j.tools.MimeTypes
 import org.springframework.http.MediaType
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.servlet.ModelAndView
 import java.awt.image.BufferedImage
+import kotlin.random.Random
 
 @RestController
 @RequestMapping("api/labels")
@@ -35,6 +37,13 @@ class LabelGeneratorController(
             generator.generateBarcode(canvas, barcode)
             canvas.finish()
         }
+    }
+
+    @GetMapping("barcode/generate", produces = [MediaType.TEXT_PLAIN_VALUE])
+    fun generateBarcode(): String {
+        val generated = "${Random.nextLong(200_000_000_000, 299_999_999_999)}"
+        val checksum = calcChecksum(generated)
+        return generated + checksum
     }
 
     @GetMapping("prices", produces = [MediaType.TEXT_HTML_VALUE])

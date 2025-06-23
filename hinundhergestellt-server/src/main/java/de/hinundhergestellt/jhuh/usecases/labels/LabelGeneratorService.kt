@@ -28,11 +28,11 @@ sealed interface Label {
     val variant: String
     val barcode: String?
     val price: String
-    val count: Int
+    var count: Int
 }
 
 class EmptyLabel(
-    override val count: Int
+    override var count: Int
 ): Label {
     override val vendor = ""
     override val name = ""
@@ -44,7 +44,7 @@ class EmptyLabel(
 class ArticleLabel(
     article: Article,
     syncProduct: SyncProduct?,
-    override val count: Int
+    override var count: Int
 ) : Label {
     override val vendor = syncProduct?.vendor?.name ?: ""
     override val name by article.product::name

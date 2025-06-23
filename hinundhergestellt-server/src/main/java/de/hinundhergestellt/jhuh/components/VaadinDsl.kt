@@ -14,6 +14,7 @@ import com.vaadin.flow.component.html.Div
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
+import com.vaadin.flow.component.textfield.IntegerField
 import com.vaadin.flow.component.textfield.TextArea
 import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.component.treegrid.TreeGrid
@@ -54,6 +55,11 @@ inline fun <T> HasComponents.grid(block: Grid<T>.() -> Unit = {}): Grid<T> {
 inline fun HasComponents.horizontalLayout(block: HorizontalLayout.() -> Unit = {}): HorizontalLayout {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     return init(HorizontalLayout(), block)
+}
+
+inline fun HasComponents.integerField(label: String? = null, block: IntegerField.() -> Unit = {}): IntegerField {
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    return init(IntegerField(label), block)
 }
 
 inline fun HasComponents.textArea(label: String? = null, block: TextArea.() -> Unit = {}): TextArea {
