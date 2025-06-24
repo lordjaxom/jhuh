@@ -1,6 +1,6 @@
 CREATE TABLE sync_vendor
 (
-    id      BINARY(16)   NOT NULL,
+    id      UUID         NOT NULL,
     name    VARCHAR(255) NOT NULL,
     address VARCHAR(255) NULL,
     email   VARCHAR(255) NULL,

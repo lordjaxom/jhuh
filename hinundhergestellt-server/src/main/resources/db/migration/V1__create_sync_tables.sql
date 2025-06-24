@@ -1,19 +1,19 @@
 CREATE TABLE sync_category
 (
-    id       BINARY(16) NOT NULL,
-    artoo_id INT        NOT NULL,
+    id       UUID NOT NULL,
+    artoo_id INT  NOT NULL,
     CONSTRAINT pk_synccategory PRIMARY KEY (id)
 );
 
 CREATE TABLE sync_category_tags
 (
-    sync_category_id BINARY(16)   NOT NULL,
+    sync_category_id UUID         NOT NULL,
     tags             VARCHAR(255) NULL
 );
 
 CREATE TABLE sync_product
 (
-    id         BINARY(16)   NOT NULL,
+    id         UUID         NOT NULL,
     artoo_id   INT          NULL,
     shopify_id VARCHAR(255) NULL,
     vendor     VARCHAR(255) NULL,
@@ -24,20 +24,20 @@ CREATE TABLE sync_product
 
 CREATE TABLE sync_product_tags
 (
-    sync_product_id BINARY(16)   NOT NULL,
+    sync_product_id UUID         NOT NULL,
     tags            VARCHAR(255) NULL
 );
 
 CREATE TABLE sync_product_variants
 (
-    sync_product_id BINARY(16) NOT NULL,
-    variants_id     BINARY(16) NOT NULL
+    sync_product_id UUID NOT NULL,
+    variants_id     UUID NOT NULL
 );
 
 CREATE TABLE sync_variant
 (
-    id         BINARY(16)   NOT NULL,
-    product_id BINARY(16)   NOT NULL,
+    id         UUID         NOT NULL,
+    product_id UUID         NOT NULL,
     barcode    VARCHAR(255) NOT NULL,
     CONSTRAINT pk_syncvariant PRIMARY KEY (id)
 );
