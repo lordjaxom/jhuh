@@ -88,7 +88,7 @@ class ShopifyDataStore(
         product.variants.removeAll(variants)
     }
 
-    private suspend fun fetchProducts() = CopyOnWriteArrayList(productClient.findAll().toList())
+    private suspend fun fetchProducts() = CopyOnWriteArrayList(productClient.fetchAll().toList())
 
     private fun requireLock() = require(lock.isLocked) { "Write operations require a lock" }
 }

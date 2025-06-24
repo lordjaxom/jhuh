@@ -1,5 +1,7 @@
 package de.hinundhergestellt.jhuh.util
 
+import java.util.concurrent.CopyOnWriteArrayList
+
 class RemoveProtectedMutableList<E>(
     private val list: MutableList<E>,
 ) : AbstractMutableList<E>() {
@@ -14,5 +16,4 @@ class RemoveProtectedMutableList<E>(
     }
 }
 
-fun <E> Sequence<E>.toRemoveProtectedMutableList() = RemoveProtectedMutableList(toMutableList())
-fun <E> List<E>.toRemoveProtectedMutableList() = RemoveProtectedMutableList(toMutableList())
+fun <E> CopyOnWriteArrayList<E>.asRemoveProtectedMutableList() = RemoveProtectedMutableList(this)

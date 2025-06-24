@@ -48,7 +48,7 @@ class ShopifyProductVariant : UnsavedShopifyProductVariant {
 
         id = variant.id
         title = variant.title
-        mediaId = variant.media.edges.asSequence().map { it.node.id }.firstOrNull()
+        mediaId = variant.media.edges.firstOrNull()?.node?.id
     }
 
     internal constructor(unsaved: UnsavedShopifyProductVariant, id: String, title: String) : super(

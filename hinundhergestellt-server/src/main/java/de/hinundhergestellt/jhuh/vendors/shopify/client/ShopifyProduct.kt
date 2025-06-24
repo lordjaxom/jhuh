@@ -1,7 +1,6 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
-import de.hinundhergestellt.jhuh.util.toRemoveProtectedMutableList
-import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.MediaImage
+import de.hinundhergestellt.jhuh.util.asRemoveProtectedMutableList
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.Product
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductCreateInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductDeleteInput
@@ -38,12 +37,12 @@ class ShopifyProduct : UnsavedShopifyProduct {
     val id: String
     val variants: MutableList<ShopifyProductVariant>
     val hasOnlyDefaultVariant: Boolean
-    val images: List<ShopifyImage>
+    val media: List<ShopifyMedia>
 
     override val options: MutableList<ShopifyProductOption>
     override val metafields: MutableList<ShopifyMetafield>
 
-    internal constructor(product: Product, variants: List<ShopifyProductVariant>) : super(
+    internal constructor(product: Product, variants: List<ShopifyProductVariant>, media: List<ShopifyMedia>) : super(
         product.title,
         product.vendor,
         product.productType,
@@ -56,9 +55,9 @@ class ShopifyProduct : UnsavedShopifyProduct {
         id = product.id
         this.variants = CopyOnWriteArrayList(variants)
         hasOnlyDefaultVariant = product.hasOnlyDefaultVariant
-        images = product.media.edges.map { ShopifyImage(it.node as MediaImage) }
+        this.media = CopyOnWriteArrayList(media)
         options = CopyOnWriteArrayList(product.options.map { ShopifyProductOption(it) })
-        metafields = product.metafields.edges.asSequence().map { ShopifyMetafield(it.node) }.toRemoveProtectedMutableList() // TODO
+        metafields = CopyOnWriteArrayList(product.metafields.edges.map { ShopifyMetafield(it.node) }).asRemoveProtectedMutableList()
     }
 
     internal constructor(unsaved: UnsavedShopifyProduct, id: String, options: List<ShopifyProductOption>) : super(
@@ -71,9 +70,9 @@ class ShopifyProduct : UnsavedShopifyProduct {
         this.id = id
         variants = CopyOnWriteArrayList()
         hasOnlyDefaultVariant = options.isEmpty()
-        images = listOf()
+        media = listOf()
         this.options = CopyOnWriteArrayList(options)
-        this.metafields = unsaved.metafields.toRemoveProtectedMutableList()
+        this.metafields = CopyOnWriteArrayList(unsaved.metafields).asRemoveProtectedMutableList()
     }
 
     fun findVariantByBarcode(barcode: String) =

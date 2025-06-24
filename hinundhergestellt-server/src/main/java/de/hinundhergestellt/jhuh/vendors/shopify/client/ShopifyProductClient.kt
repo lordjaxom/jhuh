@@ -5,6 +5,8 @@ package de.hinundhergestellt.jhuh.vendors.shopify.client
 import com.netflix.graphql.dgs.client.WebClientGraphQLClient
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.DgsClient.buildMutation
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.DgsClient.buildQuery
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.client.ProductProjection
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.MediaEdge
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.PageInfo
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.Product
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductConnection
@@ -25,7 +27,7 @@ import org.springframework.stereotype.Component
 class ShopifyProductClient(
     private val shopifyGraphQLClient: WebClientGraphQLClient
 ) {
-    fun findAll() = pageAll { findNextPage(it) }.map { it.toShopifyProduct() }
+    fun fetchAll() = pageAll { fetchNextPage(it) }.map { it.toShopifyProduct() }
 
     suspend fun create(product: UnsavedShopifyProduct): ShopifyProduct {
         val request = buildMutation {
@@ -66,28 +68,13 @@ class ShopifyProductClient(
         shopifyGraphQLClient.executeMutation(request, ProductDeletePayload::userErrors)
     }
 
-    private suspend fun findNextPage(after: String?): Pair<List<ProductEdge>, PageInfo> {
+    private suspend fun fetchNextPage(after: String?): Pair<List<ProductEdge>, PageInfo> {
         val request = buildQuery {
             products(first = 50, after = after) {
                 edges {
                     node {
                         handle; id; title; vendor; productType; status; tags; hasOnlyDefaultVariant
-                        variants(first = 100) {
-                            edges {
-                                node {
-                                    id; title; price; sku; barcode
-                                    selectedOptions { name; value }
-                                    media(first = 2) {
-                                        edges {
-                                            node {
-                                                onMediaImage { id }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            pageInfo { hasNextPage; endCursor }
-                        }
+                        variants()
                         options { id; name; values }
                         metafields(first = 50) {
                             edges {
@@ -95,17 +82,7 @@ class ShopifyProductClient(
                             }
                             pageInfo { hasNextPage }
                         }
-                        media(first = 100) {
-                            edges {
-                                node {
-                                    onMediaImage {
-                                        id
-                                        image { id; src }
-                                    }
-                                }
-                            }
-                            pageInfo { hasNextPage }
-                        }
+                        media()
                     }
                 }
                 pageInfo { hasNextPage; endCursor }
@@ -116,38 +93,61 @@ class ShopifyProductClient(
         return Pair(payload.edges, payload.pageInfo)
     }
 
-    private suspend fun findNextVariants(productId: String, after: String?): Pair<List<ProductVariantEdge>, PageInfo> {
-        val request = buildQuery {
-            product(id = productId) {
-                variants(first = 100, after = after) {
-                    edges {
-                        node {
-                            id; title; price; sku; barcode
-                            selectedOptions { name; value }
-                            media(first = 2) {
-                                edges {
-                                    node {
-                                        onMediaImage { id }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    pageInfo { hasNextPage; endCursor }
-                }
-            }
-        }
-
+    private suspend fun fetchNextVariants(productId: String, after: String?): Pair<List<ProductVariantEdge>, PageInfo> {
+        val request = buildQuery { product(id = productId) { variants(after) } }
         val payload = shopifyGraphQLClient.executeQuery<Product>(request)
         return Pair(payload.variants.edges, payload.variants.pageInfo)
     }
 
-    private suspend fun ProductEdge.toShopifyProduct() = ShopifyProduct(node, node.toShopifyProductVariants())
+    private suspend fun fetchNextMedia(productId: String, after: String?): Pair<List<MediaEdge>, PageInfo> {
+        val request = buildQuery { product(id = productId) { media(after) } }
+        val payload = shopifyGraphQLClient.executeQuery<Product>(request)
+        return Pair(payload.media.edges, payload.media.pageInfo)
+    }
+
+    private fun ProductProjection.variants(after: String? = null) =
+        variants(first = 100, after = after) {
+            edges {
+                node {
+                    id; title; price; sku; barcode
+                    selectedOptions { name; value }
+                    media(first = 2) {
+                        edges {
+                            node {
+                                onMediaImage { id }
+                            }
+                        }
+                    }
+                }
+            }
+            pageInfo { hasNextPage; endCursor }
+        }
+
+    private fun ProductProjection.media(after: String? = null) =
+        media(first = 100, after = after) {
+            edges {
+                node {
+                    onMediaImage {
+                        id
+                        image { id; src }
+                    }
+                }
+            }
+            pageInfo { hasNextPage; endCursor }
+        }
+
+    private suspend fun ProductEdge.toShopifyProduct() = ShopifyProduct(node, node.toShopifyProductVariants(), node.toShopifyMedia())
 
     private suspend fun Product.toShopifyProductVariants() =
-        flowOf(variants.edges.asFlow(), pageAll(variants.pageInfo) { findNextVariants(id, it) })
+        flowOf(variants.edges.asFlow(), pageAll(variants.pageInfo) { fetchNextVariants(id, it) })
             .flattenConcat()
             .map { ShopifyProductVariant(it.node) }
+            .toList()
+
+    private suspend fun Product.toShopifyMedia() =
+        flowOf(media.edges.asFlow(), pageAll(media.pageInfo) { fetchNextMedia(id, it) })
+            .flattenConcat()
+            .map { ShopifyMedia(it.node) }
             .toList()
 }
 

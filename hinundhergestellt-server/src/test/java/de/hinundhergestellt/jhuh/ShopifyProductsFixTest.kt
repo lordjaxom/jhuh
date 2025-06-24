@@ -38,22 +38,22 @@ class ShopifyProductsFixTest {
 
     @Test
     fun findAllProducts(): Unit = runBlocking{
-        productClient.findAll().toList()
+        productClient.fetchAll().toList()
     }
 
     @Test
     @Disabled("Has run successfully")
     fun associateMedia(): Unit = runBlocking {
-        val product = productClient.findAll().first { it.title.startsWith("craftcut® glänzend") }
+        val product = productClient.fetchAll().first { it.title.startsWith("craftcut® glänzend") }
         val changedVariants = product.variants.asSequence()
             .filter { it.options.isNotEmpty() && it.mediaId == null }
             .map {
-                it to product.images.filter { image ->
+                it to product.media.filter { image ->
                     image.src.contains("""\b${Regex.fromLiteral(it.sku)}\b""".toRegex(RegexOption.IGNORE_CASE))
                 }
             }
             .filter { (_, images) -> images.size == 1 }
-            .onEach { (variant, images) -> variant.mediaId = images[0].mediaId }
+            .onEach { (variant, images) -> variant.mediaId = images[0].id }
             .map { (variant, _) -> variant }
             .toList()
         variantClient.update(product, changedVariants)
