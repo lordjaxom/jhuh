@@ -1,6 +1,23 @@
 spring:
   application:
     name: jHuH
+  ai:
+    chat:
+      memory:
+        repository:
+          jdbc:
+            initialize-schema: always
+    openai:
+      api-key: ${OPENAI_APIKEY}
+    vectorstore:
+      mariadb:
+        table-name: vector_store
+        #dimensions: 768
+        initialize-schema: true
+
+google:
+  apikey: ${GOOGLE_APIKEY}
+  cx: ${GOOGLE_CX}
 
 ready2order:
   apikey: ${READY2ORDER_APIKEY}

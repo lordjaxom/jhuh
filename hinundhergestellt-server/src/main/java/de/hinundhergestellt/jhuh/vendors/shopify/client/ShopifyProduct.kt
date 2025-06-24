@@ -15,7 +15,8 @@ open class UnsavedShopifyProduct(
     var status: ProductStatus,
     var tags: Set<String>,
     open val options: List<UnsavedShopifyProductOption> = listOf(),
-    open val metafields: List<ShopifyMetafield> = listOf()
+    open val metafields: MutableList<ShopifyMetafield> = mutableListOf(),
+    var descriptionHtml: String = ""
 ) {
     override fun toString() =
         "UnsavedShopifyProduct(title='$title', vendor='$vendor', productType='$productType', status=$status)"
@@ -28,7 +29,8 @@ open class UnsavedShopifyProduct(
             status = status,
             tags = tags.toList(),
             productOptions = options.map { option -> option.toOptionCreateInput() },
-            metafields = metafields.map { metafield -> metafield.toMetafieldInput() }
+            metafields = metafields.map { metafield -> metafield.toMetafieldInput() },
+            descriptionHtml = descriptionHtml
         )
 }
 
@@ -47,7 +49,8 @@ class ShopifyProduct : UnsavedShopifyProduct {
         product.vendor,
         product.productType,
         product.status,
-        product.tags.toSet()
+        product.tags.toSet(),
+        descriptionHtml = product.descriptionHtml
     ) {
         require(!product.metafields.pageInfo.hasNextPage) { "Product has more metafields than were loaded" }
         require(!product.media.pageInfo.hasNextPage) { "Product has more medias than were loaded" }
@@ -65,7 +68,8 @@ class ShopifyProduct : UnsavedShopifyProduct {
         unsaved.vendor,
         unsaved.productType,
         unsaved.status,
-        unsaved.tags
+        unsaved.tags,
+        descriptionHtml = unsaved.descriptionHtml
     ) {
         this.id = id
         variants = CopyOnWriteArrayList()

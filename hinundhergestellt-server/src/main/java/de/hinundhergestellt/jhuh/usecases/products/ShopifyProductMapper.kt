@@ -1,5 +1,6 @@
 package de.hinundhergestellt.jhuh.usecases.products
 
+import de.hinundhergestellt.jhuh.backend.shoptexter.ShopTexterService
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategoryRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
@@ -12,6 +13,7 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductOpt
 import de.hinundhergestellt.jhuh.vendors.shopify.client.containsId
 import de.hinundhergestellt.jhuh.vendors.shopify.client.findById
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductStatus
+import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Component
 import kotlin.streams.asSequence
 
@@ -21,10 +23,14 @@ private val INVALID_TAG_CHARACTERS = """[^A-ZÄÖÜa-zäöüß0-9\\._ -]""".toRe
 @Component
 class ShopifyProductMapper(
     private val artooDataStore: ArtooDataStore,
-    private val syncCategoryRepository: SyncCategoryRepository
+    private val syncCategoryRepository: SyncCategoryRepository,
+    private val shopTexterService: ShopTexterService
 ) {
-    fun mapToProduct(syncProduct: SyncProduct, artooMappedProduct: ArtooMappedProduct) =
-        Builder(syncProduct, artooMappedProduct).build()
+    fun mapToProduct(syncProduct: SyncProduct, artooMappedProduct: ArtooMappedProduct): UnsavedShopifyProduct {
+        val product = Builder(syncProduct, artooMappedProduct).build()
+//        runBlocking { shopTexterService.generate(product) }
+        return product
+    }
 
     fun updateProduct(syncProduct: SyncProduct, artooMappedProduct: ArtooMappedProduct, shopifyProduct: ShopifyProduct) =
         Updater(syncProduct, artooMappedProduct, shopifyProduct).update()
@@ -41,7 +47,7 @@ class ShopifyProductMapper(
                 ProductStatus.DRAFT,
                 allTags(),
                 productOptions(),
-                productMetafields()
+                productMetafields(),
             )
 
         protected fun allTags(): Set<String> {
@@ -56,7 +62,7 @@ class ShopifyProductMapper(
         }
 
         protected fun productMetafields() =
-            listOf(
+            mutableListOf(
                 metafield("vendor_address", syncProduct.vendor!!.address!!, ShopifyMetafieldType.MULTI_LINE_TEXT_FIELD),
                 metafield("vendor_email", syncProduct.vendor!!.email!!, ShopifyMetafieldType.SINGLE_LINE_TEXT_FIELD),
             )

@@ -73,7 +73,7 @@ class ShopifyProductClient(
             products(first = 50, after = after) {
                 edges {
                     node {
-                        handle; id; title; vendor; productType; status; tags; hasOnlyDefaultVariant
+                        handle; id; title; vendor; productType; status; tags; hasOnlyDefaultVariant; descriptionHtml
                         variants()
                         options { id; name; values }
                         metafields(first = 50) {
