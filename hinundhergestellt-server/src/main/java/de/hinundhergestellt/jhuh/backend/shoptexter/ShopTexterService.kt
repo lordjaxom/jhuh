@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import de.hinundhergestellt.jhuh.backend.shoptexter.model.ShopifyProductForAiMixin
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProductRepository
 import de.hinundhergestellt.jhuh.backend.vectorstore.findById
+import de.hinundhergestellt.jhuh.util.loadTextResource
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafield
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafieldType
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
@@ -19,20 +20,7 @@ import org.springframework.ai.converter.BeanOutputConverter
 import org.springframework.ai.document.Document
 import org.springframework.ai.vectorstore.SearchRequest
 import org.springframework.ai.vectorstore.VectorStore
-import org.springframework.context.annotation.DependsOn
 import org.springframework.stereotype.Service
-
-private val examplesPromptTemplate = PromptTemplate(
-    """
-    {query}
-    
-    Der Schreibstil soll sich an den Beschreibungen folgender Beispiele orientieren. Die Beispiele sind mit --------------------- umschlossen.
-    
-    ---------------------
-    {question_answer_context}
-    ---------------------
-    """.trimIndent()
-)
 
 private val logger = KotlinLogging.logger { }
 
@@ -48,19 +36,21 @@ class ShopTexterService(
 
     private val outputConverter = BeanOutputConverter(ShopTexterResponse::class.java)
 
+    private val examplesPromptTemplate = PromptTemplate(loadTextResource { "examples-prompt.txt" })
+
     init {
         val newOrChangedDocuments = shopifyDataStore.products.asSequence()
             .mapNotNull { syncProductRepository.findByShopifyId(it.id)?.run { id to it } }
-            .map { (id, product) -> Triple(id, product, objectMapper.writeValueAsString(product)) }
-            .filter { (id, product, newText) -> vectorStore.findById(id)?.run { text != newText } ?: true }
-            .map { (id, product, text) -> Document(id.toString(), text, mapOf<String, Any>()) }
+            .map { (id, product) -> id to objectMapper.writeValueAsString(product) }
+            .filter { (id, text) -> vectorStore.findById(id)?.let { it.text != text } ?: true }
+            .map { (id, text) -> Document(id.toString(), text, mapOf<String, Any>()) }
             .toList()
         logger.info { "Adding or updating ${newOrChangedDocuments.size} products in vector store" }
         vectorStore.add(newOrChangedDocuments)
     }
 
-    suspend fun generate(product: UnsavedShopifyProduct) {
-        logger.info { "Generating product description for ${product.title}" }
+    suspend fun generate(product: UnsavedShopifyProduct): ShopTexterResponse {
+        logger.info { "Generating product description for $product" }
 
         val content = shopTexterChatClient.prompt()
             .user {
@@ -86,21 +76,13 @@ class ShopTexterService(
             .collectList()
             .awaitSingle()
             .joinToString("")
-        val response = outputConverter.convert(content)
+        val response = outputConverter.convert(content)!!
 
-        logger.info { "Generated product description: ${response!!.description}" }
-        logger.info { "Generated techical details: ${response!!.technicalDetails}" }
-        logger.info { "Consulted web sited: ${response!!.consultedUrls}" }
+        logger.debug { "Generated product description: ${response.description}" }
+        logger.debug { "Generated techical details: ${response.technicalDetails}" }
+        logger.debug { "Consulted web sites: ${response.consultedUrls}" }
 
-        product.descriptionHtml = response!!.description
-        product.metafields.add(
-            ShopifyMetafield(
-                "hinundhergestellt",
-                "product_specs",
-                response.technicalDetails,
-                ShopifyMetafieldType.MULTI_LINE_TEXT_FIELD
-            )
-        )
+        return response
     }
 }
 

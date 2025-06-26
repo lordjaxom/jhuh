@@ -116,6 +116,8 @@ class ProductManagerService(
     @Transactional
     fun synchronize() {
         try {
+            logger.info { "Reloading all Shopify products prior to synchronization" }
+
             shopifyDataStore.withLockAndRefresh {
                 shopifyDataStore.products.forEach { reconcileFromShopify(it) }
                 // TODO: Using rootCategories might save a lot of duplicate database loads and conditions (like description.ifEmpty { name })

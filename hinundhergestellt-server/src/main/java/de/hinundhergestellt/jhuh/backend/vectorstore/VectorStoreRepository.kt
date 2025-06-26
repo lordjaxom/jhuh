@@ -13,9 +13,9 @@ import java.util.UUID
 class MariaDBVectorStoreRepository(
     private val properties: MariaDbStoreProperties
 ) {
+    private val fullyQualifiedTableName = sequenceOf(properties.schemaName, properties.tableName).filterNotNull().joinToString(".")
     private val idFieldName: String by properties::idFieldName
     private val contentFieldname: String by properties::contentFieldName
-    private val fullyQualifiedTableName = sequenceOf(properties.schemaName, properties.tableName).filterNotNull().joinToString(".")
 
     init {
         repository = this

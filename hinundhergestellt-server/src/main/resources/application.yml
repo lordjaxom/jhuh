@@ -12,7 +12,6 @@ spring:
     vectorstore:
       mariadb:
         table-name: vector_store
-        #dimensions: 768
         initialize-schema: true
 
 google:
