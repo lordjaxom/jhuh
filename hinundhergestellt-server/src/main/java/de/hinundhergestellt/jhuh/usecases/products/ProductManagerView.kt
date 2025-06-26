@@ -182,6 +182,17 @@ class ProductManagerView(
         }
     }
 
+    private fun generateNewBarcodes(product: ProductItem) = vaadinScope.launch {
+        progressOverlay.isVisible = true
+        try {
+            withContext(applicationScope.coroutineContext) { service.generateNewBarcodes(product) }
+        } catch (e: Throwable) {
+            showErrorNotification(e)
+        } finally {
+            progressOverlay.isVisible = false
+        }
+    }
+
     private fun createLabelsForVariations(product: ProductItem) {
         product.value.variations.forEach { labelService.createLabel(Article(product.value, it), 1) }
     }
@@ -215,6 +226,8 @@ class ProductManagerView(
             add(MoreGridActionButton().apply {
                 if (item is ProductItem) {
                     addItem("Umbenennen") { renameProduct(item) }
+                    addDivider()
+                    addItem("Barcodes neu generieren") { generateNewBarcodes(item) }
                     addDivider()
                     addItem("Etikett für Produkt") {}
                     addItem("Etiketten für Varianten") { createLabelsForVariations(item) }

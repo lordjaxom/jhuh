@@ -5,8 +5,6 @@ import de.hinundhergestellt.jhuh.backend.shoptexter.model.ShopifyProductForAiMix
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProductRepository
 import de.hinundhergestellt.jhuh.backend.vectorstore.findById
 import de.hinundhergestellt.jhuh.util.loadTextResource
-import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafield
-import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafieldType
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore

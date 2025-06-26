@@ -16,7 +16,7 @@ class SyncVariant(
     val product: SyncProduct,
 
     @Column(nullable = false, unique = true)
-    val barcode: String,
+    var barcode: String,
 
     @Id
     val id: UUID = UUID.randomUUID(),

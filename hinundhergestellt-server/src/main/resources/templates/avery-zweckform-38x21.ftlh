@@ -2,7 +2,8 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Etiketten DIN A4</title>
+    <title>Etiketten</title>
+    <link rel="stylesheet" href="/fonts/saira-condensed-v11-latin-regular.css">
     <style>
         @page {
             size: A4;
@@ -22,7 +23,7 @@
             padding: 0;
             display: block;
             background: lightgray;
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: 'Saira Condensed', sans-serif;
         }
 
         .sheet {
@@ -83,35 +84,11 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            /*font-size: 3mm;*/
             text-align: center;
-            padding-bottom: 1mm;
+            padding: 0 1mm 0 1mm;
         }
 
-        .line-name {
-            font-size: 4mm;
-        }
-
-        .line-variant {
-            font-size: 3mm;
-        }
-
-        .line-price {
-            font-weight: bold;
-            font-size: 9mm;
-        }
-
-        .barcode {
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-        }
-
-        .barcode img {
-            max-height: 100%;
-            max-width: 100%;
-            object-fit: contain;
-        }
+        <#include "fragments/${type}.css">
     </style>
 </head>
 <body>

@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'Saira Condensed';
+    font-style: normal;
+    font-weight: 400;
+    src: url('saira-condensed-v11-latin-regular.woff2') format('woff2'),
+         url('saira-condensed-v11-latin-regular.ttf') format('truetype');
+}

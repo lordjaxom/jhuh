@@ -1,5 +1,6 @@
 package de.hinundhergestellt.jhuh
 
+import de.hinundhergestellt.jhuh.backend.shoptexter.ShopTexterService
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafieldsClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductClient
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.springframework.ai.chat.client.ChatClient
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.bean.override.mockito.MockitoBean
@@ -23,6 +25,12 @@ class ShopifyProductsFixTest {
 
     @MockitoBean
     private lateinit var shopifyDataStore: ShopifyDataStore
+
+    @MockitoBean
+    private lateinit var shopTexterChatClient: ChatClient
+
+    @MockitoBean
+    private lateinit var shopTexterService: ShopTexterService
 
     @Autowired
     private lateinit var productClient: ShopifyProductClient
@@ -37,7 +45,7 @@ class ShopifyProductsFixTest {
     private lateinit var metafieldsClient: ShopifyMetafieldsClient
 
     @Test
-    fun findAllProducts(): Unit = runBlocking{
+    fun findAllProducts(): Unit = runBlocking {
         productClient.fetchAll().toList()
     }
 
@@ -57,5 +65,11 @@ class ShopifyProductsFixTest {
             .map { (variant, _) -> variant }
             .toList()
         variantClient.update(product, changedVariants)
+    }
+
+    @Test
+    @Disabled("Has run successfully")
+    fun findShopifyProductId() = runBlocking {
+        println(productClient.fetchAll().first { it.title.startsWith("SUPERIOR® Matt Chrome") }.id)
     }
 }

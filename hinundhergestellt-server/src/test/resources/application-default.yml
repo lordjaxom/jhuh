@@ -1,1 +1,5 @@
-# empty file overrides application-default.yml from src/main/resources
+spring:
+  ai:
+    chat:
+      client:
+        enabled: false

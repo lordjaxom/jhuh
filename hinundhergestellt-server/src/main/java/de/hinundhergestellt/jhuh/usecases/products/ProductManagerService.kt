@@ -1,6 +1,7 @@
 package de.hinundhergestellt.jhuh.usecases.products
 
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
+import de.hinundhergestellt.jhuh.backend.barcodes.BarcodeGenerator
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategory
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategoryRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
@@ -9,6 +10,8 @@ import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariant
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariantRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendor
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendorRepository
+import de.hinundhergestellt.jhuh.components.Article
+import de.hinundhergestellt.jhuh.usecases.labels.LabelGeneratorService
 import de.hinundhergestellt.jhuh.usecases.products.SyncProblem.Error
 import de.hinundhergestellt.jhuh.usecases.products.SyncProblem.Warning
 import de.hinundhergestellt.jhuh.usecases.products.VariantBulkOperation.Create
@@ -43,7 +46,9 @@ class ProductManagerService(
     private val syncProductRepository: SyncProductRepository,
     private val syncVariantRepository: SyncVariantRepository,
     private val syncCategoryRepository: SyncCategoryRepository,
-    private val syncVendorRepository: SyncVendorRepository
+    private val syncVendorRepository: SyncVendorRepository,
+    private val barcodeGenerator: BarcodeGenerator,
+    private val labelGeneratorService: LabelGeneratorService,
 ) : AutoCloseable {
 
     private val rootCategoriesLazy = lazyWithReset { artooDataStore.rootCategories.map { CategoryItem(it) } }
@@ -132,6 +137,46 @@ class ProductManagerService(
             logger.error(e) { "Synchronization failed" }
             throw e
         }
+    }
+
+    @Transactional
+    fun generateNewBarcodes(product: ProductItem) {
+        logger.info { "Generating new Barcodes for all variants of ${product.name}" }
+
+        shopifyDataStore.withLockAndRefresh {
+            val shopifyProduct = product.syncProduct?.shopifyId?.let { shopifyDataStore.findProductById(it) }
+            val shopifyVariantsToUpdate = product.value.variations.mapNotNull { generateNewBarcode(it, shopifyProduct) }
+
+            product.value.variations.forEach {
+                labelGeneratorService.createLabel(Article(product.value, it), it.stockValue.toInt())
+            }
+
+            runBlocking {
+                artooDataStore.update(product.value)
+                shopifyVariantsToUpdate
+                    .takeIf { it.isNotEmpty() }
+                    ?.also { shopifyDataStore.update(shopifyProduct!!, it) }
+            }
+        }
+    }
+
+    private fun generateNewBarcode(variation: ArtooMappedVariation, shopifyProduct: ShopifyProduct?): ShopifyProductVariant? {
+        val newBarcode = barcodeGenerator.generate()
+        val oldBarcode = variation.barcode
+        variation.product.barcode = newBarcode
+
+        if (oldBarcode == null) return null
+
+        syncVariantRepository.findByBarcode(oldBarcode)?.also {
+            it.barcode = newBarcode
+            syncVariantRepository.save(it)
+        }
+
+        val shopifyVariant = shopifyProduct?.findVariantByBarcode(oldBarcode)
+        if (shopifyVariant == null) return null
+
+        shopifyVariant.barcode = newBarcode
+        return shopifyVariant
     }
 
     fun refresh() {
