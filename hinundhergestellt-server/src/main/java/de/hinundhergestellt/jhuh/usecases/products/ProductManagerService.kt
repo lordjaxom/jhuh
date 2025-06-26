@@ -120,6 +120,7 @@ class ProductManagerService(
                 shopifyDataStore.products.forEach { reconcileFromShopify(it) }
                 // TODO: Using rootCategories might save a lot of duplicate database loads and conditions (like description.ifEmpty { name })
                 artooDataStore.findAllProducts().forEach { reconcileFromArtoo(it) }
+
                 artooDataStore.rootCategories.forEach { reconcileCategories(it) }
 
                 // TODO: Potentially deactivate products in Shopify when synced=false
@@ -225,7 +226,7 @@ class ProductManagerService(
         var shopifyProduct = syncProduct.shopifyId?.let { shopifyDataStore.findProductById(it) }
 
         if (artooProduct != null && checkSyncProblems(artooProduct, syncProduct).has<Error>()) {
-            logger.warn { "Product ${artooProduct.name} has errors, skipping synchronization" }
+            logger.warn { "Product ${artooProduct.name} has errors, skip synchronization" }
             return
         }
 
@@ -244,9 +245,7 @@ class ProductManagerService(
             logger.info { "Product ${artooProduct.name} only in ready2order, create in Shopify" }
             val unsavedShopifyProduct = shopifyProductMapper.mapToProduct(syncProduct, artooProduct)
             shopifyProduct = runBlocking { shopifyDataStore.create(unsavedShopifyProduct) }
-            if (!shopifyProduct.isDryRun) {
-                syncProduct.shopifyId = shopifyProduct.id
-            }
+            if (!shopifyProduct.isDryRun) syncProduct.shopifyId = shopifyProduct.id
         } else if (shopifyProductMapper.updateProduct(syncProduct, artooProduct, shopifyProduct)) {
             logger.info { "Product ${artooProduct.name} has changed, update in Shopify" }
             runBlocking { shopifyDataStore.update(shopifyProduct) }
@@ -265,25 +264,31 @@ class ProductManagerService(
         val artooVariation = artooProduct.findVariationByBarcode(syncVariant.barcode)
         val shopifyVariant = shopifyProduct.findVariantByBarcode(syncVariant.barcode)
 
+        if (artooVariation == null && shopifyVariant == null) {
+            logger.info { "Variant of ${artooProduct.name} with barcode ${syncVariant.barcode} vanished, forget" }
+            syncVariant.product.variants.remove(syncVariant)
+            return null
+        }
+
         if (artooVariation == null) {
-            require(shopifyVariant != null) { "SyncVariant vanished from both ready2order and Shopify" }
+            require(shopifyVariant != null) // already covered by previous condition
             logger.info { "Variant ${shopifyVariant.title} of ${shopifyProduct.title} no longer in ready2order, delete from Shopify" }
             syncVariant.product.variants.remove(syncVariant)
             return Delete(shopifyVariant)
         }
 
         if (!artooProduct.hasOnlyDefaultVariant && artooVariation.name.isEmpty()) {
-            logger.warn { "Variant of ${artooProduct.name} with barcode ${artooVariation.barcode} has no name, skipping synchronization" }
+            logger.warn { "Variant of ${artooProduct.name} with barcode ${artooVariation.barcode} has no name, skip synchronization" }
             return null
         }
 
         if (shopifyVariant == null) {
-            logger.info { "Variant ${artooVariation.name} only in ready2order, create in Shopify" }
+            logger.info { "Variant ${artooVariation.name} of ${artooProduct.name} only in ready2order, create in Shopify" }
             return Create(shopifyVariantMapper.mapToVariant(shopifyProduct, artooVariation))
         }
 
         if (shopifyVariantMapper.updateVariant(shopifyVariant, artooVariation)) {
-            logger.info { "Variant ${artooVariation.name} has changed, update in Shopify" }
+            logger.info { "Variant ${artooVariation.name} of ${artooProduct.name} has changed, update in Shopify" }
             return Update(shopifyVariant)
         }
 
