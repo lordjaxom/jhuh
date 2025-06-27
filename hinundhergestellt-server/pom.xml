@@ -15,6 +15,10 @@
     <dependencies>
         <dependency>
             <groupId>de.akvsoft</groupId>
+            <artifactId>hinundhergestellt-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>de.akvsoft</groupId>
             <artifactId>hinundhergestellt-vendor-ready2order-api</artifactId>
         </dependency>
         <dependency>
@@ -79,7 +83,7 @@
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlinx</groupId>
-            <artifactId>kotlinx-coroutines-core</artifactId>
+            <artifactId>kotlinx-coroutines-core-jvm</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlinx</groupId>
@@ -115,14 +119,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.netflix.graphql.dgs</groupId>
-            <artifactId>graphql-dgs-client</artifactId>
-        </dependency>
-        <dependency>
             <groupId>io.github.oshai</groupId>
             <artifactId>kotlin-logging-jvm</artifactId>
         </dependency>
@@ -134,10 +130,6 @@
             <!-- org.apache.ant:ant:1.7.1 used by barcode4j is vulnerable -->
             <groupId>org.apache.ant</groupId>
             <artifactId>ant</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.arrow-kt</groupId>
-            <artifactId>arrow-core-jvm</artifactId>
         </dependency>
 
         <dependency>
