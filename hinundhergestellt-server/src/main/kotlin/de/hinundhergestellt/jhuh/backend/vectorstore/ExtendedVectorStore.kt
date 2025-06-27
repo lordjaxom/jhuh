@@ -6,22 +6,27 @@ import org.springframework.ai.vectorstore.mariadb.MariaDBVectorStore
 import org.springframework.ai.vectorstore.mariadb.autoconfigure.MariaDbStoreProperties
 import org.springframework.dao.support.DataAccessUtils.singleResult
 import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.stereotype.Repository
+import org.springframework.stereotype.Component
 import java.util.UUID
 
-@Repository
-class MariaDBVectorStoreRepository(
+interface ExtendedVectorStore : VectorStore {
+
+    fun findById(id: String): Document?
+}
+
+@Component
+@Suppress("JavaDefaultMethodsNotOverriddenByDelegation")
+class MariaDBExtendedVectorStore(
+    private val vectorStore: MariaDBVectorStore,
     private val properties: MariaDbStoreProperties
-) {
+) : ExtendedVectorStore, VectorStore by vectorStore {
+
+    private val jdbcTemplate = vectorStore.getNativeClient<JdbcTemplate>().get()
     private val fullyQualifiedTableName = sequenceOf(properties.schemaName, properties.tableName).filterNotNull().joinToString(".")
     private val idFieldName: String by properties::idFieldName
     private val contentFieldname: String by properties::contentFieldName
 
-    init {
-        repository = this
-    }
-
-    fun findById(jdbcTemplate: JdbcTemplate, id: UUID) =
+    override fun findById(id: String) =
         singleResult(
             jdbcTemplate.query(
                 "select $idFieldName, $contentFieldname from $fullyQualifiedTableName where id=?",
@@ -31,13 +36,7 @@ class MariaDBVectorStoreRepository(
         )
 }
 
-private lateinit var repository: MariaDBVectorStoreRepository
-
-fun VectorStore.findById(id: UUID) = when (this) {
-    is MariaDBVectorStore -> findById(id)
+fun ExtendedVectorStore.findById(id: UUID) = when (this) {
+    is MariaDBExtendedVectorStore -> findById(id.toString())
     else -> throw UnsupportedOperationException("findById")
 }
-
-private fun MariaDBVectorStore.findById(id: UUID) = repository.findById(jdbcTemplate, id)
-
-private val MariaDBVectorStore.jdbcTemplate get() = getNativeClient<JdbcTemplate>().get()

@@ -3,6 +3,7 @@ package de.hinundhergestellt.jhuh.backend.shoptexter
 import com.fasterxml.jackson.databind.ObjectMapper
 import de.hinundhergestellt.jhuh.backend.shoptexter.model.ShopifyProductForAiMixin
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProductRepository
+import de.hinundhergestellt.jhuh.backend.vectorstore.ExtendedVectorStore
 import de.hinundhergestellt.jhuh.backend.vectorstore.findById
 import de.hinundhergestellt.jhuh.util.loadTextResource
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
@@ -25,7 +26,7 @@ private val logger = KotlinLogging.logger { }
 @Service
 class ShopTexterService(
     private val shopTexterChatClient: ChatClient,
-    private val vectorStore: VectorStore,
+    private val vectorStore: ExtendedVectorStore,
     shopifyDataStore: ShopifyDataStore,
     syncProductRepository: SyncProductRepository,
 ) {
@@ -43,7 +44,7 @@ class ShopTexterService(
             .filter { (id, text) -> vectorStore.findById(id)?.let { it.text != text } ?: true }
             .map { (id, text) -> Document(id.toString(), text, mapOf<String, Any>()) }
             .toList()
-        logger.info { "Adding or updating ${newOrChangedDocuments.size} products in vector store" }
+        logger.info { "Updating ${newOrChangedDocuments.size} products in vector store" }
         vectorStore.add(newOrChangedDocuments)
     }
 

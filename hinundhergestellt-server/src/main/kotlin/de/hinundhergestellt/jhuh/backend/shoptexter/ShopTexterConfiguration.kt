@@ -10,14 +10,12 @@ import org.springframework.ai.openai.OpenAiChatOptions
 import org.springframework.ai.openai.api.OpenAiApi
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.DependsOn
 import javax.sql.DataSource
 
 @Configuration
 class ShopTexterConfiguration {
 
     @Bean
-    @DependsOn("mariaDBVectorStoreRepository")
     fun shopTexterChatClient(builder: ChatClient.Builder, dataSource: DataSource) =
         builder
             .defaultSystem(loadTextResource { "system-prompt.txt" })
