@@ -25,8 +25,8 @@ import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedVariat
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVariant
+import de.hinundhergestellt.jhuh.vendors.shopify.client.isDryRun
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
-import de.hinundhergestellt.jhuh.vendors.shopify.datastore.isDryRun
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Service

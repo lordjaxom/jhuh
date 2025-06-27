@@ -21,9 +21,11 @@ import kotlinx.coroutines.flow.flattenConcat
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 
 @Component
+@ConditionalOnProperty("shopify.read-only", havingValue = "false", matchIfMissing = true)
 class ShopifyProductClient(
     private val shopifyGraphQLClient: WebClientGraphQLClient
 ) {
