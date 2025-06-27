@@ -1,7 +1,7 @@
 package de.hinundhergestellt.jhuh.vendors.ready2order.datastore
 
-import de.hinundhergestellt.jhuh.util.deferredWithRefresh
-import de.hinundhergestellt.jhuh.util.ifDirty
+import de.hinundhergestellt.jhuh.core.deferredWithRefresh
+import de.hinundhergestellt.jhuh.core.ifDirty
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductClient
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductGroup

@@ -17,7 +17,7 @@ import de.hinundhergestellt.jhuh.usecases.products.SyncProblem.Warning
 import de.hinundhergestellt.jhuh.usecases.products.VariantBulkOperation.Create
 import de.hinundhergestellt.jhuh.usecases.products.VariantBulkOperation.Delete
 import de.hinundhergestellt.jhuh.usecases.products.VariantBulkOperation.Update
-import de.hinundhergestellt.jhuh.util.lazyWithReset
+import de.hinundhergestellt.jhuh.core.lazyWithReset
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedCategory
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct

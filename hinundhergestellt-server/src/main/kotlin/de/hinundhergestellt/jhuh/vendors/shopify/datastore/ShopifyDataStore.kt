@@ -1,6 +1,6 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.datastore
 
-import de.hinundhergestellt.jhuh.util.deferredWithRefresh
+import de.hinundhergestellt.jhuh.core.deferredWithRefresh
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOption

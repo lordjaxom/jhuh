@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalContracts::class)
 
-package de.hinundhergestellt.jhuh.util
+package de.hinundhergestellt.jhuh.core
 
 import java.util.Collections.synchronizedSet
 import kotlin.contracts.ExperimentalContracts
@@ -46,12 +46,12 @@ class DirtyTracker {
         }
 }
 
-internal interface HasDirtyTracker {
+interface HasDirtyTracker {
 
     val dirtyTracker: DirtyTracker
 }
 
-internal suspend fun <T: HasDirtyTracker> T.ifDirty(block: suspend (T) -> Unit) {
+suspend fun <T: HasDirtyTracker> T.ifDirty(block: suspend (T) -> Unit) {
     contract { callsInPlace(block, InvocationKind.AT_MOST_ONCE) }
     if (dirtyTracker.getDirtyAndReset()) block(this)
 }

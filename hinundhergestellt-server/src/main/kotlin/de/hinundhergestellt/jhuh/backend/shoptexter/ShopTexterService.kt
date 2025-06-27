@@ -5,7 +5,7 @@ import de.hinundhergestellt.jhuh.backend.shoptexter.model.ShopifyProductForAiMix
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProductRepository
 import de.hinundhergestellt.jhuh.backend.vectorstore.ExtendedVectorStore
 import de.hinundhergestellt.jhuh.backend.vectorstore.findById
-import de.hinundhergestellt.jhuh.util.loadTextResource
+import de.hinundhergestellt.jhuh.core.loadTextResource
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
@@ -18,7 +18,6 @@ import org.springframework.ai.chat.prompt.PromptTemplate
 import org.springframework.ai.converter.BeanOutputConverter
 import org.springframework.ai.document.Document
 import org.springframework.ai.vectorstore.SearchRequest
-import org.springframework.ai.vectorstore.VectorStore
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger { }

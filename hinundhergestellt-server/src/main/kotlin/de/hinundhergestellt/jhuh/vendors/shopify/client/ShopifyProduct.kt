@@ -1,6 +1,6 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
-import de.hinundhergestellt.jhuh.util.asRemoveProtectedMutableList
+import de.hinundhergestellt.jhuh.core.asRemoveProtectedMutableList
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.Product
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductCreateInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductDeleteInput

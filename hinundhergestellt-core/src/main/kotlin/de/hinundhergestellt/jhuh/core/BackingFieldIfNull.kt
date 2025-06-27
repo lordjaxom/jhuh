@@ -1,4 +1,4 @@
-package de.hinundhergestellt.jhuh.util
+package de.hinundhergestellt.jhuh.core
 
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty

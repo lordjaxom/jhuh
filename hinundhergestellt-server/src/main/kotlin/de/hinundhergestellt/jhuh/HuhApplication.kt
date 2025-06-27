@@ -32,28 +32,6 @@ import org.springframework.web.reactive.function.client.WebClient
 class HuhApplication {
 
     @Bean
-    fun ready2orderWebClient(
-        @Value("\${ready2order.apikey}") apikey: String
-    ): WebClient {
-        val objectMapper = ObjectMapper()
-        objectMapper.addMixIn(ProductsIdPutRequest::class.java, ProductsIdPutRequestMixin::class.java)
-        objectMapper.addMixIn(ProductsPostRequest::class.java, ProductsPostRequestMixin::class.java)
-        objectMapper.addMixIn(ProductsPostRequestProductBase::class.java, ProductsPostRequestProductBaseMixin::class.java)
-        objectMapper.setSerializationInclusion(JsonInclude.Include.ALWAYS)
-
-        return WebClient.builder()
-            .baseUrl("https://api.ready2order.com/v1")
-            .defaultHeader("Authorization", "Bearer $apikey")
-            .codecs {
-                it.defaultCodecs().maxInMemorySize(5 * 1024 * 1024)
-                it.defaultCodecs().jackson2JsonEncoder(Jackson2JsonEncoder(objectMapper, MediaType.APPLICATION_JSON))
-                it.defaultCodecs().jackson2JsonDecoder(Jackson2JsonDecoder(objectMapper, MediaType.APPLICATION_JSON))
-            }
-            .filter(RateLimitEnforcingFilter())
-            .build()
-    }
-
-    @Bean
     fun shopifyGraphQLClient(
         @Value("\${shopify.domain}") domain: String,
         @Value("\${shopify.token}") token: String

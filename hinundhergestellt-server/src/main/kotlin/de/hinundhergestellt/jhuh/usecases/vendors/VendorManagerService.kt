@@ -4,7 +4,7 @@ import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProductRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendor
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendorRepository
-import de.hinundhergestellt.jhuh.util.fieldIfNull
+import de.hinundhergestellt.jhuh.core.fieldIfNull
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
 import org.springframework.stereotype.Service

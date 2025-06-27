@@ -1,6 +1,6 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
-import de.hinundhergestellt.jhuh.util.fixedScale
+import de.hinundhergestellt.jhuh.core.fixedScale
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.InventoryItemInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductVariantsBulkInput

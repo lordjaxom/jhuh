@@ -7,31 +7,23 @@ import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductGroupTyp
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductType
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.UnsavedArtooProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.UnsavedArtooProductGroup
-import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
-import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Disabled
-import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import java.math.BigDecimal
+import kotlin.test.Test
 
 private val logger = KotlinLogging.logger {}
 
 @SpringBootTest
 @Disabled("Only run manually")
-class ArtooProductFixTest {
-
-    @MockitoBean
-    private lateinit var artooDataStore: ArtooDataStore
-    @MockitoBean
-    private lateinit var shopifyDataStore: ShopifyDataStore
+class ArtooProductFixITCase {
 
     @Autowired
     private lateinit var artooProductGroupClient: ArtooProductGroupClient
@@ -40,7 +32,6 @@ class ArtooProductFixTest {
     private lateinit var artooProductClient: ArtooProductClient
 
     @Test
-    @Disabled("Has run successfully")
     fun restructureProductsWithVariants() = runBlocking {
         val products = artooProductClient.findAll().toList()
         products.asSequence()
@@ -59,7 +50,6 @@ class ArtooProductFixTest {
     }
 
     @Test
-    @Disabled("Has run successfully")
     fun moveVariantsToProducts() = runBlocking {
         val products = artooProductClient.findAll().toList()
         products.asSequence()
@@ -93,7 +83,6 @@ class ArtooProductFixTest {
     }
 
     @Test
-    @Disabled("Has run successfully")
     fun updateProductsWithVariantsName() = runBlocking {
         val oldName = "SUPERIOR Holo-Brushed Vinylfolie"
         val newName = "SUPERIOR® Holo-Brushed"
@@ -115,7 +104,6 @@ class ArtooProductFixTest {
     }
 
     @Test
-    @Disabled("Has run successfully")
     fun addNewMyboshiProducts(): Unit = runBlocking {
         val group = artooProductGroupClient.findAll().filter { it.name == "myboshi" }.single()
 

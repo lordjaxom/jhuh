@@ -25,6 +25,7 @@
     </properties>
 
     <modules>
+        <module>hinundhergestellt-core</module>
         <module>hinundhergestellt-vendor-ready2order-api</module>
         <module>hinundhergestellt-vendor-shopify-api</module>
         <module>hinundhergestellt-server</module>
@@ -32,6 +33,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>de.akvsoft</groupId>
+                <artifactId>hinundhergestellt-core</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
             <dependency>
                 <groupId>de.akvsoft</groupId>
                 <artifactId>hinundhergestellt-vendor-ready2order-api</artifactId>

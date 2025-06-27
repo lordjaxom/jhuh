@@ -1,4 +1,4 @@
-package de.hinundhergestellt.jhuh.util
+package de.hinundhergestellt.jhuh.core
 
 import java.math.BigDecimal
 import kotlin.properties.ReadWriteProperty

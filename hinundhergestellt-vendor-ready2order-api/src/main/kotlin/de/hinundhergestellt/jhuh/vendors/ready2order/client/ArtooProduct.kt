@@ -1,8 +1,8 @@
 package de.hinundhergestellt.jhuh.vendors.ready2order.client
 
-import de.hinundhergestellt.jhuh.util.DirtyTracker
-import de.hinundhergestellt.jhuh.util.HasDirtyTracker
-import de.hinundhergestellt.jhuh.util.fixedScale
+import de.hinundhergestellt.jhuh.core.DirtyTracker
+import de.hinundhergestellt.jhuh.core.HasDirtyTracker
+import de.hinundhergestellt.jhuh.core.fixedScale
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsGet200ResponseInner
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsIdPutRequest
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsPostRequest
