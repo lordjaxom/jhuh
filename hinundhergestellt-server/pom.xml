@@ -15,11 +15,11 @@
     <dependencies>
         <dependency>
             <groupId>de.akvsoft</groupId>
-            <artifactId>hinundhergestellt-vendor-api-ready2order</artifactId>
+            <artifactId>hinundhergestellt-vendor-ready2order-api</artifactId>
         </dependency>
         <dependency>
             <groupId>de.akvsoft</groupId>
-            <artifactId>hinundhergestellt-vendor-api-shopify</artifactId>
+            <artifactId>hinundhergestellt-vendor-shopify-api</artifactId>
         </dependency>
 
         <dependency>

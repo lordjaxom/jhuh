@@ -10,7 +10,7 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>hinundhergestellt-vendor-api-shopify</artifactId>
+    <artifactId>hinundhergestellt-vendor-shopify-api</artifactId>
 
     <dependencies>
         <dependency>

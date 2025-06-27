@@ -25,8 +25,8 @@
     </properties>
 
     <modules>
-        <module>hinundhergestellt-vendor-api-ready2order</module>
-        <module>hinundhergestellt-vendor-api-shopify</module>
+        <module>hinundhergestellt-vendor-ready2order-api</module>
+        <module>hinundhergestellt-vendor-shopify-api</module>
         <module>hinundhergestellt-server</module>
     </modules>
 
@@ -34,12 +34,12 @@
         <dependencies>
             <dependency>
                 <groupId>de.akvsoft</groupId>
-                <artifactId>hinundhergestellt-vendor-api-ready2order</artifactId>
+                <artifactId>hinundhergestellt-vendor-ready2order-api</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>de.akvsoft</groupId>
-                <artifactId>hinundhergestellt-vendor-api-shopify</artifactId>
+                <artifactId>hinundhergestellt-vendor-shopify-api</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
             </dependency>
             <dependency>
