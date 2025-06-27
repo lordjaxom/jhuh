@@ -112,6 +112,11 @@ class ShopifyProductClient(
             edges {
                 node {
                     id; title; price; sku; barcode
+                    inventoryItem {
+                        measurement {
+                            weight { unit; value }
+                        }
+                    }
                     selectedOptions { name; value }
                     media(first = 2) {
                         edges {

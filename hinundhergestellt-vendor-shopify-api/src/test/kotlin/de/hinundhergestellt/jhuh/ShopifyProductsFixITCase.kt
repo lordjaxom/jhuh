@@ -4,6 +4,9 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafieldsClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOptionClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantClient
+import de.hinundhergestellt.jhuh.vendors.shopify.client.Weight
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightUnit
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
@@ -51,7 +54,22 @@ class ShopifyProductsFixITCase {
     }
 
     @Test
-    fun findShopifyProductId() = runBlocking {
-        println(productClient.fetchAll().first { it.title.startsWith("SUPERIOR® Matt Chrome") }.id)
+    fun findProductsWithoutWeight() = runBlocking {
+        val products = productClient.fetchAll().toList()
+        products.forEach { product ->
+            if (product.variants.any { it.weight.value == 0.0 }) {
+                println(product.title)
+            }
+        }
+    }
+
+    @Test
+    fun assignWeightToProducts() = runBlocking {
+        productClient.fetchAll()
+            .filter { it.title.contains("Minirolle") }
+            .collect { product ->
+                product.variants.forEach { it.weight = Weight(WeightUnit.GRAMS, 100.0) }
+                variantClient.update(product, product.variants)
+            }
     }
 }
