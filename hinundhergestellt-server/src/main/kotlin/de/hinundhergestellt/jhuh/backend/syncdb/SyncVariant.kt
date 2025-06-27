@@ -9,7 +9,11 @@ import jakarta.persistence.Table
 import java.util.UUID
 
 @Entity
-@Table(indexes = [Index(name = "idx_syncvariant_barcode", columnList = "barcode")])
+@Table(indexes = [
+    Index(name = "idx_syncvariant_barcode", columnList = "barcode"),
+    Index(name = "idx_syncvariant_artooid", columnList = "artooId"),
+    Index(name = "idx_syncvariant_shopifyid", columnList = "shopifyId")
+])
 class SyncVariant(
 
     @ManyToOne(optional = false)
@@ -17,6 +21,12 @@ class SyncVariant(
 
     @Column(nullable = false, unique = true)
     var barcode: String,
+
+    @Column(unique = true)
+    var artooId: Int? = null,
+
+    @Column(unique = true)
+    var shopifyId: String? = null,
 
     @Id
     val id: UUID = UUID.randomUUID(),

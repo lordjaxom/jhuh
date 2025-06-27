@@ -220,26 +220,28 @@ class ProductManagerService(
     }
 
     private fun reconcileFromShopify(shopifyVariant: ShopifyProductVariant, syncProduct: SyncProduct) {
-        syncVariantRepository.findByBarcode(shopifyVariant.barcode)
-            ?.also { require(it.product === syncProduct) { "SyncVariant.product does not match ShopifyVariant.product" } }
-            ?: SyncVariant(syncProduct, shopifyVariant.barcode).also { syncProduct.variants.add(it) }
+        val syncVariant = syncVariantRepository.findByShopifyId(shopifyVariant.id)
+            ?: syncVariantRepository.findByBarcode(shopifyVariant.barcode)?.also { it.shopifyId = shopifyVariant.id }
+            ?: shopifyVariant.toSyncVariant(syncProduct)
+        require(syncVariant.product == syncProduct) { "SyncVariant.product does not match ShopifyVariant.product" }
     }
 
     private fun reconcileFromArtoo(artooProduct: ArtooMappedProduct) {
         // products in ready2order are only synced when there's a marker, but make sure all variations are known
         val syncProduct = syncProductRepository.findByArtooId(artooProduct.id)
-            ?: syncProductRepository.findByVariantsBarcodeIn(artooProduct.barcodes)
-                ?.also { it.artooId = artooProduct.id } // save missing id
+            ?: syncProductRepository.findByVariantsBarcodeIn(artooProduct.barcodes)?.also { it.artooId = artooProduct.id }
             ?: return
         artooProduct.variations.forEach { reconcileFromArtoo(it, syncProduct) }
         syncProductRepository.save(syncProduct) // for later retrieval in same transaction
     }
 
     private fun reconcileFromArtoo(artooVariation: ArtooMappedVariation, syncProduct: SyncProduct) {
+        // TODO: Barcode as key not required anymore?
         val barcode = artooVariation.barcode ?: return
-        syncVariantRepository.findByBarcode(barcode)
-            ?.also { require(it.product === syncProduct) { "SyncVariant.product does not match ArtooVariation.product" } }
-            ?: SyncVariant(syncProduct, barcode).also { syncProduct.variants.add(it) }
+        val syncVariant = syncVariantRepository.findByArtooId(artooVariation.id)?.also { it.barcode = barcode }
+            ?: syncVariantRepository.findByBarcode(barcode)?.also { it.artooId = artooVariation.id }
+            ?: artooVariation.toSyncVariant(syncProduct)
+        require(syncVariant.product === syncProduct) { "SyncVariant.product does not match ArtooMappedVariation.product" }
     }
 
     private fun reconcileCategories(artooCategory: ArtooMappedCategory) {
@@ -280,10 +282,7 @@ class ProductManagerService(
         if (artooProduct == null) {
             require(shopifyProduct != null) { "SyncProduct vanished from both ready2order and Shopify" }
             logger.info { "Product ${shopifyProduct!!.title} no longer in ready2order, delete from Shopify" }
-            runBlocking {
-                @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
-                shopifyDataStore.delete(shopifyProduct!!)
-            }
+            shopifyProduct.also { runBlocking { shopifyDataStore.delete(it) } }
             syncProductRepository.delete(syncProduct)
             return
         }
@@ -425,3 +424,17 @@ private fun ShopifyProduct.toSyncProduct() =
         tags = (tags - listOf(vendor, productType)).toMutableSet(),
         synced = true
     )
+
+private fun ShopifyProductVariant.toSyncVariant(syncProduct: SyncProduct) =
+    SyncVariant(
+        product = syncProduct,
+        barcode = barcode,
+        shopifyId = id
+    ).also { syncProduct.variants.add(it) }
+
+private fun ArtooMappedVariation.toSyncVariant(syncProduct: SyncProduct) =
+    SyncVariant(
+        product = syncProduct,
+        barcode = barcode!!,
+        artooId = id
+    ).also { syncProduct.variants.add(it) }

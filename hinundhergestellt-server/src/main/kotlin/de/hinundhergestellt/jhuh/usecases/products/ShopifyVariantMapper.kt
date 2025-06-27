@@ -43,6 +43,7 @@ class ShopifyVariantMapper {
     ) {
         fun update(): Boolean {
             return updateVariantOptions() or
+                    updateProperty(shopifyVariant::barcode, artooVariation.barcode!!) or
                     updateProperty(shopifyVariant::sku, artooVariation.itemNumber ?: "") or
                     updateProperty(shopifyVariant::price, artooVariation.price)
         }

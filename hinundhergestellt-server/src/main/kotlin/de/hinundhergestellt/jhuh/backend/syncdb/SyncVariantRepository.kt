@@ -8,4 +8,8 @@ import java.util.UUID
 interface SyncVariantRepository : JpaRepository<SyncVariant, UUID> {
 
     fun findByBarcode(barcode: String): SyncVariant?
+
+    fun findByArtooId(artooId: Int): SyncVariant?
+
+    fun findByShopifyId(shopifyId: String): SyncVariant?
 }
