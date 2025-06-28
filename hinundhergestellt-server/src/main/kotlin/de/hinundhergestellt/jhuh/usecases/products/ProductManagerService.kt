@@ -133,7 +133,7 @@ class ProductManagerService(
                 // TODO: Potentially deactivate products in Shopify when synced=false
                 syncProductRepository.findAllBySyncedIsTrue().forEach { synchronizeWithShopify(it) }
             }
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             logger.error(e) { "Synchronization failed" }
             throw e
         }
@@ -221,9 +221,11 @@ class ProductManagerService(
 
     private fun reconcileFromShopify(shopifyVariant: ShopifyProductVariant, syncProduct: SyncProduct) {
         val syncVariant = syncVariantRepository.findByShopifyId(shopifyVariant.id)
-            ?: syncVariantRepository.findByBarcode(shopifyVariant.barcode)?.also { it.shopifyId = shopifyVariant.id }
+            ?: shopifyVariant.barcode.takeIf { it.isNotEmpty() }
+                ?.let { syncVariantRepository.findByBarcode(it) }
+                ?.also { it.shopifyId = shopifyVariant.id }
             ?: shopifyVariant.toSyncVariant(syncProduct)
-        require(syncVariant.product == syncProduct) { "SyncVariant.product does not match ShopifyVariant.product" }
+        require(syncVariant.product === syncProduct) { "SyncVariant.product does not match ShopifyVariant.product" }
     }
 
     private fun reconcileFromArtoo(artooProduct: ArtooMappedProduct) {
@@ -237,7 +239,7 @@ class ProductManagerService(
 
     private fun reconcileFromArtoo(artooVariation: ArtooMappedVariation, syncProduct: SyncProduct) {
         // TODO: Barcode as key not required anymore?
-        val barcode = artooVariation.barcode ?: return
+        val barcode = artooVariation.barcode?.takeIf { it.isNotEmpty() } ?: return
         val syncVariant = syncVariantRepository.findByArtooId(artooVariation.id)?.also { it.barcode = barcode }
             ?: syncVariantRepository.findByBarcode(barcode)?.also { it.artooId = artooVariation.id }
             ?: artooVariation.toSyncVariant(syncProduct)
@@ -381,6 +383,34 @@ class ProductManagerService(
                     (withErrors == null || syncProblems.isNotEmpty() == withErrors) &&
                     (text.isEmpty() || name.contains(text, ignoreCase = true))
     }
+
+    private fun ShopifyProduct.toSyncProduct() =
+        SyncProduct(
+            shopifyId = id,
+            vendor = vendor.asSyncVendor(),
+            type = productType,
+            tags = (tags - listOf(vendor, productType)).toMutableSet(),
+            synced = true
+        )
+
+    private fun ShopifyProductVariant.toSyncVariant(syncProduct: SyncProduct) =
+        SyncVariant(
+            product = syncProduct,
+            barcode = barcode,
+            shopifyId = id
+        ).also { syncProduct.variants.add(it) }
+
+    private fun ArtooMappedVariation.toSyncVariant(syncProduct: SyncProduct) =
+        SyncVariant(
+            product = syncProduct,
+            barcode = barcode!!,
+            artooId = id
+        ).also { syncProduct.variants.add(it) }
+
+    private fun String.asSyncVendor() =
+        if (isNotEmpty()) syncVendorRepository.findByNameIgnoreCase(this)
+            ?: SyncVendor(this).also { syncVendorRepository.save(it) }
+        else null
 }
 
 sealed interface SyncableItem {
@@ -414,27 +444,3 @@ private sealed interface VariantBulkOperation {
 
 private inline fun <reified T : VariantBulkOperation, V> List<VariantBulkOperation?>.allOf(property: KProperty1<T, V>) =
     filterIsInstance<T>().map { property.get(it) }.takeIf { it.isNotEmpty() }
-
-@Suppress("KotlinUnreachableCode")
-private fun ShopifyProduct.toSyncProduct() =
-    SyncProduct(
-        shopifyId = id,
-        vendor = throw NotImplementedError("vendor from ShopifyProduct"),
-        type = productType,
-        tags = (tags - listOf(vendor, productType)).toMutableSet(),
-        synced = true
-    )
-
-private fun ShopifyProductVariant.toSyncVariant(syncProduct: SyncProduct) =
-    SyncVariant(
-        product = syncProduct,
-        barcode = barcode,
-        shopifyId = id
-    ).also { syncProduct.variants.add(it) }
-
-private fun ArtooMappedVariation.toSyncVariant(syncProduct: SyncProduct) =
-    SyncVariant(
-        product = syncProduct,
-        barcode = barcode!!,
-        artooId = id
-    ).also { syncProduct.variants.add(it) }

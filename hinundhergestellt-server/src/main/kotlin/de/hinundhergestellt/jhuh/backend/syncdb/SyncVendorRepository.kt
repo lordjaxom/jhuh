@@ -6,4 +6,6 @@ import java.util.UUID
 
 @Repository
 interface SyncVendorRepository : JpaRepository<SyncVendor, UUID> {
+
+    fun findByNameIgnoreCase(name: String): SyncVendor?
 }

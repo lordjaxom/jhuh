@@ -12,7 +12,7 @@ sealed class ArtooMappedProduct protected constructor(
     abstract val hasOnlyDefaultVariant: Boolean
 
     val barcodes
-        get() = variations.mapNotNull { it.barcode }
+        get() = variations.mapNotNull { variation -> variation.barcode?.takeIf { it.isNotEmpty() } }
 
     fun findVariationByBarcode(barcode: String) =
         variations.firstOrNull { it.barcode == barcode }

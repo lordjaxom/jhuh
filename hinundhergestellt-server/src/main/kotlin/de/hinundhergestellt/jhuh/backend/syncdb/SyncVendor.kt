@@ -17,10 +17,10 @@ class SyncVendor(
     var name: String,
 
     @Column
-    var address: String?,
+    var address: String? = null,
 
     @Column
-    var email: String?,
+    var email: String? = null,
 
     @Id
     val id: UUID = UUID.randomUUID()
