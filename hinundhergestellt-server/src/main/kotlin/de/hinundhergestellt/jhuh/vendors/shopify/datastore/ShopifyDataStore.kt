@@ -1,6 +1,7 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.datastore
 
 import de.hinundhergestellt.jhuh.core.deferredWithRefresh
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyLocationClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
@@ -19,10 +20,14 @@ import kotlin.concurrent.withLock
 class ShopifyDataStore(
     private val productClient: ShopifyProductClient,
     private val variantClient: ShopifyProductVariantClient,
+    private val locationClient: ShopifyLocationClient,
     applicationCoroutineScope: CoroutineScope
 ) {
     private val productsDeferred = deferredWithRefresh(applicationCoroutineScope) { fetchProducts() }
+    private val locationDeferred = deferredWithRefresh(applicationCoroutineScope) { fetchPrimaryLocation() }
+
     val products by productsDeferred
+    val location by locationDeferred
 
     private val lock = ReentrantLock()
 
@@ -72,6 +77,7 @@ class ShopifyDataStore(
     }
 
     private suspend fun fetchProducts() = CopyOnWriteArrayList(productClient.fetchAll().toList())
+    private suspend fun fetchPrimaryLocation() = locationClient.fetchAll().first { it.isPrimary }
 
     private fun requireLock() = require(lock.isLocked) { "Write operations require a lock" }
 }

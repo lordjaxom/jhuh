@@ -65,7 +65,8 @@ class ShopifyProductVariant : UnsavedShopifyProductVariant {
         unsaved.sku,
         unsaved.barcode,
         unsaved.price,
-        unsaved.options
+        unsaved.options,
+        unsaved.weight
     ) {
         this.id = id
         this.title = title
