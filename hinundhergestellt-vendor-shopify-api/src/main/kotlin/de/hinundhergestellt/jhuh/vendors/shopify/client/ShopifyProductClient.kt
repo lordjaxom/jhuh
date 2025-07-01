@@ -96,13 +96,13 @@ class ShopifyProductClient(
     }
 
     private suspend fun fetchNextVariants(productId: String, after: String?): Pair<List<ProductVariantEdge>, PageInfo> {
-        val request = buildQuery { product(id = productId) { variants(after) } }
+        val request = buildQuery { product(id = productId) { variants(after = after) } }
         val payload = shopifyGraphQLClient.executeQuery<Product>(request)
         return Pair(payload.variants.edges, payload.variants.pageInfo)
     }
 
     private suspend fun fetchNextMedia(productId: String, after: String?): Pair<List<MediaEdge>, PageInfo> {
-        val request = buildQuery { product(id = productId) { media(after) } }
+        val request = buildQuery { product(id = productId) { media(after = after) } }
         val payload = shopifyGraphQLClient.executeQuery<Product>(request)
         return Pair(payload.media.edges, payload.media.pageInfo)
     }
@@ -118,12 +118,13 @@ class ShopifyProductClient(
                         }
                     }
                     selectedOptions { name; value }
-                    media(first = 2) {
+                    media(first = 1) {
                         edges {
                             node {
                                 onMediaImage { id }
                             }
                         }
+                        pageInfo { hasNextPage }
                     }
                 }
             }

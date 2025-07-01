@@ -5,10 +5,10 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantOption
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVariant
+import de.hinundhergestellt.jhuh.vendors.shopify.client.Weight
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightUnit
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
-
-private val logger = KotlinLogging.logger {}
 
 @Component
 class ShopifyVariantMapper {
@@ -28,6 +28,7 @@ class ShopifyVariantMapper {
                 artooVariation.itemNumber ?: "",
                 artooVariation.barcode!!,
                 artooVariation.price,
+                Weight(WeightUnit.GRAMS, 0.0),
                 variantOptions()
             )
 

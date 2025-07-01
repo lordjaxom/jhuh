@@ -58,5 +58,6 @@ private fun UnsavedShopifyProductVariant.toDryRunShopifyProductVariant() =
     ShopifyProductVariant(
         this,
         "uid://${UUID.randomUUID()}",
-        options.firstOrNull()?.value ?: "Default Title"
+        options.firstOrNull()?.value ?: "Default Title",
+        null
     )

@@ -10,19 +10,30 @@ import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightUnit
 import java.math.BigDecimal
 
-open class UnsavedShopifyProductVariant(
-    var sku: String,
-    var barcode: String,
+private interface ShopifyProductVariantBase {
+
+    var sku: String
+    var barcode: String
+    var price: BigDecimal
+    var weight: Weight
+
+    val options: List<ShopifyProductVariantOption>
+}
+
+class UnsavedShopifyProductVariant(
+    override var sku: String,
+    override var barcode: String,
     price: BigDecimal,
-    val options: List<ShopifyProductVariantOption>,
-    var weight: Weight = Weight(WeightUnit.GRAMS, 0.0)
-) {
-    var price by fixedScale(price, 2)
+    override var weight: Weight = Weight(WeightUnit.GRAMS, 0.0),
+    override val options: List<ShopifyProductVariantOption>
+) : ShopifyProductVariantBase {
+
+    override var price by fixedScale(price, 2)
 
     override fun toString() =
-        "UnsavedShopifyProductVariant(sku='$sku', barcode='$barcode')"
+        "UnsavedShopifyProductVariant(sku='$sku', barcode='$barcode', price=$price)"
 
-    internal open fun toProductVariantsBulkInput() =
+    internal fun toProductVariantsBulkInput() =
         ProductVariantsBulkInput(
             barcode = barcode,
             price = price.toPlainString(),
@@ -30,7 +41,7 @@ open class UnsavedShopifyProductVariant(
             inventoryItem = toInventoryItemInput(),
         )
 
-    protected fun toInventoryItemInput() =
+    internal fun toInventoryItemInput() =
         InventoryItemInput(
             sku = sku,
             tracked = true,
@@ -41,48 +52,38 @@ open class UnsavedShopifyProductVariant(
         InventoryItemMeasurementInput(weight.toWeightInput())
 }
 
-class ShopifyProductVariant : UnsavedShopifyProductVariant {
-
-    val id: String
-    val title: String
+class ShopifyProductVariant internal constructor(
+    private val unsaved: UnsavedShopifyProductVariant,
+    val id: String,
+    val title: String,
     var mediaId: String?
+) : ShopifyProductVariantBase by unsaved {
 
-    internal constructor(variant: ProductVariant) : super(
-        variant.sku ?: "",
-        variant.barcode!!,
-        BigDecimal(variant.price),
-        variant.selectedOptions.map { ShopifyProductVariantOption(it) },
-        variant.inventoryItem.measurement.weight!!
+    internal constructor(variant: ProductVariant) : this(
+        UnsavedShopifyProductVariant(
+            variant.sku ?: "",
+            variant.barcode!!,
+            BigDecimal(variant.price),
+            variant.inventoryItem.measurement.weight!!,
+            variant.selectedOptions.map { ShopifyProductVariantOption(it) }
+        ),
+        variant.id,
+        variant.title,
+        variant.media.edges.firstOrNull()?.node?.id
     ) {
-        require(variant.media.edges.size <= 1) { "ProductVariant has more media than is supported" }
-
-        id = variant.id
-        title = variant.title
-        mediaId = variant.media.edges.firstOrNull()?.node?.id
-    }
-
-    internal constructor(unsaved: UnsavedShopifyProductVariant, id: String, title: String) : super(
-        unsaved.sku,
-        unsaved.barcode,
-        unsaved.price,
-        unsaved.options,
-        unsaved.weight
-    ) {
-        this.id = id
-        this.title = title
-        mediaId = null
+        require(!variant.media.pageInfo.hasNextPage) { "ProductVariant has more media than is supported" }
     }
 
     override fun toString() =
         "ShopifyProductVariant(id='$id', sku='$sku', barcode='$barcode', title='$title')"
 
-    override fun toProductVariantsBulkInput() =
+    fun toProductVariantsBulkInput() =
         ProductVariantsBulkInput(
             id = id,
             barcode = barcode,
             price = price.toPlainString(),
             optionValues = options.map { it.toVariantOptionValueInput() },
-            inventoryItem = toInventoryItemInput(),
+            inventoryItem = unsaved.toInventoryItemInput(),
             mediaId = mediaId
         )
 }

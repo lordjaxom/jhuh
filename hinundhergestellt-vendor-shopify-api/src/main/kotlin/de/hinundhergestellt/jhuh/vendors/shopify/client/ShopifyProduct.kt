@@ -28,8 +28,8 @@ open class UnsavedShopifyProduct(
             productType = productType,
             status = status,
             tags = tags.toList(),
-            productOptions = options.map { option -> option.toOptionCreateInput() },
-            metafields = metafields.map { metafield -> metafield.toMetafieldInput() },
+            productOptions = options.map { it.toOptionCreateInput() },
+            metafields = metafields.map { it.toMetafieldInput() },
             descriptionHtml = descriptionHtml
         )
 }
