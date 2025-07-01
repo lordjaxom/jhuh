@@ -114,7 +114,7 @@ class ShopifyProductVariant private constructor(
     override fun toString() =
         "ShopifyProductVariant(id='$id', title='$title', sku='$sku', barcode='$barcode', price=$price)"
 
-    fun toProductVariantsBulkInput() =
+    internal fun toProductVariantsBulkInput() =
         ProductVariantsBulkInput(
             id = id,
             barcode = barcode,
