@@ -24,7 +24,7 @@ class UnsavedShopifyProductVariant(
     override var sku: String,
     override var barcode: String,
     price: BigDecimal,
-    override var weight: Weight = Weight(WeightUnit.GRAMS, 0.0),
+    override var weight: Weight,
     override val options: List<ShopifyProductVariantOption>
 ) : ShopifyProductVariantBase {
 
@@ -56,7 +56,7 @@ class ShopifyProductVariant internal constructor(
     private val unsaved: UnsavedShopifyProductVariant,
     val id: String,
     val title: String,
-    var mediaId: String?
+    var mediaId: String? = null
 ) : ShopifyProductVariantBase by unsaved {
 
     internal constructor(variant: ProductVariant) : this(
@@ -75,7 +75,7 @@ class ShopifyProductVariant internal constructor(
     }
 
     override fun toString() =
-        "ShopifyProductVariant(id='$id', sku='$sku', barcode='$barcode', title='$title')"
+        "ShopifyProductVariant(id='$id', title='$title', sku='$sku', barcode='$barcode', price=$price)"
 
     fun toProductVariantsBulkInput() =
         ProductVariantsBulkInput(
