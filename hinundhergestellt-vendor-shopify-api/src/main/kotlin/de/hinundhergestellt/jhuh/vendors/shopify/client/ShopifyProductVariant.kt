@@ -3,6 +3,7 @@ package de.hinundhergestellt.jhuh.vendors.shopify.client
 import de.hinundhergestellt.jhuh.core.fixedScale
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.InventoryItemInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.InventoryItemMeasurementInput
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.InventoryLevelInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductVariantsBulkInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.Weight
@@ -10,7 +11,7 @@ import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightUnit
 import java.math.BigDecimal
 
-private interface ShopifyProductVariantBase {
+private interface ShopifyProductVariantCommonFields {
 
     var sku: String
     var barcode: String
@@ -20,26 +21,15 @@ private interface ShopifyProductVariantBase {
     val options: List<ShopifyProductVariantOption>
 }
 
-class UnsavedShopifyProductVariant(
+internal class BaseShopifyProductVariant(
     override var sku: String,
     override var barcode: String,
     price: BigDecimal,
     override var weight: Weight,
     override val options: List<ShopifyProductVariantOption>
-) : ShopifyProductVariantBase {
+) : ShopifyProductVariantCommonFields {
 
     override var price by fixedScale(price, 2)
-
-    override fun toString() =
-        "UnsavedShopifyProductVariant(sku='$sku', barcode='$barcode', price=$price)"
-
-    internal fun toProductVariantsBulkInput() =
-        ProductVariantsBulkInput(
-            barcode = barcode,
-            price = price.toPlainString(),
-            optionValues = options.map { it.toVariantOptionValueInput() },
-            inventoryItem = toInventoryItemInput(),
-        )
 
     internal fun toInventoryItemInput() =
         InventoryItemInput(
@@ -52,15 +42,60 @@ class UnsavedShopifyProductVariant(
         InventoryItemMeasurementInput(weight.toWeightInput())
 }
 
-class ShopifyProductVariant internal constructor(
-    private val unsaved: UnsavedShopifyProductVariant,
+class UnsavedShopifyProductVariant private constructor(
+    internal val base: BaseShopifyProductVariant,
+    val inventoryLocationId: String,
+    val inventoryQuantity: Int
+) : ShopifyProductVariantCommonFields by base {
+
+    constructor(
+        sku: String,
+        barcode: String,
+        price: BigDecimal,
+        weight: Weight,
+        inventoryLocationId: String,
+        inventoryQuantity: Int,
+        options: List<ShopifyProductVariantOption>
+    ) : this(
+        BaseShopifyProductVariant(
+            sku,
+            barcode,
+            price,
+            weight,
+            options
+        ),
+        inventoryLocationId,
+        inventoryQuantity
+    )
+
+    override fun toString() =
+        "UnsavedShopifyProductVariant(sku='$sku', barcode='$barcode', price=$price)"
+
+    internal fun toProductVariantsBulkInput() =
+        ProductVariantsBulkInput(
+            barcode = barcode,
+            price = price.toPlainString(),
+            optionValues = options.map { it.toVariantOptionValueInput() },
+            inventoryItem = base.toInventoryItemInput(),
+            inventoryQuantities = listOf(toInventoryLevelInput())
+        )
+
+    private fun toInventoryLevelInput() =
+        InventoryLevelInput(
+            locationId = inventoryLocationId,
+            availableQuantity = inventoryQuantity
+        )
+}
+
+class ShopifyProductVariant private constructor(
+    private val base: BaseShopifyProductVariant,
     val id: String,
     val title: String,
     var mediaId: String? = null
-) : ShopifyProductVariantBase by unsaved {
+) : ShopifyProductVariantCommonFields by base {
 
     internal constructor(variant: ProductVariant) : this(
-        UnsavedShopifyProductVariant(
+        BaseShopifyProductVariant(
             variant.sku ?: "",
             variant.barcode!!,
             BigDecimal(variant.price),
@@ -74,6 +109,8 @@ class ShopifyProductVariant internal constructor(
         require(!variant.media.pageInfo.hasNextPage) { "ProductVariant has more media than is supported" }
     }
 
+    internal constructor(unsaved: UnsavedShopifyProductVariant, id: String, title: String) : this(unsaved.base, id, title)
+
     override fun toString() =
         "ShopifyProductVariant(id='$id', title='$title', sku='$sku', barcode='$barcode', price=$price)"
 
@@ -83,7 +120,7 @@ class ShopifyProductVariant internal constructor(
             barcode = barcode,
             price = price.toPlainString(),
             optionValues = options.map { it.toVariantOptionValueInput() },
-            inventoryItem = unsaved.toInventoryItemInput(),
+            inventoryItem = base.toInventoryItemInput(),
             mediaId = mediaId
         )
 }

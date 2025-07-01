@@ -13,15 +13,16 @@ import org.springframework.stereotype.Component
 @Component
 class ShopifyVariantMapper {
 
-    fun mapToVariant(shopifyProduct: ShopifyProduct, artooVariation: ArtooMappedVariation) =
-        Builder(shopifyProduct, artooVariation).build()
+    fun mapToVariant(shopifyProduct: ShopifyProduct, artooVariation: ArtooMappedVariation, inventoryLocationId: String) =
+        Builder(shopifyProduct, artooVariation, inventoryLocationId).build()
 
     fun updateVariant(shopifyVariant: ShopifyProductVariant, artooVariation: ArtooMappedVariation) =
         Updater(shopifyVariant, artooVariation).update()
 
     private inner class Builder(
         private val shopifyProduct: ShopifyProduct,
-        private val artooVariation: ArtooMappedVariation
+        private val artooVariation: ArtooMappedVariation,
+        private val inventoryLocationId: String
     ) {
         fun build() =
             UnsavedShopifyProductVariant(
@@ -29,6 +30,8 @@ class ShopifyVariantMapper {
                 artooVariation.barcode!!,
                 artooVariation.price,
                 Weight(WeightUnit.GRAMS, 0.0),
+                inventoryLocationId,
+                artooVariation.stockValue.intValueExact(),
                 variantOptions()
             )
 

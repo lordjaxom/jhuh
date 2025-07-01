@@ -332,7 +332,7 @@ class ProductManagerService(
 
         if (shopifyVariant == null) {
             logger.info { "Variant ${artooVariation.name} of ${artooProduct.name} only in ready2order, create in Shopify" }
-            return Create(shopifyVariantMapper.mapToVariant(shopifyProduct, artooVariation))
+            return Create(shopifyVariantMapper.mapToVariant(shopifyProduct, artooVariation, shopifyDataStore.location.id))
         }
 
         if (shopifyVariantMapper.updateVariant(shopifyVariant, artooVariation)) {
