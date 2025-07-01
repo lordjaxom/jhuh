@@ -17,10 +17,12 @@ class ShopifyLocationClient(
                         id; name; isPrimary; fulfillsOnlineOrders; hasActiveInventory; shipsInventory
                     }
                 }
+                pageInfo { hasNextPage }
             }
         }
 
         val payload = shopifyGraphQLClient.executeQuery<LocationConnection>(request)
+        require(!payload.pageInfo.hasNextPage) { "Shop has more locations than were loaded" }
         return payload.edges.map { ShopifyLocation(it.node) }
     }
 }

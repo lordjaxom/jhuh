@@ -137,7 +137,7 @@ class ShopifyProductClient(
                 node {
                     onMediaImage {
                         id
-                        image { id; src }
+                        image { id; src; altText }
                     }
                 }
             }
