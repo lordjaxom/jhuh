@@ -10,33 +10,40 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>hinundhergestellt-vendor-rayher-api</artifactId>
+    <artifactId>hinundhergestellt-tools</artifactId>
 
     <dependencies>
+        <dependency>
+            <groupId>de.akvsoft</groupId>
+            <artifactId>hinundhergestellt-vendor-ready2order-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>de.akvsoft</groupId>
+            <artifactId>hinundhergestellt-vendor-rayher-api</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>com.opencsv</groupId>
-            <artifactId>opencsv</artifactId>
+            <groupId>io.github.oshai</groupId>
+            <artifactId>kotlin-logging-jvm</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-test-junit5</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>
-        <sourceDirectory>src/main/kotlin</sourceDirectory>
         <testSourceDirectory>src/test/kotlin</testSourceDirectory>
 
         <plugins>
@@ -61,7 +68,17 @@
                     <args>
                         <arg>-Xjsr305=strict</arg>
                     </args>
+                    <compilerPlugins>
+                        <plugin>spring</plugin>
+                    </compilerPlugins>
                 </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.jetbrains.kotlin</groupId>
+                        <artifactId>kotlin-maven-allopen</artifactId>
+                        <version>${kotlin.version}</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>

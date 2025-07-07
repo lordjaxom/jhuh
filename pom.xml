@@ -30,6 +30,7 @@
         <module>hinundhergestellt-vendor-shopify-api</module>
         <module>hinundhergestellt-vendor-rayher-api</module>
         <module>hinundhergestellt-server</module>
+        <module>hinundhergestellt-tools</module>
     </modules>
 
     <dependencyManagement>
@@ -57,6 +58,11 @@
             <dependency>
                 <groupId>de.akvsoft</groupId>
                 <artifactId>hinundhergestellt-server</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>de.akvsoft</groupId>
+                <artifactId>hinundhergestellt-tools</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
             </dependency>
 
