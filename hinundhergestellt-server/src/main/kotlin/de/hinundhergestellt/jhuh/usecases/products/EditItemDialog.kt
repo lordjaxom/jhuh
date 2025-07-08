@@ -45,33 +45,32 @@ private class EditItemDialog(
             isSpacing = false
             isPadding = false
 
-            if (item is ProductItem) { // TODO: recursive update doesn't honor filters
-                val vendorComboBox = comboBox<SyncVendor>("Hersteller") {
-                    isClearButtonVisible = true
-                    isEnabled = item is ProductItem
-                    itemLabelGenerator { it.name }
-                    setWidthFull()
-                    setItems(vendors)
-                    bind(binder).toProperty(EditItemResult::vendor)
-                    if (item is ProductItem) focus()
-                    // TODO: Focus next on value change
+            // TODO: recursive update doesn't honor filters
+            val vendorComboBox = comboBox<SyncVendor>("Hersteller") {
+                isClearButtonVisible = true
+                isEnabled = item is ProductItem
+                itemLabelGenerator { it.name }
+                setWidthFull()
+                setItems(vendors)
+                bind(binder).toProperty(EditItemResult::vendor)
+                if (item is ProductItem) focus()
+                // TODO: Focus next on value change
+            }
+            if (item is CategoryItem) {
+                checkbox("Für alle Produkte ersetzen?") {
+                    addValueChangeListener { vendorComboBox.isEnabled = value; if (value) vendorComboBox.focus() }
+                    bind(binder).toProperty(EditItemResult::replaceVendor)
                 }
-                if (item is CategoryItem) {
-                    checkbox("Für alle Produkte ersetzen?") {
-                        addValueChangeListener { vendorComboBox.isEnabled = value; if (value) vendorComboBox.focus() }
-                        bind(binder).toProperty(EditItemResult::replaceVendor)
-                    }
-                }
-                val typeTextField = textField("Produktart") {
-                    isEnabled = item is ProductItem
-                    setWidthFull()
-                    bind(binder).toProperty(EditItemResult::type)
-                }
-                if (item is CategoryItem) {
-                    checkbox("Für alle Produkte ersetzen?") {
-                        addValueChangeListener { typeTextField.isEnabled = value; if (value) typeTextField.focus() }
-                        bind(binder).toProperty(EditItemResult::replaceType)
-                    }
+            }
+            val typeTextField = textField("Produktart") {
+                isEnabled = item is ProductItem
+                setWidthFull()
+                bind(binder).toProperty(EditItemResult::type)
+            }
+            if (item is CategoryItem) {
+                checkbox("Für alle Produkte ersetzen?") {
+                    addValueChangeListener { typeTextField.isEnabled = value; if (value) typeTextField.focus() }
+                    bind(binder).toProperty(EditItemResult::replaceType)
                 }
             }
             textField("Tags") {

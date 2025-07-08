@@ -12,6 +12,8 @@ import java.util.UUID
 interface ExtendedVectorStore : VectorStore {
 
     fun findById(id: String): Document?
+
+    fun removeById(id: String)
 }
 
 @Component
@@ -34,6 +36,10 @@ class MariaDBExtendedVectorStore(
                 id
             )
         )
+
+    override fun removeById(id: String) {
+        jdbcTemplate.update("delete from $fullyQualifiedTableName where id=?", id)
+    }
 }
 
 fun ExtendedVectorStore.findById(id: UUID) = when (this) {

@@ -9,6 +9,12 @@ spring:
             initialize-schema: always
     openai:
       api-key: ${OPENAI_APIKEY}
+    retry:
+      on-http-codes:
+        - 429
+      backoff:
+        initial-interval: 5s
+        multiplier: 3
     vectorstore:
       mariadb:
         table-name: vector_store

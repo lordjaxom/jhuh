@@ -2,6 +2,7 @@ package de.hinundhergestellt.jhuh.usecases.products
 
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.backend.barcodes.BarcodeGenerator
+import de.hinundhergestellt.jhuh.backend.shoptexter.ShopTexterService
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategory
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategoryRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
@@ -49,6 +50,7 @@ class ProductManagerService(
     private val syncVendorRepository: SyncVendorRepository,
     private val barcodeGenerator: BarcodeGenerator,
     private val labelGeneratorService: LabelGeneratorService,
+    private val shopTexterService: ShopTexterService
 ) : AutoCloseable {
 
     private val rootCategoriesLazy = lazyWithReset { artooDataStore.rootCategories.map { CategoryItem(it) } }
@@ -286,6 +288,7 @@ class ProductManagerService(
             logger.info { "Product ${shopifyProduct!!.title} no longer in ready2order, delete from Shopify" }
             shopifyProduct.also { runBlocking { shopifyDataStore.delete(it) } }
             syncProductRepository.delete(syncProduct)
+            shopTexterService.removeProduct(syncProduct.id)
             return
         }
 
@@ -293,10 +296,14 @@ class ProductManagerService(
             logger.info { "Product ${artooProduct.name} only in ready2order, create in Shopify" }
             val unsavedShopifyProduct = shopifyProductMapper.mapToProduct(syncProduct, artooProduct)
             shopifyProduct = runBlocking { shopifyDataStore.create(unsavedShopifyProduct) }
-            if (!shopifyProduct.isDryRun) syncProduct.shopifyId = shopifyProduct.id
+            if (!shopifyProduct.isDryRun) {
+                syncProduct.shopifyId = shopifyProduct.id
+            }
+            shopTexterService.updateProduct(syncProduct.id, shopifyProduct)
         } else if (shopifyProductMapper.updateProduct(syncProduct, artooProduct, shopifyProduct)) {
             logger.info { "Product ${artooProduct.name} has changed, update in Shopify" }
             runBlocking { shopifyDataStore.update(shopifyProduct) }
+            shopTexterService.updateProduct(syncProduct.id, shopifyProduct)
         }
 
         val bulkOperations = syncProduct.variants
