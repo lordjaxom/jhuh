@@ -121,19 +121,22 @@ class ProductManagerService(
     }
 
     @Transactional
-    fun synchronize() {
+    fun synchronize(report: (String) -> Unit) {
         try {
-            logger.info { "Reloading all Shopify products prior to synchronization" }
-
+            report("Shopify-Produktkatalog aktualisieren...")
             shopifyDataStore.withLockAndRefresh {
+                report("Änderungen in Shopify mit Datenbank zusammenführen...")
                 shopifyDataStore.products.forEach { reconcileFromShopify(it) }
+
+                report("Änderungen in ready2order mit Datenbank zusammenführen...")
                 // TODO: Using rootCategories might save a lot of duplicate database loads and conditions (like description.ifEmpty { name })
                 artooDataStore.findAllProducts().forEach { reconcileFromArtoo(it) }
 
                 artooDataStore.rootCategories.forEach { reconcileCategories(it) }
 
+                report("Datenbank und ready2order nach Shopify hochladen...")
                 // TODO: Potentially deactivate products in Shopify when synced=false
-                syncProductRepository.findAllBySyncedIsTrue().forEach { synchronizeWithShopify(it) }
+                syncProductRepository.findAllBySyncedIsTrue().forEach { synchronizeWithShopify(it, report) }
             }
         } catch (e: Throwable) {
             logger.error(e) { "Synchronization failed" }
@@ -274,7 +277,7 @@ class ProductManagerService(
             .forEach { syncProductRepository.save(it) } // for later retrieval in same transaction
     }
 
-    private fun synchronizeWithShopify(syncProduct: SyncProduct) {
+    private fun synchronizeWithShopify(syncProduct: SyncProduct, report: (String) -> Unit) {
         val artooProduct = syncProduct.artooId?.let { artooDataStore.findProductById(it) }
         var shopifyProduct = syncProduct.shopifyId?.let { shopifyDataStore.findProductById(it) }
 
@@ -294,6 +297,7 @@ class ProductManagerService(
 
         if (shopifyProduct == null) {
             logger.info { "Product ${artooProduct.name} only in ready2order, create in Shopify" }
+            report("Produktbeschreibung für ${artooProduct.name} generieren...")
             val unsavedShopifyProduct = shopifyProductMapper.mapToProduct(syncProduct, artooProduct)
             shopifyProduct = runBlocking { shopifyDataStore.create(unsavedShopifyProduct) }
             if (!shopifyProduct.isDryRun) {

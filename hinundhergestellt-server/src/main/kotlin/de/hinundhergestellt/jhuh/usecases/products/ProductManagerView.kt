@@ -138,11 +138,13 @@ class ProductManagerView(
     }
 
     private fun synchronize() = vaadinScope.launch {
-        progressOverlay.isVisible = true
         progressOverlay.text = "Synchronisiere Produkte mit Shopify..."
+        progressOverlay.isVisible = true
         try {
             withContext(applicationScope.coroutineContext) {
-                service.synchronize()
+                service.synchronize {
+                    vaadinScope.launch { progressOverlay.text = it }
+                }
             }
         } catch (e: Throwable) {
             showErrorNotification(e)
