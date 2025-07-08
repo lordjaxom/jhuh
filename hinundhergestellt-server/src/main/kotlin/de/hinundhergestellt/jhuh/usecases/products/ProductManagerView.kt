@@ -23,6 +23,7 @@ import com.vaadin.flow.router.Route
 import de.hinundhergestellt.jhuh.components.Article
 import de.hinundhergestellt.jhuh.components.GridActionButton
 import de.hinundhergestellt.jhuh.components.MoreGridActionButton
+import de.hinundhergestellt.jhuh.components.ProgressOverlay
 import de.hinundhergestellt.jhuh.components.actionsColumn
 import de.hinundhergestellt.jhuh.components.button
 import de.hinundhergestellt.jhuh.components.checkbox
@@ -31,6 +32,7 @@ import de.hinundhergestellt.jhuh.components.div
 import de.hinundhergestellt.jhuh.components.hierarchyTextColumn
 import de.hinundhergestellt.jhuh.components.horizontalLayout
 import de.hinundhergestellt.jhuh.components.iconColumn
+import de.hinundhergestellt.jhuh.components.progressOverlay
 import de.hinundhergestellt.jhuh.components.textColumn
 import de.hinundhergestellt.jhuh.components.textField
 import de.hinundhergestellt.jhuh.components.treeGrid
@@ -57,7 +59,7 @@ class ProductManagerView(
     private val withErrorsCheckbox: Checkbox
     private val errorFreeCheckbox: Checkbox
     private val filterTextField: TextField
-    private val progressOverlay: Div
+    private val progressOverlay: ProgressOverlay
 
     private val treeDataProvider = TreeDataProvider()
 
@@ -123,11 +125,7 @@ class ProductManagerView(
             setSizeFull()
             addThemeVariants(GridVariant.LUMO_ROW_STRIPES)
         }
-        progressOverlay = div {
-            isVisible = false
-            classNames += "progress-overlay"
-            div { classNames += "progress-spinner" }
-        }
+        progressOverlay = progressOverlay()
 
         val refreshHandler: () -> Unit = { vaadinScope.launch { treeDataProvider.refreshAll(); progressOverlay.isVisible = false } }
         addAttachListener { service.refreshListeners += refreshHandler }
@@ -141,8 +139,11 @@ class ProductManagerView(
 
     private fun synchronize() = vaadinScope.launch {
         progressOverlay.isVisible = true
+        progressOverlay.text = "Synchronisiere Produkte mit Shopify..."
         try {
-            withContext(applicationScope.coroutineContext) { service.synchronize() }
+            withContext(applicationScope.coroutineContext) {
+                service.synchronize()
+            }
         } catch (e: Throwable) {
             showErrorNotification(e)
         } finally {

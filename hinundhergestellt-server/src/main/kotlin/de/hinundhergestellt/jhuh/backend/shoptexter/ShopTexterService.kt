@@ -50,7 +50,7 @@ class ShopTexterService(
         vectorStore.removeById(id.toString())
     }
 
-    suspend fun generate(product: UnsavedShopifyProduct): ShopTexterResponse {
+    fun generate(product: UnsavedShopifyProduct): ShopTexterResponse {
         logger.info { "Generating product description for $product" }
 
         val callResponse = shopTexterChatClient.prompt()

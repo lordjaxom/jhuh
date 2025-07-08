@@ -20,6 +20,19 @@ vaadin-grid::part(cell) {
     background-color: rgba(0, 0, 0, 0.6);
     z-index: 9999;
     display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.progress-box {
+    width: 500px;
+    background-color: var(--lumo-base-color);
+    border-radius: var(--lumo-border-radius-l);
+    box-sizing: border-box;
+    box-shadow: var(--lumo-box-shadow-xl);
+    display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
 }
@@ -27,10 +40,17 @@ vaadin-grid::part(cell) {
 .progress-spinner {
     width: 100px;
     height: 100px;
+    margin: var(--lumo-space-m);
     border-radius: 50%;
     border: 10px solid lightgray;
     border-top-color: var(--lumo-primary-color);
     animation: progress-spinner 1s linear infinite;
+}
+
+.progress-text {
+    margin-bottom: var(--lumo-space-m);
+    font-size: var(--lumo-font-size-m);
+    color: var(--lumo-secondary-text-color);
 }
 
 @keyframes progress-spinner {
