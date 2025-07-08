@@ -1,5 +1,6 @@
 package de.hinundhergestellt.jhuh.usecases.products
 
+import de.hinundhergestellt.jhuh.backend.mapping.update
 import de.hinundhergestellt.jhuh.backend.shoptexter.ShopTexterService
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategoryRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
@@ -82,10 +83,10 @@ class ShopifyProductMapper(
 
         fun update(): Boolean {
             require(shopifyProduct.hasOnlyDefaultVariant == artooProduct.hasOnlyDefaultVariant) { "Switching variants and standalone not supported yet" }
-            return updateProperty(shopifyProduct::title, artooProduct.description.ifEmpty { artooProduct.name }) or
-                    updateProperty(shopifyProduct::vendor, syncProduct.vendor!!.name) or
-                    updateProperty(shopifyProduct::productType, syncProduct.type!!) or
-                    updateProperty(shopifyProduct::tags, allTags()) or
+            return shopifyProduct::title.update(artooProduct.description.ifEmpty { artooProduct.name }) or
+                    shopifyProduct::vendor.update(syncProduct.vendor!!.name) or
+                    shopifyProduct::productType.update(syncProduct.type!!) or
+                    shopifyProduct::tags.update(allTags()) or
                     updateProductMetafields()
         }
 
@@ -94,7 +95,7 @@ class ShopifyProductMapper(
             return shopifyProduct.metafields.addAll(metafields.filter { !shopifyProduct.metafields.containsId(it) }) or
                     shopifyProduct.metafields.asSequence()
                         .mapNotNull { old -> metafields.findById(old)?.let { new -> old to new } }
-                        .map { (old, new) -> updateProperty(old::value, new.value) or updateProperty(old::type, new.type) }
+                        .map { (old, new) -> old::value.update(new.value) or old::type.update(new.type) }
                         .toList() // enforce terminal operation
                         .any { it }
         }

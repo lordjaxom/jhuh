@@ -11,6 +11,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.text.DecimalFormat
 import java.text.NumberFormat
+import java.text.ParseException
 import java.util.Locale
 
 private val bigDecimalParser = (NumberFormat.getInstance(Locale.GERMAN) as DecimalFormat).apply { isParseBigDecimal = true }
@@ -26,11 +27,17 @@ fun readRayherProducts(reader: Reader) =
 
 private fun readRayherProducts(reader: CSVReader): List<RayherProduct> {
     val header = reader.readNext()
-    return reader.readAll().map { mapToRayherProduct(header, it) }
+    return reader.readAll().mapIndexed { index, row ->
+        try {
+            mapToRayherProduct(header, row)
+        } catch (e: ParseException) {
+            throw ParseException(e.message + " at row $index", e.errorOffset).apply { initCause(e) }
+        }
+    }
 }
 
-private fun mapToRayherProduct(header: Array<String>, row: Array<String>): RayherProduct {
-    return RayherProduct(
+private fun mapToRayherProduct(header: Array<String>, row: Array<String>) =
+    RayherProduct(
         articleNumber = row[header.indexOf("Artikelnr.")].trim(),
         description = row[header.indexOf("Bezeichnung")].trim(),
         ean = row[header.indexOf("EAN")].trim(),
@@ -38,14 +45,15 @@ private fun mapToRayherProduct(header: Array<String>, row: Array<String>): Rayhe
             .map { row[header.indexOf(it)].trim() }
             .filter { it.isNotBlank() }
             .toList(),
-        weight = bigDecimalParser.parse(row[header.indexOf("Gewicht PE g")]) as BigDecimal,
+        weight = row[header.indexOf("Gewicht PE g")].trim()
+            .takeIf { it.isNotBlank() }
+            ?.let { bigDecimalParser.parse(it) as BigDecimal },
         imageUrls = row.asSequence()
             .drop(header.indexOf("URL_Bild"))
             .map { it.trim() }
             .filter { it.isNotBlank() }
             .toList(),
     )
-}
 
 private fun csvReader(reader: Reader) =
     CSVReaderBuilder(reader)

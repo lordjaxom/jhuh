@@ -1,5 +1,7 @@
 package de.hinundhergestellt.jhuh.usecases.products
 
+import de.hinundhergestellt.jhuh.backend.mapping.VariantContributorService
+import de.hinundhergestellt.jhuh.backend.mapping.update
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedVariation
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
@@ -7,17 +9,21 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantOpt
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.Weight
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightUnit
-import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
 
 @Component
-class ShopifyVariantMapper {
+class ShopifyVariantMapper(
+    private val contributorService: VariantContributorService
+) {
 
     fun mapToVariant(shopifyProduct: ShopifyProduct, artooVariation: ArtooMappedVariation, inventoryLocationId: String) =
-        Builder(shopifyProduct, artooVariation, inventoryLocationId).build()
+        Builder(shopifyProduct, artooVariation, inventoryLocationId)
+            .build()
+            .also { contributorService.contribute(it) }
 
     fun updateVariant(shopifyVariant: ShopifyProductVariant, artooVariation: ArtooMappedVariation) =
-        Updater(shopifyVariant, artooVariation).update()
+        Updater(shopifyVariant, artooVariation).update() or
+                contributorService.contribute(shopifyVariant)
 
     private inner class Builder(
         private val shopifyProduct: ShopifyProduct,
@@ -47,13 +53,13 @@ class ShopifyVariantMapper {
     ) {
         fun update(): Boolean {
             return updateVariantOptions() or
-                    updateProperty(shopifyVariant::barcode, artooVariation.barcode!!) or
-                    updateProperty(shopifyVariant::sku, artooVariation.itemNumber ?: "") or
-                    updateProperty(shopifyVariant::price, artooVariation.price)
+                    shopifyVariant::barcode.update(artooVariation.barcode!!) or
+                    shopifyVariant::sku.update(artooVariation.itemNumber ?: "") or
+                    shopifyVariant::price.update(artooVariation.price)
         }
 
         private fun updateVariantOptions() =
-            if (!artooVariation.isDefaultVariant) updateProperty(shopifyVariant.options[0]::value, artooVariation.name)
+            if (!artooVariation.isDefaultVariant) shopifyVariant.options[0]::value.update(artooVariation.name)
             else false
     }
 }
