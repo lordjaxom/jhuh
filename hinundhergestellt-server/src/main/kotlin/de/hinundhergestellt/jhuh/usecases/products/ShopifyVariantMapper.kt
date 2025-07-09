@@ -6,8 +6,8 @@ import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedVariat
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantOption
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyWeight
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVariant
-import de.hinundhergestellt.jhuh.vendors.shopify.client.Weight
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightUnit
 import org.springframework.stereotype.Component
 
@@ -35,7 +35,7 @@ class ShopifyVariantMapper(
                 artooVariation.itemNumber ?: "",
                 artooVariation.barcode!!,
                 artooVariation.price,
-                Weight(WeightUnit.GRAMS, 0.0),
+                ShopifyWeight(WeightUnit.GRAMS, 0.0),
                 inventoryLocationId,
                 artooVariation.stockValue.intValueExact(),
                 variantOptions()

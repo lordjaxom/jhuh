@@ -16,7 +16,7 @@ private interface ShopifyProductVariantCommonFields {
     var sku: String
     var barcode: String
     var price: BigDecimal
-    var weight: Weight
+    var weight: ShopifyWeight
 
     val options: List<ShopifyProductVariantOption>
 }
@@ -25,7 +25,7 @@ internal class BaseShopifyProductVariant(
     override var sku: String,
     override var barcode: String,
     price: BigDecimal,
-    override var weight: Weight,
+    override var weight: ShopifyWeight,
     override val options: List<ShopifyProductVariantOption>
 ) : ShopifyProductVariantCommonFields {
 
@@ -52,7 +52,7 @@ class UnsavedShopifyProductVariant private constructor(
         sku: String,
         barcode: String,
         price: BigDecimal,
-        weight: Weight,
+        weight: ShopifyWeight,
         inventoryLocationId: String,
         inventoryQuantity: Int,
         options: List<ShopifyProductVariantOption>
@@ -99,7 +99,7 @@ class ShopifyProductVariant private constructor(
             variant.sku ?: "",
             variant.barcode!!,
             BigDecimal(variant.price),
-            variant.inventoryItem.measurement.weight!!,
+            ShopifyWeight(variant.inventoryItem.measurement.weight!!),
             variant.selectedOptions.map { ShopifyProductVariantOption(it) }
         ),
         variant.id,
@@ -124,7 +124,3 @@ class ShopifyProductVariant private constructor(
             mediaId = mediaId
         )
 }
-
-fun Weight(unit: WeightUnit, value: Double) = Weight.Builder().withUnit(unit).withValue(value).build()
-
-private fun Weight.toWeightInput() = WeightInput(value, unit)

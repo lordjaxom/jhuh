@@ -9,6 +9,7 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafieldsClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOptionClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantClient
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyWeight
 import de.hinundhergestellt.jhuh.vendors.shopify.client.Weight
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightUnit
 import kotlinx.coroutines.flow.filter
@@ -83,7 +84,7 @@ class ShopifyProductsFixITCase {
         productClient.fetchAll()
             .filter { it.title.contains("Minirolle") }
             .collect { product ->
-                product.variants.forEach { it.weight = Weight(WeightUnit.GRAMS, 100.0) }
+                product.variants.forEach { it.weight = ShopifyWeight(WeightUnit.GRAMS, 100.0) }
                 variantClient.update(product, product.variants)
             }
     }

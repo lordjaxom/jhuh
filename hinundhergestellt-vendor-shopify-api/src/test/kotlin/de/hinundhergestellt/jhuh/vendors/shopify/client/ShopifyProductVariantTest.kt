@@ -1,9 +1,9 @@
-
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.MediaEdge
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.SelectedOption
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.Weight
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightUnit
 import io.mockk.every
 import io.mockk.mockk
@@ -19,7 +19,7 @@ class ShopifyProductVariantTest {
             sku = "SKU123",
             barcode = "BARCODE123",
             price = BigDecimal("12.34"),
-            weight = Weight(WeightUnit.KILOGRAMS, 1.0),
+            weight = ShopifyWeight(WeightUnit.KILOGRAMS, 1.0),
             options = listOf(ShopifyProductVariantOption("Color", "Red")),
             inventoryLocationId = "LOC123",
             inventoryQuantity = 10
@@ -41,7 +41,8 @@ class ShopifyProductVariantTest {
         every { mockVariant.sku } returns "SKU567"
         every { mockVariant.barcode } returns "BAR567"
         every { mockVariant.price } returns "29.99"
-        every { mockVariant.inventoryItem.measurement.weight } returns Weight(WeightUnit.KILOGRAMS, 2.0)
+        every { mockVariant.inventoryItem.measurement.weight } returns
+                Weight.Builder().withUnit(WeightUnit.KILOGRAMS).withValue(2.0).build()
         every { mockVariant.selectedOptions } returns listOf(
             mockk<SelectedOption>().apply {
                 every { name } returns "Size"
@@ -74,7 +75,7 @@ class ShopifyProductVariantTest {
             sku = "SKU444",
             barcode = "BAR444",
             price = BigDecimal("25.00"),
-            weight = Weight(WeightUnit.KILOGRAMS, 1.0),
+            weight = ShopifyWeight(WeightUnit.KILOGRAMS, 1.0),
             options = listOf(ShopifyProductVariantOption("Finish", "Glossy")),
             inventoryLocationId = "LOC444",
             inventoryQuantity = 50
@@ -102,7 +103,7 @@ class ShopifyProductVariantTest {
             sku = "SKU999",
             barcode = "BAR999",
             price = BigDecimal("9.99"),
-            weight = Weight(WeightUnit.KILOGRAMS, 2.5),
+            weight = ShopifyWeight(WeightUnit.KILOGRAMS, 2.5),
             options = listOf(ShopifyProductVariantOption("Size", "L")),
             inventoryLocationId = "LOC001",
             inventoryQuantity = 5
@@ -119,7 +120,8 @@ class ShopifyProductVariantTest {
         every { mockVariant.sku } returns "SKU"
         every { mockVariant.barcode } returns "BARCODE"
         every { mockVariant.price } returns "11.00"
-        every { mockVariant.inventoryItem.measurement.weight } returns Weight(WeightUnit.KILOGRAMS, 1.0)
+        every { mockVariant.inventoryItem.measurement.weight } returns
+                Weight.Builder().withUnit(WeightUnit.KILOGRAMS).withValue(1.0).build()
         every { mockVariant.selectedOptions } returns listOf(
             mockk<SelectedOption>().apply {
                 every { name } returns "Color"
