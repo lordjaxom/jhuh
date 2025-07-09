@@ -1,14 +1,12 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
 import de.hinundhergestellt.jhuh.core.fixedScale
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.InventoryItemInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.InventoryItemMeasurementInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.InventoryLevelInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductVariantsBulkInput
-import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.Weight
-import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightInput
-import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightUnit
 import java.math.BigDecimal
 
 private interface ShopifyProductVariantCommonFields {
@@ -30,6 +28,14 @@ internal class BaseShopifyProductVariant(
 ) : ShopifyProductVariantCommonFields {
 
     override var price by fixedScale(price, 2)
+
+    internal constructor(variant: ProductVariant) : this(
+        variant.sku ?: "",
+        variant.barcode!!,
+        BigDecimal(variant.price),
+        ShopifyWeight(variant.inventoryItem.measurement.weight!!),
+        variant.selectedOptions.map { ShopifyProductVariantOption(it) }
+    )
 
     internal fun toInventoryItemInput() =
         InventoryItemInput(
@@ -95,13 +101,7 @@ class ShopifyProductVariant private constructor(
 ) : ShopifyProductVariantCommonFields by base {
 
     internal constructor(variant: ProductVariant) : this(
-        BaseShopifyProductVariant(
-            variant.sku ?: "",
-            variant.barcode!!,
-            BigDecimal(variant.price),
-            ShopifyWeight(variant.inventoryItem.measurement.weight!!),
-            variant.selectedOptions.map { ShopifyProductVariantOption(it) }
-        ),
+        BaseShopifyProductVariant(variant),
         variant.id,
         variant.title,
         variant.media.edges.firstOrNull()?.node?.id
