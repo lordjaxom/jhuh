@@ -7,6 +7,7 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KMutableProperty0
 import kotlin.reflect.KProperty
 
 class DirtyTracker {
@@ -44,6 +45,18 @@ class DirtyTracker {
                 }
             }
         }
+
+    fun <V> track(tracked: KMutableProperty0<V>): ReadWriteProperty<Any?, V> =
+        object : ReadWriteProperty<Any?, V> {
+            override fun getValue(thisRef: Any?, property: KProperty<*>) = tracked.get()
+            override fun setValue(thisRef: Any?, property: KProperty<*>, value: V) {
+                val oldValue = tracked.get()
+                tracked.set(value)
+                if (oldValue != tracked.get()) {
+                    dirties += property.name
+                }
+            }
+        }
 }
 
 interface HasDirtyTracker {
@@ -51,7 +64,7 @@ interface HasDirtyTracker {
     val dirtyTracker: DirtyTracker
 }
 
-suspend fun <T: HasDirtyTracker> T.ifDirty(block: suspend (T) -> Unit) {
+inline fun <T: HasDirtyTracker> T.ifDirty(block: (T) -> Unit) {
     contract { callsInPlace(block, InvocationKind.AT_MOST_ONCE) }
     if (dirtyTracker.getDirtyAndReset()) block(this)
 }

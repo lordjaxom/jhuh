@@ -1,7 +1,8 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
+import de.hinundhergestellt.jhuh.core.DirtyTracker
+import de.hinundhergestellt.jhuh.core.HasDirtyTracker
 import de.hinundhergestellt.jhuh.core.fixedScale
-import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.InventoryItemInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.InventoryItemMeasurementInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.InventoryLevelInput
@@ -97,8 +98,16 @@ class ShopifyProductVariant private constructor(
     private val base: BaseShopifyProductVariant,
     val id: String,
     val title: String,
-    var mediaId: String? = null
-) : ShopifyProductVariantCommonFields by base {
+    var mediaId: String?
+) : ShopifyProductVariantCommonFields, HasDirtyTracker {
+
+    override val dirtyTracker = DirtyTracker()
+
+    override var sku by dirtyTracker.track(base::sku)
+    override var barcode by dirtyTracker.track(base::barcode)
+    override var price by dirtyTracker.track(base::price)
+    override var weight by dirtyTracker.track(base::weight)
+    override val options by base::options
 
     internal constructor(variant: ProductVariant) : this(
         BaseShopifyProductVariant(variant),
@@ -109,7 +118,12 @@ class ShopifyProductVariant private constructor(
         require(!variant.media.pageInfo.hasNextPage) { "ProductVariant has more media than is supported" }
     }
 
-    internal constructor(unsaved: UnsavedShopifyProductVariant, id: String, title: String) : this(unsaved.base, id, title)
+    internal constructor(unsaved: UnsavedShopifyProductVariant, id: String, title: String) : this(
+        unsaved.base,
+        id,
+        title,
+        null
+    )
 
     override fun toString() =
         "ShopifyProductVariant(id='$id', title='$title', sku='$sku', barcode='$barcode', price=$price)"

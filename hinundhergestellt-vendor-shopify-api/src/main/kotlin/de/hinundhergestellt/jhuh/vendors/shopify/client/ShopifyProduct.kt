@@ -8,6 +8,19 @@ import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductStatus
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductUpdateInput
 import java.util.concurrent.CopyOnWriteArrayList
 
+private interface ShopifyProductCommonFields {
+
+    var title: String
+    var vendor: String
+    var productType: String
+    var status: ProductStatus
+    var tags: Set<String>
+    var descriptionHtml: String
+
+    val options: List<UnsavedShopifyProductOption>
+    val metafields: MutableList<ShopifyMetafield>
+}
+
 open class UnsavedShopifyProduct(
     var title: String,
     var vendor: String,
