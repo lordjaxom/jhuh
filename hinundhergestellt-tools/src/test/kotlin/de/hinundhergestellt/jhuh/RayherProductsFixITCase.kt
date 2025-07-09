@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Disabled
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.core.io.ByteArrayResource
+import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToFlux
 import java.net.URI
@@ -83,6 +84,7 @@ class RayherProductsFixITCase {
                     if (filePath.exists()) return@forEach
                     imageWebClient.get()
                         .uri(imageUrl)
+                        // TODO error handling (404 leads to HTML file)
                         .exchangeToFlux { it.bodyToFlux<ByteArrayResource>() }
                         .collect { Files.write(filePath, it.byteArray) }
                 }

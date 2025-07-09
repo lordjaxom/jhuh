@@ -19,6 +19,10 @@
         </dependency>
         <dependency>
             <groupId>de.akvsoft</groupId>
+            <artifactId>hinundhergestellt-vendor-shopify-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>de.akvsoft</groupId>
             <artifactId>hinundhergestellt-vendor-rayher-api</artifactId>
         </dependency>
 

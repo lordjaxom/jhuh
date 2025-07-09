@@ -1,6 +1,5 @@
 package de.hinundhergestellt.jhuh
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMedia
@@ -10,22 +9,24 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOptionClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyWeight
-import de.hinundhergestellt.jhuh.vendors.shopify.client.Weight
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightUnit
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.forEach
+import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Disabled
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.core.ParameterizedTypeReference
 import java.nio.charset.StandardCharsets
+import kotlin.collections.filter
 import kotlin.io.path.Path
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
+import kotlin.sequences.filter
+import kotlin.sequences.toList
 import kotlin.test.Test
 
 @SpringBootTest
@@ -82,9 +83,9 @@ class ShopifyProductsFixITCase {
     @Test
     fun assignWeightToProducts() = runBlocking {
         productClient.fetchAll()
-            .filter { it.title.contains("Minirolle") }
+            .filter { it.title.contains("Siser® Aurora") }
             .collect { product ->
-                product.variants.forEach { it.weight = ShopifyWeight(WeightUnit.GRAMS, 100.0) }
+                product.variants.forEach { it.weight = ShopifyWeight(WeightUnit.GRAMS, 0.5) }
                 variantClient.update(product, product.variants)
             }
     }
@@ -95,16 +96,45 @@ class ShopifyProductsFixITCase {
             .filter { product -> product.media.any { it.altText.isEmpty() } }
             .toList()
         if (products.isNotEmpty())
-            Path("/home/volkenas/Documents/products.json").writeText(jacksonObjectMapper().writeValueAsString(products), StandardCharsets.UTF_8)
+            homeDirectory
+                .resolve("Dokumente/products.json")
+                .writeText(jacksonObjectMapper().writeValueAsString(products), StandardCharsets.UTF_8)
         else println("No media without alt texts found")
     }
 
     @Test
     fun updateAltTexts() = runBlocking {
-        val fileContent = Path("/home/volkenas/Documents/generated_alt_texts.json").readText(StandardCharsets.UTF_8)
+        val fileContent = homeDirectory
+            .resolve("Downloads/alt_texts_from_filenames.json")
+            .readText(StandardCharsets.UTF_8)
         jacksonObjectMapper()
             .readValue<List<MediaAltText>>(fileContent)
             .map { ShopifyMedia(it.id, "", it.altText) }
+            .chunked(250)
+            .forEach { mediaClient.update(it) }
+    }
+
+    @Test
+    fun updateAltTextsFromRayherFilenames() = runBlocking {
+        val products = productClient.fetchAll()
+            .filter { product -> product.title.startsWith("Silikon Gießform") }
+            .toList()
+        products
+            .flatMap { product ->
+                product.media.mapNotNull { media ->
+                    val type = when {
+                        media.src.contains("_DI") -> " - Produktbeispiel"
+                        media.src.contains("_VP") -> " - Verpackung"
+                        media.src.contains("_PF") -> " - Produktfoto"
+                        else -> ""
+                    }
+                    val altText = "${product.title}$type"
+                    if (media.altText != altText) {
+                        media.altText = altText
+                        media
+                    } else null
+                }
+            }
             .chunked(250)
             .forEach { mediaClient.update(it) }
     }
