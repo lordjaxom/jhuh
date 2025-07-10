@@ -178,6 +178,27 @@ class ShopifyProductVariantTest {
     }
 
     @Test
+    fun `test dirty tracking of options`() {
+        val option = ShopifyProductVariantOption("Color", "Blue")
+        val variant = ShopifyProductVariant(
+            id = "ID_OPT",
+            title = "Option Variant",
+            sku = "SKU_OPT",
+            barcode = "BAR_OPT",
+            price = BigDecimal("10.00"),
+            weight = ShopifyWeight(WeightUnit.KILOGRAMS, 1.0),
+            options = listOf(option),
+            mediaId = null
+        )
+        // Initially, nothing is dirty
+        assertThat(variant.dirtyTracker.getDirtyAndReset()).isFalse()
+        // Change option value
+        option.value = "Red"
+        assertThat(variant.dirtyTracker.getDirtyAndReset()).isTrue()
+        assertThat(variant.dirtyTracker.getDirtyAndReset()).isFalse()
+    }
+
+    @Test
     fun `test value constructor`() {
         val option = ShopifyProductVariantOption("Material", "Cotton")
         val variant = ShopifyProductVariant(
