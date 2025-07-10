@@ -92,6 +92,37 @@ class ShopifyProduct : UnsavedShopifyProduct {
         this.metafields = CopyOnWriteArrayList(unsaved.metafields).asRemoveProtectedMutableList()
     }
 
+    internal constructor(
+        id: String,
+        title: String,
+        vendor: String,
+        productType: String,
+        status: ProductStatus,
+        tags: Set<String>,
+        options: MutableList<ShopifyProductOption>,
+        metafields: MutableList<ShopifyMetafield>,
+        descriptionHtml: String,
+        variants: MutableList<ShopifyProductVariant>,
+        hasOnlyDefaultVariant: Boolean,
+        media: List<ShopifyMedia>
+    ) : super(
+        title,
+        vendor,
+        productType,
+        status,
+        tags,
+        options,
+        metafields,
+        descriptionHtml
+    ) {
+        this.id = id
+        this.variants = variants
+        this.hasOnlyDefaultVariant = hasOnlyDefaultVariant
+        this.media = media
+        this.options = options
+        this.metafields = metafields
+    }
+
     fun findVariantByBarcode(barcode: String) =
         variants.firstOrNull { it.barcode == barcode }
 
