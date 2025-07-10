@@ -141,4 +141,40 @@ class ShopifyProductVariantTest {
             ShopifyProductVariant(mockVariant)
         }
     }
+
+    @Test
+    fun `test dirty tracking`() {
+        val unsaved = UnsavedShopifyProductVariant(
+            sku = "SKU_DT",
+            barcode = "BAR_DT",
+            price = BigDecimal("5.00"),
+            weight = ShopifyWeight(WeightUnit.KILOGRAMS, 1.0),
+            options = listOf(ShopifyProductVariantOption("Material", "Wool")),
+            inventoryLocationId = "LOC_DT",
+            inventoryQuantity = 3
+        )
+        val variant = ShopifyProductVariant(unsaved, "ID_DT", "Dirty Variant")
+        // Initially, nothing is dirty
+        assertThat(variant.dirtyTracker.getDirtyAndReset()).isFalse()
+        // Change a tracked property
+        variant.sku = "SKU_DT_NEW"
+        assertThat(variant.dirtyTracker.getDirtyAndReset()).isTrue()
+        // After reset, not dirty again
+        assertThat(variant.dirtyTracker.getDirtyAndReset()).isFalse()
+        // Change another property
+        variant.price = BigDecimal("6.00")
+        assertThat(variant.dirtyTracker.getDirtyAndReset()).isTrue()
+        // Change to same value should not mark dirty
+        variant.price = BigDecimal("6.00")
+        assertThat(variant.dirtyTracker.getDirtyAndReset()).isFalse()
+        // Change mediaId
+        variant.mediaId = "MEDIA_DT"
+        assertThat(variant.dirtyTracker.getDirtyAndReset()).isTrue()
+        // Change to same value should not mark dirty
+        variant.weight = ShopifyWeight(WeightUnit.KILOGRAMS, 1.0)
+        assertThat(variant.dirtyTracker.getDirtyAndReset()).isFalse()
+        // Change weight
+        variant.weight = ShopifyWeight(WeightUnit.GRAMS, 500.0)
+        assertThat(variant.dirtyTracker.getDirtyAndReset()).isTrue()
+    }
 }
