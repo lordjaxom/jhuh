@@ -1,13 +1,27 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
+import de.hinundhergestellt.jhuh.core.DirtyTracker
+import de.hinundhergestellt.jhuh.core.HasDirtyTracker
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.OptionCreateInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.OptionValueCreateInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductOption
 
-open class UnsavedShopifyProductOption(
-    var name: String,
+interface ShopifyProductOptionCommonFields {
+
+    var name: String
     val values: List<String>
-) {
+}
+
+class UnsavedShopifyProductOption(
+    override var name: String,
+    override val values: List<String>
+) : ShopifyProductOptionCommonFields {
+
+    internal constructor(option: ProductOption) : this(
+        option.name,
+        option.values
+    )
+
     override fun toString() =
         "UnsavedShopifyProductOption(name='$name')"
 
@@ -18,30 +32,28 @@ open class UnsavedShopifyProductOption(
         )
 }
 
-class ShopifyProductOption : UnsavedShopifyProductOption {
-
+class ShopifyProductOption internal constructor(
+    private val unsaved: UnsavedShopifyProductOption,
     val id: String
+) : ShopifyProductOptionCommonFields, HasDirtyTracker {
 
-    internal constructor(option: ProductOption) : super(
-        option.name,
-        option.values
-    ) {
-        id = option.id
-    }
+    override val dirtyTracker = DirtyTracker()
 
-    internal constructor(unsaved: UnsavedShopifyProductOption, id: String) : super(
-        unsaved.name,
-        unsaved.values
-    ) {
-        this.id = id
-    }
+    override var name by dirtyTracker.track(unsaved.name)
+    override val values by unsaved::values
 
-    internal constructor(id: String, name: String, values: List<String>) : super(
-        name,
-        values
-    ) {
-        this.id = id
-    }
+    internal constructor(option: ProductOption) : this(
+        UnsavedShopifyProductOption(option),
+        option.id
+    )
+
+    internal constructor(id: String, name: String, values: List<String>) : this(
+        UnsavedShopifyProductOption(
+            name,
+            values
+        ),
+        id
+    )
 
     override fun toString() =
         "ShopifyProductOption(id='$id', name='$name')"

@@ -87,7 +87,7 @@ class ShopifyProduct private constructor(
     private val base: BaseShopifyProduct,
     val id: String,
     val hasOnlyDefaultVariant: Boolean,
-    val options: List<ShopifyProductOption>,
+    options: List<ShopifyProductOption>,
     metafields: MutableList<ShopifyMetafield>,
     val variants: MutableList<ShopifyProductVariant>, // not dirty tracked, separate update workflow
     val media: List<ShopifyMedia>,
@@ -102,7 +102,8 @@ class ShopifyProduct private constructor(
     override var descriptionHtml by dirtyTracker.track(base::descriptionHtml)
     override var tags by dirtyTracker.track(base::tags)
 
-    val metafields by dirtyTracker.track(metafields)
+    val options by dirtyTracker.list(options)
+    val metafields by dirtyTracker.mutableList(metafields)
 
     internal constructor(product: Product, variants: List<ShopifyProductVariant>, media: List<ShopifyMedia>) : this(
         BaseShopifyProduct(product),
@@ -135,7 +136,7 @@ class ShopifyProduct private constructor(
         descriptionHtml: String,
         hasOnlyDefaultVariant: Boolean,
         tags: Set<String>,
-        options: MutableList<ShopifyProductOption>,
+        options: List<ShopifyProductOption>,
         metafields: MutableList<ShopifyMetafield>,
         variants: MutableList<ShopifyProductVariant>,
         media: List<ShopifyMedia>

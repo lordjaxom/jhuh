@@ -14,7 +14,7 @@ import kotlin.reflect.KProperty
 class DirtyTracker {
 
     private val dirties = synchronizedSet(mutableSetOf<String>())
-    private val collections = mutableListOf<MutableCollection<*>>()
+    private val collections = mutableListOf<Collection<*>>()
 
     fun getDirtyAndReset(): Boolean {
         synchronized(dirties) {
@@ -60,7 +60,20 @@ class DirtyTracker {
             }
         }
 
-    fun <V> track(tracked: MutableList<V>): ReadOnlyProperty<Any?, MutableList<V>> {
+    @Deprecated(
+        "Use list(tracked: List<V>) or mutableList(tracked: MutableList<V>) instead",
+        level = DeprecationLevel.ERROR
+    )
+    fun track(@Suppress("unused") tracked: Collection<*>) = Unit
+
+    fun <V> list(tracked: List<V>): ReadOnlyProperty<Any?, List<V>> {
+        collections.add(tracked)
+        return object : ReadOnlyProperty<Any?, List<V>> {
+            override fun getValue(thisRef: Any?, property: KProperty<*>) = tracked
+        }
+    }
+
+    fun <V> mutableList(tracked: MutableList<V>): ReadOnlyProperty<Any?, MutableList<V>> {
         collections.add(tracked)
         return object : ReadOnlyProperty<Any?, MutableList<V>> {
             override fun getValue(thisRef: Any?, property: KProperty<*>) = DirtyTrackedMutableList(tracked) { dirties += property.name }
@@ -78,5 +91,5 @@ inline fun <T : HasDirtyTracker> T.ifDirty(block: (T) -> Unit) {
     if (dirtyTracker.getDirtyAndReset()) block(this)
 }
 
-private fun MutableCollection<*>.getDirtyAndReset() =
+private fun Collection<*>.getDirtyAndReset() =
     map { it is HasDirtyTracker && it.dirtyTracker.getDirtyAndReset() }.any { it }

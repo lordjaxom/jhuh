@@ -309,7 +309,7 @@ class ShopifyProductTest {
             descriptionHtml = "<p>Beschreibung</p>",
             hasOnlyDefaultVariant = false,
             tags = setOf("Tag1", "Tag2"),
-            options = mutableListOf(),
+            options = listOf(),
             metafields = mutableListOf(metafield),
             variants = mutableListOf(),
             media = listOf()
@@ -338,6 +338,31 @@ class ShopifyProductTest {
         assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
         // clearing empty collection should not mark dirty
         product.metafields.clear()
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+    }
+
+    @Test
+    fun `test dirty tracking of options`() {
+        val option = ShopifyProductOption("OPT1", "Color", listOf("Red", "Blue"))
+        val product = ShopifyProduct(
+            id = "PROD1",
+            title = "Test Product",
+            vendor = "Vendor1",
+            productType = "Type1",
+            status = ProductStatus.ACTIVE,
+            descriptionHtml = "<p>Beschreibung</p>",
+            hasOnlyDefaultVariant = false,
+            tags = setOf("Tag1", "Tag2"),
+            options = listOf(option),
+            metafields = mutableListOf(),
+            variants = mutableListOf(),
+            media = listOf()
+        )
+        // Initial dirty state
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+        // change options
+        product.options[0].name = "Farbe"
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isTrue()
         assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
     }
 

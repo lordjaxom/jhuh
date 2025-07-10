@@ -43,5 +43,18 @@ class ShopifyProductOptionTest {
         val expected = "ShopifyProductOption(id='IDSTR', name='Farbe')"
         assertThat(option.toString()).isEqualTo(expected)
     }
-}
 
+    @Test
+    fun `test dirty tracking`() {
+        val option = ShopifyProductOption("OPTID4", "Material", listOf("Wolle", "Baumwolle"))
+        // initially not dirty
+        assertThat(option.dirtyTracker.getDirtyAndReset()).isFalse()
+        // change name
+        option.name = "Neues Material"
+        assertThat(option.dirtyTracker.getDirtyAndReset()).isTrue()
+        assertThat(option.dirtyTracker.getDirtyAndReset()).isFalse()
+        // change to same value should not mark dirty
+        option.name = "Neues Material"
+        assertThat(option.dirtyTracker.getDirtyAndReset()).isFalse()
+    }
+}
