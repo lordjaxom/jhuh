@@ -1,8 +1,10 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductStatus
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightUnit
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal
 
 class ShopifyProductTest {
 
@@ -11,9 +13,14 @@ class ShopifyProductTest {
         val option = ShopifyProductOption("OPT1", "Color", listOf("Red", "Blue"))
         val metafield = ShopifyMetafield("ns", "key", "val", ShopifyMetafieldType.SINGLE_LINE_TEXT_FIELD)
         val variant = ShopifyProductVariant(
-            UnsavedShopifyProductVariant("SKU1", "BAR1", java.math.BigDecimal.ONE, ShopifyWeight(de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightUnit.GRAMS, 1.0), "LOC1", 1, listOf()),
-            "VID1",
-            "Variant1"
+            id = "VID1",
+            title = "Variant1",
+            sku = "SKU1",
+            barcode = "BAR1",
+            price = BigDecimal.ONE,
+            weight = ShopifyWeight(WeightUnit.GRAMS, 1.0),
+            options = listOf(),
+            mediaId = null
         )
         val media = ShopifyMedia("MID1", "SRC1", "ALT1")
         val product = ShopifyProduct(
@@ -70,14 +77,24 @@ class ShopifyProductTest {
     @Test
     fun `test findVariantByBarcode returns correct variant`() {
         val variant1 = ShopifyProductVariant(
-            UnsavedShopifyProductVariant("SKU1", "BAR1", java.math.BigDecimal.ONE, ShopifyWeight(de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightUnit.GRAMS, 1.0), "LOC1", 1, listOf()),
-            "VID1",
-            "Variant1"
+            id = "VID1",
+            title = "Variant1",
+            sku = "SKU1",
+            barcode = "BAR1",
+            price = BigDecimal.ONE,
+            weight = ShopifyWeight(WeightUnit.GRAMS, 1.0),
+            options = listOf(),
+            mediaId = null
         )
         val variant2 = ShopifyProductVariant(
-            UnsavedShopifyProductVariant("SKU2", "BAR2", java.math.BigDecimal.ONE, ShopifyWeight(de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightUnit.GRAMS, 1.0), "LOC2", 2, listOf()),
-            "VID2",
-            "Variant2"
+            id = "VID2",
+            title = "Variant2",
+            sku = "SKU2",
+            barcode = "BAR2",
+            price = BigDecimal.ONE,
+            weight = ShopifyWeight(WeightUnit.GRAMS, 1.0),
+            options = listOf(),
+            mediaId = null
         )
         val product = ShopifyProduct(
             id = "PROD2",

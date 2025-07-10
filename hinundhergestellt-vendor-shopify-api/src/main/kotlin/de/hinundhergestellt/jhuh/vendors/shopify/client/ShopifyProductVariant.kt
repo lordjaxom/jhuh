@@ -127,6 +127,28 @@ class ShopifyProductVariant private constructor(
         null
     )
 
+    internal constructor(
+        id: String,
+        title: String,
+        sku: String,
+        barcode: String,
+        price: BigDecimal,
+        weight: ShopifyWeight,
+        options: List<ShopifyProductVariantOption>,
+        mediaId: String?
+    ) : this(
+        BaseShopifyProductVariant(
+            sku,
+            barcode,
+            price,
+            weight,
+            options
+        ),
+        id,
+        title,
+        mediaId
+    )
+
     override fun toString() =
         "ShopifyProductVariant(id='$id', title='$title', sku='$sku', barcode='$barcode', price=$price)"
 
