@@ -249,4 +249,144 @@ class ShopifyProductTest {
         assertThat(product.variants).isEmpty()
         assertThat(product.media).isEmpty()
     }
+
+    @Test
+    fun `test dirty tracking of non-collection fields`() {
+        val product = ShopifyProduct(
+            id = "PROD1",
+            title = "Test Product",
+            vendor = "Vendor1",
+            productType = "Type1",
+            status = ProductStatus.ACTIVE,
+            descriptionHtml = "<p>Beschreibung</p>",
+            hasOnlyDefaultVariant = false,
+            tags = setOf("Tag1", "Tag2"),
+            options = mutableListOf(),
+            metafields = mutableListOf(),
+            variants = mutableListOf(),
+            media = listOf()
+        )
+        // Initial dirty state
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+        // title
+        product.title = "New Title"
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isTrue()
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+        // change to same value should not mark dirty
+        product.vendor = "Vendor1"
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+        // vendor
+        product.vendor = "New Vendor"
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isTrue()
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+        // productType
+        product.productType = "New Type"
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isTrue()
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+        // status
+        product.status = ProductStatus.DRAFT
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isTrue()
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+        // descriptionHtml
+        product.descriptionHtml = "<p>New Desc</p>"
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isTrue()
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+        // tags
+        product.tags = setOf("A", "B")
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isTrue()
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+    }
+
+    @Test
+    fun `test dirty tracking of metafields`() {
+        val metafield = ShopifyMetafield("ns", "key", "val", ShopifyMetafieldType.SINGLE_LINE_TEXT_FIELD)
+        val product = ShopifyProduct(
+            id = "PROD1",
+            title = "Test Product",
+            vendor = "Vendor1",
+            productType = "Type1",
+            status = ProductStatus.ACTIVE,
+            descriptionHtml = "<p>Beschreibung</p>",
+            hasOnlyDefaultVariant = false,
+            tags = setOf("Tag1", "Tag2"),
+            options = mutableListOf(),
+            metafields = mutableListOf(metafield),
+            variants = mutableListOf(),
+            media = listOf()
+        )
+        // Initial dirty state
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+        // change existing metafield
+        product.metafields[0].value = "New Value"
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isTrue()
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+        // add new metafield
+        val newMetafield = ShopifyMetafield("ns2", "key2", "val2", ShopifyMetafieldType.MULTI_LINE_TEXT_FIELD)
+        product.metafields.add(newMetafield)
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isTrue()
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+        // remove metafield
+        product.metafields.remove(metafield)
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isTrue()
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+        // change to same value should not mark dirty
+        product.metafields[0].value = "val2"
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+        // clearing collection should mark dirty
+        product.metafields.clear()
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isTrue()
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+        // clearing empty collection should not mark dirty
+        product.metafields.clear()
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+    }
+
+    @Test
+    fun `test changing variants does not trigger dirty tracking`() {
+        val variant1 = ShopifyProductVariant(
+            id = "VID1",
+            title = "Variant1",
+            sku = "SKU1",
+            barcode = "BAR1",
+            price = BigDecimal.ONE,
+            weight = ShopifyWeight(WeightUnit.GRAMS, 1.0),
+            options = listOf(),
+            mediaId = null
+        )
+        val variant2 = ShopifyProductVariant(
+            id = "VID2",
+            title = "Variant2",
+            sku = "SKU2",
+            barcode = "BAR2",
+            price = BigDecimal.TEN,
+            weight = ShopifyWeight(WeightUnit.GRAMS, 2.0),
+            options = listOf(),
+            mediaId = null
+        )
+        val product = ShopifyProduct(
+            id = "PROD1",
+            title = "Test Product",
+            vendor = "Vendor1",
+            productType = "Type1",
+            status = ProductStatus.ACTIVE,
+            descriptionHtml = "<p>Beschreibung</p>",
+            hasOnlyDefaultVariant = false,
+            tags = setOf("Tag1", "Tag2"),
+            options = mutableListOf(),
+            metafields = mutableListOf(),
+            variants = mutableListOf(variant1),
+            media = listOf()
+        )
+        // Initial dirty state
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+        // Add variant
+        product.variants.add(variant2)
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+        // Remove variant
+        product.variants.remove(variant1)
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+        // Modify variant
+        variant2.sku = "SKU2-NEW"
+        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+    }
 }

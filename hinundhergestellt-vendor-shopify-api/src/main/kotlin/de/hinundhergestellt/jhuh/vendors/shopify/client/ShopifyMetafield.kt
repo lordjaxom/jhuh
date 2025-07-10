@@ -1,5 +1,7 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
+import de.hinundhergestellt.jhuh.core.DirtyTracker
+import de.hinundhergestellt.jhuh.core.HasDirtyTracker
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.Metafield
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.MetafieldIdentifierInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.MetafieldInput
@@ -7,9 +9,15 @@ import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.MetafieldInput
 class ShopifyMetafield(
     val namespace: String,
     val key: String,
-    var value: String,
-    var type: ShopifyMetafieldType
-) {
+    value: String,
+    type: ShopifyMetafieldType
+): HasDirtyTracker {
+
+    override val dirtyTracker = DirtyTracker()
+
+    var value by dirtyTracker.track(value)
+    var type by dirtyTracker.track(type)
+
     internal constructor(metafield: Metafield) : this(
         metafield.namespace,
         metafield.key,

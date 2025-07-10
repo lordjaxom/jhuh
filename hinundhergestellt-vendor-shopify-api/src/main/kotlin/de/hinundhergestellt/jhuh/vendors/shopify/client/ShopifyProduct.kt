@@ -1,5 +1,7 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
+import de.hinundhergestellt.jhuh.core.DirtyTracker
+import de.hinundhergestellt.jhuh.core.HasDirtyTracker
 import de.hinundhergestellt.jhuh.core.asRemoveProtectedMutableList
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.Product
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductCreateInput
@@ -85,11 +87,22 @@ class ShopifyProduct private constructor(
     private val base: BaseShopifyProduct,
     val id: String,
     val hasOnlyDefaultVariant: Boolean,
-    val options: MutableList<ShopifyProductOption>,
-    val metafields: MutableList<ShopifyMetafield>,
-    val variants: MutableList<ShopifyProductVariant>,
+    val options: List<ShopifyProductOption>,
+    metafields: MutableList<ShopifyMetafield>,
+    val variants: MutableList<ShopifyProductVariant>, // not dirty tracked, separate update workflow
     val media: List<ShopifyMedia>,
-) : ShopifyProductCommonFields by base {
+) : ShopifyProductCommonFields, HasDirtyTracker {
+
+    override val dirtyTracker = DirtyTracker()
+
+    override var title by dirtyTracker.track(base::title)
+    override var vendor by dirtyTracker.track(base::vendor)
+    override var productType by dirtyTracker.track(base::productType)
+    override var status by dirtyTracker.track(base::status)
+    override var descriptionHtml by dirtyTracker.track(base::descriptionHtml)
+    override var tags by dirtyTracker.track(base::tags)
+
+    val metafields by dirtyTracker.track(metafields)
 
     internal constructor(product: Product, variants: List<ShopifyProductVariant>, media: List<ShopifyMedia>) : this(
         BaseShopifyProduct(product),

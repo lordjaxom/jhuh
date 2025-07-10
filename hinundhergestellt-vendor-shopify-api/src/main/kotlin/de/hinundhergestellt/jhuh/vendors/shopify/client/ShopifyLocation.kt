@@ -2,7 +2,7 @@ package de.hinundhergestellt.jhuh.vendors.shopify.client
 
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.Location
 
-class ShopifyLocation(
+data class ShopifyLocation(
     val id: String,
     val name: String,
     val isPrimary: Boolean,
@@ -18,4 +18,7 @@ class ShopifyLocation(
         location.hasActiveInventory,
         location.shipsInventory
     )
+
+    override fun toString() =
+        "ShopifyLocation(id='$id', name='$name', isPrimary=$isPrimary)"
 }

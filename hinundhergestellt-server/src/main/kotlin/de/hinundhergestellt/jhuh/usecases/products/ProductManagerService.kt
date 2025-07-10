@@ -454,4 +454,4 @@ private sealed interface VariantBulkOperation {
 }
 
 private inline fun <reified T : VariantBulkOperation, V> List<VariantBulkOperation?>.allOf(property: KProperty1<T, V>) =
-    filterIsInstance<T>().map { property.get(it) }.takeIf { it.isNotEmpty() }
+    asSequence().filterIsInstance<T>().map { property.get(it) }.toList().takeIf { it.isNotEmpty() }

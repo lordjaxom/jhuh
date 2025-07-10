@@ -4,7 +4,7 @@ import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.FileUpdateInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.Media
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.MediaImage
 
-class ShopifyMedia(
+data class ShopifyMedia(
     val id: String,
     val src: String,
     var altText: String,

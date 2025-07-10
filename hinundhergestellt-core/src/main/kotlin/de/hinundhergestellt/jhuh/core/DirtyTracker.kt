@@ -6,6 +6,7 @@ import java.util.Collections.synchronizedSet
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KMutableProperty0
 import kotlin.reflect.KProperty
@@ -13,12 +14,13 @@ import kotlin.reflect.KProperty
 class DirtyTracker {
 
     private val dirties = synchronizedSet(mutableSetOf<String>())
+    private val collections = mutableListOf<MutableCollection<*>>()
 
     fun getDirtyAndReset(): Boolean {
         synchronized(dirties) {
-            if (dirties.isEmpty()) return false
+            val result = dirties.isNotEmpty() or collections.map { it.getDirtyAndReset() }.any { it }
             dirties.clear()
-            return true
+            return result
         }
     }
 
@@ -57,6 +59,13 @@ class DirtyTracker {
                 }
             }
         }
+
+    fun <V> track(tracked: MutableList<V>): ReadOnlyProperty<Any?, MutableList<V>> {
+        collections.add(tracked)
+        return object : ReadOnlyProperty<Any?, MutableList<V>> {
+            override fun getValue(thisRef: Any?, property: KProperty<*>) = DirtyTrackedMutableList(tracked) { dirties += property.name }
+        }
+    }
 }
 
 interface HasDirtyTracker {
@@ -64,7 +73,10 @@ interface HasDirtyTracker {
     val dirtyTracker: DirtyTracker
 }
 
-inline fun <T: HasDirtyTracker> T.ifDirty(block: (T) -> Unit) {
+inline fun <T : HasDirtyTracker> T.ifDirty(block: (T) -> Unit) {
     contract { callsInPlace(block, InvocationKind.AT_MOST_ONCE) }
     if (dirtyTracker.getDirtyAndReset()) block(this)
 }
+
+private fun MutableCollection<*>.getDirtyAndReset() =
+    map { it is HasDirtyTracker && it.dirtyTracker.getDirtyAndReset() }.any { it }
