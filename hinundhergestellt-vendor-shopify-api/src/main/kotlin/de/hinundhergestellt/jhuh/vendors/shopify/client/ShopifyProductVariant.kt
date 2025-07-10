@@ -98,7 +98,7 @@ class ShopifyProductVariant private constructor(
     private val base: BaseShopifyProductVariant,
     val id: String,
     val title: String,
-    var mediaId: String?
+    mediaId: String?
 ) : ShopifyProductVariantCommonFields, HasDirtyTracker {
 
     override val dirtyTracker = DirtyTracker()
@@ -108,6 +108,8 @@ class ShopifyProductVariant private constructor(
     override var price by dirtyTracker.track(base::price)
     override var weight by dirtyTracker.track(base::weight)
     override val options by base::options
+
+    var mediaId by dirtyTracker.track(mediaId)
 
     internal constructor(variant: ProductVariant) : this(
         BaseShopifyProductVariant(variant),
