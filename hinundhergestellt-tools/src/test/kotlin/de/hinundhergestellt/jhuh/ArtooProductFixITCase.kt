@@ -1,7 +1,10 @@
 package de.hinundhergestellt.jhuh
 
 import arrow.core.zip
+import de.hinundhergestellt.jhuh.core.ifDirty
+import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductClient
+import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductGroup
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductGroupClient
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductGroupType
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductType
@@ -104,6 +107,23 @@ class ArtooProductFixITCase {
     }
 
     @Test
+    fun setStockReorderLevel() = runBlocking {
+        val groups = artooProductGroupClient.findAll().toList()
+        val vinylfolien = groups.find { it.name == "Vinylfolien" }!!
+        val flexfolien = groups.find { it.name == "Flexfolien" }!!
+        val flockfolien = groups.find { it.name == "Flockfolien" }!!
+        artooProductClient.findAll()
+            .filter {
+                it.productGroupIdChain(groups).toList()
+                    .run { contains(vinylfolien.id) || contains(flexfolien.id) || contains(flockfolien.id) }
+            }
+            .collect { product ->
+                product.stockReorderLevel = BigDecimal(3)
+                product.ifDirty { artooProductClient.update(it) }
+            }
+    }
+
+    @Test
     fun addNewMyboshiProducts(): Unit = runBlocking {
         val group = artooProductGroupClient.findAll().filter { it.name == "myboshi" }.single()
 
@@ -171,3 +191,19 @@ class ArtooProductFixITCase {
         }
     }
 }
+
+private fun ArtooProduct.productGroupIdChain(groups: List<ArtooProductGroup>): Sequence<Int> =
+    sequence {
+        groups.find { it.id == productGroupId }!!.also {
+            yield(it.id)
+            yieldAll(it.productGroupIdChain(groups))
+        }
+    }
+
+private fun ArtooProductGroup.productGroupIdChain(groups: List<ArtooProductGroup>): Sequence<Int> =
+    sequence {
+         groups.find { it.id == parent }?.also {
+             yield(it.id)
+             yieldAll(it.productGroupIdChain(groups))
+         }
+    }
