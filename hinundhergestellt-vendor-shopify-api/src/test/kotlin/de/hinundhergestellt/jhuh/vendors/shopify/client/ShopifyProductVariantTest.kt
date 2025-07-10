@@ -10,6 +10,7 @@ import io.mockk.every
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.math.BigDecimal
 
 class ShopifyProductVariantTest {
@@ -136,9 +137,7 @@ class ShopifyProductVariantTest {
         )
         every { mockVariant.media.pageInfo.hasNextPage } returns true
 
-        org.junit.jupiter.api.assertThrows<IllegalArgumentException> {
-            ShopifyProductVariant(mockVariant)
-        }
+        assertThrows<IllegalArgumentException> { ShopifyProductVariant(mockVariant) }
     }
 
     @Test

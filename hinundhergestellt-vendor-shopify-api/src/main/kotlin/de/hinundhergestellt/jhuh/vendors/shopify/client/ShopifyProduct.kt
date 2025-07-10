@@ -14,8 +14,8 @@ private interface ShopifyProductCommonFields {
     var vendor: String
     var productType: String
     var status: ProductStatus
-    var tags: Set<String>
     var descriptionHtml: String
+    var tags: Set<String>
 }
 
 internal class BaseShopifyProduct(
@@ -23,8 +23,8 @@ internal class BaseShopifyProduct(
     override var vendor: String,
     override var productType: String,
     override var status: ProductStatus,
-    override var tags: Set<String>,
     override var descriptionHtml: String,
+    override var tags: Set<String>,
 ) : ShopifyProductCommonFields {
 
     internal constructor(product: Product) : this(
@@ -32,8 +32,8 @@ internal class BaseShopifyProduct(
         product.vendor,
         product.productType,
         product.status,
-        product.tags.toSet(),
-        product.descriptionHtml
+        product.descriptionHtml,
+        product.tags.toSet()
     )
 }
 
@@ -47,19 +47,19 @@ class UnsavedShopifyProduct private constructor(
         title: String,
         vendor: String,
         productType: String,
-        status: ProductStatus,
-        tags: Set<String>,
+        status: ProductStatus = ProductStatus.DRAFT,
+        descriptionHtml: String = "",
+        tags: Set<String> = setOf(),
         options: List<UnsavedShopifyProductOption> = listOf(),
-        metafields: MutableList<ShopifyMetafield> = mutableListOf(),
-        descriptionHtml: String = ""
+        metafields: MutableList<ShopifyMetafield> = mutableListOf()
     ) : this(
         BaseShopifyProduct(
             title,
             vendor,
             productType,
             status,
-            tags,
-            descriptionHtml
+            descriptionHtml,
+            tags
         ),
         options,
         metafields
@@ -84,34 +84,33 @@ class UnsavedShopifyProduct private constructor(
 class ShopifyProduct private constructor(
     private val base: BaseShopifyProduct,
     val id: String,
-    val variants: MutableList<ShopifyProductVariant>,
     val hasOnlyDefaultVariant: Boolean,
-    val media: List<ShopifyMedia>,
     val options: MutableList<ShopifyProductOption>,
     val metafields: MutableList<ShopifyMetafield>,
+    val variants: MutableList<ShopifyProductVariant>,
+    val media: List<ShopifyMedia>,
 ) : ShopifyProductCommonFields by base {
 
     internal constructor(product: Product, variants: List<ShopifyProductVariant>, media: List<ShopifyMedia>) : this(
         BaseShopifyProduct(product),
         product.id,
-        CopyOnWriteArrayList(variants),
         product.hasOnlyDefaultVariant,
-        CopyOnWriteArrayList(media),
         CopyOnWriteArrayList(product.options.map { ShopifyProductOption(it) }),
-        CopyOnWriteArrayList(product.metafields.edges.map { ShopifyMetafield(it.node) }).asRemoveProtectedMutableList()
+        CopyOnWriteArrayList(product.metafields.edges.map { ShopifyMetafield(it.node) }).asRemoveProtectedMutableList(),
+        CopyOnWriteArrayList(variants),
+        media
     ) {
         require(!product.metafields.pageInfo.hasNextPage) { "Product has more metafields than were loaded" }
-        require(!product.media.pageInfo.hasNextPage) { "Product has more medias than were loaded" }
     }
 
     internal constructor(unsaved: UnsavedShopifyProduct, id: String, options: List<ShopifyProductOption>) : this(
         unsaved.base,
         id,
-        CopyOnWriteArrayList(),
         options.isEmpty(),
-        listOf(),
         CopyOnWriteArrayList(options),
-        CopyOnWriteArrayList(unsaved.metafields).asRemoveProtectedMutableList()
+        CopyOnWriteArrayList(unsaved.metafields).asRemoveProtectedMutableList(),
+        CopyOnWriteArrayList(),
+        listOf()
     )
 
     internal constructor(
@@ -120,12 +119,12 @@ class ShopifyProduct private constructor(
         vendor: String,
         productType: String,
         status: ProductStatus,
+        descriptionHtml: String,
+        hasOnlyDefaultVariant: Boolean,
         tags: Set<String>,
         options: MutableList<ShopifyProductOption>,
         metafields: MutableList<ShopifyMetafield>,
-        descriptionHtml: String,
         variants: MutableList<ShopifyProductVariant>,
-        hasOnlyDefaultVariant: Boolean,
         media: List<ShopifyMedia>
     ) : this(
         BaseShopifyProduct(
@@ -133,15 +132,15 @@ class ShopifyProduct private constructor(
             vendor,
             productType,
             status,
-            tags,
-            descriptionHtml
+            descriptionHtml,
+            tags
         ),
         id,
-        variants,
         hasOnlyDefaultVariant,
-        media,
         options,
-        metafields
+        metafields,
+        variants,
+        media
     )
 
     fun findVariantByBarcode(barcode: String) =

@@ -13,7 +13,6 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductOption
 import de.hinundhergestellt.jhuh.vendors.shopify.client.containsId
 import de.hinundhergestellt.jhuh.vendors.shopify.client.findById
-import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductStatus
 import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Component
 import kotlin.streams.asSequence
@@ -44,16 +43,15 @@ class ShopifyProductMapper(
     ) {
         fun build() =
             UnsavedShopifyProduct(
-                artooProduct.description.ifEmpty { artooProduct.name },
-                syncProduct.vendor!!.name,
-                syncProduct.type!!,
-                ProductStatus.DRAFT,
-                allTags(),
-                productOptions(),
-                productMetafields(),
+                title = artooProduct.description.ifEmpty { artooProduct.name },
+                vendor = syncProduct.vendor!!.name,
+                productType = syncProduct.type!!,
+                tags = productTags(),
+                options = productOptions(),
+                metafields = productMetafields(),
             )
 
-        protected fun allTags(): Set<String> {
+        protected fun productTags(): Set<String> {
             val tags = sequence {
                 val categoryIds = artooDataStore.findCategoriesByProduct(artooProduct).map { it.id }.toList()
                 yieldAll(syncCategoryRepository.findByArtooIdIn(categoryIds).asSequence().flatMap { it.tags })
@@ -86,7 +84,7 @@ class ShopifyProductMapper(
             return shopifyProduct::title.update(artooProduct.description.ifEmpty { artooProduct.name }) or
                     shopifyProduct::vendor.update(syncProduct.vendor!!.name) or
                     shopifyProduct::productType.update(syncProduct.type!!) or
-                    shopifyProduct::tags.update(allTags()) or
+                    shopifyProduct::tags.update(productTags()) or
                     updateProductMetafields()
         }
 
