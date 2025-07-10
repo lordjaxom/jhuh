@@ -36,6 +36,13 @@ class ShopifyProductOption : UnsavedShopifyProductOption {
         this.id = id
     }
 
+    internal constructor(id: String, name: String, values: List<String>) : super(
+        name,
+        values
+    ) {
+        this.id = id
+    }
+
     override fun toString() =
         "ShopifyProductOption(id='$id', name='$name')"
 }
