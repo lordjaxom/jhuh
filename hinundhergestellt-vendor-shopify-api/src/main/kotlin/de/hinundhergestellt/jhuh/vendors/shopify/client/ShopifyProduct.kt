@@ -102,8 +102,8 @@ class ShopifyProduct private constructor(
     override var descriptionHtml by dirtyTracker.track(base::descriptionHtml)
     override var tags by dirtyTracker.track(base::tags)
 
-    val options by dirtyTracker.list(options)
-    val metafields by dirtyTracker.mutableList(metafields)
+    val options by dirtyTracker.track(options)
+    val metafields by dirtyTracker.track(metafields)
 
     internal constructor(product: Product, variants: List<ShopifyProductVariant>, media: List<ShopifyMedia>) : this(
         BaseShopifyProduct(product),

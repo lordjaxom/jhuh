@@ -108,7 +108,7 @@ class ShopifyProductVariant private constructor(
     override var price by dirtyTracker.track(base::price)
     override var weight by dirtyTracker.track(base::weight)
 
-    override val options by dirtyTracker.list(base.options)
+    override val options by dirtyTracker.track(base.options)
 
     var mediaId by dirtyTracker.track(mediaId)
 

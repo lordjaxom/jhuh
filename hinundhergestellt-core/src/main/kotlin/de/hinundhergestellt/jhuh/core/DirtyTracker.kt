@@ -10,6 +10,7 @@ import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KMutableProperty0
 import kotlin.reflect.KProperty
+import kotlin.reflect.KProperty0
 
 class DirtyTracker {
 
@@ -60,25 +61,30 @@ class DirtyTracker {
             }
         }
 
-    @Deprecated(
-        "Use list(tracked: List<V>) or mutableList(tracked: MutableList<V>) instead",
-        level = DeprecationLevel.ERROR
-    )
-    fun track(@Suppress("unused") tracked: Collection<*>) = Unit
-
-    fun <V> list(tracked: List<V>): ReadOnlyProperty<Any?, List<V>> {
+    @JvmName("trackList")
+    fun <V> track(tracked: List<V>): ReadOnlyProperty<Any?, List<V>> {
         collections.add(tracked)
         return object : ReadOnlyProperty<Any?, List<V>> {
             override fun getValue(thisRef: Any?, property: KProperty<*>) = tracked
         }
     }
 
-    fun <V> mutableList(tracked: MutableList<V>): ReadOnlyProperty<Any?, MutableList<V>> {
+    @JvmName("trackMutableList")
+    fun <V> track(tracked: MutableList<V>): ReadOnlyProperty<Any?, MutableList<V>> {
         collections.add(tracked)
         return object : ReadOnlyProperty<Any?, MutableList<V>> {
             override fun getValue(thisRef: Any?, property: KProperty<*>) = DirtyTrackedMutableList(tracked) { dirties += property.name }
         }
     }
+
+    @Deprecated("Tracking a read only property is not supported", level = DeprecationLevel.ERROR)
+    fun track(@Suppress("unused") tracked: KProperty0<*>) = Unit
+
+    @Deprecated("This collection type is not implemented yet", level = DeprecationLevel.ERROR)
+    fun track(@Suppress("unused") tracked: KMutableProperty0<out MutableCollection<*>>) = Unit
+
+    @Deprecated("This collection type is not implemented yet", level = DeprecationLevel.ERROR)
+    fun track(@Suppress("unused") tracked: Collection<*>) = Unit
 }
 
 interface HasDirtyTracker {
