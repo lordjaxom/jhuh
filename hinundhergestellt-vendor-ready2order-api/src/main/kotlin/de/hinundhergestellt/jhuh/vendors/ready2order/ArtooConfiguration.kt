@@ -2,6 +2,7 @@ package de.hinundhergestellt.jhuh.vendors.ready2order
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.addMixIn
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.RateLimitEnforcingFilter
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsIdPutRequest
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.model.ProductsIdPutRequestMixin
@@ -25,9 +26,9 @@ class ArtooConfiguration {
         @Value("\${ready2order.apikey}") apikey: String
     ): WebClient {
         val objectMapper = ObjectMapper()
-            .addMixIn(ProductsIdPutRequest::class.java, ProductsIdPutRequestMixin::class.java)
-            .addMixIn(ProductsPostRequest::class.java, ProductsPostRequestMixin::class.java)
-            .addMixIn(ProductsPostRequestProductBase::class.java, ProductsPostRequestProductBaseMixin::class.java)
+            .addMixIn<ProductsIdPutRequest, ProductsIdPutRequestMixin>()
+            .addMixIn<ProductsPostRequest, ProductsPostRequestMixin>()
+            .addMixIn<ProductsPostRequestProductBase, ProductsPostRequestProductBaseMixin>()
             .setSerializationInclusion(JsonInclude.Include.ALWAYS)
 
         return WebClient.builder()

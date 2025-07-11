@@ -1,12 +1,17 @@
 package de.hinundhergestellt.jhuh.backend.shoptexter
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.addMixIn
+import de.hinundhergestellt.jhuh.backend.shoptexter.model.ShopifyMetafieldForAiMixin
 import de.hinundhergestellt.jhuh.backend.shoptexter.model.ShopifyProductForAiMixin
+import de.hinundhergestellt.jhuh.backend.shoptexter.model.ShopifyProductOptionForAiMixin
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProductRepository
 import de.hinundhergestellt.jhuh.backend.vectorstore.ExtendedVectorStore
 import de.hinundhergestellt.jhuh.backend.vectorstore.findById
 import de.hinundhergestellt.jhuh.core.loadTextResource
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafield
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOption
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -30,7 +35,9 @@ class ShopTexterService(
     private val syncProductRepository: SyncProductRepository,
 ) {
     private val objectMapper = ObjectMapper()
-        .addMixIn(ShopifyProduct::class.java, ShopifyProductForAiMixin::class.java)
+        .addMixIn<ShopifyProduct, ShopifyProductForAiMixin>()
+        .addMixIn<ShopifyProductOption, ShopifyProductOptionForAiMixin>()
+        .addMixIn<ShopifyMetafield, ShopifyMetafieldForAiMixin>()
 
     private val outputConverter = BeanOutputConverter(ShopTexterResponse::class.java)
 
