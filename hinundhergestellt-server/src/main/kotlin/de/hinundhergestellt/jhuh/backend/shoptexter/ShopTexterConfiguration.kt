@@ -1,6 +1,5 @@
 package de.hinundhergestellt.jhuh.backend.shoptexter
 
-import de.hinundhergestellt.jhuh.core.loadTextResource
 import org.springframework.ai.chat.client.ChatClient
 import org.springframework.ai.chat.client.advisor.PromptChatMemoryAdvisor
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor
@@ -18,7 +17,6 @@ class ShopTexterConfiguration {
     @Bean
     fun shopTexterChatClient(builder: ChatClient.Builder, dataSource: DataSource) =
         builder
-            .defaultSystem(loadTextResource { "system-prompt.txt" })
             .defaultOptions(
                 OpenAiChatOptions.builder()
                     .model(OpenAiApi.ChatModel.GPT_4_1)

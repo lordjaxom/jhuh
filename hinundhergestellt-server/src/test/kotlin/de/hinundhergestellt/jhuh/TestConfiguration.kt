@@ -8,10 +8,10 @@ import org.testcontainers.containers.MariaDBContainer
 @Configuration
 class TestConfiguration {
 
-    @Bean
-    @ServiceConnection
-    fun mariaDBContainer(): MariaDBContainer<*> =
-        MariaDBContainer("mariadb:latest")
-            .withDatabaseName("hinundhergestellt")
-            .withReuse(true)
+//    @Bean
+//    @ServiceConnection
+//    fun mariaDBContainer(): MariaDBContainer<*> =
+//        MariaDBContainer("mariadb:latest")
+//            .withDatabaseName("hinundhergestellt")
+//            .withReuse(true)
 }

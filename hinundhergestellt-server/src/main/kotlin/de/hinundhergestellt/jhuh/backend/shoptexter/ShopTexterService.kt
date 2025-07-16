@@ -39,7 +39,8 @@ class ShopTexterService(
         .addMixIn<ShopifyProductOption, ShopifyProductOptionForAiMixin>()
         .addMixIn<ShopifyMetafield, ShopifyMetafieldForAiMixin>()
 
-    private val outputConverter = BeanOutputConverter(ShopTexterResponse::class.java)
+    private val productDetailsConverter = BeanOutputConverter(GeneratedProductDetails::class.java)
+    private val categoryDescriptionConverter = BeanOutputConverter(GeneratedCategoryDescription::class.java)
 
     private val examplesPromptTemplate = PromptTemplate(loadTextResource { "examples-prompt.txt" })
 
@@ -57,34 +58,67 @@ class ShopTexterService(
         vectorStore.removeById(id.toString())
     }
 
-    fun generate(product: UnsavedShopifyProduct): ShopTexterResponse {
+    fun generateProductDetails(product: UnsavedShopifyProduct): GeneratedProductDetails {
         logger.info { "Generating product description for $product" }
 
         val callResponse = shopTexterChatClient.prompt()
+            .system(loadTextResource { "product-details-prompt.txt" })
             .user {
                 it.text("Produkt: {product}\n\n{format}")
                     .param("product", objectMapper.writeValueAsString(product))
-                    .param("format", outputConverter.format)
+                    .param("format", productDetailsConverter.format)
             }
-            .advisors { it.param(ChatMemory.CONVERSATION_ID, "shopTexter") }
+            .advisors { it.param(ChatMemory.CONVERSATION_ID, "productDetails") }
             .advisors(
                 QuestionAnswerAdvisor
                     .builder(vectorStore)
                     .promptTemplate(examplesPromptTemplate)
                     .searchRequest(
                         SearchRequest.builder()
-                            .query(product.title)
+                            .query("Produkte ähnlich ${product.title}")
                             .topK(3)
                             .build()
                     )
                     .build()
             )
             .call()
-        val response = outputConverter.convert(callResponse.content()!!)!!
+        val response = productDetailsConverter.convert(callResponse.content()!!)!!
 
         logger.debug { "Generated product description: ${response.description}" }
         logger.debug { "Generated techical details: ${response.technicalDetails}" }
         logger.debug { "Consulted web sites: ${response.consultedUrls}" }
+
+        return response
+    }
+
+    fun generateCategoryDescription(name: String, tags: Set<String>): GeneratedCategoryDescription {
+        logger.info { "Generating category description for $tags" }
+
+        val callResponse = shopTexterChatClient.prompt()
+            .system(loadTextResource { "category-description-prompt.txt" })
+            .user {
+                it.text("Kategorie: {name}\nTags: $tags\n\n{format}")
+                    .param("name", name)
+                    .param("tags", tags.joinToString(", "))
+                    .param("format", productDetailsConverter.format)
+            }
+            .advisors { it.param(ChatMemory.CONVERSATION_ID, "categoryDescription") }
+            .advisors(
+                QuestionAnswerAdvisor
+                    .builder(vectorStore)
+                    .promptTemplate(examplesPromptTemplate)
+                    .searchRequest(
+                        SearchRequest.builder()
+                            .query("Tags ${tags.joinToString(", ")}")
+                            .topK(3)
+                            .build()
+                    )
+                    .build()
+            )
+            .call()
+        val response = categoryDescriptionConverter.convert(callResponse.content()!!)!!
+
+        logger.debug { "Generated category description: ${response.description}" }
 
         return response
     }
@@ -100,8 +134,12 @@ class ShopTexterService(
     }
 }
 
-class ShopTexterResponse(
+class GeneratedProductDetails(
     val description: String,
     val technicalDetails: String,
     val consultedUrls: List<String>
+)
+
+class GeneratedCategoryDescription(
+    val description: String
 )

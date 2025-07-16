@@ -1,5 +1,6 @@
 package de.hinundhergestellt.jhuh
 
+import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMedia
@@ -95,10 +96,12 @@ class ShopifyProductsFixITCase {
         val products = productClient.fetchAll()
             .filter { product -> product.media.any { it.altText.isEmpty() } }
             .toList()
-        if (products.isNotEmpty())
+        if (products.isNotEmpty()) {
+            val objectMapper = jacksonObjectMapper().configure(SerializationFeature.INDENT_OUTPUT, true)
             homeDirectory
                 .resolve("Dokumente/products.json")
-                .writeText(jacksonObjectMapper().writeValueAsString(products), StandardCharsets.UTF_8)
+                .writeText(objectMapper.writeValueAsString(products), StandardCharsets.UTF_8)
+        }
         else println("No media without alt texts found")
     }
 
