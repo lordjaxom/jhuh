@@ -17,7 +17,7 @@ import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Component
 import kotlin.streams.asSequence
 
-private const val METAFIELD_NAMESPACE = "hinundhergestellt"
+private const val METAFIELD_NAMESPACE = "custom"
 private val INVALID_TAG_CHARACTERS = """[^A-ZÄÖÜa-zäöüß0-9\\._ -]""".toRegex()
 
 @Component
