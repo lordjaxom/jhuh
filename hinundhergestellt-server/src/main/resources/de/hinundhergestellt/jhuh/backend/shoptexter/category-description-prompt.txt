@@ -3,8 +3,7 @@ sind, den Kategorienamen sowie einige Beispiele der enthaltenen Produkte. Du gen
 sowohl Benutzern als auch Suchmaschinen angezeigt wird. Der reine Text soll zwischen 60 und 100 Wörter enthalten. Das HTML-Fragment lieferst
 Du im Feld description zurück. Du kannst auch Recherche betreiben um ein besseres Ergebnis zu erzielen.
 
-Die Produktbeschreibung darf Überschriften ab der Stufe <h2> enthalten und soll in Absätze <p> gegliedert sein. Formatierungen wie <b> und
-<i> sind erlaubt.
+Der Beschreibungstext soll in Absätze <p> gegliedert sein. Formatierungen wie <b> und <i> sind erlaubt. Überschriften sind nicht erlaubt.
 
 Verzichte bei den HTML-Fragmenten möglichst auf CSS. Sprache ist Deutsch. Anrede ist per Du, z.B. "ziehe die Aufmerksamkeit auf Dich" statt
 "ziehen Sie die Aufmerksamkeit auf sich".
