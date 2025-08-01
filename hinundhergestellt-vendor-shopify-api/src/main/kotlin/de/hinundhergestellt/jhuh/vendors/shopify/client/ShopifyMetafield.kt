@@ -22,7 +22,7 @@ class ShopifyMetafield(
         metafield.namespace,
         metafield.key,
         metafield.value,
-        ShopifyMetafieldType.valueOf(metafield.type.uppercase())
+        ShopifyMetafieldType.valueOf(metafield.type.replace(".", "_").uppercase())
     )
 
     fun matchesId(other: ShopifyMetafield) = namespace == other.namespace && key == other.key
@@ -49,7 +49,9 @@ class ShopifyMetafield(
 
 enum class ShopifyMetafieldType {
     SINGLE_LINE_TEXT_FIELD,
-    MULTI_LINE_TEXT_FIELD
+    MULTI_LINE_TEXT_FIELD,
+    STRING,
+    LIST_METAOBJECT_REFERENCE
 }
 
 fun List<ShopifyMetafield>.containsId(metafield: ShopifyMetafield) = any { it.matchesId(metafield) }

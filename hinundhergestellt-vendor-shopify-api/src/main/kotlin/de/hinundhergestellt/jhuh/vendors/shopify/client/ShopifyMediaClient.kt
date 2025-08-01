@@ -2,13 +2,56 @@ package de.hinundhergestellt.jhuh.vendors.shopify.client
 
 import com.netflix.graphql.dgs.client.WebClientGraphQLClient
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.DgsClient.buildMutation
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.DgsClient.buildQuery
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.File
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.FileConnection
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.FileContentType
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.FileCreateInput
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.FileCreateInputDuplicateResolutionMode
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.FileCreatePayload
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.FileDeletePayload
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.FileEdge
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.FileStatus
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.FileUpdatePayload
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.PageInfo
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.StagedMediaUploadTarget
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.StagedUploadHttpMethodType
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.StagedUploadInput
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.StagedUploadTargetGenerateUploadResource
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.StagedUploadsCreatePayload
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.reactive.awaitFirstOrNull
+import org.springframework.core.io.FileSystemResource
+import org.springframework.http.HttpStatus
+import org.springframework.http.client.MultipartBodyBuilder
 import org.springframework.stereotype.Component
+import org.springframework.web.reactive.function.BodyInserters
+import org.springframework.web.reactive.function.client.WebClient
+import reactor.core.publisher.Mono
+import java.nio.file.Path
+import kotlin.io.path.extension
+import kotlin.io.path.fileSize
 
 @Component
 class ShopifyMediaClient(
     private val shopifyGraphQLClient: WebClientGraphQLClient
 ) {
+    private val uploadWebClient by lazy { WebClient.builder().build() }
+
+    fun fetchFiles(query: String? = null) = pageAll { fetchNextFiles(it, query) }
+
+    suspend fun upload(files: List<Path>): List<ShopifyMedia> {
+        val stagedTargets = createStagedUploads(files)
+
+        files.asSequence()
+            .zip(stagedTargets.asSequence())
+            .forEach { (file, stagedTarget) -> uploadToStaging(file, stagedTarget) }
+
+        val createdFiles = createFiles(stagedTargets)
+        val processedFiles = waitForFiles(createdFiles)
+        return processedFiles.map { ShopifyMedia(it) }
+    }
+
     suspend fun update(medias: List<ShopifyMedia>) {
         val request = buildMutation {
             fileUpdate(medias.map { it.toFileUpdateInput() }) {
@@ -18,4 +61,129 @@ class ShopifyMediaClient(
 
         shopifyGraphQLClient.executeMutation(request, FileUpdatePayload::userErrors)
     }
+
+    suspend fun delete(fileIds: List<String>) {
+        val request = buildMutation {
+            fileDelete(fileIds) {
+                userErrors { message; field }
+            }
+        }
+
+        shopifyGraphQLClient.executeMutation(request, FileDeletePayload::userErrors)
+    }
+
+    private suspend fun fetchNextFiles(after: String?, query: String?): Pair<List<FileEdge>, PageInfo> {
+        val request = buildQuery {
+            files(first = 250, after = after, query = query) {
+                edges {
+                    node {
+                        id
+                    }
+                }
+                pageInfo { hasNextPage; endCursor }
+            }
+        }
+
+        val payload = shopifyGraphQLClient.executeQuery<FileConnection>(request)
+        return Pair(payload.edges, payload.pageInfo)
+    }
+
+
+    private suspend fun createStagedUploads(files: List<Path>): List<StagedMediaUploadTarget> {
+        val request = buildMutation {
+            stagedUploadsCreate(files.map { it.toStagedUploadInput() }) {
+                stagedTargets {
+                    url; resourceUrl
+                    parameters { name; value }
+                }
+                userErrors { message; field }
+            }
+        }
+
+        val payload = shopifyGraphQLClient.executeMutation(request, StagedUploadsCreatePayload::userErrors)
+        return payload.stagedTargets!!
+    }
+
+    private suspend fun createFiles(stagedTargets: List<StagedMediaUploadTarget>): List<File> {
+        val request = buildMutation {
+            fileCreate(stagedTargets.map { it.toFileCreateInput() }) {
+                files {
+                    fileStatus
+                    onMediaImage {
+                        id
+                        image { id; src; altText }
+                    }
+                }
+                userErrors { message; field }
+            }
+        }
+
+        val payload = shopifyGraphQLClient.executeMutation(request, FileCreatePayload::userErrors)
+        return payload.files!!
+    }
+
+    private suspend fun waitForFiles(files: List<File>) = buildList {
+        val unprocessed = files.asSequence().associateBy { it.id }.toMutableMap()
+        while (unprocessed.isNotEmpty()) {
+            delay(5_000)
+
+            val query = unprocessed.keys.joinToString(" OR ") { "(id:${it.substringAfterLast("/")})" }
+            val request = buildQuery {
+                files(first = unprocessed.size, query = query) {
+                    edges {
+                        node {
+                            fileStatus
+                            onMediaImage {
+                                id
+                                image { id; src; altText }
+                            }
+                        }
+                    }
+                }
+            }
+
+            val payload = shopifyGraphQLClient.executeQuery<FileConnection>(request)
+            payload.edges.asSequence()
+                .map { it.node }
+                .filter { it.fileStatus in arrayOf(FileStatus.READY, FileStatus.FAILED) }
+                .forEach { unprocessed.remove(it.id); add(it) }
+        }
+    }
+
+    private suspend fun uploadToStaging(file: Path, stagedTarget: StagedMediaUploadTarget) {
+        val bodyBuilder = MultipartBodyBuilder()
+        stagedTarget.parameters.forEach { bodyBuilder.part(it.name, it.value) }
+        bodyBuilder.part("file", FileSystemResource(file))
+        uploadWebClient.post()
+            .uri(stagedTarget.url!!)
+            .body(BodyInserters.fromMultipartData(bodyBuilder.build()))
+            .exchangeToMono {
+                if (it.statusCode() == HttpStatus.CREATED) Mono.empty<Void>()
+                else Mono.error(RuntimeException("Status " + it.statusCode())) // TODO
+            }
+            .awaitFirstOrNull()
+    }
 }
+
+private fun Path.toStagedUploadInput() =
+    StagedUploadInput(
+        resource = StagedUploadTargetGenerateUploadResource.IMAGE,
+        filename = fileName.toString(),
+        mimeType = toMimeType(),
+        httpMethod = StagedUploadHttpMethodType.POST,
+        fileSize = fileSize().toString(),
+    )
+
+private fun Path.toMimeType() =
+    when (extension.lowercase()) {
+        "jpg", "jpeg" -> "image/jpeg"
+        "png" -> "image/png"
+        else -> throw IllegalArgumentException(extension)
+    }
+
+private fun StagedMediaUploadTarget.toFileCreateInput() =
+    FileCreateInput(
+        contentType = FileContentType.IMAGE,
+        duplicateResolutionMode = FileCreateInputDuplicateResolutionMode.RAISE_ERROR,
+        originalSource = resourceUrl!!
+    )

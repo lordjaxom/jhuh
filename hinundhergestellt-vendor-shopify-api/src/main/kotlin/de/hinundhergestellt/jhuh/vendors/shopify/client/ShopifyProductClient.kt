@@ -6,6 +6,7 @@ import com.netflix.graphql.dgs.client.WebClientGraphQLClient
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.DgsClient.buildMutation
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.DgsClient.buildQuery
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.client.ProductProjection
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.FileUpdatePayload
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.MediaEdge
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.PageInfo
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.Product
@@ -68,6 +69,16 @@ class ShopifyProductClient(
         }
 
         shopifyGraphQLClient.executeMutation(request, ProductDeletePayload::userErrors)
+    }
+
+    suspend fun attach(product: ShopifyProduct, media: List<ShopifyMedia>) {
+        val request = buildMutation {
+            fileUpdate(media.map { it.toFileUpdateInput(product) }){
+                userErrors { message; field }
+            }
+        }
+
+        shopifyGraphQLClient.executeMutation(request, FileUpdatePayload::userErrors)
     }
 
     private suspend fun fetchNextPage(after: String?): Pair<List<ProductEdge>, PageInfo> {

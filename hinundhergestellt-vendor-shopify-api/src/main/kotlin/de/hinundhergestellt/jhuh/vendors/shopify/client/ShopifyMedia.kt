@@ -1,5 +1,6 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.File
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.FileUpdateInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.Media
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.MediaImage
@@ -9,7 +10,7 @@ data class ShopifyMedia(
     val src: String,
     var altText: String,
 ) {
-    internal constructor(mediaImage: MediaImage): this(
+    internal constructor(mediaImage: MediaImage) : this(
         id = mediaImage.id,
         src = mediaImage.image!!.src,
         altText = mediaImage.image!!.altText ?: ""
@@ -23,9 +24,23 @@ data class ShopifyMedia(
             id = id,
             alt = altText
         )
+
+    internal fun toFileUpdateInput(product: ShopifyProduct) =
+        FileUpdateInput(
+            id = id,
+            alt = altText,
+            referencesToAdd = listOf(product.id)
+        )
 }
 
-fun ShopifyMedia(media: Media) = when (media) {
-    is MediaImage -> ShopifyMedia(media)
-    else -> throw IllegalArgumentException("media")
-}
+fun ShopifyMedia(media: Media) =
+    when (media) {
+        is MediaImage -> ShopifyMedia(media)
+        else -> throw IllegalArgumentException("media")
+    }
+
+fun ShopifyMedia(media: File) =
+    when (media) {
+        is MediaImage -> ShopifyMedia(media)
+        else -> throw IllegalArgumentException("media")
+    }
