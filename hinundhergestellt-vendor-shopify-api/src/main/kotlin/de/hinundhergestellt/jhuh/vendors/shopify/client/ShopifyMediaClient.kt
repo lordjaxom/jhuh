@@ -19,7 +19,9 @@ import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.StagedUploadHttpM
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.StagedUploadInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.StagedUploadTargetGenerateUploadResource
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.StagedUploadsCreatePayload
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.core.io.FileSystemResource
 import org.springframework.http.HttpStatus
@@ -32,13 +34,15 @@ import java.nio.file.Path
 import kotlin.io.path.extension
 import kotlin.io.path.fileSize
 
+private val logger = KotlinLogging.logger {}
+
 @Component
 class ShopifyMediaClient(
     private val shopifyGraphQLClient: WebClientGraphQLClient
 ) {
     private val uploadWebClient by lazy { WebClient.builder().build() }
 
-    fun fetchFiles(query: String? = null) = pageAll { fetchNextFiles(it, query) }
+    fun fetchAll(query: String? = null) = pageAll { fetchNextPage(it, query) }.map { it.toShopifyMedia() }
 
     suspend fun upload(files: List<Path>): List<ShopifyMedia> {
         val stagedTargets = createStagedUploads(files)
@@ -52,9 +56,9 @@ class ShopifyMediaClient(
         return processedFiles.map { ShopifyMedia(it) }
     }
 
-    suspend fun update(medias: List<ShopifyMedia>) {
+    suspend fun update(medias: List<ShopifyMedia>, referencesToAdd: List<String>? = null, referencesToRemove: List<String>? = null) {
         val request = buildMutation {
-            fileUpdate(medias.map { it.toFileUpdateInput() }) {
+            fileUpdate(medias.map { it.toFileUpdateInput(referencesToAdd, referencesToRemove) }) {
                 userErrors { message; field }
             }
         }
@@ -62,9 +66,9 @@ class ShopifyMediaClient(
         shopifyGraphQLClient.executeMutation(request, FileUpdatePayload::userErrors)
     }
 
-    suspend fun delete(fileIds: List<String>) {
+    suspend fun delete(medias: List<ShopifyMedia>) {
         val request = buildMutation {
-            fileDelete(fileIds) {
+            fileDelete(medias.map { it.id }) {
                 userErrors { message; field }
             }
         }
@@ -72,12 +76,15 @@ class ShopifyMediaClient(
         shopifyGraphQLClient.executeMutation(request, FileDeletePayload::userErrors)
     }
 
-    private suspend fun fetchNextFiles(after: String?, query: String?): Pair<List<FileEdge>, PageInfo> {
+    private suspend fun fetchNextPage(after: String?, query: String?): Pair<List<FileEdge>, PageInfo> {
         val request = buildQuery {
             files(first = 250, after = after, query = query) {
                 edges {
                     node {
-                        id
+                        onMediaImage {
+                            id
+                            image { id; src; altText }
+                        }
                     }
                 }
                 pageInfo { hasNextPage; endCursor }
@@ -125,6 +132,8 @@ class ShopifyMediaClient(
     private suspend fun waitForFiles(files: List<File>) = buildList {
         val unprocessed = files.asSequence().associateBy { it.id }.toMutableMap()
         while (unprocessed.isNotEmpty()) {
+            logger.info { "Still ${unprocessed.size} files unprocessed, delaying..." }
+
             delay(5_000)
 
             val query = unprocessed.keys.joinToString(" OR ") { "(id:${it.substringAfterLast("/")})" }
@@ -151,6 +160,8 @@ class ShopifyMediaClient(
     }
 
     private suspend fun uploadToStaging(file: Path, stagedTarget: StagedMediaUploadTarget) {
+        logger.info { "Uploading $file to staging" }
+
         val bodyBuilder = MultipartBodyBuilder()
         stagedTarget.parameters.forEach { bodyBuilder.part(it.name, it.value) }
         bodyBuilder.part("file", FileSystemResource(file))
@@ -164,6 +175,9 @@ class ShopifyMediaClient(
             .awaitFirstOrNull()
     }
 }
+
+private fun FileEdge.toShopifyMedia() =
+    ShopifyMedia(node)
 
 private fun Path.toStagedUploadInput() =
     StagedUploadInput(

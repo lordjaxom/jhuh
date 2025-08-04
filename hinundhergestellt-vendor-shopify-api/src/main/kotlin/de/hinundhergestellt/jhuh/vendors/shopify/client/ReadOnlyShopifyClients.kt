@@ -12,8 +12,8 @@ class ReadOnlyShopifyClients(
     private val shopifyGraphQLClient: WebClientGraphQLClient
 ) {
     @Bean
-    fun shopifyMetafieldsClient() =
-        object : ShopifyMetafieldsClient(shopifyGraphQLClient) {
+    fun shopifyMetafieldClient() =
+        object : ShopifyMetafieldClient(shopifyGraphQLClient) {
             override suspend fun delete(product: ShopifyProduct, metafields: List<ShopifyMetafield>) {}
         }
 

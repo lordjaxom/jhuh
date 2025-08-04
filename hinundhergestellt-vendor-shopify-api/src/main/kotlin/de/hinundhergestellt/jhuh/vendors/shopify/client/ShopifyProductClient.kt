@@ -6,7 +6,6 @@ import com.netflix.graphql.dgs.client.WebClientGraphQLClient
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.DgsClient.buildMutation
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.DgsClient.buildQuery
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.client.ProductProjection
-import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.FileUpdatePayload
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.MediaEdge
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.PageInfo
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.Product
@@ -30,7 +29,7 @@ import org.springframework.stereotype.Component
 class ShopifyProductClient(
     private val shopifyGraphQLClient: WebClientGraphQLClient
 ) {
-    fun fetchAll() = pageAll { fetchNextPage(it) }.map { it.toShopifyProduct() }
+    fun fetchAll(query: String? = null) = pageAll { fetchNextPage(it, query) }.map { it.toShopifyProduct() }
 
     suspend fun create(product: UnsavedShopifyProduct): ShopifyProduct {
         val request = buildMutation {
@@ -71,24 +70,18 @@ class ShopifyProductClient(
         shopifyGraphQLClient.executeMutation(request, ProductDeletePayload::userErrors)
     }
 
-    suspend fun attach(product: ShopifyProduct, media: List<ShopifyMedia>) {
-        val request = buildMutation {
-            fileUpdate(media.map { it.toFileUpdateInput(product) }){
-                userErrors { message; field }
-            }
-        }
-
-        shopifyGraphQLClient.executeMutation(request, FileUpdatePayload::userErrors)
-    }
-
-    private suspend fun fetchNextPage(after: String?): Pair<List<ProductEdge>, PageInfo> {
+    private suspend fun fetchNextPage(after: String?, query: String?): Pair<List<ProductEdge>, PageInfo> {
         val request = buildQuery {
-            products(first = 50, after = after) {
+            products(first = 50, after = after, query = query) {
                 edges {
                     node {
                         handle; id; title; vendor; productType; status; tags; hasOnlyDefaultVariant; descriptionHtml
                         variants()
-                        options { id; name; values }
+                        options {
+                            id; name
+                            linkedMetafield { namespace; key }
+                            optionValues { id; name; linkedMetafieldValue }
+                        }
                         metafields(first = 50) {
                             edges {
                                 node { id; namespace; key; value; type }
@@ -128,7 +121,10 @@ class ShopifyProductClient(
                             weight { unit; value }
                         }
                     }
-                    selectedOptions { name; value }
+                    selectedOptions {
+                        name; value
+                        optionValue { linkedMetafieldValue }
+                    }
                     media(first = 1) {
                         edges {
                             node {
@@ -155,7 +151,8 @@ class ShopifyProductClient(
             pageInfo { hasNextPage; endCursor }
         }
 
-    private suspend fun ProductEdge.toShopifyProduct() = ShopifyProduct(node, node.toShopifyProductVariants(), node.toShopifyMedia())
+    private suspend fun ProductEdge.toShopifyProduct() =
+        ShopifyProduct(node, node.toShopifyProductVariants(), node.toShopifyMedias())
 
     private suspend fun Product.toShopifyProductVariants() =
         flowOf(variants.edges.asFlow(), pageAll(variants.pageInfo) { fetchNextVariants(id, it) })
@@ -163,7 +160,7 @@ class ShopifyProductClient(
             .map { ShopifyProductVariant(it.node) }
             .toList()
 
-    private suspend fun Product.toShopifyMedia() =
+    private suspend fun Product.toShopifyMedias() =
         flowOf(media.edges.asFlow(), pageAll(media.pageInfo) { fetchNextMedia(id, it) })
             .flattenConcat()
             .map { ShopifyMedia(it.node) }

@@ -2,6 +2,7 @@ package de.hinundhergestellt.jhuh.vendors.shopify.client
 
 import com.netflix.graphql.dgs.client.WebClientGraphQLClient
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.DgsClient.buildMutation
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductOptionUpdatePayload
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductOptionsDeletePayload
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
@@ -11,6 +12,20 @@ import org.springframework.stereotype.Component
 class ShopifyProductOptionClient(
     private val shopifyGraphQLClient: WebClientGraphQLClient
 ) {
+    suspend fun update(product: ShopifyProduct, option: ShopifyProductOption) {
+        val request = buildMutation {
+            productOptionUpdate(
+                productId = product.id,
+                option = option.toOptionUpdateInput(),
+                optionValuesToUpdate = option.optionValues.map { it.toOptionValueUpdateInput() }
+            ) {
+                userErrors { message; field }
+            }
+        }
+
+        shopifyGraphQLClient.executeMutation(request, ProductOptionUpdatePayload::userErrors)
+    }
+
     suspend fun delete(product: ShopifyProduct, options: List<ShopifyProductOption>) {
         val request = buildMutation {
             productOptionsDelete(productId = product.id, options = options.map { it.id }) {

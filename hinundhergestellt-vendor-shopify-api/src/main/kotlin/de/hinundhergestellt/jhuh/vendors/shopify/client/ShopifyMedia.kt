@@ -10,6 +10,8 @@ data class ShopifyMedia(
     val src: String,
     var altText: String,
 ) {
+    val fileName = src.substringAfterLast("/")
+
     internal constructor(mediaImage: MediaImage) : this(
         id = mediaImage.id,
         src = mediaImage.image!!.src,
@@ -25,11 +27,12 @@ data class ShopifyMedia(
             alt = altText
         )
 
-    internal fun toFileUpdateInput(product: ShopifyProduct) =
+    internal fun toFileUpdateInput(referencesToAdd: List<String>? = null, referencesToRemove: List<String>? = null) =
         FileUpdateInput(
             id = id,
             alt = altText,
-            referencesToAdd = listOf(product.id)
+            referencesToAdd = referencesToAdd,
+            referencesToRemove = referencesToRemove
         )
 }
 

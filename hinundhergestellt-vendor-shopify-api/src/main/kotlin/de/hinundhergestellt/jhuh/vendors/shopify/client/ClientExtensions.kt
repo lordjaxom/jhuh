@@ -4,15 +4,22 @@ import com.netflix.graphql.dgs.client.WebClientGraphQLClient
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.DisplayableError
 import kotlinx.coroutines.reactive.awaitSingle
 
-suspend inline fun <reified PAYLOAD: Any> WebClientGraphQLClient.executeQuery(
+suspend inline fun <reified PAYLOAD: Any?> WebClientGraphQLClient.executeQuery(
+    request: String,
+    queryName: String
+): PAYLOAD {
+    val response = reactiveExecuteQuery(request).awaitSingle()
+    require(!response.hasErrors()) { "Query $queryName failed: ${response.errors}" }
+    return response.extractValueAsObject(queryName, PAYLOAD::class.java)
+}
+
+suspend inline fun <reified PAYLOAD: Any?> WebClientGraphQLClient.executeQuery(
     request: String
 ): PAYLOAD {
     val queryName = PAYLOAD::class.simpleName!!
         .replaceFirstChar { it.lowercase() }
         .let { if (it.endsWith("Connection")) it.removeSuffix("Connection") + "s" else it }
-    val response = reactiveExecuteQuery(request).awaitSingle()
-    require(!response.hasErrors()) { "Query $queryName failed: ${response.errors}" }
-    return response.extractValueAsObject(queryName, PAYLOAD::class.java)
+    return executeQuery(request, queryName)
 }
 
 suspend inline fun <reified PAYLOAD: Any> WebClientGraphQLClient.executeMutation(
