@@ -1,6 +1,7 @@
 package de.hinundhergestellt.jhuh.backend.shoptexter
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.MapperFeature
+import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.addMixIn
 import de.hinundhergestellt.jhuh.backend.shoptexter.model.ShopifyMetafieldForAiMixin
 import de.hinundhergestellt.jhuh.backend.shoptexter.model.ShopifyProductForAiMixin
@@ -34,10 +35,12 @@ class ShopTexterService(
     shopifyDataStore: ShopifyDataStore,
     private val syncProductRepository: SyncProductRepository,
 ) {
-    private val objectMapper = ObjectMapper()
+    private val objectMapper = JsonMapper.builder()
+        .configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true)
         .addMixIn<ShopifyProduct, ShopifyProductForAiMixin>()
         .addMixIn<ShopifyProductOption, ShopifyProductOptionForAiMixin>()
         .addMixIn<ShopifyMetafield, ShopifyMetafieldForAiMixin>()
+        .build()
 
     private val productDetailsConverter = BeanOutputConverter(GeneratedProductDetails::class.java)
     private val categoryDescriptionConverter = BeanOutputConverter(GeneratedCategoryDescription::class.java)
@@ -125,9 +128,9 @@ class ShopTexterService(
 
     fun updateProducts(products: List<Pair<UUID, ShopifyProduct>>) {
         val newOrChangedDocuments = products.asSequence()
-            .map { (id, product) -> id to objectMapper.writeValueAsString(product) }
-            .filter { (id, text) -> vectorStore.findById(id)?.let { it.text != text } ?: true }
-            .map { (id, text) -> Document(id.toString(), text, mapOf<String, Any>()) }
+            .map { (id, product) -> Triple(id, objectMapper.writeValueAsString(product), vectorStore.findById(id)?.text) }
+            .filter { (_, newText, oldText) -> oldText == null || oldText != newText }
+            .map { (id, text, _) -> Document(id.toString(), text, mapOf<String, Any>()) }
             .toList()
         logger.info { "Updating ${newOrChangedDocuments.size} products in vector store" }
         vectorStore.add(newOrChangedDocuments)
