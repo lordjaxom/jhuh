@@ -100,7 +100,7 @@ class ShopifyProductOption internal constructor(
         )
 }
 
-private fun ProductOptionValue(name: String) =
+fun ProductOptionValue(name: String) =
     ProductOptionValue.Builder()
         .withName(name)
         .build()
@@ -112,11 +112,11 @@ fun ProductOptionValue.withLinkedMetafieldValue(linkedMetafieldValue: String?) =
         .withLinkedMetafieldValue(linkedMetafieldValue)
         .build()
 
+internal fun ProductOptionValue.toOptionValueCreateInput() =
+    OptionValueCreateInput(name, linkedMetafieldValue)
+
 internal fun ProductOptionValue.toOptionValueUpdateInput() =
     OptionValueUpdateInput(id, name, linkedMetafieldValue)
-
-private fun ProductOptionValue.toOptionValueCreateInput() =
-    OptionValueCreateInput(name, linkedMetafieldValue)
 
 fun LinkedMetafield(namespace: String, key: String) =
     LinkedMetafield.Builder()
@@ -124,8 +124,8 @@ fun LinkedMetafield(namespace: String, key: String) =
         .withKey(key)
         .build()
 
-private fun LinkedMetafield.toLinkedMetafieldCreateInput() =
+internal fun LinkedMetafield.toLinkedMetafieldCreateInput() =
     LinkedMetafieldCreateInput(namespace!!, key!!)
 
-private fun LinkedMetafield.toLinkedMetafieldUpdateInput() =
+internal fun LinkedMetafield.toLinkedMetafieldUpdateInput() =
     LinkedMetafieldUpdateInput(namespace!!, key!!)
