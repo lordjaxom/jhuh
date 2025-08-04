@@ -13,6 +13,7 @@ import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.RouteConfiguration
 import com.vaadin.flow.theme.lumo.LumoUtility
 import de.hinundhergestellt.jhuh.usecases.labels.LabelGeneratorView
+import de.hinundhergestellt.jhuh.usecases.maintenance.MaintenanceView
 import de.hinundhergestellt.jhuh.usecases.products.ProductManagerView
 import de.hinundhergestellt.jhuh.usecases.vendors.VendorManagerView
 
@@ -34,6 +35,7 @@ class MainLayout : AppLayout() {
         sideNav.addItem<ProductManagerView>(VaadinIcon.UPLOAD)
         sideNav.addItem<VendorManagerView>(VaadinIcon.VAADIN_H)
         sideNav.addItem<LabelGeneratorView>(VaadinIcon.PRINT)
+        sideNav.addItem<MaintenanceView>(VaadinIcon.COGS)
 
         val scroller = Scroller(sideNav)
         scroller.className = LumoUtility.Padding.SMALL

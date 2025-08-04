@@ -4,13 +4,14 @@ import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.File
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.FileUpdateInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.Media
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.MediaImage
+import java.net.URI
 
 data class ShopifyMedia(
     val id: String,
     val src: String,
     var altText: String,
 ) {
-    val fileName = src.substringAfterLast("/")
+    val fileName = URI(src).path.substringAfterLast("/")
 
     internal constructor(mediaImage: MediaImage) : this(
         id = mediaImage.id,

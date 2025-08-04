@@ -23,6 +23,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.core.io.FileSystemResource
 import org.springframework.http.HttpStatus
 import org.springframework.http.client.MultipartBodyBuilder
@@ -37,6 +38,7 @@ import kotlin.io.path.fileSize
 private val logger = KotlinLogging.logger {}
 
 @Component
+@ConditionalOnProperty("shopify.read-only", havingValue = "false", matchIfMissing = true)
 class ShopifyMediaClient(
     private val shopifyGraphQLClient: WebClientGraphQLClient
 ) {

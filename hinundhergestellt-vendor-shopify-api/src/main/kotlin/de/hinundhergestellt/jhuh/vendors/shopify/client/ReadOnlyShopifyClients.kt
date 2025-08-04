@@ -4,6 +4,7 @@ import com.netflix.graphql.dgs.client.WebClientGraphQLClient
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import java.nio.file.Path
 import java.util.UUID
 
 @Configuration
@@ -11,6 +12,14 @@ import java.util.UUID
 class ReadOnlyShopifyClients(
     private val shopifyGraphQLClient: WebClientGraphQLClient
 ) {
+    @Bean
+    fun shopifyMediaClient() =
+        object : ShopifyMediaClient(shopifyGraphQLClient) {
+            override suspend fun upload(files: List<Path>) = files.map { it.toDryRunShopifyMedia() }
+            override suspend fun update(medias: List<ShopifyMedia>, referencesToAdd: List<String>?, referencesToRemove: List<String>?) {}
+            override suspend fun delete(medias: List<ShopifyMedia>) {}
+        }
+
     @Bean
     fun shopifyMetafieldClient() =
         object : ShopifyMetafieldClient(shopifyGraphQLClient) {
@@ -28,6 +37,7 @@ class ReadOnlyShopifyClients(
     @Bean
     fun shopifyProductOptionClient() =
         object : ShopifyProductOptionClient(shopifyGraphQLClient) {
+            override suspend fun update(product: ShopifyProduct, option: ShopifyProductOption) {}
             override suspend fun delete(product: ShopifyProduct, options: List<ShopifyProductOption>) {}
         }
 
@@ -59,4 +69,11 @@ private fun UnsavedShopifyProductVariant.toDryRunShopifyProductVariant() =
         this,
         "uid://${UUID.randomUUID()}",
         options.firstOrNull()?.value ?: "Default Title"
+    )
+
+private fun Path.toDryRunShopifyMedia() =
+    ShopifyMedia(
+        "uid://${UUID.randomUUID()}",
+        "file:///${toString()}",
+        ""
     )

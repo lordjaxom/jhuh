@@ -5,6 +5,8 @@ package de.hinundhergestellt.jhuh.components
 import com.vaadin.flow.component.Component
 import com.vaadin.flow.component.HasComponents
 import com.vaadin.flow.component.ItemLabelGenerator
+import com.vaadin.flow.component.accordion.Accordion
+import com.vaadin.flow.component.accordion.AccordionPanel
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.checkbox.Checkbox
 import com.vaadin.flow.component.combobox.ComboBox
@@ -21,6 +23,16 @@ import com.vaadin.flow.component.treegrid.TreeGrid
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+
+inline fun HasComponents.accordion(block: Accordion.() -> Unit = {}): Accordion {
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    return init(Accordion(), block)
+}
+
+inline fun HasComponents.accordionPanel(summary: String? = null, block: AccordionPanel.() -> Unit = {}): AccordionPanel {
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    return init(AccordionPanel(summary), block)
+}
 
 inline fun HasComponents.button(text: String? = null, block: Button.() -> Unit = {}): Button {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }

@@ -1,17 +1,10 @@
 package de.hinundhergestellt.jhuh.usecases.products
 
-import com.vaadin.flow.component.Text
-import com.vaadin.flow.component.button.Button
-import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.checkbox.Checkbox
 import com.vaadin.flow.component.grid.GridVariant
-import com.vaadin.flow.component.html.Div
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.icon.VaadinIcon
-import com.vaadin.flow.component.notification.Notification
-import com.vaadin.flow.component.notification.NotificationVariant
 import com.vaadin.flow.component.orderedlayout.FlexComponent
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.shared.Tooltip
 import com.vaadin.flow.component.textfield.TextField
@@ -28,11 +21,11 @@ import de.hinundhergestellt.jhuh.components.actionsColumn
 import de.hinundhergestellt.jhuh.components.button
 import de.hinundhergestellt.jhuh.components.checkbox
 import de.hinundhergestellt.jhuh.components.countColumn
-import de.hinundhergestellt.jhuh.components.div
 import de.hinundhergestellt.jhuh.components.hierarchyTextColumn
 import de.hinundhergestellt.jhuh.components.horizontalLayout
 import de.hinundhergestellt.jhuh.components.iconColumn
 import de.hinundhergestellt.jhuh.components.progressOverlay
+import de.hinundhergestellt.jhuh.components.showErrorNotification
 import de.hinundhergestellt.jhuh.components.textColumn
 import de.hinundhergestellt.jhuh.components.textField
 import de.hinundhergestellt.jhuh.components.treeGrid
@@ -118,10 +111,7 @@ class ProductManagerView(
             iconColumn { syncableItemStatus(it) }
             actionsColumn(3) { syncableItemActions(it) }
             setDataProvider(treeDataProvider)
-            expandRecursively(
-                treeDataProvider.fetchChildren(HierarchicalQuery(null, null)),
-                Int.Companion.MAX_VALUE
-            )
+            expandRecursively(treeDataProvider.fetchChildren(HierarchicalQuery(null, null)), Int.MAX_VALUE)
             setSizeFull()
             addThemeVariants(GridVariant.LUMO_ROW_STRIPES)
         }
@@ -255,17 +245,4 @@ class ProductManagerView(
         override fun getChildCount(query: HierarchicalQuery<SyncableItem, Void?>) = fetchChildren(query).count().toInt()
         override fun getId(item: SyncableItem) = item.itemId
     }
-}
-
-private fun showErrorNotification(error: Throwable) {
-    val notification = Notification()
-    notification.position = Notification.Position.TOP_CENTER
-    notification.duration = Int.Companion.MAX_VALUE
-    notification.addThemeVariants(NotificationVariant.LUMO_ERROR)
-    val button = Button(VaadinIcon.CLOSE_SMALL.create()) { _ -> notification.close() }
-    button.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE)
-    val layout = HorizontalLayout(VaadinIcon.WARNING.create(), Text(error.message), button)
-    layout.alignItems = FlexComponent.Alignment.CENTER
-    notification.add(layout)
-    notification.open()
 }
