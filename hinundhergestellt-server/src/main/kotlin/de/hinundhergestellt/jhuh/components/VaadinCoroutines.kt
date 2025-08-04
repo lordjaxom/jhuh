@@ -9,6 +9,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
 private class VaadinDispatcher(
@@ -32,4 +33,15 @@ fun vaadinScope(component: Component): CoroutineScope {
     val job = SupervisorJob()
     component.addDetachListener { job.cancel() }
     return CoroutineScope(job + VaadinDispatcher())
+}
+
+fun CoroutineScope.launchWithProgress(progress: Component, block: suspend CoroutineScope.() -> Unit) = launch {
+    progress.isVisible = true
+    try {
+        block()
+    } catch (e: Throwable) {
+        showErrorNotification(e)
+    } finally {
+        progress.isVisible = false
+    }
 }

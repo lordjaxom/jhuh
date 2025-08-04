@@ -8,13 +8,12 @@ import org.springframework.stereotype.Service
 
 @Service
 @VaadinSessionScope
-class MaintenanceService(
+class DeleteUnusedFilesService(
     private val mediaClient: ShopifyMediaClient
 ) {
+    suspend fun findAll() = mediaClient.fetchAll("used_in:none").toList()
 
-    suspend fun findUnusedFiles() = mediaClient.fetchAll("used_in:none").toList()
-
-    suspend fun deleteUnusedFiles(files: List<ShopifyMedia>) {
+    suspend fun delete(files: List<ShopifyMedia>) {
         mediaClient.delete(files)
     }
 }
