@@ -10,11 +10,10 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVariant
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.springframework.stereotype.Service
 import java.util.concurrent.CopyOnWriteArrayList
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
 
 @Service
 class ShopifyDataStore(
@@ -29,14 +28,14 @@ class ShopifyDataStore(
     val products by productsDeferred
     val location by locationDeferred
 
-    private val lock = ReentrantLock()
+    private val lock = Mutex()
 
     fun findProductById(id: String) =
         products.find { it.id == id }
 
-    fun withLockAndRefresh(block: () -> Unit) {
+    suspend fun withLockAndRefresh(block: suspend () -> Unit) {
         lock.withLock {
-            runBlocking { productsDeferred.refreshAndAwait() }
+            productsDeferred.refreshAndAwait()
             block()
         }
     }

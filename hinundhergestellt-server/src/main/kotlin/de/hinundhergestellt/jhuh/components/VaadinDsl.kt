@@ -6,13 +6,14 @@ import com.vaadin.flow.component.Component
 import com.vaadin.flow.component.HasComponents
 import com.vaadin.flow.component.ItemLabelGenerator
 import com.vaadin.flow.component.accordion.Accordion
-import com.vaadin.flow.component.accordion.AccordionPanel
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.checkbox.Checkbox
 import com.vaadin.flow.component.combobox.ComboBox
 import com.vaadin.flow.component.dialog.Dialog
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.html.Div
+import com.vaadin.flow.component.html.H1
+import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
@@ -27,11 +28,6 @@ import kotlin.contracts.contract
 inline fun HasComponents.accordion(block: Accordion.() -> Unit = {}): Accordion {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     return init(Accordion(), block)
-}
-
-inline fun HasComponents.accordionPanel(summary: String? = null, block: AccordionPanel.() -> Unit = {}): AccordionPanel {
-    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    return init(AccordionPanel(summary), block)
 }
 
 inline fun HasComponents.button(text: String? = null, block: Button.() -> Unit = {}): Button {
@@ -64,6 +60,11 @@ inline fun <T> HasComponents.grid(block: Grid<T>.() -> Unit = {}): Grid<T> {
     return init(Grid(), block)
 }
 
+inline fun HasComponents.h1(text: String, block: H1.() -> Unit = {}): H1 {
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    return init(H1(text), block)
+}
+
 inline fun HasComponents.horizontalLayout(block: HorizontalLayout.() -> Unit = {}): HorizontalLayout {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     return init(HorizontalLayout(), block)
@@ -72,6 +73,11 @@ inline fun HasComponents.horizontalLayout(block: HorizontalLayout.() -> Unit = {
 inline fun HasComponents.integerField(label: String? = null, block: IntegerField.() -> Unit = {}): IntegerField {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     return init(IntegerField(label), block)
+}
+
+inline fun HasComponents.span(text: String, block: Span.() -> Unit = {}): Span {
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    return init(Span(text), block)
 }
 
 inline fun HasComponents.textArea(label: String? = null, block: TextArea.() -> Unit = {}): TextArea {

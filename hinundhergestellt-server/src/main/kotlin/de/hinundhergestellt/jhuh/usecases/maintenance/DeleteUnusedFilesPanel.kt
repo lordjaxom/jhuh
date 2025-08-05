@@ -6,6 +6,7 @@ import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.grid.GridVariant
 import com.vaadin.flow.component.orderedlayout.FlexComponent
+import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.components.ProgressOverlay
 import de.hinundhergestellt.jhuh.components.button
 import de.hinundhergestellt.jhuh.components.grid
@@ -17,11 +18,12 @@ import de.hinundhergestellt.jhuh.components.vaadinScope
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMedia
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.withContext
+import org.springframework.stereotype.Component
 
-class DeleteUnusedFilesPanel(
+private class DeleteUnusedFilesPanel(
     private val service: DeleteUnusedFilesService,
-    private val progressOverlay: ProgressOverlay,
-    private val applicationScope: CoroutineScope
+    private val applicationScope: CoroutineScope,
+    private val progressOverlay: ProgressOverlay
 ) : AccordionPanel("Ungenutzte Dateien in Shopify löschen") {
 
     private val deleteButton: Button
@@ -30,8 +32,6 @@ class DeleteUnusedFilesPanel(
     private val vaadinScope = vaadinScope(this)
 
     init {
-        isOpened = false
-
         setWidthFull()
         addOpenedChangeListener { toggleUnusedImages(it.isOpened) }
 
@@ -87,4 +87,15 @@ class DeleteUnusedFilesPanel(
         val files = withContext(applicationScope.coroutineContext) { service.findAll() }
         filesGrid.setItems(files)
     }
+}
+
+@Component
+@VaadinSessionScope
+class DeleteUnusedFilesPanelFactory(
+    private val service: DeleteUnusedFilesService,
+    private val applicationScope: CoroutineScope,
+): (ProgressOverlay) -> AccordionPanel {
+
+    override fun invoke(progressOverlay: ProgressOverlay): AccordionPanel =
+        DeleteUnusedFilesPanel(service, applicationScope, progressOverlay)
 }

@@ -1,4 +1,4 @@
-package de.hinundhergestellt.jhuh.usecases.products
+package de.hinundhergestellt.jhuh.usecases.shopify
 
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.backend.barcodes.BarcodeGenerator
@@ -14,11 +14,13 @@ import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendorRepository
 import de.hinundhergestellt.jhuh.components.Article
 import de.hinundhergestellt.jhuh.core.lazyWithReset
 import de.hinundhergestellt.jhuh.usecases.labels.LabelGeneratorService
-import de.hinundhergestellt.jhuh.usecases.products.SyncProblem.Error
-import de.hinundhergestellt.jhuh.usecases.products.SyncProblem.Warning
-import de.hinundhergestellt.jhuh.usecases.products.VariantBulkOperation.Create
-import de.hinundhergestellt.jhuh.usecases.products.VariantBulkOperation.Delete
-import de.hinundhergestellt.jhuh.usecases.products.VariantBulkOperation.Update
+import de.hinundhergestellt.jhuh.usecases.products.ShopifyProductMapper
+import de.hinundhergestellt.jhuh.usecases.products.ShopifyVariantMapper
+import de.hinundhergestellt.jhuh.usecases.shopify.SyncProblem.Error
+import de.hinundhergestellt.jhuh.usecases.shopify.SyncProblem.Warning
+import de.hinundhergestellt.jhuh.usecases.shopify.VariantBulkOperation.Create
+import de.hinundhergestellt.jhuh.usecases.shopify.VariantBulkOperation.Delete
+import de.hinundhergestellt.jhuh.usecases.shopify.VariantBulkOperation.Update
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedCategory
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
@@ -38,7 +40,7 @@ private val logger = KotlinLogging.logger {}
 
 @Service
 @VaadinSessionScope
-class ProductManagerService(
+class ShopifySynchronizationService(
     private val artooDataStore: ArtooDataStore,
     private val shopifyDataStore: ShopifyDataStore,
     private val shopifyProductMapper: ShopifyProductMapper,
@@ -295,7 +297,8 @@ class ProductManagerService(
 
         if (shopifyVariant == null) {
             logger.info { "Variant ${artooVariation.name} of ${artooProduct.name} only in ready2order, create in Shopify" }
-            return Create(shopifyVariantMapper.mapToVariant(shopifyProduct, artooVariation, shopifyDataStore.location.id))
+            return Create(shopifyVariantMapper.mapToVariant(shopifyProduct,artooVariation,shopifyDataStore.location.id)
+            )
         }
 
         if (shopifyVariantMapper.updateVariant(shopifyVariant, artooVariation)) {

@@ -3,12 +3,13 @@
 package de.hinundhergestellt.jhuh.components
 
 import com.vaadin.flow.component.HasComponents
+import com.vaadin.flow.component.HasText
 import com.vaadin.flow.component.html.Div
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-class ProgressOverlay : Div() {
+class ProgressOverlay : Div(), HasText {
 
     private val progressText: Div
 
@@ -24,10 +25,7 @@ class ProgressOverlay : Div() {
     }
 
     override fun getText(): String? = progressText.text
-
-    override fun setText(text: String?) {
-        progressText.text = text
-    }
+    override fun setText(text: String?) { progressText.text = text }
 }
 
 inline fun HasComponents.progressOverlay(block: ProgressOverlay.() -> Unit = {}): ProgressOverlay {

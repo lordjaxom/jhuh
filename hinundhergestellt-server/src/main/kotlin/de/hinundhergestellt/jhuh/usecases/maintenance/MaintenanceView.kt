@@ -5,17 +5,15 @@ import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
 import de.hinundhergestellt.jhuh.components.accordion
 import de.hinundhergestellt.jhuh.components.progressOverlay
-import kotlinx.coroutines.CoroutineScope
 
 @Route
 @PageTitle("Wartungsarbeiten")
 class MaintenanceView(
-    service: DeleteUnusedFilesService,
-    applicationScope: CoroutineScope
+    reconcileFromShopifyPanelFactory: ReconcileFromShopifyPanelFactory,
+    deleteUnusedFilesPanelFactory: DeleteUnusedFilesPanelFactory,
 ) : VerticalLayout() {
 
     private val progressOverlay = progressOverlay()
-    private val deleteUnusedFilesPanel = DeleteUnusedFilesPanel(service, progressOverlay, applicationScope)
 
     init {
         setHeightFull()
@@ -24,7 +22,9 @@ class MaintenanceView(
 
         accordion {
             setWidthFull()
-            add(deleteUnusedFilesPanel)
+            add(reconcileFromShopifyPanelFactory(progressOverlay))
+            add(deleteUnusedFilesPanelFactory(progressOverlay))
+            close()
         }
     }
 }

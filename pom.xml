@@ -21,7 +21,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <vaadin.version>24.7.6</vaadin.version>
+        <vaadin.version>24.8.5</vaadin.version>
     </properties>
 
     <modules>
