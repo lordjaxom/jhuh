@@ -6,6 +6,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.Index
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import java.math.BigDecimal
 import java.util.UUID
 
 @Entity
@@ -27,6 +28,9 @@ class SyncVariant(
 
     @Column(unique = true)
     var shopifyId: String? = null,
+
+    @Column
+    var weight: BigDecimal? = null,
 
     @Id
     val id: UUID = UUID.randomUUID(),

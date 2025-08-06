@@ -13,9 +13,9 @@ class ArtooMappedCategory internal constructor(
     fun findAllProducts(): Sequence<ArtooMappedProduct> =
         children.asSequence().flatMap { it.findAllProducts() } + products.asSequence()
 
-    fun findProductByBarcode(barcode: String): ArtooMappedProduct? =
-        products.firstOrNull { it.findVariationByBarcode(barcode) != null }
-            ?: children.firstNotNullOfOrNull { it.findProductByBarcode(barcode) }
+    fun findProductsByBarcodes(barcodes: List<String>): Sequence<ArtooMappedProduct> =
+        products.asSequence().filter { it.barcodes.any { barcode -> barcode in barcodes } } +
+                children.flatMap { it.findProductsByBarcodes(barcodes) }
 
     fun findProductById(id: String): ArtooMappedProduct? =
         products.firstOrNull { it.id == id }

@@ -22,8 +22,9 @@ class MaintenanceView(
 
         accordion {
             setWidthFull()
-            add(reconcileFromShopifyPanelFactory(progressOverlay))
+
             add(deleteUnusedFilesPanelFactory(progressOverlay))
+            add(reconcileFromShopifyPanelFactory(progressOverlay))
             close()
         }
     }

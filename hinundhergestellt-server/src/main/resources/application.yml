@@ -19,6 +19,8 @@ spring:
       mariadb:
         table-name: vector_store
         initialize-schema: true
+  jpa:
+    open-in-view: false
 
 google:
   apikey: ${GOOGLE_APIKEY}

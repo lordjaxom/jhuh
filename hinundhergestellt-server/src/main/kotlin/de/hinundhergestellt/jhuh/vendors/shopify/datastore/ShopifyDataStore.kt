@@ -33,9 +33,13 @@ class ShopifyDataStore(
     fun findProductById(id: String) =
         products.find { it.id == id }
 
+    suspend fun refreshAndAwait() {
+        productsDeferred.refreshAndAwait()
+    }
+
     suspend fun withLockAndRefresh(block: suspend () -> Unit) {
         lock.withLock {
-            productsDeferred.refreshAndAwait()
+            refreshAndAwait()
             block()
         }
     }
