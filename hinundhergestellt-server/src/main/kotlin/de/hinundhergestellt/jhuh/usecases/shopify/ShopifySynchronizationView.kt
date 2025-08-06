@@ -89,7 +89,7 @@ class ShopifySynchronizationView(
                 value = false
                 style.setWhiteSpace(Style.WhiteSpace.NOWRAP)
             }
-            filterTextField = textField() {
+            filterTextField = textField {
                 placeholder = "Suche..."
                 prefixComponent = VaadinIcon.SEARCH.create()
                 isClearButtonVisible = true

@@ -1,4 +1,4 @@
-package de.hinundhergestellt.jhuh.usecases.products
+package de.hinundhergestellt.jhuh.usecases.shopify
 
 import de.hinundhergestellt.jhuh.backend.mapping.update
 import de.hinundhergestellt.jhuh.backend.shoptexter.ShopTexterService

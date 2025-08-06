@@ -37,25 +37,21 @@ fun vaadinScope(component: Component): CoroutineScope {
     return CoroutineScope(job + VaadinDispatcher())
 }
 
-fun CoroutineScope.launchWithProgress(progress: Component, block: suspend CoroutineScope.() -> Unit) =
-    launch {
-        progress.isVisible = true
-        try {
-            block()
-        } catch (e: Throwable) {
-            showErrorNotification(e)
-        } finally {
-            progress.isVisible = false
-        }
-    }
-
-class VaadinContextSwitcher<T>(
-    private val vaadinScope: CoroutineScope,
+class VaadinCoroutineScope<T> (
+    component: Component,
     private val applicationScope: CoroutineScope,
     private val progress: T
-) where T : Component, T : HasText {
+) : CoroutineScope by vaadinScope(component)
+        where T: Component, T: HasText {
 
-    fun launch(block: suspend VaadinContextSwitcher<T>.() -> Unit) = vaadinScope.launch {
+    fun launch(block: suspend VaadinCoroutineScope<T>.() -> Unit) = (this as CoroutineScope).launch { block() }
+
+    fun launchWithReporting(block: suspend VaadinCoroutineScope<T>.() -> Unit) = launch { withReporting { block() } }
+
+    suspend fun <R> application(block: suspend CoroutineScope.() -> R) = withContext(applicationScope.coroutineContext) { block() }
+    suspend fun <R> vaadin(block: suspend CoroutineScope.() -> R) = withContext(coroutineContext) { block() }
+
+    suspend fun withReporting(block: suspend VaadinCoroutineScope<T>.() -> Unit) {
         progress.isVisible = true
         try {
             block()
@@ -65,9 +61,6 @@ class VaadinContextSwitcher<T>(
             progress.isVisible = false
         }
     }
-
-    suspend fun application(block: suspend CoroutineScope.() -> Unit) = withContext(applicationScope.coroutineContext) { block() }
-    suspend fun vaadin(block: suspend CoroutineScope.() -> Unit) = withContext(vaadinScope.coroutineContext) { block() }
 
     suspend fun report(message: String) = vaadin { progress.text = message }
 }

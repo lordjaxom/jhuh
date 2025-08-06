@@ -1,5 +1,5 @@
 html {
-    --vaadin-grid-cell-padding: 4px 8px
+    --vaadin-grid-cell-padding: 4px 8px;
 }
 
 vaadin-grid::part(header-cell) {
@@ -9,6 +9,10 @@ vaadin-grid::part(header-cell) {
 
 vaadin-grid::part(cell) {
     min-height: var(--lumo-size-m);
+}
+
+vaadin-grid-tree-toggle {
+    --vaadin-grid-tree-toggle-level-offset: 1em;
 }
 
 .progress-overlay {

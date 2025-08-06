@@ -5,7 +5,10 @@ import com.vaadin.flow.server.streams.DownloadHandler
 
 enum class CustomIcon {
 
-    SHOPIFY;
+    CATEGORY,
+    PRODUCT,
+    SHOPIFY,
+    VARIATION;
 
     fun create() = SvgIcon(DownloadHandler.forClassResource(CustomIcon::class.java, "icon_${name.lowercase()}.svg"))
 }

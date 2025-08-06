@@ -3,18 +3,17 @@ package de.hinundhergestellt.jhuh.usecases.maintenance
 import com.vaadin.flow.component.accordion.AccordionPanel
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.components.ProgressOverlay
-import de.hinundhergestellt.jhuh.components.VaadinContextSwitcher
-import de.hinundhergestellt.jhuh.components.vaadinScope
+import de.hinundhergestellt.jhuh.components.VaadinCoroutineScope
 import kotlinx.coroutines.CoroutineScope
 import org.springframework.stereotype.Component
 
 private class ReconcileFromShopifyPanel(
     private val service: ReconcileFromShopifyService,
-    private val applicationScope: CoroutineScope,
-    private val progressOverlay: ProgressOverlay
+    applicationScope: CoroutineScope,
+    progressOverlay: ProgressOverlay
 ) : AccordionPanel("Produkte aus Shopify herunterladen") {
 
-    private val vaadinScope = vaadinScope(this)
+    private val vaadinScope = VaadinCoroutineScope(this, applicationScope, progressOverlay)
 
     init {
         setWidthFull()
@@ -22,7 +21,8 @@ private class ReconcileFromShopifyPanel(
     }
 
     private fun refresh() {
-        VaadinContextSwitcher(vaadinScope, applicationScope, progressOverlay).launch {
+        vaadinScope.launchWithReporting {
+            report("Synchronisiere...")
             application { service.synchronize(::report) }
         }
     }

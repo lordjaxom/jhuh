@@ -23,7 +23,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
 private class EditItemDialog(
-    item: SyncableItem,
+    item: TreeItem,
     vendors: List<SyncVendor>,
     private val callback: (EditItemResult?) -> Unit
 ) : Dialog() {
@@ -107,7 +107,7 @@ class EditItemResult private constructor(
     var replaceType: Boolean,
     var tags: String
 ) {
-    constructor(item: SyncableItem) : this(
+    constructor(item: TreeItem) : this(
         vendor = item.vendor,
         replaceVendor = item is ProductItem,
         type = item.type ?: "",
@@ -116,7 +116,7 @@ class EditItemResult private constructor(
     )
 }
 
-suspend fun editItemDialog(item: SyncableItem, vendors: List<SyncVendor>) =
+suspend fun editItemDialog(item: TreeItem, vendors: List<SyncVendor>) =
     suspendCancellableCoroutine {
         val dialog = EditItemDialog(item, vendors) { result -> it.resume(result) }
         it.invokeOnCancellation { dialog.close() }

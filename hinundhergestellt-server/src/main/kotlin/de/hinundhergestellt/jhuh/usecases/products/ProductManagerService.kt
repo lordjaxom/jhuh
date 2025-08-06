@@ -2,7 +2,6 @@ package de.hinundhergestellt.jhuh.usecases.products
 
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.backend.barcodes.BarcodeGenerator
-import de.hinundhergestellt.jhuh.backend.shoptexter.ShopTexterService
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategory
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategoryRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
@@ -14,25 +13,19 @@ import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendorRepository
 import de.hinundhergestellt.jhuh.components.Article
 import de.hinundhergestellt.jhuh.core.lazyWithReset
 import de.hinundhergestellt.jhuh.usecases.labels.LabelGeneratorService
-import de.hinundhergestellt.jhuh.usecases.products.SyncProblem.Error
-import de.hinundhergestellt.jhuh.usecases.products.SyncProblem.Warning
-import de.hinundhergestellt.jhuh.usecases.products.VariantBulkOperation.Create
-import de.hinundhergestellt.jhuh.usecases.products.VariantBulkOperation.Delete
-import de.hinundhergestellt.jhuh.usecases.products.VariantBulkOperation.Update
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedCategory
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedVariation
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
-import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVariant
-import de.hinundhergestellt.jhuh.vendors.shopify.client.isDryRun
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import kotlin.reflect.KProperty1
+import org.springframework.transaction.support.TransactionOperations
+import kotlin.coroutines.resume
 
 private val logger = KotlinLogging.logger {}
 
@@ -41,15 +34,13 @@ private val logger = KotlinLogging.logger {}
 class ProductManagerService(
     private val artooDataStore: ArtooDataStore,
     private val shopifyDataStore: ShopifyDataStore,
-    private val shopifyProductMapper: ShopifyProductMapper,
-    private val shopifyVariantMapper: ShopifyVariantMapper,
     private val syncProductRepository: SyncProductRepository,
     private val syncVariantRepository: SyncVariantRepository,
     private val syncCategoryRepository: SyncCategoryRepository,
     private val syncVendorRepository: SyncVendorRepository,
+    private val transactionOperations: TransactionOperations,
     private val barcodeGenerator: BarcodeGenerator,
     private val labelGeneratorService: LabelGeneratorService,
-    private val shopTexterService: ShopTexterService
 ) : AutoCloseable {
 
     private val rootCategoriesLazy = lazyWithReset { artooDataStore.rootCategories.map { CategoryItem(it) } }
@@ -67,252 +58,110 @@ class ProductManagerService(
         refreshListeners -= rootCategoriesLazy::reset
     }
 
-    @Transactional
-    fun updateItem(item: SyncableItem, vendor: SyncVendor?, replaceVendor: Boolean, type: String?, replaceType: Boolean, tags: String?) {
-        val tagsAsSet = tags?.run { splitToSequence(",").map { it.trim() }.filter { it.isNotEmpty() }.toMutableSet() }
-        when (item) {
-            is CategoryItem -> {
-                if (tagsAsSet != null) {
-                    val syncCategory = item.syncCategory?.also { it.tags = tagsAsSet }
-                        ?: SyncCategory(item.id, tagsAsSet).also { item.syncCategory = it }
-                    syncCategoryRepository.save(syncCategory)
-                }
-
-                if (replaceVendor || replaceType) {
-                    item.children.forEach { updateItem(it, vendor, replaceVendor, type, replaceType, null) }
-                }
+    suspend fun refresh() =
+        suspendCancellableCoroutine {
+            fun handler() {
+                refreshListeners -= ::handler
+                it.resume(Unit)
             }
-
-            is ProductItem -> {
-                var syncProduct = item.syncProduct
-                if (syncProduct != null) {
-                    if (replaceVendor) syncProduct.vendor = vendor
-                    if (replaceType) syncProduct.type = type
-                    if (tagsAsSet != null) syncProduct.tags = tagsAsSet
-                } else {
-                    syncProduct = SyncProduct(
-                        artooId = item.id,
-                        vendor = vendor,
-                        type = type,
-                        tags = tagsAsSet ?: mutableSetOf(),
-                        synced = false
-                    )
-                    item.syncProduct = syncProduct
-                }
-                syncProductRepository.save(syncProduct)
-            }
+            it.invokeOnCancellation { refreshListeners -= ::handler }
+            refreshListeners += ::handler
+            artooDataStore.refresh()
         }
-    }
 
     @Transactional
-    fun markForSync(product: ProductItem) {
-        val syncProduct = product.syncProduct?.also { it.synced = true }
-            ?: SyncProduct(artooId = product.id, synced = true).also { product.syncProduct = it }
-        syncProductRepository.save(syncProduct)
+    fun updateItem(item: TreeItem, vendor: SyncVendor?, replaceVendor: Boolean, type: String?, replaceType: Boolean, tags: String?) {
+//        val tagsAsSet = tags?.run { splitToSequence(",").map { it.trim() }.filter { it.isNotEmpty() }.toMutableSet() }
+//        when (item) {
+//            is CategoryItem -> {
+//                if (tagsAsSet != null) {
+//                    val syncCategory = item.syncCategory?.also { it.tags = tagsAsSet }
+//                        ?: SyncCategory(item.id, tagsAsSet).also { item.syncCategory = it }
+//                    syncCategoryRepository.save(syncCategory)
+//                }
+//
+//                if (replaceVendor || replaceType) {
+//                    item.children.forEach { updateItem(it, vendor, replaceVendor, type, replaceType, null) }
+//                }
+//            }
+//
+//            is ProductItem -> {
+//                var syncProduct = item.syncProduct
+//                if (syncProduct != null) {
+//                    if (replaceVendor) syncProduct.vendor = vendor
+//                    if (replaceType) syncProduct.type = type
+//                    if (tagsAsSet != null) syncProduct.tags = tagsAsSet
+//                } else {
+//                    syncProduct = SyncProduct(
+//                        artooId = item.id,
+//                        vendor = vendor,
+//                        type = type,
+//                        tags = tagsAsSet ?: mutableSetOf(),
+//                        synced = false
+//                    )
+//                    item.syncProduct = syncProduct
+//                }
+//                syncProductRepository.save(syncProduct)
+//            }
+//        }
     }
 
-    @Transactional
-    fun unmarkForSync(product: ProductItem) {
-        product.syncProduct!!.also {
-            it.synced = false
-            syncProductRepository.save(it)
-        }
-    }
-
-    @Transactional
-    fun synchronize(report: (String) -> Unit) = runBlocking {
-        try {
-            report("Shopify-Produktkatalog aktualisieren...")
-            shopifyDataStore.withLockAndRefresh {
-                report("Änderungen in ready2order mit Datenbank zusammenführen...")
-                // TODO: Using rootCategories might save a lot of duplicate database loads and conditions (like description.ifEmpty { name })
-                artooDataStore.findAllProducts().forEach { reconcileFromArtoo(it) }
-
-                report("Datenbank und ready2order nach Shopify hochladen...")
-                // TODO: Potentially deactivate products in Shopify when synced=false
-                syncProductRepository.findAllBySyncedIsTrue().forEach { synchronizeWithShopify(it, report) }
-            }
-        } catch (e: Throwable) {
-            logger.error(e) { "Synchronization failed" }
-            throw e
-        }
-    }
-
-    @Transactional
-    fun generateNewBarcodes(product: ProductItem) = runBlocking {
-        logger.info { "Generating new Barcodes for all variants of ${product.name}" }
-
+    suspend fun generateNewBarcodes(product: ProductItem, report: suspend (String) -> Unit) {
+        report("Shopify-Produktkatalog aktualisieren...")
         shopifyDataStore.withLockAndRefresh {
-            val shopifyProduct = product.syncProduct?.shopifyId?.let { shopifyDataStore.findProductById(it) }
-            val shopifyVariantsToUpdate = product.value.variations.mapNotNull { generateNewBarcode(it, shopifyProduct) }
 
+            report("Barcodes für ${product.name} generieren...")
+
+            val shopifyProduct = product.syncProduct?.shopifyId?.let { shopifyDataStore.findProductById(it) }
+
+            val syncVariantsToUpdate = mutableListOf<SyncVariant>()
+            val shopifyVariantsToUpdate = mutableListOf<ShopifyProductVariant>()
             product.value.variations.forEach {
+                generateNewBarcode(it, shopifyProduct, syncVariantsToUpdate, shopifyVariantsToUpdate)
                 labelGeneratorService.createLabel(Article(product.value, it), it.stockValue.toInt())
             }
 
-            runBlocking {
-                artooDataStore.update(product.value)
-                shopifyVariantsToUpdate
-                    .takeIf { it.isNotEmpty() }
-                    ?.also { shopifyDataStore.update(shopifyProduct!!, it) }
+            artooDataStore.update(product.value)
+            if (shopifyProduct != null && shopifyVariantsToUpdate.isNotEmpty()) {
+                shopifyDataStore.update(shopifyProduct, shopifyVariantsToUpdate)
+            }
+            if (syncVariantsToUpdate.isNotEmpty()) {
+                transactionOperations.execute { syncVariantRepository.saveAll(syncVariantsToUpdate) }
             }
         }
     }
 
-    private fun generateNewBarcode(variation: ArtooMappedVariation, shopifyProduct: ShopifyProduct?): ShopifyProductVariant? {
-        val newBarcode = barcodeGenerator.generate()
+    private fun generateNewBarcode(
+        variation: ArtooMappedVariation,
+        shopifyProduct: ShopifyProduct?,
+        syncVariantsToUpdate: MutableList<SyncVariant>,
+        shopifyVariantsToUpdate: MutableList<ShopifyProductVariant>
+    ) {
         val oldBarcode = variation.barcode
+        val newBarcode = barcodeGenerator.generate()
         variation.product.barcode = newBarcode
 
-        if (oldBarcode == null) return null
+        if (oldBarcode == null) return
 
         syncVariantRepository.findByBarcode(oldBarcode)?.also {
             it.barcode = newBarcode
-            syncVariantRepository.save(it)
+            syncVariantsToUpdate.add(it)
         }
-
-        val shopifyVariant = shopifyProduct?.findVariantByBarcode(oldBarcode)
-        if (shopifyVariant == null) return null
-
-        shopifyVariant.barcode = newBarcode
-        return shopifyVariant
-    }
-
-    fun refresh() {
-        artooDataStore.refresh()
+        shopifyProduct?.findVariantByBarcode(oldBarcode)?.also {
+            it.barcode = newBarcode
+            shopifyVariantsToUpdate.add(it)
+        }
     }
 
     suspend fun update(product: ArtooMappedProduct) {
         artooDataStore.update(product)
     }
 
-    private fun checkSyncProblems(product: ArtooMappedProduct, syncProduct: SyncProduct?) = buildList {
-        val barcodes = product.barcodes
-        if (barcodes.isEmpty()) {
-            add(Error("Produkt hat keine Barcodes"))
-        } else if (barcodes.size < product.variations.size) {
-            add(Warning("Nicht alle Variationen haben einen Barcode"))
-        }
-        if (product.variations.groupingBy { it.name }.eachCount().any { (_, count) -> count > 1 }) {
-            add(Error("Produkt hat Variationen mit gleichem Namen"))
-        }
-        if (!product.hasOnlyDefaultVariant && product.variations.any { it.name.isEmpty() }) {
-            add(Warning("Nicht alle Variationen haben einen Namen"))
-        }
-        syncProduct?.vendor.also {
-            if (it == null) {
-                add(Error("Produkt hat keinen Hersteller"))
-            } else if (it.email == null || it.address == null) {
-                add(Error("Herstellerangaben unvollständig"))
-            }
-        }
-        if (syncProduct?.type == null) {
-            add(Error("Produkt hat keine Produktart"))
-        }
-    }
-
-    private fun reconcileFromArtoo(artooProduct: ArtooMappedProduct) {
-        // products in ready2order are only synced when there's a marker, but make sure all variations are known
-        val syncProduct = syncProductRepository.findByArtooId(artooProduct.id)
-            ?: syncProductRepository.findByVariantsBarcodeIn(artooProduct.barcodes)?.also { it.artooId = artooProduct.id }
-            ?: return
-        artooProduct.variations.forEach { reconcileFromArtoo(it, syncProduct) }
-        syncProductRepository.save(syncProduct) // for later retrieval in same transaction
-    }
-
-    private fun reconcileFromArtoo(artooVariation: ArtooMappedVariation, syncProduct: SyncProduct) {
-        // TODO: Barcode as key not required anymore?
-        val barcode = artooVariation.barcode?.takeIf { it.isNotEmpty() } ?: return
-        val syncVariant = syncVariantRepository.findByArtooId(artooVariation.id)?.also { it.barcode = barcode }
-            ?: syncVariantRepository.findByBarcode(barcode)?.also { it.artooId = artooVariation.id }
-            ?: artooVariation.toSyncVariant(syncProduct)
-        require(syncVariant.product === syncProduct) { "SyncVariant.product does not match ArtooMappedVariation.product" }
-    }
-
-    private fun synchronizeWithShopify(syncProduct: SyncProduct, report: (String) -> Unit) {
-        val artooProduct = syncProduct.artooId?.let { artooDataStore.findProductById(it) }
-        var shopifyProduct = syncProduct.shopifyId?.let { shopifyDataStore.findProductById(it) }
-
-        if (artooProduct != null && checkSyncProblems(artooProduct, syncProduct).has<Error>()) {
-            logger.warn { "Product ${artooProduct.name} has errors, skip synchronization" }
-            return
-        }
-
-        if (artooProduct == null) {
-            require(shopifyProduct != null) { "SyncProduct vanished from both ready2order and Shopify" }
-            logger.info { "Product ${shopifyProduct!!.title} no longer in ready2order, delete from Shopify" }
-            shopifyProduct.also { runBlocking { shopifyDataStore.delete(it) } }
-            syncProductRepository.delete(syncProduct)
-            shopTexterService.removeProduct(syncProduct.id)
-            return
-        }
-
-        if (shopifyProduct == null) {
-            logger.info { "Product ${artooProduct.name} only in ready2order, create in Shopify" }
-            report("Produktbeschreibung für ${artooProduct.name} generieren...")
-            val unsavedShopifyProduct = shopifyProductMapper.mapToProduct(syncProduct, artooProduct)
-            shopifyProduct = runBlocking { shopifyDataStore.create(unsavedShopifyProduct) }
-            if (!shopifyProduct.isDryRun) {
-                syncProduct.shopifyId = shopifyProduct.id
-            }
-            shopTexterService.updateProduct(syncProduct.id, shopifyProduct)
-        } else if (shopifyProductMapper.updateProduct(syncProduct, artooProduct, shopifyProduct)) {
-            logger.info { "Product ${artooProduct.name} has changed, update in Shopify" }
-            runBlocking { shopifyDataStore.update(shopifyProduct) }
-            shopTexterService.updateProduct(syncProduct.id, shopifyProduct)
-        }
-
-        val bulkOperations = syncProduct.variants
-            .toList() // create copy to prevent concurrent modification when deleting variants
-            .map { synchronizeWithShopify(it, artooProduct, shopifyProduct) }
-        bulkOperations.allOf(Create::variant)?.let { runBlocking { shopifyDataStore.create(shopifyProduct, it) } }
-        bulkOperations.allOf(Update::variant)?.let { runBlocking { shopifyDataStore.update(shopifyProduct, it) } }
-        bulkOperations.allOf(Delete::variant)?.let { runBlocking { shopifyDataStore.delete(shopifyProduct, it) } }
-    }
-
-    private fun synchronizeWithShopify(syncVariant: SyncVariant, artooProduct: ArtooMappedProduct, shopifyProduct: ShopifyProduct)
-            : VariantBulkOperation? {
-        val artooVariation = artooProduct.findVariationByBarcode(syncVariant.barcode)
-        val shopifyVariant = shopifyProduct.findVariantByBarcode(syncVariant.barcode)
-
-        if (artooVariation == null && shopifyVariant == null) {
-            logger.info { "Variant of ${artooProduct.name} with barcode ${syncVariant.barcode} vanished, forget" }
-            syncVariant.product.variants.remove(syncVariant)
-            return null
-        }
-
-        if (artooVariation == null) {
-            require(shopifyVariant != null) // already covered by previous condition
-            logger.info { "Variant ${shopifyVariant.title} of ${shopifyProduct.title} no longer in ready2order, delete from Shopify" }
-            syncVariant.product.variants.remove(syncVariant)
-            return Delete(shopifyVariant)
-        }
-
-        if (!artooProduct.hasOnlyDefaultVariant && artooVariation.name.isEmpty()) {
-            logger.warn { "Variant of ${artooProduct.name} with barcode ${artooVariation.barcode} has no name, skip synchronization" }
-            return null
-        }
-
-        if (shopifyVariant == null) {
-            logger.info { "Variant ${artooVariation.name} of ${artooProduct.name} only in ready2order, create in Shopify" }
-            return Create(shopifyVariantMapper.mapToVariant(shopifyProduct, artooVariation, shopifyDataStore.location.id))
-        }
-
-        if (shopifyVariantMapper.updateVariant(shopifyVariant, artooVariation)) {
-            logger.info { "Variant ${artooVariation.name} of ${artooProduct.name} has changed, update in Shopify" }
-            return Update(shopifyVariant)
-        }
-
-        return null
-    }
-
-    inner class CategoryItem(val value: ArtooMappedCategory) : SyncableItem {
+    inner class CategoryItem(val value: ArtooMappedCategory) : TreeItem {
 
         internal var syncCategory = syncCategoryRepository.findByArtooId(value.id)
 
         val id by value::id
-
-        val children = value.run { children.map { CategoryItem(it) } + products.map { ProductItem(it) } }
 
         override val itemId = "category-$id"
         override val name by value::name
@@ -320,42 +169,52 @@ class ProductManagerService(
         override val type = null
         override val tagsAsSet get() = syncCategory?.tags?.toSet() ?: setOf()
         override val variations = null
+        override val hasChildren = true
+        override val children = value.run { children.map { CategoryItem(it) } + products.map { ProductItem(it) } }
 
-        override fun filterBy(markedForSync: Boolean, withErrors: Boolean?, text: String) =
-            children.any { it.filterBy(markedForSync, withErrors, text) }
+        override fun filterBy(markedForSync: Boolean, text: String) =
+            children.any { it.filterBy(markedForSync, text) }
     }
 
-    inner class ProductItem(val value: ArtooMappedProduct) : SyncableItem {
+    inner class ProductItem(val value: ArtooMappedProduct) : TreeItem {
 
         internal var syncProduct = syncProductRepository.findByArtooId(value.id)
 
         val id by value::id
         val isMarkedForSync get() = syncProduct?.synced ?: false
 
-        val syncProblems get() = checkSyncProblems(value, syncProduct)
-
-        override val itemId = "product-$id"
+        override val itemId = id
         override val name get() = value.description.ifEmpty { value.name }
         override val vendor get() = syncProduct?.vendor
         override val type get() = syncProduct?.type
         override val tagsAsSet get() = syncProduct?.tags?.toSet() ?: setOf()
         override val variations = if (value.hasOnlyDefaultVariant) 0 else value.variations.size
+        override val hasChildren = !value.hasOnlyDefaultVariant
+        override val children = value.variations.map { VariationItem(it) }
 
-        override fun filterBy(markedForSync: Boolean, withErrors: Boolean?, text: String) =
+        override fun filterBy(markedForSync: Boolean, text: String) =
             (!markedForSync || isMarkedForSync) &&
-                    (withErrors == null || syncProblems.isNotEmpty() == withErrors) &&
                     (text.isEmpty() || name.contains(text, ignoreCase = true))
     }
 
-    private fun ArtooMappedVariation.toSyncVariant(syncProduct: SyncProduct) =
-        SyncVariant(
-            product = syncProduct,
-            barcode = barcode!!,
-            artooId = id
-        ).also { syncProduct.variants.add(it) }
+    inner class VariationItem(val value: ArtooMappedVariation) : TreeItem {
+
+        val id by value::id
+
+        override val itemId = "variation-$id"
+        override val name by value::name
+        override val vendor = null
+        override val type = null
+        override val tagsAsSet = setOf<String>()
+        override val variations = null
+        override val hasChildren = false
+        override val children = listOf<TreeItem>()
+
+        override fun filterBy(markedForSync: Boolean, text: String) = true
+    }
 }
 
-sealed interface SyncableItem {
+sealed interface TreeItem {
 
     val itemId: String
     val name: String
@@ -363,26 +222,10 @@ sealed interface SyncableItem {
     val type: String?
     val tagsAsSet: Set<String>
     val variations: Int?
+    val hasChildren: Boolean
+    val children: List<TreeItem>
 
     val tags get() = tagsAsSet.sorted().joinToString(", ")
 
-    fun filterBy(markedForSync: Boolean, withErrors: Boolean?, text: String): Boolean
+    fun filterBy(markedForSync: Boolean, text: String): Boolean
 }
-
-sealed class SyncProblem(val message: String) {
-    class Warning(message: String) : SyncProblem(message)
-    class Error(message: String) : SyncProblem(message)
-
-    override fun toString() = message
-}
-
-inline fun <reified T : SyncProblem> List<SyncProblem>.has() = any { it is T }
-
-private sealed interface VariantBulkOperation {
-    class Create(val variant: UnsavedShopifyProductVariant) : VariantBulkOperation
-    class Update(val variant: ShopifyProductVariant) : VariantBulkOperation
-    class Delete(val variant: ShopifyProductVariant) : VariantBulkOperation
-}
-
-private inline fun <reified T : VariantBulkOperation, V> List<VariantBulkOperation?>.allOf(property: KProperty1<T, V>) =
-    asSequence().filterIsInstance<T>().map { property.get(it) }.toList().takeIf { it.isNotEmpty() }

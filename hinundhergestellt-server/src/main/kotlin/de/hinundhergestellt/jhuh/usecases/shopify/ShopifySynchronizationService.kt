@@ -14,8 +14,7 @@ import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendorRepository
 import de.hinundhergestellt.jhuh.components.Article
 import de.hinundhergestellt.jhuh.core.lazyWithReset
 import de.hinundhergestellt.jhuh.usecases.labels.LabelGeneratorService
-import de.hinundhergestellt.jhuh.usecases.products.ShopifyProductMapper
-import de.hinundhergestellt.jhuh.usecases.products.ShopifyVariantMapper
+import de.hinundhergestellt.jhuh.usecases.shopify.ShopifyVariantMapper
 import de.hinundhergestellt.jhuh.usecases.shopify.SyncProblem.Error
 import de.hinundhergestellt.jhuh.usecases.shopify.SyncProblem.Warning
 import de.hinundhergestellt.jhuh.usecases.shopify.VariantBulkOperation.Create

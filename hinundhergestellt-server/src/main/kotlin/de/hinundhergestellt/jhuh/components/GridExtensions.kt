@@ -1,6 +1,8 @@
 package de.hinundhergestellt.jhuh.components
 
+import com.vaadin.flow.component.Component
 import com.vaadin.flow.component.ComponentEventListener
+import com.vaadin.flow.component.HasComponents
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.grid.ClientItemToggleEvent
 import com.vaadin.flow.component.grid.ColumnTextAlign
@@ -52,6 +54,14 @@ fun <T> Grid<T>.iconColumn(iconProvider: (T) -> Icon): Grid.Column<T> =
             isSortable = false
             width = "32px"
             flexGrow = 0
+        }
+
+fun <T, V : Component> TreeGrid<T>.hierarchyComponentColumn(header: String, flexGrow: Int, componentProvider: (T) -> V): Grid.Column<T> =
+    addComponentHierarchyColumn(componentProvider)
+        .setHeader(header)
+        .also {
+            it.isSortable = false
+            it.flexGrow = flexGrow
         }
 
 fun <T, V> TreeGrid<T>.hierarchyTextColumn(header: String, flexGrow: Int, valueProvider: (T) -> V): Grid.Column<T> =

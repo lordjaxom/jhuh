@@ -30,4 +30,4 @@ ready2order:
 shopify:
   domain: ${SHOPIFY_DOMAIN}
   token: ${SHOPIFY_TOKEN}
-  read-only: false
+  read-only: true
