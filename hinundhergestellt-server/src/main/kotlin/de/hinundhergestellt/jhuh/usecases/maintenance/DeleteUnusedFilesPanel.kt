@@ -9,6 +9,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.components.ProgressOverlay
 import de.hinundhergestellt.jhuh.components.VaadinCoroutineScope
+import de.hinundhergestellt.jhuh.components.accordionSummary
 import de.hinundhergestellt.jhuh.components.button
 import de.hinundhergestellt.jhuh.components.grid
 import de.hinundhergestellt.jhuh.components.horizontalLayout
@@ -22,7 +23,7 @@ private class DeleteUnusedFilesPanel(
     private val service: DeleteUnusedFilesService,
     applicationScope: CoroutineScope,
     progressOverlay: ProgressOverlay
-) : AccordionPanel("Ungenutzte Dateien in Shopify löschen") {
+) : AccordionPanel() {
 
     private val deleteButton: Button
     private val filesGrid: Grid<ShopifyMedia>
@@ -30,6 +31,11 @@ private class DeleteUnusedFilesPanel(
     private val vaadinScope = VaadinCoroutineScope(this, applicationScope, progressOverlay)
 
     init {
+        accordionSummary(
+            "Shopify: Ungenutzte Dateien löschen",
+            "Lädt eine Liste von laut Shopify ungenutzten Dateien und ermöglicht es, diese zu löschen"
+        )
+
         setWidthFull()
         addOpenedChangeListener { if (it.isOpened) loadUnusedFiles() }
 

@@ -4,6 +4,7 @@ import com.vaadin.flow.component.accordion.AccordionPanel
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.components.ProgressOverlay
 import de.hinundhergestellt.jhuh.components.VaadinCoroutineScope
+import de.hinundhergestellt.jhuh.components.accordionSummary
 import kotlinx.coroutines.CoroutineScope
 import org.springframework.stereotype.Component
 
@@ -11,11 +12,15 @@ private class ReconcileFromShopifyPanel(
     private val service: ReconcileFromShopifyService,
     applicationScope: CoroutineScope,
     progressOverlay: ProgressOverlay
-) : AccordionPanel("Produkte aus Shopify herunterladen") {
+) : AccordionPanel() {
 
     private val vaadinScope = VaadinCoroutineScope(this, applicationScope, progressOverlay)
 
     init {
+        accordionSummary(
+            "Shopify: Produktinformationen herunterladen",
+            "Gleicht den lokalen Datenbestand für in ready2order vorhandene Produkte mit nur in Shopify getätigten Änderungen ab"
+        )
         setWidthFull()
         addOpenedChangeListener { if (it.isOpened) refresh() }
     }
