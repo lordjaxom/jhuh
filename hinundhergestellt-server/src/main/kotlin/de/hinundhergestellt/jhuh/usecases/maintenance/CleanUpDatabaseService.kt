@@ -64,7 +64,7 @@ class CleanUpDatabaseService(
         return null
     }
 
-    private inner class ProductCleanUpItem(
+    inner class ProductCleanUpItem(
         val syncProduct: SyncProduct,
         override val message: String
     ) : CleanUpItem {

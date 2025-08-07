@@ -1,6 +1,6 @@
 package de.hinundhergestellt.jhuh.usecases.maintenance
 
-import com.vaadin.flow.spring.annotation.UIScope
+import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategory
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategoryRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
@@ -12,22 +12,22 @@ import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendor
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendorRepository
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedCategory
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafield
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
-import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyWeight
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightUnit
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.jsoup.Jsoup
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionOperations
-import java.math.BigDecimal
+import java.util.UUID
 import kotlin.streams.asSequence
 
 private val logger = KotlinLogging.logger { }
 
 @Service
-@UIScope
+@VaadinSessionScope
 class ReconcileFromShopifyService(
     private val artooDataStore: ArtooDataStore,
     private val shopifyDataStore: ShopifyDataStore,
@@ -38,63 +38,111 @@ class ReconcileFromShopifyService(
     private val transactionOperations: TransactionOperations
 ) {
 
-    suspend fun synchronize(report: suspend (String) -> Unit) {
-        report("Shopify-Produktkatalog aktualisieren...")
+    val items = mutableListOf<ReconcileItem>()
+
+    suspend fun refresh(report: suspend (String) -> Unit) {
+        report("Aktualisiere Shopify-Produktkatalog...")
         shopifyDataStore.refreshAndAwait()
 
-        report("Shopify-Produkte mit Datenbank abgleichen...")
-        val changedSyncProducts = shopifyDataStore.products.mapNotNull { reconcileProduct(it) }
+        report("Gleiche Shopify-Produkte mit Datenbank ab...")
+        items.clear()
+        items += shopifyDataStore.products.asSequence().map { reconcile(it) }.flatten()
 
 //        report("Unbekannte Kategorien abgleichen...")
 //        artooDataStore.rootCategories.forEach { reconcileCategories(it) }
 
-        transactionOperations.execute { syncProductRepository.saveAll(changedSyncProducts) }
+//        transactionOperations.execute { syncProductRepository.saveAll(changedSyncProducts) }
     }
 
-    private fun reconcileProduct(shopifyProduct: ShopifyProduct): SyncProduct? {
-        val syncProduct = syncProductRepository.findByShopifyId(shopifyProduct.id) ?: run {
-            val matchingArtooProducts = artooDataStore.findProductsByBarcodes(shopifyProduct.variants.map { it.barcode }).toList()
+    suspend fun apply(items: Set<ReconcileItem>, report: suspend (String) -> Unit) {
+        report("Übernehme markierte Änderungen in Datenbank...")
+
+        val changedProducts = LinkedHashMap<UUID, SyncProduct>()
+        val changedVariants = LinkedHashMap<UUID, SyncVariant>()
+        items.asSequence()
+            .map { (it as TypedReconcileItem<*>).reconcile() }
+            .forEach {
+                when (it) {
+                    is SyncProduct -> changedProducts.putIfAbsent(it.id, it)
+                    is SyncVariant -> changedVariants.putIfAbsent(it.id, it)
+                }
+            }
+
+        transactionOperations.execute {
+            changedProducts.values.forEach { syncProductRepository.save(it) }
+            changedVariants.values.forEach { syncVariantRepository.save(it) }
+        }
+    }
+
+    private fun reconcile(product: ShopifyProduct) = sequence {
+        val syncProduct = syncProductRepository.findByShopifyId(product.id) ?: run {
+            val matchingArtooProducts = artooDataStore.findProductsByBarcodes(product.variants.map { it.barcode }).toList()
             if (matchingArtooProducts.isEmpty()) {
-                logger.info { "ShopifyProduct ${shopifyProduct.title} does not match any ArtooProduct, skip reconciliation" }
-                return null
+                logger.info { "ShopifyProduct ${product.title} does not match any ArtooProduct, skip reconciliation" }
+                return@sequence
             }
             require(matchingArtooProducts.size == 1) { "More than one ArtooProduct matches barcodes of ShopifyProduct" }
 
             syncProductRepository.findByArtooId(matchingArtooProducts[0].id)
-                ?.also { it.shopifyId = shopifyProduct.id }
-                ?: shopifyProduct.toSyncProduct(matchingArtooProducts[0].id)
+                ?.also { it.shopifyId = product.id }
+                ?: product.toSyncProduct(matchingArtooProducts[0].id)
         }
 
-        syncProduct.descriptionHtml = shopifyProduct.descriptionHtml
-        if (syncProduct.technicalDetails.isEmpty()) {
-            shopifyProduct.metafields
-                .find { it.namespace == "custom" && it.key == "product_specs" }
-                ?.let { metafield ->
-                    Jsoup.parse(metafield.value)
-                        .select("table tr")
-                        .map { it.select("th").text().trim() to it.select("td").text().trim() }
-                }
-                ?.forEachIndexed { index, (key, value) -> syncProduct.technicalDetails.add(SyncTechnicalDetail(key, value, index)) }
+        if (syncProduct.descriptionHtml != product.descriptionHtml) {
+            yield(ProductFieldReconcileItem(syncProduct, product.title, "Leere Produktbeschreibung ergänzt") {
+                descriptionHtml = product.descriptionHtml
+            })
         }
 
-        shopifyProduct.variants.forEach { reconcileFromShopify(it, syncProduct) }
-        return syncProduct
+        val loadedTechnicalDetails = extractTechnicalDetails(product)
+        val knownTechnicalDetails = syncProduct.technicalDetails.map { it.name to it.value }
+        if (loadedTechnicalDetails != null && loadedTechnicalDetails != knownTechnicalDetails) {
+            yield(ProductFieldReconcileItem(syncProduct, product.title, "Technische Daten geändert") {
+                technicalDetails.clear()
+                technicalDetails += loadedTechnicalDetails.mapIndexed { index, (name, value) -> SyncTechnicalDetail(name, value, index) }
+            })
+        }
+
+        yieldAll(product.variants.asSequence().flatMap { reconcile(product, it, syncProduct) })
     }
 
-    private fun reconcileFromShopify(shopifyVariant: ShopifyProductVariant, syncProduct: SyncProduct) {
-        val syncVariant = syncVariantRepository.findByShopifyId(shopifyVariant.id) ?: run {
-            val artooVariation = artooDataStore.findVariationByBarcode(shopifyVariant.barcode)
+    private fun reconcile(product: ShopifyProduct, variant: ShopifyProductVariant, syncProduct: SyncProduct) = sequence {
+        val syncVariant = syncVariantRepository.findByShopifyId(variant.id) ?: run {
+            val artooVariation = artooDataStore.findVariationByBarcode(variant.barcode)
             if (artooVariation == null) {
-                logger.info { "ShopifyProductVariant ${shopifyVariant.title} does not match any ArtooVariation, skip reconciliation" }
-                return
+                logger.info { "ShopifyProductVariant ${variant.title} does not match any ArtooVariation, skip reconciliation" }
+                return@sequence
             }
             syncVariantRepository.findByArtooId(artooVariation.id)
-                ?.also { it.shopifyId = shopifyVariant.id }
-                ?: shopifyVariant.toSyncVariant(syncProduct)
+                ?.also { it.shopifyId = variant.id }
+                ?: variant.toSyncVariant(syncProduct)
         }
         require(syncVariant.product.id == syncProduct.id) { "SyncVariant.product does not match ShopifyVariant.product" }
 
-        syncVariant.weight = shopifyVariant.weight.toBigDecimal()
+        require(variant.weight.unit == WeightUnit.GRAMS) { "Only GRAMS are supported at this time" }
+        val loadedWeight = variant.weight.value
+        if (loadedWeight.compareTo(syncVariant.weight) != 0) {
+            yield(
+                VariantFieldReconcileItem(
+                    syncVariant,
+                    "${product.title} (${variant.title})",
+                    "Gewicht von ${syncVariant.weight ?: "leer"} auf ${loadedWeight} geändert",
+                    { weight = loadedWeight }
+                )
+            )
+        }
+    }
+
+    private fun extractTechnicalDetails(product: ShopifyProduct): List<Pair<String, String>>? {
+        return product.metafields
+            .find { it.namespace == "custom" && it.key == "product_specs" }
+            ?.let { extractTechnicalDetails(it) }
+    }
+
+    private fun extractTechnicalDetails(metafield: ShopifyMetafield): List<Pair<String, String>> {
+        return Jsoup.parse(metafield.value)
+            .select("table tr")
+            .map { it.select("th").text().trim() to it.select("td").text().trim() }
     }
 
     private fun reconcileCategories(artooCategory: ArtooMappedCategory) {
@@ -138,15 +186,42 @@ class ReconcileFromShopifyService(
             product = syncProduct,
             barcode = barcode,
             shopifyId = id
-        ).also { syncProduct.variants.add(it) }
+        )
 
     private fun String.asSyncVendor() =
-        if (isNotEmpty()) syncVendorRepository.findByNameIgnoreCase(this)
-            ?: SyncVendor(this) // .also { syncVendorRepository.save(it) }
+        // TODO: Untested after splitting from product management
+        if (isNotEmpty()) syncVendorRepository.findByNameIgnoreCase(this) ?: SyncVendor(this)
         else null
+
+    private inner class ProductFieldReconcileItem(
+        private val product: SyncProduct,
+        override val title: String,
+        override val message: String,
+        private val action: SyncProduct.() -> Unit
+    ) : ProductReconcileItem {
+
+        override fun reconcile() = product.apply(action)
+    }
+
+    private inner class VariantFieldReconcileItem(
+        private val product: SyncVariant,
+        override val title: String,
+        override val message: String,
+        private val action: SyncVariant.() -> Unit
+    ) : VariantReconcileItem {
+
+        override fun reconcile() = product.apply(action)
+    }
 }
 
-private fun ShopifyWeight.toBigDecimal(): BigDecimal {
-    require(unit == WeightUnit.GRAMS) { "Only GRAMS are supported at this time" }
-    return BigDecimal(value)
+sealed interface ReconcileItem {
+    val title: String
+    val message: String
 }
+
+sealed interface TypedReconcileItem<T> : ReconcileItem {
+    fun reconcile(): T
+}
+
+sealed interface ProductReconcileItem : TypedReconcileItem<SyncProduct>
+sealed interface VariantReconcileItem : TypedReconcileItem<SyncVariant>

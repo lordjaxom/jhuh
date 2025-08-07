@@ -22,7 +22,7 @@ class ShopifyProductVariantTest {
             sku = "SKU123",
             barcode = "BARCODE123",
             price = BigDecimal("12.34"),
-            weight = ShopifyWeight(WeightUnit.KILOGRAMS, 1.0),
+            weight = ShopifyWeight(WeightUnit.KILOGRAMS, BigDecimal("1.0")),
             options = listOf(option),
             inventoryLocationId = "LOC123",
             inventoryQuantity = 10
@@ -34,7 +34,7 @@ class ShopifyProductVariantTest {
         assertThat(variant.sku).isEqualTo("SKU123")
         assertThat(variant.price).isEqualByComparingTo("12.34")
         assertThat(variant.weight.unit).isEqualTo(WeightUnit.KILOGRAMS)
-        assertThat(variant.weight.value).isEqualTo(1.0)
+        assertThat(variant.weight.value).isEqualTo(BigDecimal("1.0"))
         assertThat(variant.options).containsExactly(option)
     }
 
@@ -45,7 +45,7 @@ class ShopifyProductVariantTest {
         every { mockVariant.barcode } returns "BAR567"
         every { mockVariant.price } returns "29.99"
         every { mockVariant.inventoryItem.measurement.weight } returns
-                Weight.Builder().withUnit(WeightUnit.KILOGRAMS).withValue(2.0).build()
+                Weight.Builder().withUnit(WeightUnit.KILOGRAMS).withValue(BigDecimal("2.0")).build()
         every { mockVariant.selectedOptions } returns listOf(
             mockk<SelectedOption>().apply {
                 every { name } returns "Size"
@@ -68,7 +68,7 @@ class ShopifyProductVariantTest {
         assertThat(variant.sku).isEqualTo("SKU567")
         assertThat(variant.price).isEqualByComparingTo("29.99")
         assertThat(variant.weight.unit).isEqualTo(WeightUnit.KILOGRAMS)
-        assertThat(variant.weight.value).isEqualTo(2.0)
+        assertThat(variant.weight.value).isEqualTo(BigDecimal("2.0"))
         assertThat(variant.options).hasSize(1)
     }
 
@@ -81,7 +81,7 @@ class ShopifyProductVariantTest {
             sku = "SKU444",
             barcode = "BAR444",
             price = BigDecimal("25.00"),
-            weight = ShopifyWeight(WeightUnit.KILOGRAMS, 1.0),
+            weight = ShopifyWeight(WeightUnit.KILOGRAMS, BigDecimal("1.0")),
             options = listOf(option),
             mediaId = "MEDIA444"
         )
@@ -93,7 +93,7 @@ class ShopifyProductVariantTest {
         assertThat(input.inventoryItem?.sku).isEqualTo("SKU444")
         assertThat(input.inventoryItem?.tracked).isTrue()
         assertThat(input.inventoryItem?.measurement?.weight?.unit).isEqualTo(WeightUnit.KILOGRAMS)
-        assertThat(input.inventoryItem?.measurement?.weight?.value).isEqualTo(1.0)
+        assertThat(input.inventoryItem?.measurement?.weight?.value).isEqualTo(BigDecimal("1.0"))
         assertThat(input.inventoryQuantities).isNull()
         assertThat(input.mediaId).isEqualTo("MEDIA444")
     }
@@ -106,7 +106,7 @@ class ShopifyProductVariantTest {
             sku = "SKU999",
             barcode = "BAR999",
             price = BigDecimal("9.99"),
-            weight = ShopifyWeight(WeightUnit.KILOGRAMS, 2.5),
+            weight = ShopifyWeight(WeightUnit.KILOGRAMS, BigDecimal("2.5")),
             options = listOf(),
             mediaId = null
         )
@@ -121,7 +121,7 @@ class ShopifyProductVariantTest {
         every { mockVariant.barcode } returns "BARCODE"
         every { mockVariant.price } returns "11.00"
         every { mockVariant.inventoryItem.measurement.weight } returns
-                Weight.Builder().withUnit(WeightUnit.KILOGRAMS).withValue(1.0).build()
+                Weight.Builder().withUnit(WeightUnit.KILOGRAMS).withValue(BigDecimal("1.0")).build()
         every { mockVariant.selectedOptions } returns listOf(
             mockk<SelectedOption>().apply {
                 every { name } returns "Color"
@@ -149,7 +149,7 @@ class ShopifyProductVariantTest {
             sku = "SKU_DT",
             barcode = "BAR_DT",
             price = BigDecimal("5.00"),
-            weight = ShopifyWeight(WeightUnit.KILOGRAMS, 1.0),
+            weight = ShopifyWeight(WeightUnit.KILOGRAMS, BigDecimal("1.0")),
             options = listOf(option),
             mediaId = null
         )
@@ -170,10 +170,10 @@ class ShopifyProductVariantTest {
         variant.mediaId = "MEDIA_DT"
         assertThat(variant.dirtyTracker.getDirtyAndReset()).isTrue()
         // Change to same value should not mark dirty
-        variant.weight = ShopifyWeight(WeightUnit.KILOGRAMS, 1.0)
+        variant.weight = ShopifyWeight(WeightUnit.KILOGRAMS, BigDecimal("1.0"))
         assertThat(variant.dirtyTracker.getDirtyAndReset()).isFalse()
         // Change weight
-        variant.weight = ShopifyWeight(WeightUnit.GRAMS, 500.0)
+        variant.weight = ShopifyWeight(WeightUnit.GRAMS, BigDecimal("500.0"))
         assertThat(variant.dirtyTracker.getDirtyAndReset()).isTrue()
     }
 
@@ -186,7 +186,7 @@ class ShopifyProductVariantTest {
             sku = "SKU_OPT",
             barcode = "BAR_OPT",
             price = BigDecimal("10.00"),
-            weight = ShopifyWeight(WeightUnit.KILOGRAMS, 1.0),
+            weight = ShopifyWeight(WeightUnit.KILOGRAMS, BigDecimal("1.0")),
             options = listOf(option),
             mediaId = null
         )
@@ -207,7 +207,7 @@ class ShopifyProductVariantTest {
             sku = "SKU_V1",
             barcode = "BAR_V1",
             price = BigDecimal("15.99"),
-            weight = ShopifyWeight(WeightUnit.GRAMS, 250.0),
+            weight = ShopifyWeight(WeightUnit.GRAMS, BigDecimal("250.0")),
             options = listOf(option),
             mediaId = "MEDIA_V1"
         )
@@ -217,7 +217,7 @@ class ShopifyProductVariantTest {
         assertThat(variant.barcode).isEqualTo("BAR_V1")
         assertThat(variant.price).isEqualByComparingTo("15.99")
         assertThat(variant.weight.unit).isEqualTo(WeightUnit.GRAMS)
-        assertThat(variant.weight.value).isEqualTo(250.0)
+        assertThat(variant.weight.value).isEqualTo(BigDecimal("250.0"))
         assertThat(variant.options).containsExactly(option)
         assertThat(variant.mediaId).isEqualTo("MEDIA_V1")
     }

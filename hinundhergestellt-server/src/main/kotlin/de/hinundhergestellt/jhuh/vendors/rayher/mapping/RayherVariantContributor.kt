@@ -22,4 +22,4 @@ class RayherVariantContributor(
         dataStore.findByEan(variant.barcode)?.weight?.let { variant::weight.update(it.toShopifyWeight()) } ?: false
 }
 
-private fun BigDecimal.toShopifyWeight() = ShopifyWeight(WeightUnit.GRAMS, toDouble())
+private fun BigDecimal.toShopifyWeight() = ShopifyWeight(WeightUnit.GRAMS, this)

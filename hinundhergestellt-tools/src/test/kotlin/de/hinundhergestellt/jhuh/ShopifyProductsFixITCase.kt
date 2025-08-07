@@ -27,6 +27,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Disabled
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import java.math.BigDecimal
 import java.nio.charset.StandardCharsets
 import kotlin.io.path.Path
 import kotlin.io.path.listDirectoryEntries
@@ -215,7 +216,7 @@ class ShopifyProductsFixITCase {
         val products = productClient.fetchAll().toList()
         products.forEach { product ->
             product.variants.forEach { variant ->
-                if (variant.weight.value == 0.0) {
+                if (variant.weight.value.compareTo(BigDecimal.ZERO) == 0) {
                     println("${product.title} - ${variant.title}")
                 }
             }
@@ -227,7 +228,7 @@ class ShopifyProductsFixITCase {
         productClient.fetchAll()
             .filter { it.title.startsWith("Ricorumi Nilli Nilli") }
             .collect { product ->
-                product.variants.forEach { it.weight = ShopifyWeight(WeightUnit.GRAMS, 25.0) }
+                product.variants.forEach { it.weight = ShopifyWeight(WeightUnit.GRAMS, BigDecimal("25.0")) }
                 variantClient.update(product, product.variants)
             }
     }

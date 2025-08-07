@@ -8,6 +8,7 @@ import com.vaadin.flow.component.grid.ClientItemToggleEvent
 import com.vaadin.flow.component.grid.ColumnTextAlign
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.grid.GridMultiSelectionModel
+import com.vaadin.flow.component.icon.AbstractIcon
 import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
@@ -47,7 +48,7 @@ fun <T> Grid<T>.actionsColumn(count: Int, actionsProvider: (T) -> List<Button>):
 fun <T> Grid<T>.actionsColumn(actionsProvider: (T) -> Button): Grid.Column<T> =
     actionsColumn(1) { listOf(actionsProvider(it)) }
 
-fun <T> Grid<T>.iconColumn(iconProvider: (T) -> Icon): Grid.Column<T> =
+fun <T> Grid<T>.iconColumn(iconProvider: (T) -> AbstractIcon<*>): Grid.Column<T> =
     addComponentColumn(iconProvider)
         .setHeader("")
         .apply {

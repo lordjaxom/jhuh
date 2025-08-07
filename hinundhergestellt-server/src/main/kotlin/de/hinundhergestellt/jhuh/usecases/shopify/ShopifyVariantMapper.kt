@@ -10,6 +10,7 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyWeight
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightUnit
 import org.springframework.stereotype.Component
+import java.math.BigDecimal
 
 @Component
 class ShopifyVariantMapper(
@@ -35,7 +36,7 @@ class ShopifyVariantMapper(
                 artooVariation.itemNumber ?: "",
                 artooVariation.barcode!!,
                 artooVariation.price,
-                ShopifyWeight(WeightUnit.GRAMS, 0.0),
+                ShopifyWeight(WeightUnit.GRAMS, BigDecimal.ZERO),
                 inventoryLocationId,
                 artooVariation.stockValue.intValueExact(),
                 variantOptions()

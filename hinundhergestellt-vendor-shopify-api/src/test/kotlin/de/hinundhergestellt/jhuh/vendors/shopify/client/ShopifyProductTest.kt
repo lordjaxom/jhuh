@@ -23,7 +23,7 @@ class ShopifyProductTest {
             sku = "SKU1",
             barcode = "BAR1",
             price = BigDecimal.ONE,
-            weight = ShopifyWeight(WeightUnit.GRAMS, 1.0),
+            weight = ShopifyWeight(WeightUnit.GRAMS, BigDecimal.ONE),
             options = listOf(),
             mediaId = null
         )
@@ -87,7 +87,7 @@ class ShopifyProductTest {
             sku = "SKU1",
             barcode = "BAR1",
             price = BigDecimal.ONE,
-            weight = ShopifyWeight(WeightUnit.GRAMS, 1.0),
+            weight = ShopifyWeight(WeightUnit.GRAMS, BigDecimal.ONE),
             options = listOf(),
             mediaId = null
         )
@@ -97,7 +97,7 @@ class ShopifyProductTest {
             sku = "SKU2",
             barcode = "BAR2",
             price = BigDecimal.ONE,
-            weight = ShopifyWeight(WeightUnit.GRAMS, 1.0),
+            weight = ShopifyWeight(WeightUnit.GRAMS, BigDecimal.ONE),
             options = listOf(),
             mediaId = null
         )
@@ -374,7 +374,7 @@ class ShopifyProductTest {
             sku = "SKU1",
             barcode = "BAR1",
             price = BigDecimal.ONE,
-            weight = ShopifyWeight(WeightUnit.GRAMS, 1.0),
+            weight = ShopifyWeight(WeightUnit.GRAMS, BigDecimal.ONE),
             options = listOf(),
             mediaId = null
         )
@@ -384,7 +384,7 @@ class ShopifyProductTest {
             sku = "SKU2",
             barcode = "BAR2",
             price = BigDecimal.TEN,
-            weight = ShopifyWeight(WeightUnit.GRAMS, 2.0),
+            weight = ShopifyWeight(WeightUnit.GRAMS, BigDecimal("2.0")),
             options = listOf(),
             mediaId = null
         )

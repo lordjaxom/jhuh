@@ -154,7 +154,8 @@
                         <BigInt>kotlin.String</BigInt>
                         <Color>kotlin.String</Color>
                         <Decimal>kotlin.String</Decimal>
-                        <FormattedString>String</FormattedString>
+                        <Float>java.math.BigDecimal</Float>
+                        <FormattedString>kotlin.String</FormattedString>
                         <HTML>kotlin.String</HTML>
                         <JSON>com.fasterxml.jackson.databind.JsonNode</JSON>
                         <Money>kotlin.String</Money>

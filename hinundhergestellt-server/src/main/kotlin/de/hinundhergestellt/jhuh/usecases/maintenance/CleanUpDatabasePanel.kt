@@ -1,5 +1,6 @@
 package de.hinundhergestellt.jhuh.usecases.maintenance
 
+import com.vaadin.flow.component.Unit
 import com.vaadin.flow.component.accordion.AccordionPanel
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.grid.Grid
@@ -50,6 +51,8 @@ private class CleanUpDatabasePanel(
             emptyStateText = "Keine aufzuräumenden Einträge gefunden."
             textColumn("Sachverhalt") { it.message }
             rangeMultiSelectionMode()
+            setWidthFull()
+            setHeight(400.0F, Unit.PIXELS)
             addThemeVariants(GridVariant.LUMO_ROW_STRIPES)
             addSelectionListener { validateActions() }
         }

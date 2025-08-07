@@ -10,7 +10,7 @@ ALTER TABLE sync_product
     ADD description_html TEXT NULL;
 
 ALTER TABLE sync_variant
-    ADD weight DECIMAL NULL;
+    ADD weight DECIMAL(10,2) NULL;
 
 ALTER TABLE sync_product_technical_details
     ADD CONSTRAINT fk_syncproduct_technicaldetails_on_sync_product FOREIGN KEY (sync_product_id) REFERENCES sync_product (id);
