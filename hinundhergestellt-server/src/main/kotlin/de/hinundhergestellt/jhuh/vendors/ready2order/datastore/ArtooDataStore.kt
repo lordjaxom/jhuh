@@ -34,6 +34,9 @@ class ArtooDataStore(
     fun findProductById(id: String) =
         rootCategories.firstNotNullOfOrNull { it.findProductById(id) }
 
+    fun findVariationById(id: Int) =
+        rootCategories.firstNotNullOfOrNull { it.findVariationById(id) }
+
     fun findVariationByBarcode(barcode: String) =
         rootCategories.firstNotNullOfOrNull { it.findVariationByBarcode(barcode) }
 

@@ -11,9 +11,16 @@ import org.springframework.stereotype.Service
 class DeleteUnusedFilesService(
     private val mediaClient: ShopifyMediaClient
 ) {
-    suspend fun findAll() = mediaClient.fetchAll("used_in:none").toList()
+    val files = mutableListOf<ShopifyMedia>()
 
-    suspend fun delete(files: List<ShopifyMedia>) {
-        mediaClient.delete(files)
+    suspend fun refresh(report: suspend (String) -> Unit){
+        report("Lade ungenutzte Dateien aus Shopify...")
+        files.clear()
+        mediaClient.fetchAll("used_in:none").collect { files.add(it) }
+    }
+
+    suspend fun delete(files: Set<ShopifyMedia>, report: suspend (String) -> Unit) {
+        report("Lösche ${files.size} ungenutzte Dateien...")
+        mediaClient.delete(files.toList())
     }
 }

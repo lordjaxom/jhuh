@@ -1,6 +1,5 @@
 package de.hinundhergestellt.jhuh.usecases.maintenance
 
-import com.vaadin.flow.component.Unit
 import com.vaadin.flow.component.accordion.AccordionPanel
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.grid.Grid
@@ -15,25 +14,24 @@ import de.hinundhergestellt.jhuh.components.grid
 import de.hinundhergestellt.jhuh.components.horizontalLayout
 import de.hinundhergestellt.jhuh.components.rangeMultiSelectionMode
 import de.hinundhergestellt.jhuh.components.textColumn
-import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMedia
 import kotlinx.coroutines.CoroutineScope
 import org.springframework.stereotype.Component
 
-private class DeleteUnusedFilesPanel(
-    private val service: DeleteUnusedFilesService,
+private class CleanUpDatabasePanel(
+    private val service: CleanUpDatabaseService,
     applicationScope: CoroutineScope,
     progressOverlay: ProgressOverlay
 ) : AccordionPanel() {
 
-    private val deleteButton: Button
-    private val filesGrid: Grid<ShopifyMedia>
+    private val cleanUpButton: Button
+    private val itemsGrid: Grid<CleanUpItem>
 
     private val vaadinScope = VaadinCoroutineScope(this, applicationScope, progressOverlay)
 
     init {
         accordionSummary(
-            "Shopify: Ungenutzte Dateien löschen",
-            "Lädt eine Liste von laut Shopify ungenutzten Dateien und ermöglicht es, diese zu löschen"
+            "Datenbank: Datenbestand aufräumen",
+            "Vergleicht den Inhalt der Datenbank mit den Produktkatalogen und bietet Möglichkeiten zum Aufräumen"
         )
 
         setWidthFull()
@@ -43,51 +41,49 @@ private class DeleteUnusedFilesPanel(
             justifyContentMode = FlexComponent.JustifyContentMode.END
             setWidthFull()
 
-            deleteButton = button("Markierte löschen") {
+            cleanUpButton = button("Markierte bereinigen") {
                 isEnabled = false
-                addClickListener { deleteSelectedFiles() }
+                addClickListener { deleteSelectedItems() }
             }
         }
-        filesGrid = grid<ShopifyMedia> {
-            emptyStateText = "Keine ungenutzten Dateien gefunden."
-            textColumn("Name") { it.fileName }
+        itemsGrid = grid<CleanUpItem> {
+            emptyStateText = "Keine aufzuräumenden Einträge gefunden."
+            textColumn("Sachverhalt") { it.message }
             rangeMultiSelectionMode()
-            setWidthFull()
-            setHeight(400.0F, Unit.PIXELS)
             addThemeVariants(GridVariant.LUMO_ROW_STRIPES)
             addSelectionListener { validateActions() }
         }
     }
 
     private fun validateActions() {
-        deleteButton.isEnabled = filesGrid.selectedItems.isNotEmpty()
+        cleanUpButton.isEnabled = itemsGrid.selectedItems.isNotEmpty()
     }
 
     private fun refresh() {
         vaadinScope.launchWithReporting {
             application { service.refresh(::report) }
-            filesGrid.setItems(service.files)
+            itemsGrid.setItems(service.items)
         }
     }
 
-    private fun deleteSelectedFiles() {
+    private fun deleteSelectedItems() {
         vaadinScope.launchWithReporting {
             application {
-                service.delete(filesGrid.selectedItems, ::report)
+                service.cleanUp(itemsGrid.selectedItems, ::report)
                 service.refresh(::report)
             }
-            filesGrid.setItems(service.files)
+            itemsGrid.setItems(service.items)
         }
     }
 }
 
 @Component
 @VaadinSessionScope
-class DeleteUnusedFilesPanelFactory(
-    private val service: DeleteUnusedFilesService,
+class CleanUpDatabasePanelFactory(
+    private val service: CleanUpDatabaseService,
     private val applicationScope: CoroutineScope,
 ): (ProgressOverlay) -> AccordionPanel {
 
     override fun invoke(progressOverlay: ProgressOverlay): AccordionPanel =
-        DeleteUnusedFilesPanel(service, applicationScope, progressOverlay)
+        CleanUpDatabasePanel(service, applicationScope, progressOverlay)
 }

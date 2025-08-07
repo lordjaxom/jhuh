@@ -33,6 +33,9 @@ class ShopifyDataStore(
     fun findProductById(id: String) =
         products.find { it.id == id }
 
+    fun findVariantById(id: String) =
+        products.firstNotNullOfOrNull { product -> product.variants.find { it.id == id } }
+
     suspend fun refreshAndAwait() {
         productsDeferred.refreshAndAwait()
     }

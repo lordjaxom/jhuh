@@ -21,6 +21,10 @@ class ArtooMappedCategory internal constructor(
         products.firstOrNull { it.id == id }
             ?: children.firstNotNullOfOrNull { it.findProductById(id) }
 
+    fun findVariationById(id: Int): ArtooMappedVariation? =
+        products.firstNotNullOfOrNull { it.findVariationById(id) }
+            ?: children.firstNotNullOfOrNull { it.findVariationById(id) }
+
     fun findVariationByBarcode(barcode: String): ArtooMappedVariation? =
         products.firstNotNullOfOrNull { it.findVariationByBarcode(barcode) }
             ?: children.firstNotNullOfOrNull { it.findVariationByBarcode(barcode) }

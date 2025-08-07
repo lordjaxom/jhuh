@@ -14,6 +14,9 @@ sealed class ArtooMappedProduct protected constructor(
     val barcodes
         get() = variations.mapNotNull { variation -> variation.barcode?.takeIf { it.isNotEmpty() } }
 
+    fun findVariationById(id: Int) =
+        variations.firstOrNull { it.id == id }
+
     fun findVariationByBarcode(barcode: String) =
         variations.firstOrNull { it.barcode == barcode }
 

@@ -9,8 +9,9 @@ import de.hinundhergestellt.jhuh.components.progressOverlay
 @Route
 @PageTitle("Wartungsarbeiten")
 class MaintenanceView(
-    reconcileFromShopifyPanelFactory: ReconcileFromShopifyPanelFactory,
+    cleanUpDatabasePanelFactory: CleanUpDatabasePanelFactory,
     deleteUnusedFilesPanelFactory: DeleteUnusedFilesPanelFactory,
+    reconcileFromShopifyPanelFactory: ReconcileFromShopifyPanelFactory
 ) : VerticalLayout() {
 
     private val progressOverlay = progressOverlay()
@@ -22,7 +23,7 @@ class MaintenanceView(
 
         accordion {
             setWidthFull()
-
+            add(cleanUpDatabasePanelFactory(progressOverlay))
             add(deleteUnusedFilesPanelFactory(progressOverlay))
             add(reconcileFromShopifyPanelFactory(progressOverlay))
             close()
