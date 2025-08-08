@@ -9,43 +9,39 @@ import de.hinundhergestellt.jhuh.components.bind
 import de.hinundhergestellt.jhuh.components.binder
 import de.hinundhergestellt.jhuh.components.button
 import de.hinundhergestellt.jhuh.components.footer
+import de.hinundhergestellt.jhuh.components.formLayout
 import de.hinundhergestellt.jhuh.components.header
 import de.hinundhergestellt.jhuh.components.textField
 import de.hinundhergestellt.jhuh.components.toProperty
-import de.hinundhergestellt.jhuh.components.verticalLayout
-import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
+import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedVariation
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
-private class RenameProductDialog(
-    private val product: ArtooMappedProduct,
+private class EditVariationDialog(
+    private val variation: ArtooMappedVariation,
     private val callback: (Boolean) -> Unit
 ) : Dialog() {
 
-    private val binder = binder<ArtooMappedProduct>()
+    private val binder = binder<ArtooMappedVariation>()
 
     init {
         width = "500px"
-        headerTitle = "Produkt umbenennen"
+        headerTitle = "Variation bearbeiten"
 
         header {
             button(VaadinIcon.CLOSE) {
                 addThemeVariants(ButtonVariant.LUMO_TERTIARY)
+                addClickShortcut(Key.ESCAPE)
                 addClickListener { close(); callback(false) }
             }
         }
-        verticalLayout {
-            isSpacing = false
-            isPadding = false
-
+        formLayout {
             textField("Name") {
                 setWidthFull()
-                bind(binder).asRequired("Produktname darf nicht leer sein.").toProperty(ArtooMappedProduct::name)
+                bind(binder)
+                    .asRequired("Name darf nicht leer sein.")
+                    .toProperty(ArtooMappedVariation::name)
                 focus()
-            }
-            textField("Beschreibung") {
-                setWidthFull()
-                bind(binder).toProperty(ArtooMappedProduct::description)
             }
         }
         footer {
@@ -56,22 +52,26 @@ private class RenameProductDialog(
             }
         }
 
-        binder.readBean(product)
+        binder.readBean(variation)
     }
 
     private fun save() {
         try {
-            binder.writeBean(product)
+            val hasChanges = binder.hasChanges()
+            if (hasChanges) binder.writeBean(variation)
             close()
-            callback(true)
+            callback(hasChanges)
         } catch (_: ValidationException) {
         }
     }
 }
 
-suspend fun renameProductDialog(product: ArtooMappedProduct) =
+// TODO move to another file
+suspend inline fun <T: Dialog, R> dialog(crossinline dialogProvider: ((R) -> Unit) -> T) =
     suspendCancellableCoroutine {
-        val dialog = RenameProductDialog(product) { result -> it.resume(result) }
+        val dialog = dialogProvider { result -> it.resume(result) }
         it.invokeOnCancellation { dialog.close() }
         dialog.open()
     }
+
+suspend fun editVariation(variation: ArtooMappedVariation) = dialog { EditVariationDialog(variation, it) }

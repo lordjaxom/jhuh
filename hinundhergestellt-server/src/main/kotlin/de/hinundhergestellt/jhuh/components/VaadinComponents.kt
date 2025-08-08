@@ -8,6 +8,7 @@ import com.vaadin.flow.component.accordion.Accordion
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.checkbox.Checkbox
 import com.vaadin.flow.component.combobox.ComboBox
+import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.html.Div
 import com.vaadin.flow.component.html.H1
@@ -57,6 +58,12 @@ inline fun <T> (@VaadinDsl HasComponents).comboBox(label: String? = null, block:
 inline fun (@VaadinDsl HasComponents).div(block: (@VaadinDsl Div).() -> Unit = {}): Div {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     return init(Div(), block)
+}
+
+@VaadinDsl
+inline fun (@VaadinDsl HasComponents).formLayout(block: (@VaadinDsl FormLayout).() -> Unit = {}): FormLayout {
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    return init(FormLayout(), block)
 }
 
 @VaadinDsl

@@ -17,8 +17,8 @@ import de.hinundhergestellt.jhuh.components.itemLabelGenerator
 import de.hinundhergestellt.jhuh.components.textField
 import de.hinundhergestellt.jhuh.components.toProperty
 import de.hinundhergestellt.jhuh.components.verticalLayout
-import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.CategoryItem
-import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.ProductItem
+import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.CategoryTreeItem
+import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.ProductTreeItem
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
@@ -33,7 +33,7 @@ private class EditItemDialog(
 
     init {
         width = "500px"
-        headerTitle = "${if (item is ProductItem) "Produkt" else "Kategorie"} bearbeiten"
+        headerTitle = "${if (item is ProductTreeItem) "Produkt" else "Kategorie"} bearbeiten"
 
         header {
             button(VaadinIcon.CLOSE) {
@@ -48,26 +48,26 @@ private class EditItemDialog(
             // TODO: recursive update doesn't honor filters
             val vendorComboBox = comboBox<SyncVendor>("Hersteller") {
                 isClearButtonVisible = true
-                isEnabled = item is ProductItem
+                isEnabled = item is ProductTreeItem
                 itemLabelGenerator { it.name }
                 setWidthFull()
                 setItems(vendors)
                 bind(binder).toProperty(EditItemResult::vendor)
-                if (item is ProductItem) focus()
+                if (item is ProductTreeItem) focus()
                 // TODO: Focus next on value change
             }
-            if (item is CategoryItem) {
+            if (item is CategoryTreeItem) {
                 checkbox("Für alle Produkte ersetzen?") {
                     addValueChangeListener { vendorComboBox.isEnabled = value; if (value) vendorComboBox.focus() }
                     bind(binder).toProperty(EditItemResult::replaceVendor)
                 }
             }
             val typeTextField = textField("Produktart") {
-                isEnabled = item is ProductItem
+                isEnabled = item is ProductTreeItem
                 setWidthFull()
                 bind(binder).toProperty(EditItemResult::type)
             }
-            if (item is CategoryItem) {
+            if (item is CategoryTreeItem) {
                 checkbox("Für alle Produkte ersetzen?") {
                     addValueChangeListener { typeTextField.isEnabled = value; if (value) typeTextField.focus() }
                     bind(binder).toProperty(EditItemResult::replaceType)
@@ -76,7 +76,7 @@ private class EditItemDialog(
             textField("Tags") {
                 setWidthFull()
                 bind(binder).toProperty(EditItemResult::tags)
-                if (item is CategoryItem) focus()
+                if (item is CategoryTreeItem) focus()
             }
         }
         footer {
@@ -109,9 +109,9 @@ class EditItemResult private constructor(
 ) {
     constructor(item: TreeItem) : this(
         vendor = item.vendor,
-        replaceVendor = item is ProductItem,
+        replaceVendor = item is ProductTreeItem,
         type = item.type ?: "",
-        replaceType = item is ProductItem,
+        replaceType = item is ProductTreeItem,
         tags = item.tags
     )
 }

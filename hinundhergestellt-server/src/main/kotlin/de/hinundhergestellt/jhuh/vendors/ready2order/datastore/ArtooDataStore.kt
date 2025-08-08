@@ -55,6 +55,10 @@ class ArtooDataStore(
         }
     }
 
+    suspend fun update(variation: ArtooMappedVariation) {
+        variation.product.ifDirty { productClient.update(it) }
+    }
+
     // @Scheduled(initialDelay = 15, fixedDelay = 15, timeUnit = TimeUnit.MINUTES)
     fun refresh() {
         applicationCoroutineScope.async {

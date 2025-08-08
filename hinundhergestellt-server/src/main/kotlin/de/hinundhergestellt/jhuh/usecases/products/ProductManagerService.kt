@@ -2,9 +2,7 @@ package de.hinundhergestellt.jhuh.usecases.products
 
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.backend.barcodes.BarcodeGenerator
-import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategory
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategoryRepository
-import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProductRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariant
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariantRepository
@@ -43,7 +41,7 @@ class ProductManagerService(
     private val labelGeneratorService: LabelGeneratorService,
 ) : AutoCloseable {
 
-    private val rootCategoriesLazy = lazyWithReset { artooDataStore.rootCategories.map { CategoryItem(it) } }
+    private val rootCategoriesLazy = lazyWithReset { artooDataStore.rootCategories.map { CategoryTreeItem(it) } }
     val rootCategories by rootCategoriesLazy
 
     val vendors get(): List<SyncVendor> = syncVendorRepository.findAll()
@@ -68,6 +66,14 @@ class ProductManagerService(
             refreshListeners += ::handler
             artooDataStore.refresh()
         }
+
+    suspend fun update(product: ArtooMappedProduct) {
+        artooDataStore.update(product)
+    }
+
+    suspend fun update(variation: ArtooMappedVariation) {
+        artooDataStore.update(variation)
+    }
 
     @Transactional
     fun updateItem(item: TreeItem, vendor: SyncVendor?, replaceVendor: Boolean, type: String?, replaceType: Boolean, tags: String?) {
@@ -106,7 +112,7 @@ class ProductManagerService(
 //        }
     }
 
-    suspend fun generateNewBarcodes(product: ProductItem, report: suspend (String) -> Unit) {
+    suspend fun generateNewBarcodes(product: ProductTreeItem, report: suspend (String) -> Unit) {
         report("Shopify-Produktkatalog aktualisieren...")
         shopifyDataStore.withLockAndRefresh {
 
@@ -153,11 +159,7 @@ class ProductManagerService(
         }
     }
 
-    suspend fun update(product: ArtooMappedProduct) {
-        artooDataStore.update(product)
-    }
-
-    inner class CategoryItem(val value: ArtooMappedCategory) : TreeItem {
+    inner class CategoryTreeItem(val value: ArtooMappedCategory) : TreeItem {
 
         internal var syncCategory = syncCategoryRepository.findByArtooId(value.id)
 
@@ -170,13 +172,13 @@ class ProductManagerService(
         override val tagsAsSet get() = syncCategory?.tags?.toSet() ?: setOf()
         override val variations = null
         override val hasChildren = true
-        override val children = value.run { children.map { CategoryItem(it) } + products.map { ProductItem(it) } }
+        override val children = value.run { children.map { CategoryTreeItem(it) } + products.map { ProductTreeItem(it) } }
 
         override fun filterBy(markedForSync: Boolean, text: String) =
             children.any { it.filterBy(markedForSync, text) }
     }
 
-    inner class ProductItem(val value: ArtooMappedProduct) : TreeItem {
+    inner class ProductTreeItem(val value: ArtooMappedProduct) : TreeItem {
 
         internal var syncProduct = syncProductRepository.findByArtooId(value.id)
 
@@ -190,14 +192,14 @@ class ProductManagerService(
         override val tagsAsSet get() = syncProduct?.tags?.toSet() ?: setOf()
         override val variations = if (value.hasOnlyDefaultVariant) 0 else value.variations.size
         override val hasChildren = !value.hasOnlyDefaultVariant
-        override val children = value.variations.map { VariationItem(it) }
+        override val children = value.variations.map { VariationTreeItem(it) }
 
         override fun filterBy(markedForSync: Boolean, text: String) =
             (!markedForSync || isMarkedForSync) &&
                     (text.isEmpty() || name.contains(text, ignoreCase = true))
     }
 
-    inner class VariationItem(val value: ArtooMappedVariation) : TreeItem {
+    inner class VariationTreeItem(val value: ArtooMappedVariation) : TreeItem {
 
         val id by value::id
 
