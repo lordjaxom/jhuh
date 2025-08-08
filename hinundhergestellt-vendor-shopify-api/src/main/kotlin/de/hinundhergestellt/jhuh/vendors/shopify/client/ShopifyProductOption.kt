@@ -106,13 +106,6 @@ fun ProductOptionValue(name: String, linkedMetafieldValue: String? = null) =
         .withLinkedMetafieldValue(linkedMetafieldValue)
         .build()
 
-fun ProductOptionValue.withLinkedMetafieldValue(linkedMetafieldValue: String?) =
-    ProductOptionValue.Builder()
-        .withId(id)
-        .withName(name)
-        .withLinkedMetafieldValue(linkedMetafieldValue)
-        .build()
-
 internal fun ProductOptionValue.toOptionValueCreateInput() =
     OptionValueCreateInput(name, linkedMetafieldValue)
 

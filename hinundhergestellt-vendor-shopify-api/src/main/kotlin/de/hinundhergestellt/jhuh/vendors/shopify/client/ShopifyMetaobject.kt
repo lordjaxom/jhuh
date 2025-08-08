@@ -65,6 +65,12 @@ class ShopifyMetaobject(
         )
 }
 
+fun MetaobjectField(key: String, value: String?) =
+    MetaobjectField.Builder()
+        .withKey(key)
+        .withValue(value)
+        .build()
+
 private fun MetaobjectField.toMetaobjectFieldInput() =
     MetaobjectFieldInput(
         key = key,

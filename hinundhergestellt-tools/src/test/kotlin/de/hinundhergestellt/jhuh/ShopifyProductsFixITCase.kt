@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import de.hinundhergestellt.jhuh.vendors.shopify.client.LinkedMetafield
-import de.hinundhergestellt.jhuh.vendors.shopify.client.ProductOptionValue
+import de.hinundhergestellt.jhuh.vendors.shopify.client.MetaobjectField
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMedia
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMediaClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafieldClient
@@ -15,10 +15,6 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyWeight
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyMetaobject
-import de.hinundhergestellt.jhuh.vendors.shopify.client.withLinkedMetafieldValue
-import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.LinkedMetafield
-import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.MetaobjectField
-import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductOptionValue
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightUnit
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
@@ -174,11 +170,16 @@ class ShopifyProductsFixITCase {
         val imagePath = Path("/home/lordjaxom/Dokumente/Hin-undHergestellt/Shopify TEMP/POLI-TAPE TUBITHERM")
         val product = productClient.fetchAll("'POLI-TAPE® TUBITHERM®*'").first()
 
-        val optionValuesToUpdate = mutableListOf<ProductOptionValue>()
+//        val optionValuesToUpdate = mutableListOf<ProductOptionValue>()
         imagePath
             .listDirectoryEntries("poli-tape-tubitherm-*.png")
             .map { image -> image to product.variants.first { image.fileName.toString().contains("-${it.sku.substring(4, 7)}-") } }
-            .map { (image, variant) -> Triple(image, variant, product.options[0].optionValues.first { it.name == variant.options[0].value }) }
+            .map { (image, variant) ->
+                Triple(
+                    image,
+                    variant,
+                    product.options[0].optionValues.first { it.name == variant.options[0].value })
+            }
             .forEach { (image, variant, optionValue) ->
                 val process = Runtime.getRuntime().exec(
                     arrayOf(
@@ -196,19 +197,34 @@ class ShopifyProductsFixITCase {
                     "shopify--color-pattern",
                     handle,
                     listOf(
-                        MetaobjectField.Builder().withKey("label").withValue(variant.options[0].value).build(),
-                        MetaobjectField.Builder().withKey("color").withValue(color).build(),
-                        MetaobjectField.Builder().withKey("color_taxonomy_reference").withValue(taxonomyReference).build(),
-                        MetaobjectField.Builder().withKey("pattern_taxonomy_reference").withValue("gid://shopify/TaxonomyValue/2874").build()
+                        MetaobjectField("label", variant.options[0].value),
+                        MetaobjectField("color", color),
+                        MetaobjectField("color_taxonomy_reference", taxonomyReference),
+                        MetaobjectField("pattern_taxonomy_reference", "gid://shopify/TaxonomyValue/2874")
                     )
                 )
                 val metaobject = metaobjectClient.create(unsaved)
 
-                optionValuesToUpdate.add(optionValue.withLinkedMetafieldValue(metaobject.id))
+//                optionValuesToUpdate.add(optionValue.update { withLinkedMetafieldValue(metaobject.id) })
             }
+
+        // NOTIZEN warum das hier vmtl. funktioniert hat ohne optionValuesToUpdate jemals abzuschicken:
+        // Shopify erlaubt nicht, in einer ProductOption sowohl name als auch linkedMetafieldValue gesetzt zu haben
+        // Wenn aber in Option `linkedMetafield` gesetzt ist und in OptionValue `name` aber nicht `linkedMetafieldValue`, so scheint Shopify
+        // selbständig eine passende MetafieldValue zum Namen rauszusuchen.
 
         product.options[0].linkedMetafield = LinkedMetafield("shopify", "color-pattern")
         optionClient.update(product, product.options[0])
+    }
+
+    @Test
+    fun checkColorSwatches() = runBlocking {
+        val definition = metaobjectClient.fetchDefinitionByType("shopify--color-pattern")!!
+        val product = productClient.fetchAll("'craftcut® glänzend*'").first()
+        product.options[0].optionValues.forEach { optionValue ->
+            val metafield = definition.metaobjects.first { it.id == optionValue.linkedMetafieldValue }
+            println("${optionValue.name} -> ${metafield.handle}")
+        }
     }
 
     @Test
@@ -290,6 +306,15 @@ class ShopifyProductsFixITCase {
             }
             .chunked(250)
             .forEach { mediaClient.update(it) }
+    }
+
+    @Test
+    fun updateOptionValueWithLinkedMetafield() = runBlocking {
+        val product = productClient.fetchAll("'Testprodukt'").first()
+        val option = product.options[0]
+        val index = option.optionValues.indexOfFirst { it.name == "Sky Blue" }
+//        option.optionValues[index] = option.optionValues[index].update { withName("Sky blue") }
+        optionClient.update(product, product.options[0])
     }
 }
 
