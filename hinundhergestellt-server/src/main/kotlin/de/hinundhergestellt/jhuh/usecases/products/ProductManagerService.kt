@@ -3,6 +3,7 @@ package de.hinundhergestellt.jhuh.usecases.products
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.backend.barcodes.BarcodeGenerator
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategoryRepository
+import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProductRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariant
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariantRepository
@@ -67,8 +68,9 @@ class ProductManagerService(
             artooDataStore.refresh()
         }
 
-    suspend fun update(product: ArtooMappedProduct) {
-        artooDataStore.update(product)
+    suspend fun update(artooProduct: ArtooMappedProduct?, syncProduct: SyncProduct?) {
+        if (artooProduct != null) artooDataStore.update(artooProduct)
+        if (syncProduct != null) transactionOperations.execute { syncProductRepository.save(syncProduct) }
     }
 
     suspend fun update(variation: ArtooMappedVariation) {

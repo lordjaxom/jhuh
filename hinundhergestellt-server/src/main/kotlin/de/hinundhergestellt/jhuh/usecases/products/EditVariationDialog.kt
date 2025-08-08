@@ -36,6 +36,11 @@ private class EditVariationDialog(
             }
         }
         formLayout {
+            setAutoResponsive(true)
+            isExpandColumns = true
+            isExpandFields = true
+
+            header("Stammdaten aus ready2order")
             textField("Name") {
                 setWidthFull()
                 bind(binder)
@@ -67,11 +72,11 @@ private class EditVariationDialog(
 }
 
 // TODO move to another file
-suspend inline fun <T: Dialog, R> dialog(crossinline dialogProvider: ((R) -> Unit) -> T) =
+suspend inline fun <T : Dialog, R> suspendableDialog(crossinline dialogProvider: ((R) -> Unit) -> T) =
     suspendCancellableCoroutine {
         val dialog = dialogProvider { result -> it.resume(result) }
         it.invokeOnCancellation { dialog.close() }
         dialog.open()
     }
 
-suspend fun editVariation(variation: ArtooMappedVariation) = dialog { EditVariationDialog(variation, it) }
+suspend fun editVariation(variation: ArtooMappedVariation) = suspendableDialog { EditVariationDialog(variation, it) }

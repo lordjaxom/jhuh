@@ -72,7 +72,7 @@ class ReconcileFromShopifyService(
         }
 
         if (syncProduct.descriptionHtml != product.descriptionHtml) {
-            yield(ProductReconcileItem(syncProduct, product.title, "Leere Produktbeschreibung ergänzt") {
+            yield(ProductReconcileItem(syncProduct, product.title, "Produktbeschreibung geändert") {
                 descriptionHtml = product.descriptionHtml
             })
         }
@@ -109,7 +109,7 @@ class ReconcileFromShopifyService(
                 VariantReconcileItem(
                     syncVariant,
                     "${product.title} (${variant.title})",
-                    "Gewicht von ${syncVariant.weight ?: "leer"} auf ${loadedWeight} geändert",
+                    "Gewicht von ${syncVariant.weight ?: "leer"} auf $loadedWeight geändert",
                     { weight = loadedWeight }
                 )
             )
