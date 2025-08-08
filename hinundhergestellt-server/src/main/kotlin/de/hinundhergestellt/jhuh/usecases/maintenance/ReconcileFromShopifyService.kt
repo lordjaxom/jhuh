@@ -19,6 +19,7 @@ import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightUnit
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.jsoup.Jsoup
+import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionOperations
 import java.util.UUID
@@ -37,7 +38,6 @@ class ReconcileFromShopifyService(
     private val syncVendorRepository: SyncVendorRepository,
     private val transactionOperations: TransactionOperations
 ) {
-
     val items = mutableListOf<ReconcileItem>()
 
     suspend fun refresh(report: suspend (String) -> Unit) {
@@ -50,28 +50,11 @@ class ReconcileFromShopifyService(
 
 //        report("Unbekannte Kategorien abgleichen...")
 //        artooDataStore.rootCategories.forEach { reconcileCategories(it) }
-
-//        transactionOperations.execute { syncProductRepository.saveAll(changedSyncProducts) }
     }
 
     suspend fun apply(items: Set<ReconcileItem>, report: suspend (String) -> Unit) {
         report("Übernehme markierte Änderungen in Datenbank...")
-
-        val changedProducts = LinkedHashMap<UUID, SyncProduct>()
-        val changedVariants = LinkedHashMap<UUID, SyncVariant>()
-        items.asSequence()
-            .map { (it as TypedReconcileItem<*>).reconcile() }
-            .forEach {
-                when (it) {
-                    is SyncProduct -> changedProducts.putIfAbsent(it.id, it)
-                    is SyncVariant -> changedVariants.putIfAbsent(it.id, it)
-                }
-            }
-
-        transactionOperations.execute {
-            changedProducts.values.forEach { syncProductRepository.save(it) }
-            changedVariants.values.forEach { syncVariantRepository.save(it) }
-        }
+        transactionOperations.execute { items.forEach { it.reconcile() } }
     }
 
     private fun reconcile(product: ShopifyProduct) = sequence {
@@ -89,7 +72,7 @@ class ReconcileFromShopifyService(
         }
 
         if (syncProduct.descriptionHtml != product.descriptionHtml) {
-            yield(ProductFieldReconcileItem(syncProduct, product.title, "Leere Produktbeschreibung ergänzt") {
+            yield(ProductReconcileItem(syncProduct, product.title, "Leere Produktbeschreibung ergänzt") {
                 descriptionHtml = product.descriptionHtml
             })
         }
@@ -97,7 +80,7 @@ class ReconcileFromShopifyService(
         val loadedTechnicalDetails = extractTechnicalDetails(product)
         val knownTechnicalDetails = syncProduct.technicalDetails.map { it.name to it.value }
         if (loadedTechnicalDetails != null && loadedTechnicalDetails != knownTechnicalDetails) {
-            yield(ProductFieldReconcileItem(syncProduct, product.title, "Technische Daten geändert") {
+            yield(ProductReconcileItem(syncProduct, product.title, "Technische Daten geändert") {
                 technicalDetails.clear()
                 technicalDetails += loadedTechnicalDetails.mapIndexed { index, (name, value) -> SyncTechnicalDetail(name, value, index) }
             })
@@ -123,7 +106,7 @@ class ReconcileFromShopifyService(
         val loadedWeight = variant.weight.value
         if (loadedWeight.compareTo(syncVariant.weight) != 0) {
             yield(
-                VariantFieldReconcileItem(
+                VariantReconcileItem(
                     syncVariant,
                     "${product.title} (${variant.title})",
                     "Gewicht von ${syncVariant.weight ?: "leer"} auf ${loadedWeight} geändert",
@@ -193,35 +176,36 @@ class ReconcileFromShopifyService(
         if (isNotEmpty()) syncVendorRepository.findByNameIgnoreCase(this) ?: SyncVendor(this)
         else null
 
-    private inner class ProductFieldReconcileItem(
-        private val product: SyncProduct,
-        override val title: String,
-        override val message: String,
-        private val action: SyncProduct.() -> Unit
-    ) : ProductReconcileItem {
+    inner class ProductReconcileItem(
+        product: SyncProduct,
+        title: String,
+        message: String,
+        action: SyncProduct.() -> Unit
+    ) : TypedReconcileItem<SyncProduct>(syncProductRepository, product.id, title, message, action)
 
-        override fun reconcile() = product.apply(action)
-    }
-
-    private inner class VariantFieldReconcileItem(
-        private val product: SyncVariant,
-        override val title: String,
-        override val message: String,
-        private val action: SyncVariant.() -> Unit
-    ) : VariantReconcileItem {
-
-        override fun reconcile() = product.apply(action)
-    }
+    inner class VariantReconcileItem(
+        variant: SyncVariant,
+        title: String,
+        message: String,
+        action: SyncVariant.() -> Unit
+    ) : TypedReconcileItem<SyncVariant>(syncVariantRepository, variant.id, title, message, action)
 }
 
 sealed interface ReconcileItem {
     val title: String
     val message: String
+    fun reconcile()
 }
 
-sealed interface TypedReconcileItem<T> : ReconcileItem {
-    fun reconcile(): T
-}
+sealed class TypedReconcileItem<T : Any>(
+    private val repository: JpaRepository<T, UUID>,
+    private val id: UUID,
+    override val title: String,
+    override val message: String,
+    private val action: T.() -> Unit
+) : ReconcileItem {
 
-sealed interface ProductReconcileItem : TypedReconcileItem<SyncProduct>
-sealed interface VariantReconcileItem : TypedReconcileItem<SyncVariant>
+    override fun reconcile() {
+        repository.save(repository.findById(id).orElseThrow().apply(action))
+    }
+}

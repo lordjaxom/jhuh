@@ -17,6 +17,8 @@ import de.hinundhergestellt.jhuh.components.horizontalLayout
 import de.hinundhergestellt.jhuh.components.iconColumn
 import de.hinundhergestellt.jhuh.components.rangeMultiSelectionMode
 import de.hinundhergestellt.jhuh.components.textColumn
+import de.hinundhergestellt.jhuh.usecases.maintenance.ReconcileFromShopifyService.ProductReconcileItem
+import de.hinundhergestellt.jhuh.usecases.maintenance.ReconcileFromShopifyService.VariantReconcileItem
 import kotlinx.coroutines.CoroutineScope
 import org.springframework.stereotype.Component
 
