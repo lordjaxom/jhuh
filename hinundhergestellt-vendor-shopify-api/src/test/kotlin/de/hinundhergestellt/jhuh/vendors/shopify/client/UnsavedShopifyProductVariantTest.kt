@@ -48,7 +48,7 @@ class UnsavedShopifyProductVariantTest {
         assertThat(input.inventoryItem?.sku).isEqualTo("SKU222")
         assertThat(input.inventoryItem?.tracked).isTrue()
         assertThat(input.inventoryItem?.measurement?.weight?.unit).isEqualTo(WeightUnit.KILOGRAMS)
-        assertThat(input.inventoryItem?.measurement?.weight?.value).isEqualTo(BigDecimal("1.2"))
+        assertThat(input.inventoryItem?.measurement?.weight?.value).isEqualTo(BigDecimal("1.20"))
         assertThat(input.inventoryQuantities).hasSize(1)
         assertThat(input.inventoryQuantities?.get(0)?.locationId).isEqualTo("LOC002")
         assertThat(input.inventoryQuantities?.get(0)?.availableQuantity).isEqualTo(15)

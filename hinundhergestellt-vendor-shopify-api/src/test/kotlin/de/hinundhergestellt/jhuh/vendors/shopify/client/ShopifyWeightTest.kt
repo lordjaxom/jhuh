@@ -13,7 +13,7 @@ class ShopifyWeightTest {
     fun `test creation from primary constructor`() {
         val weight = ShopifyWeight(WeightUnit.KILOGRAMS, BigDecimal("2.5"))
         assertThat(weight.unit).isEqualTo(WeightUnit.KILOGRAMS)
-        assertThat(weight.value).isEqualTo(BigDecimal("2.5"))
+        assertThat(weight.value).isEqualTo(BigDecimal("2.50"))
     }
 
     @Test
@@ -21,7 +21,7 @@ class ShopifyWeightTest {
         val gqlWeight = Weight.Builder().withUnit(WeightUnit.GRAMS).withValue(BigDecimal("500.0")).build()
         val weight = ShopifyWeight(gqlWeight)
         assertThat(weight.unit).isEqualTo(WeightUnit.GRAMS)
-        assertThat(weight.value).isEqualTo(BigDecimal("500.0"))
+        assertThat(weight.value).isEqualTo(BigDecimal("500.00"))
     }
 
     @Test
@@ -30,13 +30,13 @@ class ShopifyWeightTest {
         val input = weight.toWeightInput()
         assertThat(input).isInstanceOf(WeightInput::class.java)
         assertThat(input.unit).isEqualTo(WeightUnit.OUNCES)
-        assertThat(input.value).isEqualTo(BigDecimal("3.0"))
+        assertThat(input.value).isEqualTo(BigDecimal("3.00"))
     }
 
     @Test
     fun `test toString output`() {
         val weight = ShopifyWeight(WeightUnit.KILOGRAMS, BigDecimal("1.0"))
-        val expected = "ShopifyWeight(unit=KILOGRAMS, value=1.0)"
+        val expected = "ShopifyWeight(unit=KILOGRAMS, value=1.00)"
         assertThat(weight.toString()).isEqualTo(expected)
     }
 }

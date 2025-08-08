@@ -12,6 +12,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.math.BigDecimal
+import kotlin.apply
 
 class ShopifyProductVariantTest {
 
@@ -34,7 +35,7 @@ class ShopifyProductVariantTest {
         assertThat(variant.sku).isEqualTo("SKU123")
         assertThat(variant.price).isEqualByComparingTo("12.34")
         assertThat(variant.weight.unit).isEqualTo(WeightUnit.KILOGRAMS)
-        assertThat(variant.weight.value).isEqualTo(BigDecimal("1.0"))
+        assertThat(variant.weight.value).isEqualTo(BigDecimal("1.00"))
         assertThat(variant.options).containsExactly(option)
     }
 
@@ -50,6 +51,7 @@ class ShopifyProductVariantTest {
             mockk<SelectedOption>().apply {
                 every { name } returns "Size"
                 every { value } returns "XL"
+                every { optionValue } returns ProductOptionValue("OPT1", "LMV1")
             }
         )
         every { mockVariant.id } returns "ID567"
@@ -68,7 +70,7 @@ class ShopifyProductVariantTest {
         assertThat(variant.sku).isEqualTo("SKU567")
         assertThat(variant.price).isEqualByComparingTo("29.99")
         assertThat(variant.weight.unit).isEqualTo(WeightUnit.KILOGRAMS)
-        assertThat(variant.weight.value).isEqualTo(BigDecimal("2.0"))
+        assertThat(variant.weight.value).isEqualTo(BigDecimal("2.00"))
         assertThat(variant.options).hasSize(1)
     }
 
@@ -93,7 +95,7 @@ class ShopifyProductVariantTest {
         assertThat(input.inventoryItem?.sku).isEqualTo("SKU444")
         assertThat(input.inventoryItem?.tracked).isTrue()
         assertThat(input.inventoryItem?.measurement?.weight?.unit).isEqualTo(WeightUnit.KILOGRAMS)
-        assertThat(input.inventoryItem?.measurement?.weight?.value).isEqualTo(BigDecimal("1.0"))
+        assertThat(input.inventoryItem?.measurement?.weight?.value).isEqualTo(BigDecimal("1.00"))
         assertThat(input.inventoryQuantities).isNull()
         assertThat(input.mediaId).isEqualTo("MEDIA444")
     }
@@ -126,6 +128,7 @@ class ShopifyProductVariantTest {
             mockk<SelectedOption>().apply {
                 every { name } returns "Color"
                 every { value } returns "Green"
+                every { optionValue } returns ProductOptionValue("OPT1", "LMV1")
             }
         )
         every { mockVariant.id } returns "IDX"
@@ -217,7 +220,7 @@ class ShopifyProductVariantTest {
         assertThat(variant.barcode).isEqualTo("BAR_V1")
         assertThat(variant.price).isEqualByComparingTo("15.99")
         assertThat(variant.weight.unit).isEqualTo(WeightUnit.GRAMS)
-        assertThat(variant.weight.value).isEqualTo(BigDecimal("250.0"))
+        assertThat(variant.weight.value).isEqualTo(BigDecimal("250.00"))
         assertThat(variant.options).containsExactly(option)
         assertThat(variant.mediaId).isEqualTo("MEDIA_V1")
     }

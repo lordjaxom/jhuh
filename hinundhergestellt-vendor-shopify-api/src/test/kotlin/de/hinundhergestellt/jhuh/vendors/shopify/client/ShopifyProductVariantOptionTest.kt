@@ -21,10 +21,12 @@ class ShopifyProductVariantOptionTest {
         val selected = mockk<SelectedOption> {
             every { name } returns "Material"
             every { value } returns "Wolle"
+            every { optionValue } returns ProductOptionValue("POV1", "LMV1")
         }
         val option = ShopifyProductVariantOption(selected)
         assertThat(option.name).isEqualTo("Material")
         assertThat(option.value).isEqualTo("Wolle")
+        assertThat(option.linkedMetafieldValue).isEqualTo("LMV1")
     }
 
     @Test

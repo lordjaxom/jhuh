@@ -10,14 +10,20 @@ class ShopifyProductOptionTest {
 
     @Test
     fun `test creation from ProductOption`() {
+        val linkedMetafield = LinkedMetafield("MFNS", "MFK1")
+        val optionValues = listOf(ProductOptionValue("Rot"), ProductOptionValue("Blau"))
         val mockOption = mockk<ProductOption>()
         every { mockOption.id } returns "OPTID1"
         every { mockOption.name } returns "Farbe"
         every { mockOption.values } returns listOf("Rot", "Blau")
+        every { mockOption.linkedMetafield } returns linkedMetafield
+        every { mockOption.optionValues } returns optionValues
         val option = ShopifyProductOption(mockOption)
         assertThat(option.id).isEqualTo("OPTID1")
         assertThat(option.name).isEqualTo("Farbe")
         assertThat(option.values).containsExactly("Rot", "Blau")
+        assertThat(option.linkedMetafield).isSameAs(linkedMetafield)
+        assertThat(option.optionValues).isSameAs(optionValues)
     }
 
     @Test

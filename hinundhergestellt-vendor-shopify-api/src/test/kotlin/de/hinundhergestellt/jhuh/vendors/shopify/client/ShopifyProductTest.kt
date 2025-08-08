@@ -134,7 +134,8 @@ class ShopifyProductTest {
                 mockk {
                     every { id } returns "OPTID"
                     every { name } returns "Farbe"
-                    every { values } returns listOf("Rot", "Blau")
+                    every { linkedMetafield } returns LinkedMetafield("LMNS", "LMK1")
+                    every { optionValues } returns listOf(ProductOptionValue("Rot", "LMV1"), ProductOptionValue("Blau", "LMV2"))
                 }
             )
             every { metafields } returns mockk {

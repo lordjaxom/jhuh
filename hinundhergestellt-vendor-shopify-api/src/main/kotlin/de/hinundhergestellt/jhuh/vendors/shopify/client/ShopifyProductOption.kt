@@ -96,13 +96,14 @@ class ShopifyProductOption internal constructor(
         OptionUpdateInput(
             id = id,
             name = name,
-            linkedMetafield = linkedMetafield?.toLinkedMetafieldUpdateInput()
+            linkedMetafield = linkedMetafield?.toLinkedMetafieldUpdateInput(),
         )
 }
 
-fun ProductOptionValue(name: String) =
+fun ProductOptionValue(name: String, linkedMetafieldValue: String? = null) =
     ProductOptionValue.Builder()
         .withName(name)
+        .withLinkedMetafieldValue(linkedMetafieldValue)
         .build()
 
 fun ProductOptionValue.withLinkedMetafieldValue(linkedMetafieldValue: String?) =
