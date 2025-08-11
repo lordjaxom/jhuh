@@ -23,7 +23,7 @@ class TagTextField(label: String? = null) : CustomField<MutableSet<String>>() {
     private val tags = LinkedHashSet<String>()
 
     init {
-        add(single {
+        add(root {
             verticalLayout {
                 isPadding = false
                 isSpacing = false
@@ -84,7 +84,7 @@ class TagTextField(label: String? = null) : CustomField<MutableSet<String>>() {
     }
 
     private fun makeBadge(value: String) =
-        single {
+        root {
             div {
                 style.setDisplay(Style.Display.INLINE_FLEX)
                 style.setAlignItems(Style.AlignItems.CENTER)

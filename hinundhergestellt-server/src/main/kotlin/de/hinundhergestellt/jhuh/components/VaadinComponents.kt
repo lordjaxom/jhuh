@@ -12,6 +12,7 @@ import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.html.Div
 import com.vaadin.flow.component.html.H1
+import com.vaadin.flow.component.html.NativeLabel
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
@@ -95,6 +96,12 @@ inline fun (@VaadinDsl HasComponents).horizontalLayout(block: (@VaadinDsl Horizo
 inline fun (@VaadinDsl HasComponents).integerField(label: String? = null, block: (@VaadinDsl IntegerField).() -> Unit = {}): IntegerField {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     return init(IntegerField(label), block)
+}
+
+@VaadinDsl
+inline fun (@VaadinDsl HasComponents).nativeLabel(label: String, block: (@VaadinDsl NativeLabel).() -> Unit = {}): NativeLabel {
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    return init(NativeLabel(label), block)
 }
 
 @VaadinDsl

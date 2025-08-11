@@ -1,22 +1,31 @@
+@file:OptIn(ExperimentalContracts::class)
+
 package de.hinundhergestellt.jhuh.components
 
 import com.vaadin.flow.component.Component
 import com.vaadin.flow.component.ComponentEventListener
-import com.vaadin.flow.component.HasComponents
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.grid.ClientItemToggleEvent
 import com.vaadin.flow.component.grid.ColumnTextAlign
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.grid.GridMultiSelectionModel
 import com.vaadin.flow.component.icon.AbstractIcon
-import com.vaadin.flow.component.icon.Icon
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.treegrid.TreeGrid
 import com.vaadin.flow.dom.Style
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.streams.asSequence
+
+@VaadinDsl
+fun <T, V> Grid<T>.textColumn(valueProvider: (T) -> V, block: (@VaadinDsl Grid.Column<T>).() -> Unit = {}) : Grid.Column<T> {
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    return addColumn(valueProvider).apply { isSortable = false; block() }
+}
 
 fun <T, V> Grid<T>.textColumn(header: String, flexGrow: Int = 1, valueProvider: (T) -> V): Grid.Column<T> =
     addColumn(valueProvider)
@@ -25,6 +34,12 @@ fun <T, V> Grid<T>.textColumn(header: String, flexGrow: Int = 1, valueProvider: 
             it.isSortable = false
             it.flexGrow = flexGrow
         }
+
+@VaadinDsl
+fun <T> Grid<T>.componentColumn(componentProvider: (T) -> Component, block: (@VaadinDsl Grid.Column<T>).() -> Unit = {}) : Grid.Column<T> {
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    return addComponentColumn(componentProvider).apply { isSortable = false; block() }
+}
 
 fun <T, V> Grid<T>.countColumn(header: String = "#", valueProvider: (T) -> V): Grid.Column<T> =
     addColumn(valueProvider)

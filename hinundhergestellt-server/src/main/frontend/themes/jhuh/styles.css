@@ -25,6 +25,19 @@ vaadin-text-field.label-only {
     --lumo-text-field-size: 0px;
 }
 
+vaadin-custom-field.label-actions::part(label) {
+    width: 100%;
+}
+
+vaadin-ckeditor label {
+    margin-top: var(--lumo-space-m);
+}
+
+.ck-editor__editable { font-size: var(--lumo-font-size-s); }
+.ck-editor__editable h2 { font-size: var(--lumo-font-size-xl); }
+.ck-editor__editable h3 { font-size: var(--lumo-font-size-l); }
+.ck-editor__editable h4 { font-size: var(--lumo-font-size-m); }
+
 .progress-overlay {
     position: fixed;
     top: 0;

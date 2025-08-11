@@ -9,12 +9,12 @@ import com.vaadin.flow.data.binder.ValidationException
 import com.vaadin.flow.dom.Style
 import de.hinundhergestellt.jhuh.backend.mapping.MappingService
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
+import de.hinundhergestellt.jhuh.backend.syncdb.SyncTechnicalDetail
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendor
+import de.hinundhergestellt.jhuh.components.ReorderableGridField
 import de.hinundhergestellt.jhuh.components.bind
 import de.hinundhergestellt.jhuh.components.binder
 import de.hinundhergestellt.jhuh.components.button
-import de.hinundhergestellt.jhuh.components.setColspan
-import de.hinundhergestellt.jhuh.components.column
 import de.hinundhergestellt.jhuh.components.comboBox
 import de.hinundhergestellt.jhuh.components.div
 import de.hinundhergestellt.jhuh.components.footer
@@ -23,7 +23,8 @@ import de.hinundhergestellt.jhuh.components.header
 import de.hinundhergestellt.jhuh.components.htmlEditor
 import de.hinundhergestellt.jhuh.components.itemLabelGenerator
 import de.hinundhergestellt.jhuh.components.lightHeaderDiv
-import de.hinundhergestellt.jhuh.components.row
+import de.hinundhergestellt.jhuh.components.reorderableGridField
+import de.hinundhergestellt.jhuh.components.setColspan
 import de.hinundhergestellt.jhuh.components.tagTextField
 import de.hinundhergestellt.jhuh.components.textField
 import de.hinundhergestellt.jhuh.components.toProperty
@@ -91,8 +92,19 @@ private class EditProductDialog(
                 style.setAlignSelf(Style.AlignSelf.FLEX_START)
 
                 htmlEditor("Produktbeschreibung") {
-                    height = "18em"
+                    height = "10em"
                     bind(syncBinder).toProperty(SyncProduct::descriptionHtml)
+                }
+                reorderableGridField("Technische Daten") {
+                    height = "10em"
+                    setWidthFull()
+                    bind(syncBinder).bind(
+                        { it.technicalDetails.map { item -> ReorderableGridField.Item(item.name, item.value) } },
+                        { target, value ->
+                            target.technicalDetails.clear()
+                            target.technicalDetails += value.mapIndexed { index, item -> SyncTechnicalDetail(item.name, item.value, index) }
+                        }
+                    )
                 }
             }
             div {

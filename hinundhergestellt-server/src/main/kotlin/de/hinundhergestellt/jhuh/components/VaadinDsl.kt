@@ -6,7 +6,6 @@ import com.vaadin.flow.component.Component
 import com.vaadin.flow.component.HasComponents
 import com.vaadin.flow.component.ItemLabelGenerator
 import com.vaadin.flow.component.combobox.ComboBox
-import com.vaadin.flow.component.customfield.CustomField
 import com.vaadin.flow.component.dialog.Dialog
 import com.vaadin.flow.dom.Element
 import kotlin.contracts.ExperimentalContracts
@@ -56,7 +55,22 @@ class HasSingleComponent : DummyHasComponents() {
 }
 
 @VaadinDsl
-inline fun <reified T: Component> single(block: (@VaadinDsl HasComponents).() -> T): T {
+inline fun <reified T: Component> root(block: (@VaadinDsl HasComponents).() -> T): T {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     return HasSingleComponent().block()
+}
+
+@VaadinDsl
+class HasMultipleComponents: DummyHasComponents() {
+    val components = mutableListOf<Component>()
+
+    override fun add(vararg components: Component) {
+        this.components += components
+    }
+}
+
+@VaadinDsl
+inline fun components(block: (@VaadinDsl HasComponents).() -> Unit): Array<Component> {
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    return HasMultipleComponents().also { it.block() }.components.toTypedArray()
 }
