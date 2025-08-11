@@ -15,6 +15,16 @@ vaadin-grid-tree-toggle {
     --vaadin-grid-tree-toggle-level-offset: 1em;
 }
 
+vaadin-text-field.label-only::part(input-field),
+vaadin-text-field.label-only::part(clear-button),
+vaadin-text-field.label-only::part(reveal-button) {
+    display: none
+}
+
+vaadin-text-field.label-only {
+    --lumo-text-field-size: 0px;
+}
+
 .progress-overlay {
     position: fixed;
     top: 0;

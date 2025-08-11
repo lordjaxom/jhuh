@@ -73,8 +73,9 @@ class ProductManagerService(
         if (syncProduct != null) transactionOperations.execute { syncProductRepository.save(syncProduct) }
     }
 
-    suspend fun update(variation: ArtooMappedVariation) {
-        artooDataStore.update(variation)
+    suspend fun update(artooVariation: ArtooMappedVariation?, syncVariant: SyncVariant?) {
+        if (artooVariation != null) artooDataStore.update(artooVariation)
+        if (syncVariant != null) transactionOperations.execute { syncVariantRepository.save(syncVariant) }
     }
 
     @Transactional
@@ -202,6 +203,8 @@ class ProductManagerService(
     }
 
     inner class VariationTreeItem(val value: ArtooMappedVariation) : TreeItem {
+
+        internal var syncVariant = syncVariantRepository.findByArtooId(value.id)
 
         val id by value::id
 

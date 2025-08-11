@@ -13,6 +13,7 @@ import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery
 import com.vaadin.flow.dom.Style
 import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
+import de.hinundhergestellt.jhuh.backend.mapping.MappingService
 import de.hinundhergestellt.jhuh.components.Article
 import de.hinundhergestellt.jhuh.components.CustomIcon
 import de.hinundhergestellt.jhuh.components.GridActionButton
@@ -39,6 +40,7 @@ import kotlin.streams.asStream
 @PageTitle("Produktverwaltung")
 class ProductManagerView(
     private val service: ProductManagerService,
+    private val mappingService: MappingService,
     private val labelService: LabelGeneratorService,
     applicationScope: CoroutineScope
 ) : VerticalLayout() {
@@ -121,7 +123,7 @@ class ProductManagerView(
 
     private fun editProductItem(product: ProductTreeItem) {
         vaadinScope.launch {
-            val result = editProduct(product.value, product.syncProduct)
+            val result = editProduct(product.value, product.syncProduct, mappingService)
             if (result != null) {
                 application { service.update(result.artoo, result.sync) }
                 treeDataProvider.refreshItem(product)
@@ -131,8 +133,9 @@ class ProductManagerView(
 
     private fun editVariationItem(variation: VariationTreeItem) {
         vaadinScope.launch {
-            if (editVariation(variation.value)) {
-                application { service.update(variation.value) }
+            val result = editVariation(variation.value, variation.syncVariant)
+            if (result != null) {
+                application { service.update(result.artoo, result.sync) }
                 treeDataProvider.refreshItem(variation)
             }
         }

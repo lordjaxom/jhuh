@@ -6,12 +6,13 @@ import com.vaadin.flow.component.Component
 import com.vaadin.flow.component.HasComponents
 import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.html.Span
+import org.apache.naming.java.javaURLContextFactory
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 @VaadinDsl
-fun (@VaadinDsl FormLayout).header(text: String) {
+fun (@VaadinDsl FormLayout).formHeader(text: String) {
     add(Span(text).apply {
         this.style.setColor("var(--lumo-secondary-text-color)")
         this.style.setFontSize("var(--lumo-font-size-l)")
@@ -30,3 +31,5 @@ inline fun <T: Component> (@VaadinDsl FormLayout.FormRow).column(colspan: Int, b
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     add(HasSingleComponent().block(), colspan)
 }
+
+val Component.setColspan: FormLayout.(Int) -> Unit get() = { setColspan(this@setColspan, it) }

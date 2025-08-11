@@ -113,8 +113,8 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-rich-text-editor-flow</artifactId>
+            <groupId>com.wontlost</groupId>
+            <artifactId>ckeditor-vaadin</artifactId>
         </dependency>
 
         <dependency>

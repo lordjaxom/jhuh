@@ -1,6 +1,7 @@
 package de.hinundhergestellt.jhuh.usecases.maintenance
 
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
+import de.hinundhergestellt.jhuh.backend.mapping.MappingService
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategory
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategoryRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
@@ -32,6 +33,7 @@ private val logger = KotlinLogging.logger { }
 class ReconcileFromShopifyService(
     private val artooDataStore: ArtooDataStore,
     private val shopifyDataStore: ShopifyDataStore,
+    private val mappingService: MappingService,
     private val syncProductRepository: SyncProductRepository,
     private val syncVariantRepository: SyncVariantRepository,
     private val syncCategoryRepository: SyncCategoryRepository,
@@ -69,6 +71,17 @@ class ReconcileFromShopifyService(
             syncProductRepository.findByArtooId(matchingArtooProducts[0].id)
                 ?.also { it.shopifyId = product.id }
                 ?: product.toSyncProduct(matchingArtooProducts[0].id)
+        }
+
+        val inheritedTags = mappingService.inheritedTags(syncProduct)
+        val directTags = product.tags - inheritedTags
+        if (syncProduct.tags != directTags) {
+            val syncProductTagsText = syncProduct.tags.joinToString(", ", "\"", "\"")
+            val directTagsText = directTags.joinToString(", ", "\"", "\"")
+            yield(ProductReconcileItem(syncProduct, product.title, "Tags von $syncProductTagsText zu $directTagsText geändert") {
+                tags.clear()
+                tags += directTags
+            })
         }
 
         if (syncProduct.descriptionHtml != product.descriptionHtml) {

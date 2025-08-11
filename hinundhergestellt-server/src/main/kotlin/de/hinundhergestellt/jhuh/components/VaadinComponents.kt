@@ -16,7 +16,7 @@ import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
-import com.vaadin.flow.component.richtexteditor.RichTextEditor
+import com.vaadin.flow.component.textfield.BigDecimalField
 import com.vaadin.flow.component.textfield.IntegerField
 import com.vaadin.flow.component.textfield.TextArea
 import com.vaadin.flow.component.textfield.TextField
@@ -29,6 +29,12 @@ import kotlin.contracts.contract
 inline fun (@VaadinDsl HasComponents).accordion(block: (@VaadinDsl Accordion).() -> Unit = {}): Accordion {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     return init(Accordion(), block)
+}
+
+@VaadinDsl
+inline fun (@VaadinDsl HasComponents).bigDecimalField(label: String? = null, block: (@VaadinDsl BigDecimalField).() -> Unit = {}): BigDecimalField {
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    return init(BigDecimalField(label), block)
 }
 
 @VaadinDsl
@@ -89,12 +95,6 @@ inline fun (@VaadinDsl HasComponents).horizontalLayout(block: (@VaadinDsl Horizo
 inline fun (@VaadinDsl HasComponents).integerField(label: String? = null, block: (@VaadinDsl IntegerField).() -> Unit = {}): IntegerField {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     return init(IntegerField(label), block)
-}
-
-@VaadinDsl
-inline fun (@VaadinDsl HasComponents).richTextEditor(block: (@VaadinDsl RichTextEditor).() -> Unit = {}): RichTextEditor {
-    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    return init(RichTextEditor(), block)
 }
 
 @VaadinDsl

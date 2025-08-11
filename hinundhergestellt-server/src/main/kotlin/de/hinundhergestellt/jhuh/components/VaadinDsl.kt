@@ -6,6 +6,7 @@ import com.vaadin.flow.component.Component
 import com.vaadin.flow.component.HasComponents
 import com.vaadin.flow.component.ItemLabelGenerator
 import com.vaadin.flow.component.combobox.ComboBox
+import com.vaadin.flow.component.customfield.CustomField
 import com.vaadin.flow.component.dialog.Dialog
 import com.vaadin.flow.dom.Element
 import kotlin.contracts.ExperimentalContracts
@@ -37,17 +38,21 @@ inline fun <T : Component> (@VaadinDsl HasComponents).init(component: T, block: 
 }
 
 @VaadinDsl
-class HasSingleComponent : HasComponents {
+abstract class DummyHasComponents: HasComponents {
+    abstract override fun add(vararg components: Component)
 
-    private var initialized: Boolean = false
+    override fun add(components: Collection<Component>) = throw UnsupportedOperationException("add")
+    override fun getElement(): Element = throw UnsupportedOperationException("element")
+}
+
+@VaadinDsl
+class HasSingleComponent : DummyHasComponents() {
+    private var initialized = false
 
     override fun add(vararg components: Component) {
         require(components.size == 1 && !initialized) { "Can only host single component" }
         initialized = true
     }
-
-    override fun add(components: Collection<Component>) = throw UnsupportedOperationException("add")
-    override fun getElement(): Element = throw UnsupportedOperationException("element")
 }
 
 @VaadinDsl
