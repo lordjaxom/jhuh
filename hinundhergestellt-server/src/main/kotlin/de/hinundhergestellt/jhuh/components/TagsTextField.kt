@@ -60,21 +60,21 @@ class TagsTextField(label: String? = null) : CustomField<MutableSet<String>>() {
     override fun setPresentationValue(tags: MutableSet<String>) {
         this.tags.clear()
         container.removeAll()
-        tags.forEach { addTag(it) }
+        tags.forEach { addTag(it, false) }
+    }
+
+    fun addTag(value: String, isNew: Boolean) {
+        if (!tags.add(value)) return
+        container.add(makeBadge(value, isNew))
     }
 
     private fun tryAddFromInput() {
         val value = input.value.trim()
         if (value.isEmpty()) return
 
-        addTag(value)
+        addTag(value, true)
         input.clear()
         updateValue()
-    }
-
-    private fun addTag(value: String) {
-        if (!tags.add(value)) return
-        container.add(makeBadge(value))
     }
 
     private fun removeTag(value: String) {
@@ -83,16 +83,19 @@ class TagsTextField(label: String? = null) : CustomField<MutableSet<String>>() {
         updateValue()
     }
 
-    private fun makeBadge(value: String) =
+    private fun makeBadge(value: String, isNew: Boolean) =
         root {
             div {
                 style.setDisplay(Style.Display.INLINE_FLEX)
                 style.setAlignItems(Style.AlignItems.CENTER)
-                style.setBackgroundColor("var(--lumo-contrast-10pct)")
+                style.setFontSize("var(--lumo-font-size-xs)")
+                style.setBackgroundColor(
+                    if (isNew) "var(--lumo-success-color-10pct)"
+                    else "var(--lumo-contrast-10pct)"
+                )
                 style.setBorderRadius("var(--lumo-border-radius-l)")
                 style.setHeight("var(--lumo-size-xs)")
-                style.setPaddingLeft("var(--lumo-space-xs)")
-                style.setPaddingRight("var(--lumo-space-xs)")
+                style.setPadding("0 var(--lumo-space-s)")
                 element.setProperty("datasetTag", value)
 
                 span(value)

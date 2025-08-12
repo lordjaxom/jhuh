@@ -196,7 +196,7 @@ private class EditProductDialog(
         val details = service.generateProductDetails(artooProduct, syncProduct)
         descriptionHtmlEditor.value = details.descriptionHtml
         technicalDetailsGridField.value = details.technicalDetails.map { ReorderableGridField.Item(it.key, it.value) }
-        additionalTagsTextField.value = (details.tags.toSet() - inheritedTagsTextField.value).toMutableSet()
+        (details.tags.toSet() - inheritedTagsTextField.value).forEach { additionalTagsTextField.addTag(it, true) }
     }
 
     private fun save() {
