@@ -14,6 +14,7 @@ import com.vaadin.flow.component.html.Div
 import com.vaadin.flow.component.html.H1
 import com.vaadin.flow.component.html.NativeLabel
 import com.vaadin.flow.component.html.Span
+import com.vaadin.flow.component.icon.IconFactory
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
@@ -45,7 +46,7 @@ inline fun (@VaadinDsl HasComponents).button(text: String? = null, block: (@Vaad
 }
 
 @VaadinDsl
-inline fun (@VaadinDsl HasComponents).button(icon: VaadinIcon, block: (@VaadinDsl Button).() -> Unit = {}): Button {
+inline fun (@VaadinDsl HasComponents).button(icon: IconFactory, block: (@VaadinDsl Button).() -> Unit = {}): Button {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     return init(Button(icon.create()), block)
 }

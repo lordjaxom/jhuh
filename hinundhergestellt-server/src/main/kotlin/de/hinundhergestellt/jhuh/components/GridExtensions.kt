@@ -22,7 +22,22 @@ import kotlin.math.min
 import kotlin.streams.asSequence
 
 @VaadinDsl
-fun <T, V> Grid<T>.textColumn(valueProvider: (T) -> V, block: (@VaadinDsl Grid.Column<T>).() -> Unit = {}) : Grid.Column<T> {
+fun <T> Grid<T>.componentColumn(componentProvider: (T) -> Component, block: (@VaadinDsl Grid.Column<T>).() -> Unit = {}): Grid.Column<T> {
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    return addComponentColumn(componentProvider).apply { isSortable = false; block() }
+}
+
+@VaadinDsl
+fun <T> TreeGrid<T>.hierarchyComponentColumn(
+    componentProvider: (T) -> Component,
+    block: (@VaadinDsl Grid.Column<T>).() -> Unit = {}
+): Grid.Column<T> {
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    return addComponentHierarchyColumn(componentProvider).apply { isSortable = false; block() }
+}
+
+@VaadinDsl
+fun <T, V> Grid<T>.textColumn(valueProvider: (T) -> V, block: (@VaadinDsl Grid.Column<T>).() -> Unit = {}): Grid.Column<T> {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     return addColumn(valueProvider).apply { isSortable = false; block() }
 }
@@ -34,12 +49,6 @@ fun <T, V> Grid<T>.textColumn(header: String, flexGrow: Int = 1, valueProvider: 
             it.isSortable = false
             it.flexGrow = flexGrow
         }
-
-@VaadinDsl
-fun <T> Grid<T>.componentColumn(componentProvider: (T) -> Component, block: (@VaadinDsl Grid.Column<T>).() -> Unit = {}) : Grid.Column<T> {
-    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    return addComponentColumn(componentProvider).apply { isSortable = false; block() }
-}
 
 fun <T, V> Grid<T>.countColumn(header: String = "#", valueProvider: (T) -> V): Grid.Column<T> =
     addColumn(valueProvider)

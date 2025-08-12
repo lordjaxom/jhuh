@@ -28,9 +28,9 @@ class ShopifyProductMapper(
 ) {
     fun mapToProduct(syncProduct: SyncProduct, artooMappedProduct: ArtooMappedProduct): UnsavedShopifyProduct {
         val product = Builder(syncProduct, artooMappedProduct).build()
-        val shopTexts = runBlocking { shopTexterService.generateProductDetails(product) }
-        product.descriptionHtml = shopTexts.description
-        product.metafields.add(metafield("product_specs", shopTexts.technicalDetails, ShopifyMetafieldType.MULTI_LINE_TEXT_FIELD))
+//        val shopTexts = runBlocking { shopTexterService.generateProductDetails(product) }
+//        product.descriptionHtml = shopTexts.description
+//        product.metafields.add(metafield("product_specs", shopTexts.technicalDetails, ShopifyMetafieldType.MULTI_LINE_TEXT_FIELD))
         return product
     }
 

@@ -14,11 +14,8 @@ private val INVALID_TAG_CHARACTERS = """[^A-ZÄÖÜa-zäöüß0-9\\._ -]""".toRe
 @Service
 class MappingService(
     private val artooDataStore: ArtooDataStore,
-    private val syncCategoryRepository: SyncCategoryRepository,
-    private val syncVendorRepository: SyncVendorRepository
+    private val syncCategoryRepository: SyncCategoryRepository
 ) {
-    val vendors get() = syncVendorRepository.findAll()
-
     @Transactional
     fun inheritedTags(syncProduct: SyncProduct, artooProduct: ArtooMappedProduct? = null): Set<String> {
         val categoryTags = (artooProduct ?: syncProduct.artooId?.let { artooDataStore.findProductById(it) })

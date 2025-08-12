@@ -12,9 +12,9 @@ import de.hinundhergestellt.jhuh.components.bind
 import de.hinundhergestellt.jhuh.components.binder
 import de.hinundhergestellt.jhuh.components.button
 import de.hinundhergestellt.jhuh.components.footer
+import de.hinundhergestellt.jhuh.components.formHeader
 import de.hinundhergestellt.jhuh.components.formLayout
 import de.hinundhergestellt.jhuh.components.header
-import de.hinundhergestellt.jhuh.components.formHeader
 import de.hinundhergestellt.jhuh.components.textField
 import de.hinundhergestellt.jhuh.components.toProperty
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedVariation
@@ -69,7 +69,6 @@ private class EditVariationDialog(
                     .withValidator(BigDecimalRangeValidator("Gewicht muss größer als 0,5 sein.", BigDecimal("0.5"), BigDecimal("99999")))
                     .toProperty(SyncVariant::weight)
             }
-            button("* AI")
         }
         footer {
             button("Speichern") {

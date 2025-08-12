@@ -78,50 +78,13 @@ class ProductManagerService(
         if (syncVariant != null) transactionOperations.execute { syncVariantRepository.save(syncVariant) }
     }
 
-    @Transactional
-    fun updateItem(item: TreeItem, vendor: SyncVendor?, replaceVendor: Boolean, type: String?, replaceType: Boolean, tags: String?) {
-//        val tagsAsSet = tags?.run { splitToSequence(",").map { it.trim() }.filter { it.isNotEmpty() }.toMutableSet() }
-//        when (item) {
-//            is CategoryItem -> {
-//                if (tagsAsSet != null) {
-//                    val syncCategory = item.syncCategory?.also { it.tags = tagsAsSet }
-//                        ?: SyncCategory(item.id, tagsAsSet).also { item.syncCategory = it }
-//                    syncCategoryRepository.save(syncCategory)
-//                }
-//
-//                if (replaceVendor || replaceType) {
-//                    item.children.forEach { updateItem(it, vendor, replaceVendor, type, replaceType, null) }
-//                }
-//            }
-//
-//            is ProductItem -> {
-//                var syncProduct = item.syncProduct
-//                if (syncProduct != null) {
-//                    if (replaceVendor) syncProduct.vendor = vendor
-//                    if (replaceType) syncProduct.type = type
-//                    if (tagsAsSet != null) syncProduct.tags = tagsAsSet
-//                } else {
-//                    syncProduct = SyncProduct(
-//                        artooId = item.id,
-//                        vendor = vendor,
-//                        type = type,
-//                        tags = tagsAsSet ?: mutableSetOf(),
-//                        synced = false
-//                    )
-//                    item.syncProduct = syncProduct
-//                }
-//                syncProductRepository.save(syncProduct)
-//            }
-//        }
-    }
-
     suspend fun generateNewBarcodes(product: ProductTreeItem, report: suspend (String) -> Unit) {
         report("Shopify-Produktkatalog aktualisieren...")
         shopifyDataStore.withLockAndRefresh {
 
             report("Barcodes für ${product.name} generieren...")
 
-            val shopifyProduct = product.syncProduct?.shopifyId?.let { shopifyDataStore.findProductById(it) }
+            val shopifyProduct = product.syncProduct.shopifyId?.let { shopifyDataStore.findProductById(it) }
 
             val syncVariantsToUpdate = mutableListOf<SyncVariant>()
             val shopifyVariantsToUpdate = mutableListOf<ShopifyProductVariant>()
@@ -183,16 +146,16 @@ class ProductManagerService(
 
     inner class ProductTreeItem(val value: ArtooMappedProduct) : TreeItem {
 
-        internal var syncProduct = syncProductRepository.findByArtooId(value.id)
+        internal val syncProduct = syncProductRepository.findByArtooId(value.id) ?: value.toSyncProduct()
 
         val id by value::id
-        val isMarkedForSync get() = syncProduct?.synced ?: false
+        val isMarkedForSync get() = syncProduct.synced
 
         override val itemId = id
         override val name get() = value.description.ifEmpty { value.name }
-        override val vendor get() = syncProduct?.vendor
-        override val type get() = syncProduct?.type
-        override val tagsAsSet get() = syncProduct?.tags?.toSet() ?: setOf()
+        override val vendor get() = syncProduct.vendor
+        override val type get() = syncProduct.type
+        override val tagsAsSet get() = syncProduct.tags.toSet()
         override val variations = if (value.hasOnlyDefaultVariant) 0 else value.variations.size
         override val hasChildren = !value.hasOnlyDefaultVariant
         override val children = value.variations.map { VariationTreeItem(it) }
@@ -236,3 +199,13 @@ sealed interface TreeItem {
 
     fun filterBy(markedForSync: Boolean, text: String): Boolean
 }
+
+private fun ArtooMappedProduct.toSyncProduct() =
+    SyncProduct(artooId = id).apply {
+        variants += variations
+            .filter { it.barcode != null }
+            .map { it.toSyncVariant(this) }
+    }
+
+private fun ArtooMappedVariation.toSyncVariant(product: SyncProduct) =
+    SyncVariant(product = product, barcode = barcode!!, artooId = id)

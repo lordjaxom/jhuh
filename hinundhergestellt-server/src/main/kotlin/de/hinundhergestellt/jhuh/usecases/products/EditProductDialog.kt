@@ -2,19 +2,25 @@ package de.hinundhergestellt.jhuh.usecases.products
 
 import com.vaadin.flow.component.Key
 import com.vaadin.flow.component.button.ButtonVariant
+import com.vaadin.flow.component.combobox.ComboBox
 import com.vaadin.flow.component.dialog.Dialog
 import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.icon.VaadinIcon
+import com.vaadin.flow.component.textfield.BigDecimalField
+import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.data.binder.ValidationException
 import com.vaadin.flow.dom.Style
-import de.hinundhergestellt.jhuh.backend.mapping.MappingService
+import com.wontlost.ckeditor.VaadinCKEditor
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncTechnicalDetail
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendor
 import de.hinundhergestellt.jhuh.components.ReorderableGridField
+import de.hinundhergestellt.jhuh.components.TagsTextField
+import de.hinundhergestellt.jhuh.components.bigDecimalField
 import de.hinundhergestellt.jhuh.components.bind
 import de.hinundhergestellt.jhuh.components.binder
 import de.hinundhergestellt.jhuh.components.button
+import de.hinundhergestellt.jhuh.components.checkbox
 import de.hinundhergestellt.jhuh.components.comboBox
 import de.hinundhergestellt.jhuh.components.div
 import de.hinundhergestellt.jhuh.components.footer
@@ -22,23 +28,33 @@ import de.hinundhergestellt.jhuh.components.formLayout
 import de.hinundhergestellt.jhuh.components.header
 import de.hinundhergestellt.jhuh.components.htmlEditor
 import de.hinundhergestellt.jhuh.components.itemLabelGenerator
-import de.hinundhergestellt.jhuh.components.lightHeaderDiv
+import de.hinundhergestellt.jhuh.components.lightHeaderSpan
 import de.hinundhergestellt.jhuh.components.reorderableGridField
 import de.hinundhergestellt.jhuh.components.setColspan
-import de.hinundhergestellt.jhuh.components.tagTextField
+import de.hinundhergestellt.jhuh.components.tagsTextField
 import de.hinundhergestellt.jhuh.components.textField
 import de.hinundhergestellt.jhuh.components.toProperty
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
+import org.springframework.stereotype.Component
+import java.math.BigDecimal
 
 private class EditProductDialog(
+    private val service: EditProductService,
     private val artooProduct: ArtooMappedProduct,
-    private val syncProduct: SyncProduct?,
-    private val mappingService: MappingService,
+    private val syncProduct: SyncProduct,
     private val callback: (EditProductResult?) -> Unit
 ) : Dialog() {
 
     private val artooBinder = binder<ArtooMappedProduct>()
     private val syncBinder = binder<SyncProduct>()
+
+    private val descriptionTextField: TextField
+    private val descriptionHtmlEditor: VaadinCKEditor
+    private val technicalDetailsGridField: ReorderableGridField
+    private val vendorComboBox: ComboBox<SyncVendor>
+    private val inheritedTagsTextField: TagsTextField
+    private val additionalTagsTextField: TagsTextField
+    private val weightBigDecimalField: BigDecimalField?
 
     init {
         width = "1000px"
@@ -58,7 +74,7 @@ private class EditProductDialog(
                 FormLayout.ResponsiveStep("900px", 3)
             )
 
-            lightHeaderDiv("Stammdaten aus ready2order") {
+            lightHeaderSpan("Stammdaten aus ready2order") {
                 this@formLayout.setColspan(3)
                 style.setAlignSelf(Style.AlignSelf.FLEX_START)
             }
@@ -69,7 +85,7 @@ private class EditProductDialog(
                     .toProperty(ArtooMappedProduct::name)
                 focus()
             }
-            textField("Beschreibung (Titel in Shopify)") {
+            descriptionTextField = textField("Beschreibung (Titel in Shopify)") {
                 this@formLayout.setColspan(2)
                 bind(artooBinder)
                     .asRequired("Beschreibung darf nicht leer sein.")
@@ -83,7 +99,7 @@ private class EditProductDialog(
                 FormLayout.ResponsiveStep("900px", 3)
             )
 
-            lightHeaderDiv("Zusätzliche Informationen für Shopify") {
+            lightHeaderSpan("Zusätzliche Informationen für Shopify") {
                 this@formLayout.setColspan(3)
                 style.setAlignSelf(Style.AlignSelf.FLEX_START)
             }
@@ -91,11 +107,11 @@ private class EditProductDialog(
                 this@formLayout.setColspan(2)
                 style.setAlignSelf(Style.AlignSelf.FLEX_START)
 
-                htmlEditor("Produktbeschreibung") {
+                descriptionHtmlEditor = htmlEditor("Produktbeschreibung") {
                     height = "10em"
                     bind(syncBinder).toProperty(SyncProduct::descriptionHtml)
                 }
-                reorderableGridField("Technische Daten") {
+                technicalDetailsGridField = reorderableGridField("Technische Daten") {
                     height = "10em"
                     setWidthFull()
                     bind(syncBinder).bind(
@@ -111,11 +127,14 @@ private class EditProductDialog(
                 this@formLayout.setColspan(1)
                 style.setAlignSelf(Style.AlignSelf.FLEX_START)
 
-                comboBox<SyncVendor>("Hersteller") {
+                checkbox("Synchronisieren?") {
+                    bind(syncBinder).toProperty(SyncProduct::synced)
+                }
+                vendorComboBox = comboBox<SyncVendor>("Hersteller") {
                     isClearButtonVisible = true
                     itemLabelGenerator { it.name }
                     setWidthFull()
-                    setItems(mappingService.vendors)
+                    setItems(service.vendors)
                     bind(syncBinder)
                         .asRequired("Hersteller darf nicht leer sein.")
                         .toProperty(SyncProduct::vendor)
@@ -126,18 +145,36 @@ private class EditProductDialog(
                         .asRequired("Produktart darf nicht leer sein.")
                         .toProperty(SyncProduct::type)
                 }
-                tagTextField("Vererbte Tags") {
+                inheritedTagsTextField = tagsTextField("Vererbte Tags") {
                     setWidthFull()
                     isReadOnly = true
-                    value = syncProduct?.let { mappingService.inheritedTags(it, artooProduct).toMutableSet() }
+                    value = service.inheritedTags(syncProduct, artooProduct)
                 }
-                tagTextField("Weitere Tags") {
+                additionalTagsTextField = tagsTextField("Weitere Tags") {
                     setWidthFull()
                     bind(syncBinder).toProperty(SyncProduct::tags)
                 }
+                weightBigDecimalField =
+                    if (artooProduct.hasOnlyDefaultVariant) {
+                        bigDecimalField("Gewicht") {
+                            bind(syncBinder)
+                                .asRequired("Gewicht darf nicht leer sein.")
+                                .withValidator({ it >= BigDecimal("0.5") }, "Gewicht darf nicht weniger als 0.5 sein.")
+                                .bind(
+                                    { it.variants[0].weight },
+                                    { target, value -> target.variants[0].weight = value }
+                                )
+                        }
+                    } else null
             }
         }
         footer {
+            button("Werte ausfüllen") {
+                addClickListener { fillInValues() }
+            }
+            button("Texte generieren") {
+                addClickListener { generateTexts() }
+            }
             button("Speichern") {
                 addThemeVariants(ButtonVariant.LUMO_PRIMARY)
                 addClickListener { save() }
@@ -148,12 +185,30 @@ private class EditProductDialog(
         syncBinder.readBean(syncProduct)
     }
 
+    private fun fillInValues() {
+        val values = service.fillInValues(artooProduct)
+        values.vendor?.also { vendorComboBox.value = it }
+        values.description?.also { descriptionTextField.value = it }
+        values.weight?.also { weightBigDecimalField?.value = it }
+    }
+
+    private fun generateTexts() {
+        val details = service.generateProductDetails(artooProduct, syncProduct)
+        descriptionHtmlEditor.value = details.descriptionHtml
+        technicalDetailsGridField.value = details.technicalDetails.map { ReorderableGridField.Item(it.key, it.value) }
+        additionalTagsTextField.value = (details.tags.toSet() - inheritedTagsTextField.value).toMutableSet()
+    }
+
     private fun save() {
         try {
-            val artoo = if (artooBinder.hasChanges()) artooProduct.also { artooBinder.writeBean(it) } else null
-            val sync = if (syncBinder.hasChanges()) syncProduct.also { syncBinder.writeBean(it) } else null
+            if (!artooBinder.validate().isOk or !syncBinder.validate().isOk) return
+
+            val result = EditProductResult(
+                artooProduct.takeIf { artooBinder.hasChanges() }?.also { artooBinder.writeBean(it) },
+                syncProduct.takeIf { syncBinder.hasChanges() }?.also { syncBinder.writeBean(it) }
+            )
+            callback(result)
             close()
-            callback(EditProductResult(artoo, sync))
         } catch (_: ValidationException) {
         }
     }
@@ -164,5 +219,13 @@ class EditProductResult(
     val sync: SyncProduct?
 )
 
-suspend fun editProduct(artooProduct: ArtooMappedProduct, syncProduct: SyncProduct?, mappingService: MappingService) =
-    suspendableDialog { EditProductDialog(artooProduct, syncProduct, mappingService, it) }
+typealias EditProduct = suspend (artooProduct: ArtooMappedProduct, syncProduct: SyncProduct) -> EditProductResult?
+
+@Component
+class EditProductDialogFactory(
+    private val service: EditProductService
+) : EditProduct {
+
+    override suspend fun invoke(artooProduct: ArtooMappedProduct, syncProduct: SyncProduct) =
+        suspendableDialog { EditProductDialog(service, artooProduct, syncProduct, it) }
+}

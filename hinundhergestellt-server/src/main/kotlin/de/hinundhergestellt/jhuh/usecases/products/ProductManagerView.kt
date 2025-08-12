@@ -1,7 +1,10 @@
 package de.hinundhergestellt.jhuh.usecases.products
 
+import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.checkbox.Checkbox
+import com.vaadin.flow.component.contextmenu.ContextMenu
 import com.vaadin.flow.component.grid.GridVariant
+import com.vaadin.flow.component.html.Hr
 import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
@@ -13,7 +16,6 @@ import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery
 import com.vaadin.flow.dom.Style
 import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
-import de.hinundhergestellt.jhuh.backend.mapping.MappingService
 import de.hinundhergestellt.jhuh.components.Article
 import de.hinundhergestellt.jhuh.components.CustomIcon
 import de.hinundhergestellt.jhuh.components.GridActionButton
@@ -22,9 +24,11 @@ import de.hinundhergestellt.jhuh.components.VaadinCoroutineScope
 import de.hinundhergestellt.jhuh.components.actionsColumn
 import de.hinundhergestellt.jhuh.components.button
 import de.hinundhergestellt.jhuh.components.checkbox
+import de.hinundhergestellt.jhuh.components.componentColumn
 import de.hinundhergestellt.jhuh.components.hierarchyComponentColumn
 import de.hinundhergestellt.jhuh.components.horizontalLayout
 import de.hinundhergestellt.jhuh.components.progressOverlay
+import de.hinundhergestellt.jhuh.components.root
 import de.hinundhergestellt.jhuh.components.textField
 import de.hinundhergestellt.jhuh.components.treeGrid
 import de.hinundhergestellt.jhuh.usecases.labels.LabelGeneratorService
@@ -40,7 +44,7 @@ import kotlin.streams.asStream
 @PageTitle("Produktverwaltung")
 class ProductManagerView(
     private val service: ProductManagerService,
-    private val mappingService: MappingService,
+    private val editProductDialogFactory: EditProductDialogFactory,
     private val labelService: LabelGeneratorService,
     applicationScope: CoroutineScope
 ) : VerticalLayout() {
@@ -85,8 +89,15 @@ class ProductManagerView(
             }
         }
         itemsGrid = treeGrid<TreeItem> {
-            hierarchyComponentColumn("Bezeichnung", flexGrow = 100) { treeItemLabel(it) }
-            actionsColumn(3) { treeItemActions(it) }
+            hierarchyComponentColumn(::treeItemLabel) {
+                setHeader("Bezeichnung")
+                flexGrow = 1
+            }
+            componentColumn(::treeItemActions) {
+                isAutoWidth = true
+                flexGrow = 0
+            }
+//            actionsColumn(3) { treeItemActions(it) }
             setDataProvider(treeDataProvider)
             expand(treeDataProvider.fetchCategoriesRecursively())
             setSizeFull()
@@ -112,21 +123,14 @@ class ProductManagerView(
             is VariationTreeItem -> editVariationItem(item)
             else -> Unit
         }
-//        vaadinScope.launch {
-//            val result = editItemDialog(item, service.vendors)
-//            if (result == null) return@launch
-//
-//            service.updateItem(item, result.vendor, result.replaceVendor, result.type.ifEmpty { null }, result.replaceType, result.tags)
-//            treeDataProvider.refreshItem(item, result.replaceVendor || result.replaceType)
-//        }
     }
 
     private fun editProductItem(product: ProductTreeItem) {
         vaadinScope.launch {
-            val result = editProduct(product.value, product.syncProduct, mappingService)
+            val result = editProductDialogFactory(product.value, product.syncProduct)
             if (result != null) {
                 application { service.update(result.artoo, result.sync) }
-                treeDataProvider.refreshItem(product)
+                treeDataProvider.refreshItem(product, true)
             }
         }
     }
@@ -152,31 +156,45 @@ class ProductManagerView(
     }
 
     private fun treeItemLabel(item: TreeItem) =
-        HorizontalLayout().apply {
-            alignItems = FlexComponent.Alignment.CENTER
-            style.set("gap", "var(--lumo-space-xs)")
+        root {
+            horizontalLayout {
+                alignItems = FlexComponent.Alignment.CENTER
+                style.set("gap", "var(--lumo-space-xs)")
 
-            val icon = when (item) {
-                is CategoryTreeItem -> CustomIcon.CATEGORY
-                is ProductTreeItem -> CustomIcon.PRODUCT
-                is VariationTreeItem -> CustomIcon.VARIATION
+                val icon = when (item) {
+                    is CategoryTreeItem -> CustomIcon.CATEGORY
+                    is ProductTreeItem -> CustomIcon.PRODUCT
+                    is VariationTreeItem -> CustomIcon.VARIATION
+                }
+                add(icon.create().apply { color = "var(--lumo-secondary-text-color)" })
+                add(item.name)
             }
-            add(icon.create().apply { color = "var(--lumo-secondary-text-color)" })
-            add(item.name)
         }
 
     private fun treeItemActions(item: TreeItem) =
-        buildList {
-            add(GridActionButton(VaadinIcon.EDIT) { editItem(item) })
-            add(MoreGridActionButton().apply {
-                if (item is ProductTreeItem) {
-                    addItem("Barcodes neu generieren") { generateNewBarcodes(item) }
-                    addDivider()
-                    addItem("Etikett für Produkt") {}
-                    addItem("Etiketten für Varianten") { createLabelsForVariations(item) }
+        root {
+            horizontalLayout {
+                isSpacing = false
+                isPadding = false
+                button(VaadinIcon.EDIT) {
+                    addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE, ButtonVariant.LUMO_ICON)
+                    addClickListener { editItem(item) }
                 }
-                isEnabled = item is ProductTreeItem
-            })
+                button(VaadinIcon.ELLIPSIS_DOTS_H) {
+                    isEnabled = item is ProductTreeItem
+                    addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE, ButtonVariant.LUMO_ICON)
+
+                    ContextMenu(this).apply {
+                        isOpenOnClick = true
+                        if (item is ProductTreeItem) {
+                            addItem("Barcodes neu generieren") { generateNewBarcodes(item) }
+                            addComponent(Hr())
+                            addItem("Etikett für Produkt") {}
+                            addItem("Etiketten für Varianten") { createLabelsForVariations(item) }
+                        }
+                    }
+                }
+            }
         }
 
     private inner class TreeDataProvider : AbstractBackEndHierarchicalDataProvider<TreeItem, Void?>() {

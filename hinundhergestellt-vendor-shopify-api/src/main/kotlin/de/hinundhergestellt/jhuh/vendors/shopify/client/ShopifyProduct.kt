@@ -10,7 +10,7 @@ import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductStatus
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductUpdateInput
 import java.util.concurrent.CopyOnWriteArrayList
 
-private interface ShopifyProductCommonFields {
+interface ShopifyProductCommonFields {
 
     var title: String
     var vendor: String

@@ -15,7 +15,7 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-class TagTextField(label: String? = null) : CustomField<MutableSet<String>>() {
+class TagsTextField(label: String? = null) : CustomField<MutableSet<String>>() {
 
     private val input: TextField
     private val container: Div
@@ -107,7 +107,7 @@ class TagTextField(label: String? = null) : CustomField<MutableSet<String>>() {
 }
 
 @VaadinDsl
-inline fun (@VaadinDsl HasComponents).tagTextField(label: String? = null, block: (@VaadinDsl TagTextField).() -> Unit = {}): TagTextField {
+inline fun (@VaadinDsl HasComponents).tagsTextField(label: String? = null, block: (@VaadinDsl TagsTextField).() -> Unit = {}): TagsTextField {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    return init(TagTextField(label), block)
+    return init(TagsTextField(label), block)
 }
