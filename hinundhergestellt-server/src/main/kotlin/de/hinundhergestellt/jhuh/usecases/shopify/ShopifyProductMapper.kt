@@ -1,10 +1,8 @@
 package de.hinundhergestellt.jhuh.usecases.shopify
 
+import de.hinundhergestellt.jhuh.backend.mapping.MappingService
 import de.hinundhergestellt.jhuh.backend.mapping.update
-import de.hinundhergestellt.jhuh.backend.shoptexter.ShopTexterService
-import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategoryRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
-import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafield
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafieldType
@@ -13,25 +11,16 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductOption
 import de.hinundhergestellt.jhuh.vendors.shopify.client.containsId
 import de.hinundhergestellt.jhuh.vendors.shopify.client.findById
-import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Component
-import kotlin.streams.asSequence
 
 private const val METAFIELD_NAMESPACE = "custom"
-private val INVALID_TAG_CHARACTERS = """[^A-ZÄÖÜa-zäöüß0-9\\._ -]""".toRegex()
 
 @Component
 class ShopifyProductMapper(
-    private val artooDataStore: ArtooDataStore,
-    private val syncCategoryRepository: SyncCategoryRepository,
-    private val shopTexterService: ShopTexterService
+    private val mappingService: MappingService
 ) {
     fun mapToProduct(syncProduct: SyncProduct, artooMappedProduct: ArtooMappedProduct): UnsavedShopifyProduct {
-        val product = Builder(syncProduct, artooMappedProduct).build()
-//        val shopTexts = runBlocking { shopTexterService.generateProductDetails(product) }
-//        product.descriptionHtml = shopTexts.description
-//        product.metafields.add(metafield("product_specs", shopTexts.technicalDetails, ShopifyMetafieldType.MULTI_LINE_TEXT_FIELD))
-        return product
+        return Builder(syncProduct, artooMappedProduct).build()
     }
 
     fun updateProduct(syncProduct: SyncProduct, artooMappedProduct: ArtooMappedProduct, shopifyProduct: ShopifyProduct) =
@@ -46,31 +35,34 @@ class ShopifyProductMapper(
                 title = artooProduct.description.ifEmpty { artooProduct.name },
                 vendor = syncProduct.vendor!!.name,
                 productType = syncProduct.type!!,
-                tags = productTags(),
-                options = productOptions(),
-                metafields = productMetafields(),
+                descriptionHtml = syncProduct.descriptionHtml ?: "",
+                tags = tags(),
+                options = options(),
+                metafields = metafields(),
             )
 
-        protected fun productTags(): Set<String> {
-            val tags = sequence {
-                val categoryIds = artooDataStore.findCategoriesByProduct(artooProduct).map { it.id }.toList()
-                yieldAll(syncCategoryRepository.findByArtooIdIn(categoryIds).asSequence().flatMap { it.tags })
-                yieldAll(syncProduct.tags)
-                yield(syncProduct.vendor!!.name)
-                yield(syncProduct.type!!)
-            }
-            return tags.map { it.replace(INVALID_TAG_CHARACTERS, "") }.toSet()
+        protected fun tags(): Set<String> {
+            return mappingService.inheritedTags(syncProduct, artooProduct) + syncProduct.tags
         }
 
-        protected fun productMetafields() =
+        protected fun metafields() =
             mutableListOf(
                 metafield("vendor_address", syncProduct.vendor!!.address!!, ShopifyMetafieldType.MULTI_LINE_TEXT_FIELD),
                 metafield("vendor_email", syncProduct.vendor!!.email!!, ShopifyMetafieldType.SINGLE_LINE_TEXT_FIELD),
+//                metafield("product_specs", technicalDetails(), ShopifyMetafieldType.MULTI_LINE_TEXT_FIELD)
             )
 
-        private fun productOptions() =
+        private fun options() =
             if (!artooProduct.hasOnlyDefaultVariant) listOf(UnsavedShopifyProductOption("Farbe", artooProduct.variations.map { it.name }))
             else listOf()
+
+        private fun technicalDetails() =
+            syncProduct.technicalDetails.joinToString(
+                separator = "",
+                prefix = "<table>",
+                postfix = "</table>",
+                transform = { "<tr><th>${it.name}</th><td>${it.value}</td></tr>" }
+            )
     }
 
     private inner class Updater(
@@ -84,12 +76,13 @@ class ShopifyProductMapper(
             return shopifyProduct::title.update(artooProduct.description.ifEmpty { artooProduct.name }) or
                     shopifyProduct::vendor.update(syncProduct.vendor!!.name) or
                     shopifyProduct::productType.update(syncProduct.type!!) or
-                    shopifyProduct::tags.update(productTags()) or
-                    updateProductMetafields()
+                    shopifyProduct::descriptionHtml.update(syncProduct.descriptionHtml ?: "") or
+                    shopifyProduct::tags.update(tags()) or
+                    updateMetafields()
         }
 
-        private fun updateProductMetafields(): Boolean {
-            val metafields = productMetafields()
+        private fun updateMetafields(): Boolean {
+            val metafields = metafields()
             return shopifyProduct.metafields.addAll(metafields.filter { !shopifyProduct.metafields.containsId(it) }) or
                     shopifyProduct.metafields.asSequence()
                         .mapNotNull { old -> metafields.findById(old)?.let { new -> old to new } }
