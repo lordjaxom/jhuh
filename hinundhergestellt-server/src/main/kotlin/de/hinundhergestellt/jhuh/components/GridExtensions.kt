@@ -22,7 +22,10 @@ import kotlin.math.min
 import kotlin.streams.asSequence
 
 @VaadinDsl
-fun <T> Grid<T>.componentColumn(componentProvider: (T) -> Component, block: (@VaadinDsl Grid.Column<T>).() -> Unit = {}): Grid.Column<T> {
+fun <T> Grid<T>.componentColumn(
+    componentProvider: (T) -> Component,
+    block: (@VaadinDsl Grid.Column<T>).() -> Unit = {}
+): Grid.Column<T> {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     return addComponentColumn(componentProvider).apply { isSortable = false; block() }
 }
@@ -37,7 +40,10 @@ fun <T> TreeGrid<T>.hierarchyComponentColumn(
 }
 
 @VaadinDsl
-fun <T, V> Grid<T>.textColumn(valueProvider: (T) -> V, block: (@VaadinDsl Grid.Column<T>).() -> Unit = {}): Grid.Column<T> {
+fun <T, V> Grid<T>.textColumn(
+    valueProvider: (T) -> V,
+    block: (@VaadinDsl Grid.Column<T>).() -> Unit = {}
+): Grid.Column<T> {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     return addColumn(valueProvider).apply { isSortable = false; block() }
 }
@@ -69,9 +75,6 @@ fun <T> Grid<T>.actionsColumn(count: Int, actionsProvider: (T) -> List<Button>):
             it.flexGrow = 0
         }
 
-fun <T> Grid<T>.actionsColumn(actionsProvider: (T) -> Button): Grid.Column<T> =
-    actionsColumn(1) { listOf(actionsProvider(it)) }
-
 fun <T> Grid<T>.iconColumn(iconProvider: (T) -> AbstractIcon<*>): Grid.Column<T> =
     addComponentColumn(iconProvider)
         .setHeader("")
@@ -79,14 +82,6 @@ fun <T> Grid<T>.iconColumn(iconProvider: (T) -> AbstractIcon<*>): Grid.Column<T>
             isSortable = false
             width = "32px"
             flexGrow = 0
-        }
-
-fun <T, V : Component> TreeGrid<T>.hierarchyComponentColumn(header: String, flexGrow: Int, componentProvider: (T) -> V): Grid.Column<T> =
-    addComponentHierarchyColumn(componentProvider)
-        .setHeader(header)
-        .also {
-            it.isSortable = false
-            it.flexGrow = flexGrow
         }
 
 fun <T, V> TreeGrid<T>.hierarchyTextColumn(header: String, flexGrow: Int, valueProvider: (T) -> V): Grid.Column<T> =

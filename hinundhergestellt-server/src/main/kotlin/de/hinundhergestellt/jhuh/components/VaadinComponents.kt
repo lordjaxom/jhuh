@@ -7,6 +7,7 @@ import com.vaadin.flow.component.Text
 import com.vaadin.flow.component.accordion.Accordion
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.checkbox.Checkbox
+import com.vaadin.flow.component.checkbox.CheckboxGroup
 import com.vaadin.flow.component.combobox.ComboBox
 import com.vaadin.flow.component.formlayout.FormLayout
 import com.vaadin.flow.component.grid.Grid
@@ -34,7 +35,10 @@ inline fun (@VaadinDsl HasComponents).accordion(block: (@VaadinDsl Accordion).()
 }
 
 @VaadinDsl
-inline fun (@VaadinDsl HasComponents).bigDecimalField(label: String? = null, block: (@VaadinDsl BigDecimalField).() -> Unit = {}): BigDecimalField {
+inline fun (@VaadinDsl HasComponents).bigDecimalField(
+    label: String? = null,
+    block: (@VaadinDsl BigDecimalField).() -> Unit = {}
+): BigDecimalField {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     return init(BigDecimalField(label), block)
 }
@@ -55,6 +59,12 @@ inline fun (@VaadinDsl HasComponents).button(icon: IconFactory, block: (@VaadinD
 inline fun (@VaadinDsl HasComponents).checkbox(label: String? = null, block: (@VaadinDsl Checkbox).() -> Unit = {}): Checkbox {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     return init(Checkbox(label), block)
+}
+
+@VaadinDsl
+inline fun <T> (@VaadinDsl HasComponents).checkboxGroup(block: (@VaadinDsl CheckboxGroup<T>).() -> Unit = {}): CheckboxGroup<T> {
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    return init(CheckboxGroup(), block)
 }
 
 @VaadinDsl

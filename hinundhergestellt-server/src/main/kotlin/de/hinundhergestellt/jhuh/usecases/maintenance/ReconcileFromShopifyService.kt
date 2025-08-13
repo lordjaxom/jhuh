@@ -48,7 +48,7 @@ class ReconcileFromShopifyService(
 
         report("Gleiche Shopify-Produkte mit Datenbank ab...")
         items.clear()
-        items += shopifyDataStore.products.asSequence().map { reconcile(it) }.flatten()
+        shopifyDataStore.products.forEach { reconcile(it) }
 
 //        report("Unbekannte Kategorien abgleichen...")
 //        artooDataStore.rootCategories.forEach { reconcileCategories(it) }
@@ -59,12 +59,12 @@ class ReconcileFromShopifyService(
         transactionOperations.execute { items.forEach { it.reconcile() } }
     }
 
-    private fun reconcile(product: ShopifyProduct) = sequence {
+    private fun reconcile(product: ShopifyProduct) {
         val syncProduct = syncProductRepository.findByShopifyId(product.id) ?: run {
             val matchingArtooProducts = artooDataStore.findProductsByBarcodes(product.variants.map { it.barcode }).toList()
             if (matchingArtooProducts.isEmpty()) {
                 logger.info { "ShopifyProduct ${product.title} does not match any ArtooProduct, skip reconciliation" }
-                return@sequence
+                return
             }
             require(matchingArtooProducts.size == 1) { "More than one ArtooProduct matches barcodes of ShopifyProduct" }
 
@@ -78,36 +78,36 @@ class ReconcileFromShopifyService(
         if (syncProduct.tags != directTags) {
             val syncProductTagsText = syncProduct.tags.joinToString(", ", "\"", "\"")
             val directTagsText = directTags.joinToString(", ", "\"", "\"")
-            yield(ProductReconcileItem(syncProduct, product.title, "Tags von $syncProductTagsText zu $directTagsText geändert") {
+            items += ProductReconcileItem(syncProduct, product.title, "Tags von $syncProductTagsText zu $directTagsText geändert") {
                 tags.clear()
                 tags += directTags
-            })
+            }
         }
 
         if (syncProduct.descriptionHtml != product.descriptionHtml) {
-            yield(ProductReconcileItem(syncProduct, product.title, "Produktbeschreibung geändert") {
+            items += ProductReconcileItem(syncProduct, product.title, "Produktbeschreibung geändert") {
                 descriptionHtml = product.descriptionHtml
-            })
+            }
         }
 
         val loadedTechnicalDetails = extractTechnicalDetails(product)
         val knownTechnicalDetails = syncProduct.technicalDetails.map { it.name to it.value }
-        if (loadedTechnicalDetails != null && loadedTechnicalDetails != knownTechnicalDetails) {
-            yield(ProductReconcileItem(syncProduct, product.title, "Technische Daten geändert") {
+        if (loadedTechnicalDetails != knownTechnicalDetails) {
+            items += ProductReconcileItem(syncProduct, product.title, "Technische Daten geändert") {
                 technicalDetails.clear()
                 technicalDetails += loadedTechnicalDetails.mapIndexed { index, (name, value) -> SyncTechnicalDetail(name, value, index) }
-            })
+            }
         }
 
-        yieldAll(product.variants.asSequence().flatMap { reconcile(product, it, syncProduct) })
+        product.variants.forEach { reconcile(product, it, syncProduct) }
     }
 
-    private fun reconcile(product: ShopifyProduct, variant: ShopifyProductVariant, syncProduct: SyncProduct) = sequence {
+    private fun reconcile(product: ShopifyProduct, variant: ShopifyProductVariant, syncProduct: SyncProduct) {
         val syncVariant = syncVariantRepository.findByShopifyId(variant.id) ?: run {
             val artooVariation = artooDataStore.findVariationByBarcode(variant.barcode)
             if (artooVariation == null) {
                 logger.info { "ShopifyProductVariant ${variant.title} does not match any ArtooVariation, skip reconciliation" }
-                return@sequence
+                return
             }
             syncVariantRepository.findByArtooId(artooVariation.id)
                 ?.also { it.shopifyId = variant.id }
@@ -118,21 +118,20 @@ class ReconcileFromShopifyService(
         require(variant.weight.unit == WeightUnit.GRAMS) { "Only GRAMS are supported at this time" }
         val loadedWeight = variant.weight.value
         if (loadedWeight.compareTo(syncVariant.weight) != 0) {
-            yield(
-                VariantReconcileItem(
-                    syncVariant,
-                    "${product.title} (${variant.title})",
-                    "Gewicht von ${syncVariant.weight ?: "leer"} auf $loadedWeight geändert",
-                    { weight = loadedWeight }
-                )
+            items += VariantReconcileItem(
+                syncVariant,
+                "${product.title} (${variant.title})",
+                "Gewicht von ${syncVariant.weight ?: "leer"} auf $loadedWeight geändert",
+                { weight = loadedWeight }
             )
         }
     }
 
-    private fun extractTechnicalDetails(product: ShopifyProduct): List<Pair<String, String>>? {
+    private fun extractTechnicalDetails(product: ShopifyProduct): List<Pair<String, String>> {
         return product.metafields
             .find { it.namespace == "custom" && it.key == "product_specs" }
             ?.let { extractTechnicalDetails(it) }
+            ?: listOf()
     }
 
     private fun extractTechnicalDetails(metafield: ShopifyMetafield): List<Pair<String, String>> {

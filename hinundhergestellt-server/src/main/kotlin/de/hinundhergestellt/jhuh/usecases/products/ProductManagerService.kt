@@ -2,6 +2,7 @@ package de.hinundhergestellt.jhuh.usecases.products
 
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.backend.barcodes.BarcodeGenerator
+import de.hinundhergestellt.jhuh.backend.mapping.MappingService
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategoryRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProductRepository
@@ -22,7 +23,6 @@ import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.support.TransactionOperations
 import kotlin.coroutines.resume
 
@@ -40,9 +40,10 @@ class ProductManagerService(
     private val transactionOperations: TransactionOperations,
     private val barcodeGenerator: BarcodeGenerator,
     private val labelGeneratorService: LabelGeneratorService,
+    private val mappingService: MappingService,
 ) : AutoCloseable {
 
-    private val rootCategoriesLazy = lazyWithReset { artooDataStore.rootCategories.map { CategoryTreeItem(it) } }
+    private val rootCategoriesLazy = lazyWithReset { artooDataStore.rootCategories.map { CategoryItem(it) } }
     val rootCategories by rootCategoriesLazy
 
     val vendors get(): List<SyncVendor> = syncVendorRepository.findAll()
@@ -78,7 +79,7 @@ class ProductManagerService(
         if (syncVariant != null) transactionOperations.execute { syncVariantRepository.save(syncVariant) }
     }
 
-    suspend fun generateNewBarcodes(product: ProductTreeItem, report: suspend (String) -> Unit) {
+    suspend fun generateNewBarcodes(product: ProductItem, report: suspend (String) -> Unit) {
         report("Shopify-Produktkatalog aktualisieren...")
         shopifyDataStore.withLockAndRefresh {
 
@@ -125,7 +126,23 @@ class ProductManagerService(
         }
     }
 
-    inner class CategoryTreeItem(val value: ArtooMappedCategory) : TreeItem {
+    sealed interface Item {
+
+        val itemId: String
+        val name: String
+        val vendor: SyncVendor?
+        val type: String?
+        val tagsAsSet: Set<String>
+        val variations: Int?
+        val hasChildren: Boolean
+        val children: List<Item>
+
+        val tags get() = tagsAsSet.sorted().joinToString(", ")
+
+        fun filterBy(markedForSync: Boolean?, hasProblems: Boolean?, text: String): Boolean
+    }
+
+    inner class CategoryItem(val value: ArtooMappedCategory) : Item {
 
         internal var syncCategory = syncCategoryRepository.findByArtooId(value.id)
 
@@ -138,18 +155,20 @@ class ProductManagerService(
         override val tagsAsSet get() = syncCategory?.tags?.toSet() ?: setOf()
         override val variations = null
         override val hasChildren = true
-        override val children = value.run { children.map { CategoryTreeItem(it) } + products.map { ProductTreeItem(it) } }
+        override val children = value.run { children.map { CategoryItem(it) } + products.map { ProductItem(it) } }
 
-        override fun filterBy(markedForSync: Boolean, text: String) =
-            children.any { it.filterBy(markedForSync, text) }
+        override fun filterBy(markedForSync: Boolean?, hasProblems: Boolean?, text: String) =
+            children.any { it.filterBy(markedForSync, hasProblems, text) }
     }
 
-    inner class ProductTreeItem(val value: ArtooMappedProduct) : TreeItem {
+    inner class ProductItem(val value: ArtooMappedProduct) : Item {
 
         internal val syncProduct = syncProductRepository.findByArtooId(value.id) ?: value.toSyncProduct()
 
         val id by value::id
         val isMarkedForSync get() = syncProduct.synced
+
+        fun checkForProblems() = mappingService.checkForProblems(value, syncProduct)
 
         override val itemId = id
         override val name get() = value.description.ifEmpty { value.name }
@@ -158,18 +177,21 @@ class ProductManagerService(
         override val tagsAsSet get() = syncProduct.tags.toSet()
         override val variations = if (value.hasOnlyDefaultVariant) 0 else value.variations.size
         override val hasChildren = !value.hasOnlyDefaultVariant
-        override val children = value.variations.map { VariationTreeItem(it) }
+        override val children = value.variations.map { VariationItem(it) }
 
-        override fun filterBy(markedForSync: Boolean, text: String) =
-            (!markedForSync || isMarkedForSync) &&
+        override fun filterBy(markedForSync: Boolean?, hasProblems: Boolean?, text: String) =
+            (markedForSync == null || markedForSync == isMarkedForSync) &&
+                    (hasProblems == null || hasProblems == checkForProblems().isNotEmpty()) &&
                     (text.isEmpty() || name.contains(text, ignoreCase = true))
     }
 
-    inner class VariationTreeItem(val value: ArtooMappedVariation) : TreeItem {
+    inner class VariationItem(val value: ArtooMappedVariation) : Item {
 
         internal var syncVariant = syncVariantRepository.findByArtooId(value.id)
 
         val id by value::id
+
+        fun checkForProblems() = mappingService.checkForProblems(value, syncVariant)
 
         override val itemId = "variation-$id"
         override val name by value::name
@@ -178,26 +200,10 @@ class ProductManagerService(
         override val tagsAsSet = setOf<String>()
         override val variations = null
         override val hasChildren = false
-        override val children = listOf<TreeItem>()
+        override val children = listOf<Item>()
 
-        override fun filterBy(markedForSync: Boolean, text: String) = true
+        override fun filterBy(markedForSync: Boolean?, hasProblems: Boolean?, text: String) = true
     }
-}
-
-sealed interface TreeItem {
-
-    val itemId: String
-    val name: String
-    val vendor: SyncVendor?
-    val type: String?
-    val tagsAsSet: Set<String>
-    val variations: Int?
-    val hasChildren: Boolean
-    val children: List<TreeItem>
-
-    val tags get() = tagsAsSet.sorted().joinToString(", ")
-
-    fun filterBy(markedForSync: Boolean, text: String): Boolean
 }
 
 private fun ArtooMappedProduct.toSyncProduct() =
