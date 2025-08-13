@@ -16,6 +16,7 @@ import de.hinundhergestellt.jhuh.backend.syncdb.SyncTechnicalDetail
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendor
 import de.hinundhergestellt.jhuh.components.ReorderableGridField
 import de.hinundhergestellt.jhuh.components.TagsTextField
+import de.hinundhergestellt.jhuh.components.VaadinCoroutineScope
 import de.hinundhergestellt.jhuh.components.bigDecimalField
 import de.hinundhergestellt.jhuh.components.bind
 import de.hinundhergestellt.jhuh.components.binder
@@ -35,11 +36,14 @@ import de.hinundhergestellt.jhuh.components.tagsTextField
 import de.hinundhergestellt.jhuh.components.textField
 import de.hinundhergestellt.jhuh.components.toProperty
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
 
 private class EditProductDialog(
     private val service: EditProductService,
+    applicationScope: CoroutineScope,
     private val artooProduct: ArtooMappedProduct,
     private val syncProduct: SyncProduct,
     private val callback: (EditProductResult?) -> Unit
@@ -55,6 +59,8 @@ private class EditProductDialog(
     private val inheritedTagsTextField: TagsTextField
     private val additionalTagsTextField: TagsTextField
     private val weightBigDecimalField: BigDecimalField?
+
+    private val vaadinScope = VaadinCoroutineScope(this, applicationScope, null)
 
     init {
         width = "1000px"
@@ -135,12 +141,14 @@ private class EditProductDialog(
                     itemLabelGenerator { it.name }
                     setWidthFull()
                     setItems(service.vendors)
+                    addValueChangeListener { updateInheritedTags(it.oldValue?.name, it.value?.name) }
                     bind(syncBinder)
                         .asRequired("Hersteller darf nicht leer sein.")
                         .toProperty(SyncProduct::vendor)
                 }
                 textField("Produktart") {
                     setWidthFull()
+                    addValueChangeListener { updateInheritedTags(it.oldValue, it.value) }
                     bind(syncBinder)
                         .asRequired("Produktart darf nicht leer sein.")
                         .toProperty(SyncProduct::type)
@@ -152,7 +160,10 @@ private class EditProductDialog(
                 }
                 additionalTagsTextField = tagsTextField("Weitere Tags") {
                     setWidthFull()
-                    bind(syncBinder).toProperty(SyncProduct::tags)
+                    bind(syncBinder).bind(
+                        { it.tags },
+                        { target, value -> target.tags.clear(); target.tags += value }
+                    )
                 }
                 weightBigDecimalField =
                     if (artooProduct.hasOnlyDefaultVariant) {
@@ -192,11 +203,21 @@ private class EditProductDialog(
         values.weight?.also { weightBigDecimalField?.value = it }
     }
 
-    private fun generateTexts() {
-        val details = service.generateProductDetails(artooProduct, syncProduct)
-        descriptionHtmlEditor.value = details.descriptionHtml
-        technicalDetailsGridField.value = details.technicalDetails.map { ReorderableGridField.Item(it.key, it.value) }
-        (details.tags.toSet() - inheritedTagsTextField.value).forEach { additionalTagsTextField.addTag(it, true) }
+    private fun generateTexts() = vaadinScope.launch {
+        isEnabled = false
+        try {
+            val details = application { async { service.generateProductDetails(artooProduct, syncProduct) }.await() }
+            descriptionHtmlEditor.value = details.descriptionHtml
+            technicalDetailsGridField.value = details.technicalDetails.map { ReorderableGridField.Item(it.key, it.value) }
+            additionalTagsTextField.addTags(details.tags.toSet() - inheritedTagsTextField.value)
+        } finally {
+            isEnabled = true
+        }
+    }
+
+    private fun updateInheritedTags(oldValue: String?, newValue: String?) {
+        oldValue?.also { inheritedTagsTextField.value -= service.sanitizeTag(it) }
+        newValue?.also { inheritedTagsTextField.value += service.sanitizeTag(it) }
     }
 
     private fun save() {
@@ -223,9 +244,10 @@ typealias EditProduct = suspend (artooProduct: ArtooMappedProduct, syncProduct: 
 
 @Component
 class EditProductDialogFactory(
-    private val service: EditProductService
+    private val service: EditProductService,
+    private val applicationScope: CoroutineScope,
 ) : EditProduct {
 
     override suspend fun invoke(artooProduct: ArtooMappedProduct, syncProduct: SyncProduct) =
-        suspendableDialog { EditProductDialog(service, artooProduct, syncProduct, it) }
+        suspendableDialog { EditProductDialog(service, applicationScope, artooProduct, syncProduct, it) }
 }

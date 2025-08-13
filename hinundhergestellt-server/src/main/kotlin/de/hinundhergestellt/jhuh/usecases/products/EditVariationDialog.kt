@@ -83,10 +83,14 @@ private class EditVariationDialog(
 
     private fun save() {
         try {
-            val artoo = if (artooBinder.hasChanges()) artooVariation.also { artooBinder.writeBean(it) } else null
-            val sync = if (syncBinder.hasChanges()) syncVariant.also { syncBinder.writeBean(it) } else null
+            if (!artooBinder.validate().isOk or !syncBinder.validate().isOk) return
+
+            val result = EditVariationResult(
+                artooVariation.takeIf { artooBinder.hasChanges() }?.also { artooBinder.writeBean(it) },
+                syncVariant.takeIf { syncBinder.hasChanges() }?.also { syncBinder.writeBean(it) }
+            )
+            callback(result)
             close()
-            callback(EditVariationResult(artoo, sync))
         } catch (_: ValidationException) {
         }
     }

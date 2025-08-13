@@ -67,6 +67,10 @@ class ArtooDataStore(
         }
     }
 
+    suspend fun refreshAndAwait() {
+        rootCategoriesDeferred.refreshAndAwait()
+    }
+
     private suspend fun fetchRootCategories() = coroutineScope {
         val groups = async { productGroupClient.findAll().toList() }
         val products = productClient.findAll().toList()

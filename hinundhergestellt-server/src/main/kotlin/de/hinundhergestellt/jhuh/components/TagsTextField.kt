@@ -15,7 +15,7 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-class TagsTextField(label: String? = null) : CustomField<MutableSet<String>>() {
+class TagsTextField(label: String? = null) : CustomField<Set<String>>() {
 
     private val input: TextField
     private val container: Div
@@ -43,6 +43,11 @@ class TagsTextField(label: String? = null) : CustomField<MutableSet<String>>() {
         })
     }
 
+    fun addTags(tags: Collection<String>) {
+        tags.forEach { addTag(it, true) }
+        updateValue()
+    }
+
     override fun setReadOnly(readOnly: Boolean) {
         super.setReadOnly(readOnly)
         if (readOnly) {
@@ -55,17 +60,23 @@ class TagsTextField(label: String? = null) : CustomField<MutableSet<String>>() {
         setPresentationValue(tags.toMutableSet())
     }
 
-    override fun generateModelValue() = tags
+    override fun generateModelValue() = tags.toSet()
 
-    override fun setPresentationValue(tags: MutableSet<String>) {
+    override fun setPresentationValue(tags: Set<String>) {
         this.tags.clear()
         container.removeAll()
         tags.forEach { addTag(it, false) }
     }
 
-    fun addTag(value: String, isNew: Boolean) {
+    private fun addTag(value: String, isNew: Boolean) {
         if (!tags.add(value)) return
         container.add(makeBadge(value, isNew))
+    }
+
+    private fun removeTag(value: String) {
+        if (!tags.remove(value)) return
+        container.remove(container.children.filter { it.element.getProperty("datasetTag") == value }.toList())
+        updateValue()
     }
 
     private fun tryAddFromInput() {
@@ -74,12 +85,6 @@ class TagsTextField(label: String? = null) : CustomField<MutableSet<String>>() {
 
         addTag(value, true)
         input.clear()
-        updateValue()
-    }
-
-    private fun removeTag(value: String) {
-        if (!tags.remove(value)) return
-        container.remove(container.children.filter { it.element.getProperty("datasetTag") == value }.toList())
         updateValue()
     }
 

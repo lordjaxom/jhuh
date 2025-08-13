@@ -49,7 +49,7 @@ class ShopifyProductMapper(
             mutableListOf(
                 metafield("vendor_address", syncProduct.vendor!!.address!!, ShopifyMetafieldType.MULTI_LINE_TEXT_FIELD),
                 metafield("vendor_email", syncProduct.vendor!!.email!!, ShopifyMetafieldType.SINGLE_LINE_TEXT_FIELD),
-//                metafield("product_specs", technicalDetails(), ShopifyMetafieldType.MULTI_LINE_TEXT_FIELD)
+                metafield("product_specs", technicalDetails(), ShopifyMetafieldType.MULTI_LINE_TEXT_FIELD)
             )
 
         private fun options() =

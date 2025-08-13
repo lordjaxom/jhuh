@@ -117,7 +117,7 @@ class ReconcileFromShopifyService(
 
         require(variant.weight.unit == WeightUnit.GRAMS) { "Only GRAMS are supported at this time" }
         val loadedWeight = variant.weight.value
-        if (loadedWeight.compareTo(syncVariant.weight) != 0) {
+        if (syncVariant.weight == null || loadedWeight.compareTo(syncVariant.weight) != 0) {
             items += VariantReconcileItem(
                 syncVariant,
                 "${product.title} (${variant.title})",

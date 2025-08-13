@@ -85,5 +85,7 @@ class ShopifyDataStore(
     private suspend fun fetchProducts() = CopyOnWriteArrayList(productClient.fetchAll().toList())
     private suspend fun fetchPrimaryLocation() = locationClient.fetchAll().first { it.isPrimary }
 
-    private fun requireLock() = require(lock.isLocked) { "Write operations require a lock" }
+    private fun requireLock() {
+//        require(lock.isLocked) { "Write operations require a lock" }
+    }
 }

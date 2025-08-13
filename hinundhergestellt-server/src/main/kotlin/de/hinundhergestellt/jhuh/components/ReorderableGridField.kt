@@ -49,6 +49,7 @@ class ReorderableGridField(
                 isSpacing = false
 
                 itemsGrid = grid {
+                    emptyStateText = "Keine Einträge vorhanden."
                     setSizeFull()
                     dataProvider = provider
                     addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_COMPACT)
@@ -108,6 +109,7 @@ class ReorderableGridField(
         items.clear()
         newItems.forEach { items += Item(it.name, it.value) }
         provider.refreshAll()
+        itemsGrid.recalculateColumnWidths()
     }
 
     private fun addItem() {

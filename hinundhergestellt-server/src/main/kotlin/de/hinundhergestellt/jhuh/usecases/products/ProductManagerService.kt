@@ -177,7 +177,7 @@ class ProductManagerService(
         override val tagsAsSet get() = syncProduct.tags.toSet()
         override val variations = if (value.hasOnlyDefaultVariant) 0 else value.variations.size
         override val hasChildren = !value.hasOnlyDefaultVariant
-        override val children = value.variations.map { VariationItem(it) }
+        override val children = value.variations.map { VariationItem(it, this) }
 
         override fun filterBy(markedForSync: Boolean?, hasProblems: Boolean?, text: String) =
             (markedForSync == null || markedForSync == isMarkedForSync) &&
@@ -185,13 +185,13 @@ class ProductManagerService(
                     (text.isEmpty() || name.contains(text, ignoreCase = true))
     }
 
-    inner class VariationItem(val value: ArtooMappedVariation) : Item {
+    inner class VariationItem(val value: ArtooMappedVariation, val parent: ProductItem) : Item {
 
-        internal var syncVariant = syncVariantRepository.findByArtooId(value.id)
+        internal val syncVariant = parent.syncProduct.variants.find { it.artooId == value.id } ?: value.toSyncVariant(parent.syncProduct)
 
         val id by value::id
 
-        fun checkForProblems() = mappingService.checkForProblems(value, syncVariant)
+        fun checkForProblems() = mappingService.checkForProblems(value, syncVariant, parent.value)
 
         override val itemId = "variation-$id"
         override val name by value::name
@@ -214,4 +214,4 @@ private fun ArtooMappedProduct.toSyncProduct() =
     }
 
 private fun ArtooMappedVariation.toSyncVariant(product: SyncProduct) =
-    SyncVariant(product = product, barcode = barcode!!, artooId = id)
+    SyncVariant(product = product, barcode = barcode ?: "", artooId = id)

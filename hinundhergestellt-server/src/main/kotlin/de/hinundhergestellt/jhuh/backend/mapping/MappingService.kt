@@ -26,9 +26,11 @@ class MappingService(
             ?: sequenceOf()
         val vendorTypeTags = sequenceOf(sync.vendor?.name, sync.type)
             .filterNotNull()
-            .map { it.replace(INVALID_TAG_CHARACTERS, "") }
+            .map { sanitizeTag(it) }
         return (categoryTags + vendorTypeTags).toSet()
     }
+
+    fun sanitizeTag(tag: String) = tag.replace(INVALID_TAG_CHARACTERS, "")
 
     fun checkForProblems(artoo: ArtooMappedProduct, sync: SyncProduct) = buildList {
         if (artoo.barcodes.isEmpty())
@@ -51,9 +53,11 @@ class MappingService(
         if (sync.type == null) add(MappingProblem("Produkt hat keine Produktart", true))
     }
 
-    fun checkForProblems(artoo: ArtooMappedVariation, sync: SyncVariant?) = buildList {
+    fun checkForProblems(artoo: ArtooMappedVariation, sync: SyncVariant, product: ArtooMappedProduct) = buildList {
         if (artoo.barcode == null) add(MappingProblem("Variation hat keinen Barcode", true))
         if (artoo.name.isEmpty()) add(MappingProblem("Variation hat keinen Namen", true))
+        else if (artoo.name.startsWith(product.name, ignoreCase = true))
+            add(MappingProblem("Variationsname beginnt mit Produktnamen", true))
         if (!sync.hasWeight()) add(MappingProblem("Variation hat keine Gewichtsangabe", true))
     }
 }

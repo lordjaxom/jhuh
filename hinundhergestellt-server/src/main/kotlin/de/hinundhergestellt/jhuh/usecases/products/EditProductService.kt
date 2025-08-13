@@ -23,6 +23,8 @@ class EditProductService(
     fun inheritedTags(syncProduct: SyncProduct, artooProduct: ArtooMappedProduct) =
         mappingService.inheritedTags(syncProduct, artooProduct).toMutableSet()
 
+    fun sanitizeTag(tag: String) = mappingService.sanitizeTag(tag)
+
     fun generateProductDetails(artooProduct: ArtooMappedProduct, syncProduct: SyncProduct) =
         shopTexterService.generateProductDetails(ProductDetailsInput(artooProduct, syncProduct))
 

@@ -76,6 +76,7 @@ private class ReconcileFromShopifyPanel(
         vaadinScope.launchWithReporting {
             application { service.refresh(::report) }
             itemsGrid.setItems(service.items)
+            itemsGrid.recalculateColumnWidths()
         }
     }
 

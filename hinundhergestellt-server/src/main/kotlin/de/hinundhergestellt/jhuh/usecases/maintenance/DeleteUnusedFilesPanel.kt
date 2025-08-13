@@ -67,6 +67,7 @@ private class DeleteUnusedFilesPanel(
         vaadinScope.launchWithReporting {
             application { service.refresh(::report) }
             filesGrid.setItems(service.files)
+            filesGrid.recalculateColumnWidths()
         }
     }
 
