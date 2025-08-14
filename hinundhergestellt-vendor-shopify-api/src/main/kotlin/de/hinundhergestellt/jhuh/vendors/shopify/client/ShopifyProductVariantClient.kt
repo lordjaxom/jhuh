@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component
 class ShopifyProductVariantClient(
     private val shopifyGraphQLClient: WebClientGraphQLClient
 ) {
-    suspend fun create(product: ShopifyProduct, variants: List<UnsavedShopifyProductVariant>): List<ShopifyProductVariant> {
+    suspend fun create(product: ShopifyProduct, variants: Collection<UnsavedShopifyProductVariant>): List<ShopifyProductVariant> {
         val strategy =
             if (product.variants.isEmpty()) ProductVariantsBulkCreateStrategy.REMOVE_STANDALONE_VARIANT
             else ProductVariantsBulkCreateStrategy.DEFAULT
@@ -35,7 +35,7 @@ class ShopifyProductVariantClient(
             .map { (variant, created) -> ShopifyProductVariant(variant, created.id, created.title) }
     }
 
-    suspend fun update(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
+    suspend fun update(product: ShopifyProduct, variants: Collection<ShopifyProductVariant>) {
         val request = buildMutation {
             productVariantsBulkUpdate(productId = product.id, variants = variants.map { it.toProductVariantsBulkInput() }) {
                 userErrors { message; field }
@@ -45,7 +45,7 @@ class ShopifyProductVariantClient(
         shopifyGraphQLClient.executeMutation(request, ProductVariantsBulkUpdatePayload::userErrors)
     }
 
-    suspend fun delete(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
+    suspend fun delete(product: ShopifyProduct, variants: Collection<ShopifyProductVariant>) {
         val request = buildMutation {
             productVariantsBulkDelete(productId = product.id, variantsIds = variants.map { it.id }) {
                 userErrors { message; field }

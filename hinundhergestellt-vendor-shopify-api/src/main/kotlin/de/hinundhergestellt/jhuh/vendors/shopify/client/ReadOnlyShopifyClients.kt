@@ -44,11 +44,11 @@ class ReadOnlyShopifyClients(
     @Bean
     fun shopifyProductVariantClient() =
         object : ShopifyProductVariantClient(shopifyGraphQLClient) {
-            override suspend fun create(product: ShopifyProduct, variants: List<UnsavedShopifyProductVariant>) =
+            override suspend fun create(product: ShopifyProduct, variants: Collection<UnsavedShopifyProductVariant>) =
                 variants.map { it.toDryRunShopifyProductVariant() }
 
-            override suspend fun update(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {}
-            override suspend fun delete(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {}
+            override suspend fun update(product: ShopifyProduct, variants: Collection<ShopifyProductVariant>) {}
+            override suspend fun delete(product: ShopifyProduct, variants: Collection<ShopifyProductVariant>) {}
         }
 }
 

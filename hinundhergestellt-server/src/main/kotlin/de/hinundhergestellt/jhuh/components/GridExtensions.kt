@@ -84,14 +84,6 @@ fun <T> Grid<T>.iconColumn(iconProvider: (T) -> AbstractIcon<*>): Grid.Column<T>
             flexGrow = 0
         }
 
-fun <T, V> TreeGrid<T>.hierarchyTextColumn(header: String, flexGrow: Int, valueProvider: (T) -> V): Grid.Column<T> =
-    addHierarchyColumn(valueProvider)
-        .setHeader(header)
-        .also {
-            it.isSortable = false
-            it.flexGrow = flexGrow
-        }
-
 inline fun <reified T> Grid<T>.rangeMultiSelectionMode() {
     val selectionModel = setSelectionMode(Grid.SelectionMode.MULTI) as GridMultiSelectionModel<T>
     selectionModel.addClientItemToggleListener(object : ComponentEventListener<ClientItemToggleEvent<T>> {

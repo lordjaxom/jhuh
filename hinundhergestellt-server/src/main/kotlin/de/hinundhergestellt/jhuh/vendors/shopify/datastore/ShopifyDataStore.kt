@@ -65,18 +65,19 @@ class ShopifyDataStore(
         products.remove(product)
     }
 
-    suspend fun create(product: ShopifyProduct, variants: List<UnsavedShopifyProductVariant>) {
+    suspend fun create(product: ShopifyProduct, variants: Collection<UnsavedShopifyProductVariant>): List<ShopifyProductVariant> {
         requireLock()
         val created = variantClient.create(product, variants)
         product.variants.addAll(created)
+        return created
     }
 
-    suspend fun update(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
+    suspend fun update(product: ShopifyProduct, variants: Collection<ShopifyProductVariant>) {
         requireLock()
         variantClient.update(product, variants)
     }
 
-    suspend fun delete(product: ShopifyProduct, variants: List<ShopifyProductVariant>) {
+    suspend fun delete(product: ShopifyProduct, variants: Collection<ShopifyProductVariant>) {
         requireLock()
         variantClient.delete(product, variants)
         product.variants.removeAll(variants)

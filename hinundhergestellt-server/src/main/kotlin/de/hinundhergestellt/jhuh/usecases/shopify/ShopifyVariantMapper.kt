@@ -1,10 +1,8 @@
 package de.hinundhergestellt.jhuh.usecases.shopify
 
-import de.hinundhergestellt.jhuh.backend.mapping.update
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariant
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedVariation
-import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantOption
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyWeight
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVariant
@@ -19,9 +17,6 @@ class ShopifyVariantMapper(
 
     fun mapToVariant(artooProduct: ArtooMappedProduct, syncVariant: SyncVariant, artooVariation: ArtooMappedVariation) =
         Builder(artooProduct, syncVariant, artooVariation).build()
-
-    fun updateVariant(shopifyVariant: ShopifyProductVariant, artooVariation: ArtooMappedVariation) =
-        Updater(shopifyVariant, artooVariation).update()
 
     private inner class Builder(
         private val artooProduct: ArtooMappedProduct,
@@ -43,21 +38,5 @@ class ShopifyVariantMapper(
             if (!artooProduct.hasOnlyDefaultVariant)
                 listOf(ShopifyProductVariantOption("Farbe", artooVariation.name)) // TODO: Option name
             else listOf()
-    }
-
-    private inner class Updater(
-        private val shopifyVariant: ShopifyProductVariant,
-        private val artooVariation: ArtooMappedVariation
-    ) {
-        fun update(): Boolean {
-            return updateVariantOptions() or
-                    shopifyVariant::barcode.update(artooVariation.barcode!!) or
-                    shopifyVariant::sku.update(artooVariation.itemNumber ?: "") or
-                    shopifyVariant::price.update(artooVariation.price)
-        }
-
-        private fun updateVariantOptions() =
-            if (!artooVariation.isDefaultVariant) shopifyVariant.options[0]::value.update(artooVariation.name)
-            else false
     }
 }
