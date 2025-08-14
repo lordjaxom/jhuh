@@ -17,10 +17,12 @@ import de.hinundhergestellt.jhuh.components.horizontalLayout
 import de.hinundhergestellt.jhuh.components.progressOverlay
 import de.hinundhergestellt.jhuh.components.rangeMultiSelectionMode
 import de.hinundhergestellt.jhuh.components.root
+import de.hinundhergestellt.jhuh.components.span
+import de.hinundhergestellt.jhuh.components.text
 import de.hinundhergestellt.jhuh.components.textColumn
 import de.hinundhergestellt.jhuh.components.treeGrid
 import de.hinundhergestellt.jhuh.usecases.shopify.ShopifySynchronizationService.Item
-import de.hinundhergestellt.jhuh.usecases.shopify.ShopifySynchronizationService.ProductItem
+import de.hinundhergestellt.jhuh.usecases.shopify.ShopifySynchronizationService.Type
 import kotlinx.coroutines.CoroutineScope
 import java.util.stream.Stream
 import kotlin.streams.asStream
@@ -38,7 +40,7 @@ class ShopifySynchronizationView(
 
     private val treeDataProvider = TreeDataProvider()
 
-    private val vaadinScope = VaadinCoroutineScope(this, applicationScope,progressOverlay)
+    private val vaadinScope = VaadinCoroutineScope(this, applicationScope, progressOverlay)
 
     init {
         setHeightFull()
@@ -126,11 +128,12 @@ class ShopifySynchronizationView(
                 alignItems = FlexComponent.Alignment.CENTER
                 style.set("gap", "var(--lumo-space-xs)")
 
-                val icon = when (item) {
-                    is ProductItem -> CustomIcon.PRODUCT
+                val icon = when (item.type) {
+                    Type.PRODUCT -> CustomIcon.PRODUCT
+                    Type.VARIANT -> CustomIcon.VARIATION
                 }
-                add(icon.create().apply { color = "var(--lumo-secondary-text-color)" })
-                add(item.title)
+                span { add(icon.create().apply { setSize("var(--lumo-icon-size-s)"); color = "var(--lumo-secondary-text-color)" }) }
+                text(item.title)
             }
         }
 

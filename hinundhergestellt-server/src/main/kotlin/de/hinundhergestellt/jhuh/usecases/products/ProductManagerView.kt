@@ -187,7 +187,7 @@ class ProductManagerView(
                     is ProductItem -> CustomIcon.PRODUCT
                     is VariationItem -> CustomIcon.VARIATION
                 }
-                add(icon.create().apply { color = "var(--lumo-secondary-text-color)" })
+                add(icon.create().apply { setSize("var(--lumo-icon-size-s)"); color = "var(--lumo-secondary-text-color)" })
                 add(item.name)
             }
         }

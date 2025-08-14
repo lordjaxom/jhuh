@@ -3,6 +3,7 @@
 package de.hinundhergestellt.jhuh.core
 
 import java.util.Collections.synchronizedSet
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -15,11 +16,24 @@ import kotlin.reflect.KProperty0
 class DirtyTracker {
 
     private val dirties = synchronizedSet(mutableSetOf<String>())
-    private val collections = mutableListOf<Collection<*>>()
+    private val collections = ConcurrentHashMap<String, Collection<*>>()
+
+    val fields: List<String>
+        get() = buildList {
+            synchronized(dirties) {
+                addAll(dirties)
+                collections.forEach { name, collection ->
+                    collection.forEachIndexed { index, entry ->
+                        if (entry is HasDirtyTracker)
+                            addAll(entry.dirtyTracker.fields.map { "$name[$index].$it" })
+                    }
+                }
+            }
+        }
 
     fun getDirtyAndReset(): Boolean {
         synchronized(dirties) {
-            val result = dirties.isNotEmpty() or collections.map { it.getDirtyAndReset() }.any { it }
+            val result = dirties.isNotEmpty() or collections.values.map { it.getDirtyAndReset() }.any { it }
             dirties.clear()
             return result
         }
@@ -63,17 +77,21 @@ class DirtyTracker {
 
     @JvmName("trackList")
     fun <V> track(tracked: List<V>): ReadOnlyProperty<Any?, List<V>> {
-        collections.add(tracked)
         return object : ReadOnlyProperty<Any?, List<V>> {
-            override fun getValue(thisRef: Any?, property: KProperty<*>) = tracked
+            override fun getValue(thisRef: Any?, property: KProperty<*>): List<V> {
+                collections.putIfAbsent(property.name, tracked)
+                return tracked
+            }
         }
     }
 
     @JvmName("trackMutableList")
     fun <V> track(tracked: MutableList<V>): ReadOnlyProperty<Any?, MutableList<V>> {
-        collections.add(tracked)
         return object : ReadOnlyProperty<Any?, MutableList<V>> {
-            override fun getValue(thisRef: Any?, property: KProperty<*>) = DirtyTrackedMutableList(tracked) { dirties += property.name }
+            override fun getValue(thisRef: Any?, property: KProperty<*>): MutableList<V> {
+                collections.putIfAbsent(property.name, tracked)
+                return DirtyTrackedMutableList(tracked) { dirties += property.name }
+            }
         }
     }
 

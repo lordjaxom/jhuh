@@ -13,3 +13,6 @@ internal fun <T> KMutableProperty0<T>.update(value: T): Boolean {
     }
     return false
 }
+
+internal fun Collection<*>.toQuotedString() = joinToString(", ", prefix = "\"", postfix = "\"")
+internal fun Any?.toQuotedString() = if (this is Collection<*>) toQuotedString() else "\"${this ?: ""}\""

@@ -6,11 +6,14 @@ import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariant
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedVariation
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafield
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafieldType
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import kotlin.streams.asSequence
 
+private const val METAFIELD_NAMESPACE = "custom"
 private val INVALID_TAG_CHARACTERS = """[^A-ZÄÖÜa-zäöüß0-9\\._ -]""".toRegex()
 
 @Service
@@ -30,9 +33,23 @@ class MappingService(
         return (categoryTags + vendorTypeTags).toSet()
     }
 
+    @Transactional
+    fun allTags(syncProduct: SyncProduct, artoo: ArtooMappedProduct? = null): Set<String> {
+        return inheritedTags(syncProduct, artoo) + syncProduct.tags
+    }
+
     fun sanitizeTag(tag: String) = tag.replace(INVALID_TAG_CHARACTERS, "")
 
+    fun customMetafields(syncProduct: SyncProduct) =
+        mutableListOf(
+            metafield("vendor_address", syncProduct.vendor!!.address!!, ShopifyMetafieldType.MULTI_LINE_TEXT_FIELD),
+            metafield("vendor_email", syncProduct.vendor!!.email!!, ShopifyMetafieldType.SINGLE_LINE_TEXT_FIELD),
+            metafield("product_specs", technicalDetails(syncProduct), ShopifyMetafieldType.MULTI_LINE_TEXT_FIELD)
+        )
+
     fun checkForProblems(artoo: ArtooMappedProduct, sync: SyncProduct) = buildList {
+        if (artoo.description.isEmpty()) add(MappingProblem("Produkt hat keine Beschreibung (Titel in Shopify)", true))
+
         if (artoo.barcodes.isEmpty())
             add(MappingProblem(if (artoo.hasOnlyDefaultVariant) "Produkt hat keinen Barcode" else "Produkt hat keine Barcodes", true))
         else if (artoo.barcodes.size < artoo.variations.size)
@@ -60,6 +77,16 @@ class MappingService(
             add(MappingProblem("Variationsname beginnt mit Produktnamen", true))
         if (!sync.hasWeight()) add(MappingProblem("Variation hat keine Gewichtsangabe", true))
     }
+
+    private fun technicalDetails(syncProduct: SyncProduct) =
+        syncProduct.technicalDetails.joinToString(
+            separator = "",
+            prefix = "<table>",
+            postfix = "</table>",
+            transform = { "<tr><th>${it.name}</th><td>${it.value}</td></tr>" }
+        )
 }
+
+private fun metafield(key: String, value: String, type: ShopifyMetafieldType) = ShopifyMetafield(METAFIELD_NAMESPACE, key, value, type)
 
 private fun SyncVariant?.hasWeight() = this?.weight?.run { compareTo(BigDecimal.ZERO) != 0 } ?: false

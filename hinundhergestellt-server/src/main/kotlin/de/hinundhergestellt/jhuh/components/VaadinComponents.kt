@@ -116,7 +116,7 @@ inline fun (@VaadinDsl HasComponents).nativeLabel(label: String, block: (@Vaadin
 }
 
 @VaadinDsl
-inline fun (@VaadinDsl HasComponents).span(text: String, block: (@VaadinDsl Span).() -> Unit = {}): Span {
+inline fun (@VaadinDsl HasComponents).span(text: String? = null, block: (@VaadinDsl Span).() -> Unit = {}): Span {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     return init(Span(text), block)
 }

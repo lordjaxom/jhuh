@@ -2,6 +2,7 @@ package de.hinundhergestellt.jhuh.usecases.maintenance
 
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.backend.mapping.MappingService
+import de.hinundhergestellt.jhuh.backend.mapping.toQuotedString
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategory
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategoryRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
@@ -73,12 +74,20 @@ class ReconcileFromShopifyService(
                 ?: product.toSyncProduct(matchingArtooProducts[0].id)
         }
 
+        if (syncProduct.type != product.productType) {
+            val oldText = syncProduct.type.toQuotedString()
+            val newText = product.productType.toQuotedString()
+            items += ProductReconcileItem(syncProduct, product.title, "Produktart von $oldText zu $newText geändert") {
+                type = product.productType
+            }
+        }
+
         val inheritedTags = mappingService.inheritedTags(syncProduct)
         val directTags = product.tags - inheritedTags
         if (syncProduct.tags != directTags) {
-            val syncProductTagsText = syncProduct.tags.joinToString(", ", "\"", "\"")
-            val directTagsText = directTags.joinToString(", ", "\"", "\"")
-            items += ProductReconcileItem(syncProduct, product.title, "Tags von $syncProductTagsText zu $directTagsText geändert") {
+            val oldText = syncProduct.tags.toQuotedString()
+            val newText = directTags.toQuotedString()
+            items += ProductReconcileItem(syncProduct, product.title, "Tags von $oldText zu $newText geändert") {
                 tags.clear()
                 tags += directTags
             }

@@ -3,6 +3,7 @@ package de.hinundhergestellt.jhuh.usecases.shopify
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.backend.barcodes.BarcodeGenerator
 import de.hinundhergestellt.jhuh.backend.mapping.MappingService
+import de.hinundhergestellt.jhuh.backend.mapping.toQuotedString
 import de.hinundhergestellt.jhuh.backend.shoptexter.ShopTexterService
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategoryRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
@@ -16,9 +17,11 @@ import de.hinundhergestellt.jhuh.usecases.shopify.VariantBulkOperation.Delete
 import de.hinundhergestellt.jhuh.usecases.shopify.VariantBulkOperation.Update
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafield
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVariant
+import de.hinundhergestellt.jhuh.vendors.shopify.client.findById
 import de.hinundhergestellt.jhuh.vendors.shopify.client.isDryRun
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -26,9 +29,21 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionOperations
+import kotlin.reflect.KMutableProperty0
 import kotlin.reflect.KProperty1
 
 private val logger = KotlinLogging.logger {}
+
+private val PROPERTY_TO_FIELD = mapOf(
+    "title" to Pair("Titel", true),
+    "vendor" to Pair("Hersteller", true),
+    "productType" to Pair("Produktart", true),
+    "descriptionHtml" to Pair("Beschreibung", false),
+    "tags" to Pair("Tags", true),
+    "vendor_email" to Pair("Hersteller-Email", true),
+    "vendor_address" to Pair("Herstelleradresse", false),
+    "product_specs" to Pair("Produktspezifikationen", false)
+)
 
 @Service
 @VaadinSessionScope
@@ -47,7 +62,7 @@ class ShopifySynchronizationService(
     private val mappingService: MappingService,
     private val transactionOperations: TransactionOperations,
 ) {
-    val items = mutableListOf<ProductItem>()
+    val items = mutableListOf<Item>()
 
     suspend fun refresh(report: suspend (String) -> Unit) {
         report("Aktualisiere Shopify- und ready2order-Produktkataloge...")
@@ -66,14 +81,22 @@ class ShopifySynchronizationService(
 
     suspend fun apply(items: Set<Item>, report: suspend (String) -> Unit) {
         report("Übernehme markierte Änderungen nach Shopify...")
-        items.forEach { it.action() }
+
+        val changedProducts = linkedSetOf<ShopifyProduct>()
+        items.forEach { item ->
+            when (item) {
+                is ImmediateItem -> item.block()
+                is DeferredProductItem -> changedProducts.add(item.apply { block() }.product)
+            }
+        }
+        changedProducts.forEach { shopifyDataStore.update(it) }
     }
 
     private suspend fun synchronize(syncProduct: SyncProduct) {
         val artooProduct = syncProduct.artooId?.let { artooDataStore.findProductById(it) }
         val shopifyProduct = syncProduct.shopifyId?.let { shopifyDataStore.findProductById(it) }
 
-        logger.info { "Sync ${syncProduct.id} ${artooProduct?.name} ${shopifyProduct?.title}"}
+        logger.info { "Sync ${syncProduct.id} ${artooProduct?.name} ${shopifyProduct?.title}" }
 
         if (artooProduct != null && mappingService.checkForProblems(artooProduct, syncProduct).isNotEmpty()) {
             logger.warn { "Product ${artooProduct.name} has problems, skip synchronization" }
@@ -82,40 +105,39 @@ class ShopifySynchronizationService(
 
         if (artooProduct == null) {
             require(shopifyProduct != null) { "SyncProduct vanished from both ready2order and Shopify" }
-            items += ProductItem(shopifyProduct.title, "Produkt wird in Shopify gelöscht") {
-                shopifyDataStore.delete(shopifyProduct)
-                shopTexterService.removeProduct(syncProduct.id)
-                transactionOperations.execute { syncProductRepository.delete(syncProduct) }
-            }
+            prepareDeleteProduct(syncProduct, shopifyProduct)
             return
         }
 
         if (shopifyProduct == null) {
-            val unsavedShopifyProduct = shopifyProductMapper.mapToProduct(syncProduct, artooProduct)
-            val unsavedVariants = syncProduct.variants
-                .mapNotNull { variant -> variant.artooId?.let { artooProduct.findVariationById(it) }?.let { variant to it } }
-                .map { (sync, artoo) -> sync to shopifyVariantMapper.mapToVariant(artooProduct, sync,artoo) }
-            val unsavedVariantsText = if (!artooProduct.hasOnlyDefaultVariant) "mit ${unsavedVariants.size} Varianten " else ""
-
-            items += ProductItem(unsavedShopifyProduct.title, "Produkt wird ${unsavedVariantsText}in Shopify neu erstellt") {
-                val savedShopifyProduct = shopifyDataStore.create(unsavedShopifyProduct)
-                if (!savedShopifyProduct.isDryRun) syncProduct.shopifyId = savedShopifyProduct.id
-                shopifyDataStore.create(savedShopifyProduct, unsavedVariants.map { it.second })
-                if (!savedShopifyProduct.isDryRun)
-                    unsavedVariants.forEachIndexed { index, (sync, _) -> sync.shopifyId = savedShopifyProduct.variants[index].id }
-                shopTexterService.updateProduct(syncProduct.id, savedShopifyProduct)
-                transactionOperations.execute { syncProductRepository.save(syncProduct) }
-            }
+            prepareCreateProduct(syncProduct, artooProduct)
             return
         }
 
+        if (shopifyProduct.options.any { it.linkedMetafield != null }) {
+            logger.warn { "Product ${shopifyProduct.title} has options with linked metafield, skip synchronization" }
+            return
+        }
 
+        require(shopifyProduct.hasOnlyDefaultVariant == artooProduct.hasOnlyDefaultVariant) { "Switching variants and standalone not supported yet" }
 
-        else if (shopifyProductMapper.updateProduct(syncProduct, artooProduct, shopifyProduct)) {
-            logger.info { "Product ${artooProduct.name} has changed, update in Shopify" }
+        prepareUpdateProductProperty(shopifyProduct, shopifyProduct::title, artooProduct.description)
+        prepareUpdateProductProperty(shopifyProduct, shopifyProduct::vendor, syncProduct.vendor!!.name)
+        prepareUpdateProductProperty(shopifyProduct, shopifyProduct::productType, syncProduct.type!!)
+        prepareUpdateProductProperty(shopifyProduct, shopifyProduct::descriptionHtml, syncProduct.descriptionHtml ?: "")
+        prepareUpdateProductProperty(shopifyProduct, shopifyProduct::tags, mappingService.allTags(syncProduct, artooProduct))
+
+        mappingService.customMetafields(syncProduct).forEach { prepareUpdateProductMetafield(shopifyProduct, it) }
+
+//
+//        if (shopifyProductMapper.updateProduct(syncProduct, artooProduct, shopifyProduct)) {
+//            logger.info { "Product ${artooProduct.name} has changed, update in Shopify" }
+//            shopifyProduct.dirtyTracker.fields.forEach {
+//                items += ProductItem(shopifyProduct.title, "Property $it wurde geändert") {}
+//            }
 //            runBlocking { shopifyDataStore.update(shopifyProduct) }
 //            shopTexterService.updateProduct(syncProduct.id, shopifyProduct)
-        }
+//        }
 //
 //        val bulkOperations = syncProduct.variants
 //            .toList() // create copy to prevent concurrent modification when deleting variants
@@ -163,18 +185,86 @@ class ShopifySynchronizationService(
         return null
     }
 
-    sealed interface Item {
-        val title: String
-        val message: String
-        val action: suspend () -> Unit
+    private fun prepareDeleteProduct(syncProduct: SyncProduct, shopifyProduct: ShopifyProduct) {
+        items += ImmediateItem(Type.PRODUCT, shopifyProduct.title, "Produkt wird in Shopify gelöscht") {
+            shopifyDataStore.delete(shopifyProduct)
+            shopTexterService.removeProduct(syncProduct.id)
+            transactionOperations.execute { syncProductRepository.delete(syncProduct) }
+        }
     }
 
-    inner class ProductItem(
+    private fun prepareCreateProduct(syncProduct: SyncProduct, artooProduct: ArtooMappedProduct) {
+        val unsavedShopifyProduct = shopifyProductMapper.mapToProduct(syncProduct, artooProduct)
+        val unsavedVariants = syncProduct.variants
+            .mapNotNull { variant -> variant.artooId?.let { artooProduct.findVariationById(it) }?.let { variant to it } }
+            .map { (sync, artoo) -> sync to shopifyVariantMapper.mapToVariant(artooProduct, sync, artoo) }
+        val variantsText = if (!artooProduct.hasOnlyDefaultVariant) " mit ${unsavedVariants.size} Varianten" else ""
+
+        items += ImmediateItem(Type.PRODUCT, unsavedShopifyProduct.title, "Produkt wird${variantsText} in Shopify neu erstellt") {
+            val savedShopifyProduct = shopifyDataStore.create(unsavedShopifyProduct)
+            if (!savedShopifyProduct.isDryRun) syncProduct.shopifyId = savedShopifyProduct.id
+            shopifyDataStore.create(savedShopifyProduct, unsavedVariants.map { it.second })
+            if (!savedShopifyProduct.isDryRun)
+                unsavedVariants.forEachIndexed { index, (sync, _) -> sync.shopifyId = savedShopifyProduct.variants[index].id }
+            shopTexterService.updateProduct(syncProduct.id, savedShopifyProduct)
+            transactionOperations.execute { syncProductRepository.save(syncProduct) }
+        }
+    }
+
+    private fun <T> prepareUpdateProductProperty(
+        shopifyProduct: ShopifyProduct,
+        property: KMutableProperty0<T>,
+        newValue: T
+    ) {
+        if (property.get() == newValue) return
+
+        val field = PROPERTY_TO_FIELD[property.name] ?: Pair("Property ${property.name}", false)
+        val change = if (field.second) " von ${property.get().toQuotedString()} auf ${newValue.toQuotedString()}" else ""
+        val message = "${field.first}$change geändert"
+        items += DeferredProductItem(shopifyProduct, message) { property.set(newValue) }
+    }
+
+    private fun prepareUpdateProductMetafield(
+        shopifyProduct: ShopifyProduct,
+        newMetafield: ShopifyMetafield
+    ) {
+        val oldMetafield = shopifyProduct.metafields.findById(newMetafield)
+        val field = PROPERTY_TO_FIELD[newMetafield.key] ?: Pair(newMetafield.key, false)
+        if (oldMetafield == null) {
+            val change = if (field.second) " ${newMetafield.value.toQuotedString()}" else ""
+            val message = "${field.first}$change hinzugefügt"
+            items += DeferredProductItem(shopifyProduct, message) { shopifyProduct.metafields.add(newMetafield) }
+        } else if (oldMetafield.value != newMetafield.value) {
+            val change = if (field.second) " von ${oldMetafield.value.toQuotedString()} auf ${newMetafield.value.toQuotedString()}" else ""
+            val message = "${field.first}$change geändert"
+            items += DeferredProductItem(shopifyProduct, message) { oldMetafield.value = newMetafield.value }
+        }
+    }
+
+    enum class Type {
+        PRODUCT, VARIANT
+    }
+
+    sealed interface Item {
+        val type: Type
+        val title: String
+        val message: String
+    }
+
+    private inner class ImmediateItem(
+        override val type: Type,
         override val title: String,
         override val message: String,
-        override val action: suspend () -> Unit
-    ) : Item {
+        val block: suspend () -> Unit
+    ) : Item
 
+    private inner class DeferredProductItem(
+        val product: ShopifyProduct,
+        override val message: String,
+        val block: () -> Unit,
+    ) : Item {
+        override val type = Type.PRODUCT
+        override val title by product::title
     }
 }
 

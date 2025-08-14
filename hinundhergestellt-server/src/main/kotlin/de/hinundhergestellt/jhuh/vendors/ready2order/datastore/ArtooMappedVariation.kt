@@ -7,11 +7,19 @@ class ArtooMappedVariation internal constructor(
     val isDefaultVariant: Boolean
 ) {
     val id by product::id
-    var name by product::alternativeNameInPos
+    var name
+        get() = product.alternativeNameInPos
+        set(value) {
+            product.alternativeNameInPos = value
+            if (!isDefaultVariant) product.name = "${parent.name} ($value)"
+        }
     val itemNumber by product::itemNumber
     val barcode by product::barcode
     val price by product::price
     val stockValue by product::stockValue
+
+    lateinit var parent: ArtooMappedProduct
+        internal set
 
     override fun toString() =
         "ArtooMappedVariation(id=$id, name='$name', itemNumber='$itemNumber', barcode='$barcode')"

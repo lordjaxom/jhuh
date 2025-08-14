@@ -76,7 +76,7 @@ class ProductManagerService(
 
     suspend fun update(artooVariation: ArtooMappedVariation?, syncVariant: SyncVariant?) {
         if (artooVariation != null) artooDataStore.update(artooVariation)
-        if (syncVariant != null) transactionOperations.execute { syncVariantRepository.save(syncVariant) }
+        if (syncVariant != null) transactionOperations.execute { syncProductRepository.save(syncVariant.product) }
     }
 
     suspend fun generateNewBarcodes(product: ProductItem, report: suspend (String) -> Unit) {

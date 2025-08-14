@@ -60,7 +60,7 @@ class ArtooDataStore(
     }
 
     // @Scheduled(initialDelay = 15, fixedDelay = 15, timeUnit = TimeUnit.MINUTES)
-    fun refresh() {
+    fun refresh() { // TODO
         applicationCoroutineScope.async {
             rootCategoriesDeferred.refreshAndAwait()
             refreshListeners.forEach { it() }
