@@ -31,20 +31,6 @@ import kotlin.reflect.KMutableProperty0
 
 private val logger = KotlinLogging.logger {}
 
-private val PROPERTY_TO_FIELD = mapOf(
-    "title" to Pair("Titel", true),
-    "vendor" to Pair("Hersteller", true),
-    "productType" to Pair("Produktart", true),
-    "descriptionHtml" to Pair("Beschreibung", false),
-    "tags" to Pair("Tags", true),
-    "vendor_email" to Pair("Hersteller-Email", true),
-    "vendor_address" to Pair("Herstelleradresse", false),
-    "product_specs" to Pair("Produktspezifikationen", false),
-    "barcode" to Pair("Barcode", true),
-    "sku" to Pair("Artikelnummer", true),
-    "price" to Pair("Preis", true)
-)
-
 @Service
 @VaadinSessionScope
 class ShopifySynchronizationService(
@@ -91,7 +77,7 @@ class ShopifySynchronizationService(
                 is DeleteVariantItem -> variantsToDelete.getOrPut(item.product) { mutableMapOf() }.put(item.id, item.variant)
                 is CreateVariantItem -> variantsToCreate.getOrPut(item.product) { mutableMapOf() }.put(item.id, item.variant)
                 is UpdateVariantItem -> variantsToUpdate.getOrPut(item.product) { mutableSetOf() }.add(item.apply { block() }.variant)
-                is VariantProductItem -> {}
+                is VariantProductItem -> { /* nothing */ }
             }
         }
 
