@@ -20,9 +20,15 @@ import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.StagedUploadInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.StagedUploadTargetGenerateUploadResource
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.StagedUploadsCreatePayload
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.core.io.FileSystemResource
 import org.springframework.http.HttpStatus
@@ -46,16 +52,19 @@ class ShopifyMediaClient(
 
     fun fetchAll(query: String? = null) = pageAll { fetchNextPage(it, query) }.map { it.toShopifyMedia() }
 
-    suspend fun upload(files: List<Path>): List<ShopifyMedia> {
+    suspend fun upload(files: List<Path>, parallelism: Int = 4) = coroutineScope {
         val stagedTargets = createStagedUploads(files)
 
+        val semaphore = Semaphore(parallelism)
         files.asSequence()
             .zip(stagedTargets.asSequence())
-            .forEach { (file, stagedTarget) -> uploadToStaging(file, stagedTarget) }
+            .map { (file, staged) -> async(Dispatchers.IO) { semaphore.withPermit { uploadToStaging(file, staged) } } }
+            .toList()
+            .awaitAll()
 
         val createdFiles = createFiles(stagedTargets)
         val processedFiles = waitForFiles(createdFiles)
-        return processedFiles.map { ShopifyMedia(it) }
+        processedFiles.map { ShopifyMedia(it) }
     }
 
     suspend fun update(medias: List<ShopifyMedia>, referencesToAdd: List<String>? = null, referencesToRemove: List<String>? = null) {

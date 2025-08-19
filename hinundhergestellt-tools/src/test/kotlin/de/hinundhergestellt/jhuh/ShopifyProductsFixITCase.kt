@@ -3,12 +3,14 @@ package de.hinundhergestellt.jhuh
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import de.hinundhergestellt.jhuh.tools.MediaDownloadWebClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.LinkedMetafield
 import de.hinundhergestellt.jhuh.vendors.shopify.client.MetaobjectField
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMedia
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMediaClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafieldClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetaobjectClient
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOptionClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
@@ -24,8 +26,12 @@ import org.junit.jupiter.api.Disabled
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import java.math.BigDecimal
+import java.net.URI
 import java.nio.charset.StandardCharsets
+import java.nio.file.Path
 import kotlin.io.path.Path
+import kotlin.io.path.createDirectories
+import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.moveTo
 import kotlin.io.path.readText
@@ -54,6 +60,9 @@ class ShopifyProductsFixITCase {
 
     @Autowired
     private lateinit var metaobjectClient: ShopifyMetaobjectClient
+
+    @Autowired
+    private lateinit var mediaDownloadWebClient: MediaDownloadWebClient
 
     @Test
     fun findAllProducts(): Unit = runBlocking {
@@ -99,16 +108,6 @@ class ShopifyProductsFixITCase {
 
         variantClient.update(product, variants)
         mediaClient.update(media)
-    }
-
-    @Test
-    fun deleteUnusedFiles() = runBlocking {
-        val excludePrefixes = listOf("startseite-")
-        val unusedFiles = mediaClient.fetchAll("used_in:none")
-            .filter { media -> excludePrefixes.none { media.fileName.startsWith(it) } }
-            .toList()
-        println("Deleting ${unusedFiles.size} unused files")
-        //mediaClient.delete(unusedFiles)
     }
 
     @Test

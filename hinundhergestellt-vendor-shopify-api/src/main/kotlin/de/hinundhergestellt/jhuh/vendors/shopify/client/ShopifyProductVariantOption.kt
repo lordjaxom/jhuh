@@ -26,9 +26,6 @@ class ShopifyProductVariantOption(
         "ShopifyProductVariantOption(name='$name', value='$value')"
 
     internal fun toVariantOptionValueInput() =
-        VariantOptionValueInput(
-            optionName = name,
-            name = value,
-            linkedMetafieldValue = linkedMetafieldValue
-        )
+        if (linkedMetafieldValue != null) VariantOptionValueInput(optionName = name, linkedMetafieldValue = linkedMetafieldValue)
+        else VariantOptionValueInput(optionName = name, name = value)
 }

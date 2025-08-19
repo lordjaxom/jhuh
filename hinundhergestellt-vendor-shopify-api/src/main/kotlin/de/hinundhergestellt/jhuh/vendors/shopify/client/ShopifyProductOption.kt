@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalContracts::class)
+
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
 import de.hinundhergestellt.jhuh.core.DirtyTracker
@@ -11,6 +13,9 @@ import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.OptionValueCreate
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.OptionValueUpdateInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductOption
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductOptionValue
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 interface ShopifyProductOptionCommonFields {
 
@@ -23,7 +28,7 @@ interface ShopifyProductOptionCommonFields {
 class UnsavedShopifyProductOption(
     override var name: String,
     override var linkedMetafield: LinkedMetafield?,
-    override val optionValues: List<ProductOptionValue>,
+    override val optionValues: MutableList<ProductOptionValue>,
 ) : ShopifyProductOptionCommonFields {
 
     override val values get() = optionValues.map { it.name }
@@ -34,7 +39,7 @@ class UnsavedShopifyProductOption(
     internal constructor(option: ProductOption) : this(
         option.name,
         option.linkedMetafield,
-        option.optionValues
+        option.optionValues.toMutableList()
     )
 
     /**
@@ -43,7 +48,7 @@ class UnsavedShopifyProductOption(
     constructor(name: String, values: List<String>) : this(
         name,
         null,
-        values.map { ProductOptionValue(it) }
+        values.asSequence().map { ProductOptionValue(it) }.toMutableList()
     )
 
     override fun toString() =
@@ -66,7 +71,7 @@ class ShopifyProductOption internal constructor(
 
     override var name by dirtyTracker.track(unsaved::name)
     override var linkedMetafield by dirtyTracker.track(unsaved::linkedMetafield)
-    override val optionValues by unsaved::optionValues
+    override val optionValues by dirtyTracker.track(unsaved.optionValues)
     override val values by unsaved::values
 
     /**
@@ -84,7 +89,7 @@ class ShopifyProductOption internal constructor(
         UnsavedShopifyProductOption(
             name,
             linkedMetafield,
-            values.map { ProductOptionValue(it) }
+            values.asSequence().map { ProductOptionValue(it) }.toMutableList()
         ),
         id
     )
@@ -106,11 +111,23 @@ fun ProductOptionValue(name: String, linkedMetafieldValue: String? = null) =
         .withLinkedMetafieldValue(linkedMetafieldValue)
         .build()
 
+fun ProductOptionValue.update(block: ProductOptionValue.Builder.() -> Unit): ProductOptionValue {
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    return ProductOptionValue.Builder()
+        .withId(id)
+        .withName(name)
+        .withLinkedMetafieldValue(linkedMetafieldValue)
+        .apply(block)
+        .build()
+}
+
 internal fun ProductOptionValue.toOptionValueCreateInput() =
-    OptionValueCreateInput(name, linkedMetafieldValue)
+    if (linkedMetafieldValue != null) OptionValueCreateInput(linkedMetafieldValue = linkedMetafieldValue)
+    else OptionValueCreateInput(name = name)
 
 internal fun ProductOptionValue.toOptionValueUpdateInput() =
-    OptionValueUpdateInput(id, name, linkedMetafieldValue)
+    if (linkedMetafieldValue != null) OptionValueUpdateInput(id = id, linkedMetafieldValue = linkedMetafieldValue)
+    else OptionValueUpdateInput(id = id, name = name)
 
 fun LinkedMetafield(namespace: String, key: String) =
     LinkedMetafield.Builder()

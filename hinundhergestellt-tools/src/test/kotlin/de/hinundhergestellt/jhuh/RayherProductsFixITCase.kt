@@ -1,6 +1,7 @@
 package de.hinundhergestellt.jhuh
 
 import de.hinundhergestellt.jhuh.core.ifDirty
+import de.hinundhergestellt.jhuh.tools.MediaDownloadWebClient
 import de.hinundhergestellt.jhuh.vendors.rayher.csv.RayherProduct
 import de.hinundhergestellt.jhuh.vendors.rayher.csv.readRayherProducts
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductClient
@@ -32,7 +33,7 @@ private val logger = KotlinLogging.logger {}
 
 private val downloadsDirectory = Path(System.getProperty("user.home")).resolve("Downloads")
 
-private val IMAGE_FILE_NAME_REPLACEMENTS = listOf(
+val IMAGE_FILE_NAME_REPLACEMENTS = listOf(
     """[Ää]+""".toRegex() to "ae",
     """[Öö]+""".toRegex() to "oe",
     """[Üü]+""".toRegex() to "ue",
@@ -53,9 +54,8 @@ class RayherProductsFixITCase {
     @Autowired
     private lateinit var artooProductGroupClient: ArtooProductGroupClient
 
-    private val imageWebClient = WebClient.builder()
-        .codecs { it.defaultCodecs().maxInMemorySize(5 * 1024 * 1024) }
-        .build()
+    @Autowired
+    private lateinit var mediaDownloadWebClient: MediaDownloadWebClient
 
     @Test
     fun fixRayherSilikonformen() = runBlocking {
@@ -94,34 +94,12 @@ class RayherProductsFixITCase {
                     val imagePath = imageDirectory.resolve(generateImageFileName(rayherProduct, imageUrl))
                     try {
                         logger.info { "Downloading ${imagePath.fileName}" }
-                        downloadFileTo(imageUrl, imagePath)
+                        mediaDownloadWebClient.downloadFileTo(imageUrl, imagePath)
                     } catch (e: WebClientResponseException) {
                         logger.error { "Error downloading $imageUrl: ${e.message}" }
                     }
                 }
             }
-    }
-
-    private suspend fun downloadFileTo(url: String, target: Path) {
-        var success = false
-        try {
-            target.outputStream().use { output ->
-                val body = imageWebClient.get()
-                    .uri(url)
-                    .retrieve()
-                    .bodyToFlux<DataBuffer>()
-                    .publishOn(Schedulers.boundedElastic())
-                DataBufferUtils.write(body, output)
-                    .doOnNext { DataBufferUtils.release(it) }
-                    .then()
-                    .awaitSingleOrNull()
-            }
-            success = true
-        } finally {
-            if (!success) {
-                target.deleteIfExists()
-            }
-        }
     }
 
     private fun fixItemNumber(itemNumber: String) = itemNumber.replace("-", "")
