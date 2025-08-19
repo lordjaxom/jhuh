@@ -3,14 +3,13 @@ package de.hinundhergestellt.jhuh
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import de.hinundhergestellt.jhuh.tools.MediaDownloadWebClient
+import de.hinundhergestellt.jhuh.tools.ShopifyTools
 import de.hinundhergestellt.jhuh.vendors.shopify.client.LinkedMetafield
 import de.hinundhergestellt.jhuh.vendors.shopify.client.MetaobjectField
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMedia
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMediaClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafieldClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetaobjectClient
-import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOptionClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
@@ -26,12 +25,8 @@ import org.junit.jupiter.api.Disabled
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import java.math.BigDecimal
-import java.net.URI
 import java.nio.charset.StandardCharsets
-import java.nio.file.Path
 import kotlin.io.path.Path
-import kotlin.io.path.createDirectories
-import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.moveTo
 import kotlin.io.path.readText
@@ -39,7 +34,12 @@ import kotlin.io.path.writeText
 import kotlin.math.sqrt
 import kotlin.test.Test
 
-@SpringBootTest
+@SpringBootTest(
+    properties = [
+        "hinundhergestellt.image-directory=/media/lordjaxom/akv-soft.de/sascha/Hin- und Hergestellt/Shopify",
+        "hinundhergestellt.download-threads=4"
+    ]
+)
 @Disabled("Only run manually")
 class ShopifyProductsFixITCase {
 
@@ -62,7 +62,7 @@ class ShopifyProductsFixITCase {
     private lateinit var metaobjectClient: ShopifyMetaobjectClient
 
     @Autowired
-    private lateinit var mediaDownloadWebClient: MediaDownloadWebClient
+    private lateinit var shopifyTools: ShopifyTools
 
     @Test
     fun findAllProducts(): Unit = runBlocking {
@@ -73,6 +73,16 @@ class ShopifyProductsFixITCase {
     fun findSingleProduct() = runBlocking {
         val product = productClient.fetchAll("'POLI-FLEX® PEARL GLITTER*'").toList()
         println(product)
+    }
+
+    @Test
+    fun reorganizeProductImages() = runBlocking {
+        shopifyTools.reorganizeProductImages("SUPERIOR® 9200 Matt Chrome")
+    }
+
+    @Test
+    fun generateVariantColorSwatches() = runBlocking {
+        shopifyTools.generateVariantColorSwatches("Ricorumi Nilli Nilli", "rico-nilli")
     }
 
     @Test
@@ -111,122 +121,6 @@ class ShopifyProductsFixITCase {
     }
 
     @Test
-    fun replaceImagesAndAssociate() = runBlocking {
-        val imagePath = Path("/home/lordjaxom/Dokumente/Hin-undHergestellt/Shopify TEMP/POLI-TAPE TUBITHERM")
-        val product = productClient.fetchAll("'POLI-TAPE® TUBITHERM®*'").first()
-
-        // save variants' media before attaching the new ones
-        val mediaToDetach = product.media.filter { media -> product.variants.any { it.mediaId == media.id } }
-
-        val imagesWithVariant = imagePath
-            .listDirectoryEntries("poli-tape-tubitherm-*.png")
-            .asSequence()
-            .map { image -> image to product.variants.first { image.fileName.toString().contains("-${it.sku.substring(4, 7)}-") } }
-            .toList()
-
-        val mediasWithVariant = mediaClient
-            .upload(imagesWithVariant.map { it.first })
-            .asSequence()
-            .zip(imagesWithVariant.asSequence().map { it.second })
-            .onEach { (media, variant) ->
-                media.altText = "${product.title} in Farbe ${variant.options[0].value}"
-                variant.mediaId = media.id
-            }
-            .toList()
-
-        mediaClient.update(mediasWithVariant.map { it.first }, referencesToAdd = listOf(product.id))
-        variantClient.update(product, mediasWithVariant.map { it.second })
-        mediaClient.update(mediaToDetach, referencesToRemove = listOf(product.id))
-    }
-
-    @Test
-    fun createColorSwatchesAndAssociate() = runBlocking {
-        val definition = metaobjectClient.fetchDefinitionByType("shopify--color-pattern")!!
-        val taxonomyReferences = definition.metaobjects.asSequence()
-            .map { metaobject -> metaobject.fields.find { it.key == "color" }!!.value!! to metaobject.fields.find { it.key == "color_taxonomy_reference" }!!.value!! }
-            .toList()
-
-        fun hexToRgb(hex: String): Triple<Int, Int, Int> {
-            val cleanHex = hex.removePrefix("#")
-            val r = cleanHex.substring(0, 2).toInt(16)
-            val g = cleanHex.substring(2, 4).toInt(16)
-            val b = cleanHex.substring(4, 6).toInt(16)
-            return Triple(r, g, b)
-        }
-
-        fun colorDistance(a: Triple<Int, Int, Int>, b: Triple<Int, Int, Int>): Double {
-            val dr = a.first - b.first
-            val dg = a.second - b.second
-            val db = a.third - b.third
-            return sqrt((dr * dr + dg * dg + db * db).toDouble())
-        }
-
-        fun findClosestTaxonomy(inputHex: String): String {
-            val targetRgb = hexToRgb(inputHex)
-            return taxonomyReferences.minByOrNull { colorDistance(hexToRgb(it.first), targetRgb) }!!.second
-        }
-
-        val imagePath = Path("/home/lordjaxom/Dokumente/Hin-undHergestellt/Shopify TEMP/POLI-TAPE TUBITHERM")
-        val product = productClient.fetchAll("'POLI-TAPE® TUBITHERM®*'").first()
-
-//        val optionValuesToUpdate = mutableListOf<ProductOptionValue>()
-        imagePath
-            .listDirectoryEntries("poli-tape-tubitherm-*.png")
-            .map { image -> image to product.variants.first { image.fileName.toString().contains("-${it.sku.substring(4, 7)}-") } }
-            .map { (image, variant) ->
-                Triple(
-                    image,
-                    variant,
-                    product.options[0].optionValues.first { it.name == variant.options[0].value })
-            }
-            .forEach { (image, variant, optionValue) ->
-                val process = Runtime.getRuntime().exec(
-                    arrayOf(
-                        "python",
-                        "/home/lordjaxom/Projects/Java/jhuh/hinundhergestellt-tools/src/test/python/dominant_color.py",
-                        image.toString(),
-                        "100"
-                    )
-                )
-                val color = process.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText().trim() }
-
-                val handle = "poli-tubitherm-${variant.options[0].value.lowercase().replace(" ", "-")}"
-                val taxonomyReference = findClosestTaxonomy(color)
-                val unsaved = UnsavedShopifyMetaobject(
-                    "shopify--color-pattern",
-                    handle,
-                    listOf(
-                        MetaobjectField("label", variant.options[0].value),
-                        MetaobjectField("color", color),
-                        MetaobjectField("color_taxonomy_reference", taxonomyReference),
-                        MetaobjectField("pattern_taxonomy_reference", "gid://shopify/TaxonomyValue/2874")
-                    )
-                )
-                val metaobject = metaobjectClient.create(unsaved)
-
-//                optionValuesToUpdate.add(optionValue.update { withLinkedMetafieldValue(metaobject.id) })
-            }
-
-        // NOTIZEN warum das hier vmtl. funktioniert hat ohne optionValuesToUpdate jemals abzuschicken:
-        // Shopify erlaubt nicht, in einer ProductOption sowohl name als auch linkedMetafieldValue gesetzt zu haben
-        // Wenn aber in Option `linkedMetafield` gesetzt ist und in OptionValue `name` aber nicht `linkedMetafieldValue`, so scheint Shopify
-        // selbständig eine passende MetafieldValue zum Namen rauszusuchen.
-
-        product.options[0].linkedMetafield = LinkedMetafield("shopify", "color-pattern")
-        optionClient.update(product, product.options[0])
-    }
-
-    @Test
-    fun checkColorSwatches() = runBlocking {
-        val definition = metaobjectClient.fetchDefinitionByType("shopify--color-pattern")!!
-        val product = productClient.fetchAll("'craftcut® glänzend*'").first()
-        product.options[0].optionValues.forEach { optionValue ->
-            val metafield = definition.metaobjects.first { it.id == optionValue.linkedMetafieldValue }
-            println("${optionValue.name} -> ${metafield.handle}")
-        }
-    }
-
-    @Test
     fun findProductsWithoutWeight() = runBlocking {
         val products = productClient.fetchAll().toList()
         products.forEach { product ->
@@ -246,15 +140,6 @@ class ShopifyProductsFixITCase {
                 product.variants.forEach { it.weight = ShopifyWeight(WeightUnit.GRAMS, BigDecimal("25.0")) }
                 variantClient.update(product, product.variants)
             }
-    }
-
-    @Test
-    fun updateColorMetaobjects() = runBlocking {
-        val definition = metaobjectClient.fetchDefinitionByType("shopify--color-pattern")!!
-        definition.metaobjects
-            .filter { !it.handle.startsWith("pearl-glitter") }
-            .onEach { it.handle = "craftcut-glossy-${it.handle}" }
-            .forEach { metaobjectClient.update(it) }
     }
 
     @Test

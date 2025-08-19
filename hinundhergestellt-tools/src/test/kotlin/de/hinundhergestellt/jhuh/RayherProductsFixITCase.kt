@@ -1,7 +1,7 @@
 package de.hinundhergestellt.jhuh
 
 import de.hinundhergestellt.jhuh.core.ifDirty
-import de.hinundhergestellt.jhuh.tools.MediaDownloadWebClient
+import de.hinundhergestellt.jhuh.tools.downloadFileTo
 import de.hinundhergestellt.jhuh.vendors.rayher.csv.RayherProduct
 import de.hinundhergestellt.jhuh.vendors.rayher.csv.readRayherProducts
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.ArtooProductClient
@@ -10,23 +10,15 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Disabled
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.core.io.buffer.DataBuffer
-import org.springframework.core.io.buffer.DataBufferUtils
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
-import org.springframework.web.reactive.function.client.bodyToFlux
-import reactor.core.scheduler.Schedulers
 import java.net.URI
-import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
-import kotlin.io.path.deleteIfExists
-import kotlin.io.path.outputStream
 import kotlin.test.Test
 
 private val logger = KotlinLogging.logger {}
@@ -55,7 +47,7 @@ class RayherProductsFixITCase {
     private lateinit var artooProductGroupClient: ArtooProductGroupClient
 
     @Autowired
-    private lateinit var mediaDownloadWebClient: MediaDownloadWebClient
+    private lateinit var toolsWebClient: WebClient
 
     @Test
     fun fixRayherSilikonformen() = runBlocking {
@@ -94,7 +86,7 @@ class RayherProductsFixITCase {
                     val imagePath = imageDirectory.resolve(generateImageFileName(rayherProduct, imageUrl))
                     try {
                         logger.info { "Downloading ${imagePath.fileName}" }
-                        mediaDownloadWebClient.downloadFileTo(imageUrl, imagePath)
+                        toolsWebClient.downloadFileTo(imageUrl, imagePath)
                     } catch (e: WebClientResponseException) {
                         logger.error { "Error downloading $imageUrl: ${e.message}" }
                     }

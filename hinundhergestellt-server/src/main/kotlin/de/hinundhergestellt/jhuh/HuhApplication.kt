@@ -12,17 +12,6 @@ import org.springframework.scheduling.annotation.EnableScheduling
 @SpringBootApplication
 @EnableScheduling
 class HuhApplication {
-//
-//    @Bean
-//    fun googleSearchWebClient(
-//        @Value("\${google.apikey}") apikey: String,
-//        @Value("\${google.cx}") cx: String
-//    ): WebClient {
-//        return WebClient.builder()
-//            .baseUrl("https://www.googleapis.com/customsearch/v1")
-//            .defaultUriVariables(mapOf("key" to apikey, "cx" to cx))
-//            .build()
-//    }
 
     @Bean // TODO: Cancellation
     fun applicationScope() = CoroutineScope(SupervisorJob() + Dispatchers.IO)
