@@ -15,7 +15,7 @@ class ReadOnlyShopifyClients(
     @Bean
     fun shopifyMediaClient() =
         object : ShopifyMediaClient(shopifyGraphQLClient) {
-            override suspend fun upload(files: List<Path>) = files.map { it.toDryRunShopifyMedia() }
+            override suspend fun upload(files: List<Path>, parallelism: Int) = files.map { it.toDryRunShopifyMedia() }
             override suspend fun update(medias: List<ShopifyMedia>, referencesToAdd: List<String>?, referencesToRemove: List<String>?) {}
             override suspend fun delete(medias: List<ShopifyMedia>) {}
         }

@@ -107,11 +107,6 @@ class ShopifySynchronizationService(
             return
         }
 
-        if (shopifyProduct.options.any { it.linkedMetafield != null }) {
-            logger.warn { "Product ${shopifyProduct.title} has options with linked metafield, skip synchronization" }
-            return
-        }
-
         require(shopifyProduct.hasOnlyDefaultVariant == artooProduct.hasOnlyDefaultVariant) { "Switching variants and standalone not supported yet" }
 
         prepareUpdateProductProperty(shopifyProduct, shopifyProduct::title, artooProduct.description)

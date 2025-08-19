@@ -14,6 +14,7 @@ import com.vaadin.flow.data.provider.hierarchy.AbstractBackEndHierarchicalDataPr
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery
 import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
+import com.vaadin.flow.router.RouteAlias
 import de.hinundhergestellt.jhuh.backend.mapping.hasErrors
 import de.hinundhergestellt.jhuh.backend.mapping.toPresentationString
 import de.hinundhergestellt.jhuh.components.Article
@@ -41,6 +42,7 @@ import kotlin.streams.asSequence
 import kotlin.streams.asStream
 
 @Route
+@RouteAlias("")
 @PageTitle("Produktverwaltung")
 class ProductManagerView(
     private val service: ProductManagerService,
