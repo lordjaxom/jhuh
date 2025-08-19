@@ -3,9 +3,11 @@ package de.hinundhergestellt.jhuh.usecases.maintenance
 import com.vaadin.flow.component.Unit
 import com.vaadin.flow.component.accordion.AccordionPanel
 import com.vaadin.flow.component.button.Button
+import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.grid.GridVariant
 import com.vaadin.flow.component.orderedlayout.FlexComponent
+import com.vaadin.flow.dom.Style
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.components.ProgressOverlay
 import de.hinundhergestellt.jhuh.components.VaadinCoroutineScope
@@ -40,12 +42,21 @@ private class DeleteUnusedFilesPanel(
         addOpenedChangeListener { if (it.isOpened) refresh() }
 
         horizontalLayout {
-            justifyContentMode = FlexComponent.JustifyContentMode.END
             setWidthFull()
+            justifyContentMode = FlexComponent.JustifyContentMode.END
+            style.setFlexWrap(Style.FlexWrap.WRAP)
 
             deleteButton = button("Markierte löschen") {
                 isEnabled = false
+                addThemeVariants(ButtonVariant.LUMO_ERROR)
+                style.setMarginInlineEnd("auto")
                 addClickListener { deleteSelectedFiles() }
+            }
+            button("Markierte ignorieren") {
+                addClickListener { ignoreSelectedFiles() }
+            }
+            button("Aktualisieren") {
+                addClickListener { refresh() }
             }
         }
         filesGrid = grid<ShopifyMedia> {
@@ -69,6 +80,11 @@ private class DeleteUnusedFilesPanel(
             filesGrid.setItems(service.files)
             filesGrid.recalculateColumnWidths()
         }
+    }
+
+    private fun ignoreSelectedFiles() {
+        service.ignore(filesGrid.selectedItems)
+        filesGrid.setItems(service.files)
     }
 
     private fun deleteSelectedFiles() {
