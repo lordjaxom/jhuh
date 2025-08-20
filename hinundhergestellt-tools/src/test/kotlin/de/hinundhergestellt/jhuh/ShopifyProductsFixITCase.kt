@@ -78,14 +78,14 @@ class ShopifyProductsFixITCase {
 
     @Test
     fun reorganizeProductImages() = runBlocking {
-        val product = productClient.fetchAll("'myboshi Samt, 100g, 100% Polyester'").first()
+        val product = productClient.fetchAll("'myboshi Dream, 50g, 76% Baumwolle, 22% Baby-Alpaka, 2% Merino'").first()
         shopifyTools.reorganizeProductImages(product)
     }
 
     @Test
     fun generateVariantColorSwatches() = runBlocking {
-        val product = productClient.fetchAll("'myboshi Samt, 100g, 100% Polyester'").first()
-        shopifyTools.generateVariantColorSwatches(product, "myboshi-samt", Rect(40.0, 20.0, 60.0, 40.0))
+        val product = productClient.fetchAll("'myboshi Dream, 50g, 76% Baumwolle, 22% Baby-Alpaka, 2% Merino'").first()
+        shopifyTools.generateVariantColorSwatches(product, "myboshi-dream", Rect(40.0, 10.0, 60.0, 30.0))
     }
 
     @Test

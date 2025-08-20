@@ -40,15 +40,6 @@ class ShopifyMetafieldTest {
     }
 
     @Test
-    fun `test matchesId`() {
-        val m1 = ShopifyMetafield("ns", "key", "v1", ShopifyMetafieldType.SINGLE_LINE_TEXT_FIELD)
-        val m2 = ShopifyMetafield("ns", "key", "v2", ShopifyMetafieldType.MULTI_LINE_TEXT_FIELD)
-        val m3 = ShopifyMetafield("ns2", "key", "v1", ShopifyMetafieldType.SINGLE_LINE_TEXT_FIELD)
-        assertThat(m1.matchesId(m2)).isTrue()
-        assertThat(m1.matchesId(m3)).isFalse()
-    }
-
-    @Test
     fun `test dirty tracking`() {
         val metafield = ShopifyMetafield("ns", "key", "val", ShopifyMetafieldType.SINGLE_LINE_TEXT_FIELD)
         assertThat(metafield.dirtyTracker.getDirtyAndReset()).isFalse()

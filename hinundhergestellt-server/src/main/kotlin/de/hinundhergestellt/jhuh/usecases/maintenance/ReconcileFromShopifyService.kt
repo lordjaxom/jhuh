@@ -14,13 +14,11 @@ import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendor
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendorRepository
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedCategory
-import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafield
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightUnit
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.jsoup.Jsoup
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionOperations
@@ -99,7 +97,7 @@ class ReconcileFromShopifyService(
             }
         }
 
-        val loadedTechnicalDetails = extractTechnicalDetails(product)
+        val loadedTechnicalDetails = mappingService.extractTechnicalDetails(product)
         val knownTechnicalDetails = syncProduct.technicalDetails.map { it.name to it.value }
         if (loadedTechnicalDetails != knownTechnicalDetails) {
             items += ProductReconcileItem(syncProduct, product.title, "Technische Daten geändert") {
@@ -134,19 +132,6 @@ class ReconcileFromShopifyService(
                 { weight = loadedWeight }
             )
         }
-    }
-
-    private fun extractTechnicalDetails(product: ShopifyProduct): List<Pair<String, String>> {
-        return product.metafields
-            .find { it.namespace == "custom" && it.key == "product_specs" }
-            ?.let { extractTechnicalDetails(it) }
-            ?: listOf()
-    }
-
-    private fun extractTechnicalDetails(metafield: ShopifyMetafield): List<Pair<String, String>> {
-        return Jsoup.parse(metafield.value)
-            .select("table tr")
-            .map { it.select("th").text().trim() to it.select("td").text().trim() }
     }
 
     private fun reconcileCategories(artooCategory: ArtooMappedCategory) {

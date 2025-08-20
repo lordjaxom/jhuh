@@ -1,5 +1,7 @@
 package de.hinundhergestellt.jhuh.backend.mapping
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategoryRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariant
@@ -8,6 +10,8 @@ import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduc
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedVariation
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafield
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafieldType
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
+import de.hinundhergestellt.jhuh.vendors.shopify.client.findById
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
@@ -21,6 +25,8 @@ class MappingService(
     private val artooDataStore: ArtooDataStore,
     private val syncCategoryRepository: SyncCategoryRepository
 ) {
+    private val objectMapper = jacksonObjectMapper()
+
     @Transactional
     fun inheritedTags(sync: SyncProduct, artoo: ArtooMappedProduct? = null): Set<String> {
         val categoryTags = (artoo ?: sync.artooId?.let { artooDataStore.findProductById(it) })
@@ -44,8 +50,15 @@ class MappingService(
         mutableListOf(
             metafield("vendor_address", syncProduct.vendor!!.address!!, ShopifyMetafieldType.MULTI_LINE_TEXT_FIELD),
             metafield("vendor_email", syncProduct.vendor!!.email!!, ShopifyMetafieldType.SINGLE_LINE_TEXT_FIELD),
-            metafield("product_specs", technicalDetails(syncProduct), ShopifyMetafieldType.MULTI_LINE_TEXT_FIELD)
+            metafield("product_specs", technicalDetails(syncProduct), ShopifyMetafieldType.MULTI_LINE_TEXT_FIELD),
+            metafield("technical_details", technicalDetailsJson(syncProduct), ShopifyMetafieldType.JSON)
         )
+
+    fun extractTechnicalDetails(shopifyProduct: ShopifyProduct) =
+        shopifyProduct.metafields.findById(METAFIELD_NAMESPACE, "technical_details")
+            ?.let { objectMapper.readValue<Map<String, String>>(it.value) }
+            ?.map { it.key to it.value }
+            ?: listOf()
 
     fun checkForProblems(artoo: ArtooMappedProduct, sync: SyncProduct) = buildList {
         if (artoo.description.isEmpty()) add(MappingProblem("Produkt hat keine Beschreibung (Titel in Shopify)", true))
@@ -85,6 +98,9 @@ class MappingService(
             postfix = "</table>",
             transform = { "<tr><th>${it.name}</th><td>${it.value}</td></tr>" }
         )
+
+    private fun technicalDetailsJson(syncProduct: SyncProduct) =
+        objectMapper.writeValueAsString(syncProduct.technicalDetails.associate { it.name to it.value })
 }
 
 private fun metafield(key: String, value: String, type: ShopifyMetafieldType) = ShopifyMetafield(METAFIELD_NAMESPACE, key, value, type)
