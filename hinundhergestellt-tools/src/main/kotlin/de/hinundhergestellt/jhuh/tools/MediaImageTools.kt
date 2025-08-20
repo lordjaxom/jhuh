@@ -37,12 +37,10 @@ object MediaImageTools {
      */
     fun averageColorPercent(
         img: BufferedImage,
-        leftPct: Double = 0.0,
-        topPct: Double = 0.0,
-        rightPct: Double = 100.0,
-        bottomPct: Double = 100.0,
+        rect: Rect = Rect.EVERYTHING,
         ignoreFullyTransparent: Boolean = true
     ): Color {
+        val (leftPct, topPct, rightPct, bottomPct) = rect
         require(leftPct in 0.0..100.0 && topPct in 0.0..100.0 && rightPct in 0.0..100.0 && bottomPct in 0.0..100.0) {
             "Percents must be in 0..100"
         }
@@ -110,12 +108,9 @@ object MediaImageTools {
      */
     fun averageColorPercent(
         path: Path,
-        leftPct: Double = 0.0,
-        topPct: Double = 0.0,
-        rightPct: Double = 100.0,
-        bottomPct: Double = 100.0,
+        rect: Rect = Rect.EVERYTHING,
         ignoreFullyTransparent: Boolean = true
-    ): Color = averageColorPercent(load(path), leftPct, topPct, rightPct, bottomPct, ignoreFullyTransparent)
+    ): Color = averageColorPercent(load(path), rect, ignoreFullyTransparent)
 
     private fun clampInt(v: Int, minV: Int, maxV: Int): Int = max(minV, min(v, maxV))
 }
@@ -124,3 +119,20 @@ object MediaImageTools {
  * Hex-Helfer (#RRGGBB).
  */
 fun Color.toHex(): String = "#%02x%02x%02x".format(this.red, this.green, this.blue)
+
+class Rect(
+    val leftPct: Double,
+    val topPct: Double,
+    val rightPct: Double,
+    val bottomPct: Double
+) {
+    operator fun component1() = leftPct
+    operator fun component2() = topPct
+    operator fun component3() = rightPct
+    operator fun component4() = bottomPct
+
+    companion object {
+        val EVERYTHING = Rect(0.0, 0.0, 100.0, 100.0)
+        val CENTER_20 = Rect(40.0, 40.0, 60.0, 60.0)
+    }
+}

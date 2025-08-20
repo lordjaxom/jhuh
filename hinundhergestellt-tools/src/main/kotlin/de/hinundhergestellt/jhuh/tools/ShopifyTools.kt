@@ -45,15 +45,13 @@ class ShopifyTools(
     @Value("\${hinundhergestellt.image-directory}") private val imageDirectory: Path,
     @Value("\${hinundhergestellt.download-threads}") private val downloadThreads: Int
 ) {
-    suspend fun reorganizeProductImages(productName: String) {
-        val product = productClient.fetchAll("'$productName*'").first()
-
+    suspend fun reorganizeProductImages(product: ShopifyProduct) {
         require(product.variants.all { it.sku.isNotEmpty() }) { "All product variants must have SKU" }
 
         // save old media ids before attaching the new ones
         val mediaToDetach = product.media.toList()
 
-        val images = normalizeMediaImages(productName, product)
+        val images = normalizeMediaImages(product)
         val media = mediaClient.upload(images.map { it.imagePath })
             .asSequence()
             .zip(images.asSequence())
@@ -65,13 +63,12 @@ class ShopifyTools(
         mediaClient.update(mediaToDetach, referencesToRemove = listOf(product.id))
     }
 
-    suspend fun generateVariantColorSwatches(productName: String, swatchHandle: String) {
-        val product = productClient.fetchAll("'$productName*'").first()
+    suspend fun generateVariantColorSwatches(product: ShopifyProduct, swatchHandle: String, rect: Rect = Rect.EVERYTHING) {
         val productOption = product.options[0]
 
         require(product.variants.all { it.sku.isNotEmpty() }) { "All product variants must have SKU" }
 
-        val images = evaluateMediaImages(productName, product)
+        val images = evaluateMediaImages(product, rect)
         images.forEach { image ->
             val variantOption = image.variant.options[0]
             val metaobject = metaobjectClient.create(
@@ -95,7 +92,8 @@ class ShopifyTools(
         optionClient.update(product, productOption)
     }
 
-    private suspend fun normalizeMediaImages(productName: String, product: ShopifyProduct) = coroutineScope {
+    private suspend fun normalizeMediaImages(product: ShopifyProduct) = coroutineScope {
+        val productName = extractProductName(product)
         val indexOfNonVariantImage = AtomicInt(1)
         val semaphore = Semaphore(downloadThreads)
         product.media
@@ -141,7 +139,8 @@ class ShopifyTools(
         return NormalizedImage(finalImagePath, variant, altText)
     }
 
-    private suspend fun evaluateMediaImages(productName: String, product: ShopifyProduct) = coroutineScope {
+    private suspend fun evaluateMediaImages(product: ShopifyProduct, rect: Rect) = coroutineScope {
+        val productName = extractProductName(product)
         val imagePath = imageDirectory.resolve(productName)
         require(imagePath.isDirectory()) { "Image directory for $productName does not exist or is not a directory" }
         val semaphore = Semaphore(downloadThreads)
@@ -150,27 +149,25 @@ class ShopifyTools(
                 async(Dispatchers.IO) {
                     semaphore.withPermit {
                         logger.info { "Evaluating image ${index + 1} of ${product.variants.size}" }
-                        evaluateMediaImage(productName, variant, imagePath)
+                        evaluateMediaImage(productName, variant, imagePath, rect)
                     }
                 }
             }
             .awaitAll()
     }
 
-    private fun evaluateMediaImage(
-        productName: String,
-        variant: ShopifyProductVariant,
-        imagePath: Path
-    ): EvaluatedImage {
+    private fun evaluateMediaImage(productName: String, variant: ShopifyProductVariant, imagePath: Path, rect: Rect): EvaluatedImage {
         val imageFileSuffix = generateImageFileSuffix(variant.sku)
         val imageFilePattern = generateImageFileName(productName, imageFileSuffix, "*")
         val imageFilePath = imagePath.listDirectoryEntries(imageFilePattern).first()
 
-        val swatchColor = MediaImageTools.averageColorPercent(imageFilePath)
+        val swatchColor = MediaImageTools.averageColorPercent(imageFilePath, rect)
         val taxonomyReference = ShopifyColorTaxonomy.findByColor(swatchColor)
 
         return EvaluatedImage(variant, swatchColor, taxonomyReference)
     }
+
+    private fun extractProductName(product: ShopifyProduct) = product.title.substringBefore(",")
 
     private fun generateImageFileName(productName: String, suffix: String, extension: String): String {
         val productNamePart = IMAGE_FILE_NAME_REPLACEMENTS

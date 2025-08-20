@@ -3,6 +3,7 @@ package de.hinundhergestellt.jhuh
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import de.hinundhergestellt.jhuh.tools.Rect
 import de.hinundhergestellt.jhuh.tools.ShopifyTools
 import de.hinundhergestellt.jhuh.vendors.shopify.client.LinkedMetafield
 import de.hinundhergestellt.jhuh.vendors.shopify.client.MetaobjectField
@@ -77,12 +78,14 @@ class ShopifyProductsFixITCase {
 
     @Test
     fun reorganizeProductImages() = runBlocking {
-        shopifyTools.reorganizeProductImages("SUPERIOR® 9200 Matt Chrome")
+        val product = productClient.fetchAll("'myboshi Samt, 100g, 100% Polyester'").first()
+        shopifyTools.reorganizeProductImages(product)
     }
 
     @Test
     fun generateVariantColorSwatches() = runBlocking {
-        shopifyTools.generateVariantColorSwatches("Ricorumi Nilli Nilli", "rico-nilli")
+        val product = productClient.fetchAll("'myboshi Samt, 100g, 100% Polyester'").first()
+        shopifyTools.generateVariantColorSwatches(product, "myboshi-samt", Rect(40.0, 20.0, 60.0, 40.0))
     }
 
     @Test
