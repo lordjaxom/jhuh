@@ -43,6 +43,9 @@ class ArtooDataStore(
     fun findCategoriesByProduct(product: ArtooMappedProduct) =
         rootCategories.asSequence().flatMap { it.findCategoriesByProduct(product) }
 
+    fun findCategoriesByCategory(category: ArtooMappedCategory) =
+        rootCategories.asSequence().flatMap { it.findCategoriesByCategory(category) }
+
     suspend fun update(product: ArtooMappedProduct) {
         when (product) {
             is ArtooMappedProduct.Single ->

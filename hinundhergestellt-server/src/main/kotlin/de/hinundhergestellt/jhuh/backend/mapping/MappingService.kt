@@ -6,6 +6,7 @@ import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategoryRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariant
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
+import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedCategory
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedVariation
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafield
@@ -40,9 +41,14 @@ class MappingService(
     }
 
     @Transactional
-    fun allTags(syncProduct: SyncProduct, artoo: ArtooMappedProduct? = null): Set<String> {
-        return inheritedTags(syncProduct, artoo) + syncProduct.tags
-    }
+    fun allTags(syncProduct: SyncProduct, artoo: ArtooMappedProduct? = null) =
+        inheritedTags(syncProduct, artoo) + syncProduct.tags
+
+    @Transactional
+    fun inheritedTags(artoo: ArtooMappedCategory) =
+        artooDataStore.findCategoriesByCategory(artoo).map { it.id }.toList()
+            .let { syncCategoryRepository.findByArtooIdIn(it).asSequence().flatMap { category -> category.tags } }
+            .toSet()
 
     fun sanitizeTag(tag: String) = tag.replace(INVALID_TAG_CHARACTERS, "")
 

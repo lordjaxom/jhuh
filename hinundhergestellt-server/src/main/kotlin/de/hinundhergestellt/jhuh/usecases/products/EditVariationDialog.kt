@@ -24,7 +24,7 @@ import kotlin.coroutines.resume
 
 private class EditVariationDialog(
     private val artooVariation: ArtooMappedVariation,
-    private val syncVariant: SyncVariant?,
+    private val syncVariant: SyncVariant,
     private val callback: (EditVariationResult?) -> Unit
 ) : Dialog() {
 
@@ -109,5 +109,5 @@ suspend inline fun <T : Dialog, R> suspendableDialog(crossinline dialogProvider:
         dialog.open()
     }
 
-suspend fun editVariation(artooVariation: ArtooMappedVariation, syncVariant: SyncVariant?) =
+suspend fun editVariation(artooVariation: ArtooMappedVariation, syncVariant: SyncVariant) =
     suspendableDialog { EditVariationDialog(artooVariation, syncVariant, it) }

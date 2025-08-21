@@ -3,6 +3,7 @@ package de.hinundhergestellt.jhuh.usecases.products
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.backend.barcodes.BarcodeGenerator
 import de.hinundhergestellt.jhuh.backend.mapping.MappingService
+import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategory
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategoryRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProductRepository
@@ -23,6 +24,7 @@ import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.support.TransactionOperations
 import kotlin.coroutines.resume
 
@@ -68,6 +70,10 @@ class ProductManagerService(
             refreshListeners += ::handler
             artooDataStore.refresh()
         }
+
+    fun update(syncCategory: SyncCategory?) {
+        if (syncCategory != null) transactionOperations.execute { syncCategoryRepository.save(syncCategory) }
+    }
 
     suspend fun update(artooProduct: ArtooMappedProduct?, syncProduct: SyncProduct?) {
         if (artooProduct != null) artooDataStore.update(artooProduct)
@@ -144,7 +150,7 @@ class ProductManagerService(
 
     inner class CategoryItem(val value: ArtooMappedCategory) : Item {
 
-        internal var syncCategory = syncCategoryRepository.findByArtooId(value.id)
+        internal var syncCategory = syncCategoryRepository.findByArtooId(value.id) ?: value.toSyncCategory()
 
         val id by value::id
 
@@ -152,7 +158,7 @@ class ProductManagerService(
         override val name by value::name
         override val vendor = null
         override val type = null
-        override val tagsAsSet get() = syncCategory?.tags?.toSet() ?: setOf()
+        override val tagsAsSet get() = syncCategory.tags.toSet()
         override val variations = null
         override val hasChildren = true
         override val children = value.run { children.map { CategoryItem(it) } + products.map { ProductItem(it) } }
@@ -205,6 +211,9 @@ class ProductManagerService(
         override fun filterBy(markedForSync: Boolean?, hasProblems: Boolean?, text: String) = true
     }
 }
+
+private fun ArtooMappedCategory.toSyncCategory() =
+    SyncCategory(artooId = id)
 
 private fun ArtooMappedProduct.toSyncProduct() =
     SyncProduct(artooId = id).apply {

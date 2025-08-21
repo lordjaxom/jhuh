@@ -46,6 +46,7 @@ import kotlin.streams.asStream
 @PageTitle("Produktverwaltung")
 class ProductManagerView(
     private val service: ProductManagerService,
+    private val editCategoryDialogFactory: EditCategoryDialogFactory,
     private val editProductDialogFactory: EditProductDialogFactory,
     private val labelService: LabelGeneratorService,
     applicationScope: CoroutineScope
@@ -142,9 +143,19 @@ class ProductManagerView(
 
     private fun editItem(item: Item) {
         when (item) {
+            is CategoryItem -> editCategoryItem(item)
             is ProductItem -> editProductItem(item)
             is VariationItem -> editVariationItem(item)
-            else -> Unit
+        }
+    }
+
+    private fun editCategoryItem(category: CategoryItem) {
+        vaadinScope.launch {
+            val result = editCategoryDialogFactory(category.value, category.syncCategory)
+            if (result != null) {
+                application { service.update(result.sync) }
+                treeDataProvider.refreshItem(category)
+            }
         }
     }
 

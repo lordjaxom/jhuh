@@ -40,6 +40,17 @@ class ArtooMappedCategory internal constructor(
         }
     }
 
+    fun findCategoriesByCategory(category: ArtooMappedCategory): Sequence<ArtooMappedCategory> = sequence {
+        var found = false
+        children.asSequence()
+            .flatMap { it.findCategoriesByCategory(category) }
+            .onEach { found = true }
+            .also { yieldAll(it) }
+        if (found || children.contains(category)) {
+            yield(this@ArtooMappedCategory)
+        }
+    }
+
     override fun toString() =
         "ArtooMappedCategory(id=$id, name='$name')"
 }
