@@ -36,6 +36,7 @@ import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.Categor
 import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.ProductItem
 import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.Item
 import de.hinundhergestellt.jhuh.usecases.products.ProductManagerService.VariationItem
+import de.hinundhergestellt.jhuh.usecases.shopify.ShopifySynchronizationService
 import kotlinx.coroutines.CoroutineScope
 import java.util.stream.Stream
 import kotlin.streams.asSequence
@@ -179,6 +180,11 @@ class ProductManagerView(
         }
     }
 
+    private fun markForSync(product: ProductItem) {
+        service.markForSync(product.syncProduct)
+        treeDataProvider.refreshItem(product)
+    }
+
     private fun generateNewBarcodes(product: ProductItem) {
         vaadinScope.launchWithReporting {
             application { service.generateNewBarcodes(product, ::report) }
@@ -254,6 +260,8 @@ class ProductManagerView(
                     ContextMenu(this).apply {
                         isOpenOnClick = true
                         if (item is ProductItem) {
+                            addItem("Synchronisieren") { markForSync(item) }.apply { isEnabled = !item.isMarkedForSync }
+                            addComponent(Hr())
                             addItem("Barcodes neu generieren") { generateNewBarcodes(item) }
                             addComponent(Hr())
                             addItem("Etikett für Produkt") {}

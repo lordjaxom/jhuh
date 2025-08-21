@@ -85,6 +85,12 @@ class ProductManagerService(
         if (syncVariant != null) transactionOperations.execute { syncProductRepository.save(syncVariant.product) }
     }
 
+    @Transactional
+    fun markForSync(syncProduct: SyncProduct) {
+        syncProduct.synced = true
+        syncProductRepository.save(syncProduct)
+    }
+
     suspend fun generateNewBarcodes(product: ProductItem, report: suspend (String) -> Unit) {
         report("Shopify-Produktkatalog aktualisieren...")
         shopifyDataStore.withLockAndRefresh {
