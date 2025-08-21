@@ -83,7 +83,7 @@ class ShopifyMetaobjectClient(
 
     private suspend fun fetchNextMetaobjects(type: String, after: String?): Pair<List<MetaobjectEdge>, PageInfo> {
         val request = buildQuery { metaobjectDefinitionByType(type) { metaobjects(after = after) } }
-        val payload = shopifyGraphQLClient.executeQuery<MetaobjectDefinition>(request)
+        val payload = shopifyGraphQLClient.executeQuery<MetaobjectDefinition>(request, "metaobjectDefinitionByType")
         return Pair(payload.metaobjects.edges, payload.metaobjects.pageInfo)
     }
 

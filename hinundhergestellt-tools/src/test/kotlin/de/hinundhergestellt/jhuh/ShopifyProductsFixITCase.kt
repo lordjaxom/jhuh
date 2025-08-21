@@ -3,10 +3,9 @@ package de.hinundhergestellt.jhuh
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import de.hinundhergestellt.jhuh.tools.Rect
+import de.hinundhergestellt.jhuh.tools.PointPct
+import de.hinundhergestellt.jhuh.tools.RectPct
 import de.hinundhergestellt.jhuh.tools.ShopifyTools
-import de.hinundhergestellt.jhuh.vendors.shopify.client.LinkedMetafield
-import de.hinundhergestellt.jhuh.vendors.shopify.client.MetaobjectField
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMedia
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMediaClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafieldClient
@@ -16,7 +15,6 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOptionClie
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyWeight
-import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyMetaobject
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightUnit
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
@@ -32,7 +30,6 @@ import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.moveTo
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
-import kotlin.math.sqrt
 import kotlin.test.Test
 
 @SpringBootTest(
@@ -54,7 +51,7 @@ class ShopifyProductsFixITCase {
     private lateinit var variantClient: ShopifyProductVariantClient
 
     @Autowired
-    private lateinit var metafieldsClient: ShopifyMetafieldClient
+    private lateinit var metafieldClient: ShopifyMetafieldClient
 
     @Autowired
     private lateinit var mediaClient: ShopifyMediaClient
@@ -77,15 +74,32 @@ class ShopifyProductsFixITCase {
     }
 
     @Test
+    fun findMetaobjectDefinition() = runBlocking {
+        val definition = metaobjectClient.fetchDefinitionByType("shopify--color-pattern")
+        println(definition)
+    }
+
+    @Test
     fun reorganizeProductImages() = runBlocking {
-        val product = productClient.fetchAll("'myboshi Dream, 50g, 76% Baumwolle, 22% Baby-Alpaka, 2% Merino'").first()
+        val product = productClient.fetchAll("'ASLAN® MetalEffect CA 23, 20cm x 30cm'").first()
         shopifyTools.reorganizeProductImages(product)
     }
 
     @Test
+    fun replaceProductVariantImages() = runBlocking {
+        val product = productClient.fetchAll("'Oracal® 631 Exhibition Cal Matt, 20cm x 30cm'").first()
+        shopifyTools.replaceProductVariantImages(product)
+    }
+
+    @Test
     fun generateVariantColorSwatches() = runBlocking {
-        val product = productClient.fetchAll("'myboshi Dream, 50g, 76% Baumwolle, 22% Baby-Alpaka, 2% Merino'").first()
-        shopifyTools.generateVariantColorSwatches(product, "myboshi-dream", Rect(40.0, 10.0, 60.0, 30.0))
+        val product = productClient.fetchAll("'ASLAN® MetalEffect CA 23, 20cm x 30cm'").first()
+        shopifyTools.generateVariantColorSwatches(
+            product,
+            "aslan-ca23",
+            RectPct.EVERYTHING,
+            RectPct.CENTER_33
+        )
     }
 
     @Test
