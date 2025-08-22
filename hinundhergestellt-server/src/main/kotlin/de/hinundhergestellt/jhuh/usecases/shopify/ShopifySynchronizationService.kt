@@ -1,8 +1,10 @@
 package de.hinundhergestellt.jhuh.usecases.shopify
 
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
+import de.hinundhergestellt.jhuh.backend.mapping.ChangeField
 import de.hinundhergestellt.jhuh.backend.mapping.MappingService
 import de.hinundhergestellt.jhuh.backend.mapping.additionMessage
+import de.hinundhergestellt.jhuh.backend.mapping.change
 import de.hinundhergestellt.jhuh.backend.mapping.changeMessage
 import de.hinundhergestellt.jhuh.backend.shoptexter.ShopTexterService
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategoryRepository
@@ -73,11 +75,11 @@ class ShopifySynchronizationService(
         items.forEach { item ->
             when (item) {
                 is ImmediateItem -> item.block()
-                is DeferredProductItem -> productsToChange.add(item.apply { block() }.product)
+                is UpdateProductItem -> productsToChange.add(item.apply { block() }.product)
                 is DeleteVariantItem -> variantsToDelete.getOrPut(item.product) { mutableMapOf() }.put(item.id, item.variant)
                 is CreateVariantItem -> variantsToCreate.getOrPut(item.product) { mutableMapOf() }.put(item.id, item.variant)
                 is UpdateVariantItem -> variantsToUpdate.getOrPut(item.product) { mutableSetOf() }.add(item.apply { block() }.variant)
-                is VariantProductItem -> { /* nothing */ }
+                is VariantProductItem -> {}
             }
         }
 
@@ -109,11 +111,13 @@ class ShopifySynchronizationService(
 
         require(shopifyProduct.hasOnlyDefaultVariant == artooProduct.hasOnlyDefaultVariant) { "Switching variants and standalone not supported yet" }
 
-        prepareUpdateProductProperty(shopifyProduct, shopifyProduct::title, artooProduct.description)
-        prepareUpdateProductProperty(shopifyProduct, shopifyProduct::vendor, syncProduct.vendor!!.name)
-        prepareUpdateProductProperty(shopifyProduct, shopifyProduct::productType, syncProduct.type!!)
-        prepareUpdateProductProperty(shopifyProduct, shopifyProduct::descriptionHtml, syncProduct.descriptionHtml ?: "")
-        prepareUpdateProductProperty(shopifyProduct, shopifyProduct::tags, mappingService.allTags(syncProduct, artooProduct))
+        items += listOfNotNull(
+            prepareUpdateProductProperty(shopifyProduct, shopifyProduct::title, artooProduct.description),
+            prepareUpdateProductProperty(shopifyProduct, shopifyProduct::vendor, syncProduct.vendor!!.name),
+            prepareUpdateProductProperty(shopifyProduct, shopifyProduct::productType, syncProduct.type!!),
+            prepareUpdateProductProperty(shopifyProduct, shopifyProduct::descriptionHtml, syncProduct.descriptionHtml ?: ""),
+            prepareUpdateProductProperty(shopifyProduct, shopifyProduct::tags, mappingService.allTags(syncProduct, artooProduct))
+        )
 
         mappingService.customMetafields(syncProduct).forEach { prepareUpdateProductMetafield(shopifyProduct, it) }
 
@@ -182,10 +186,7 @@ class ShopifySynchronizationService(
         shopifyProduct: ShopifyProduct,
         property: KMutableProperty0<T>,
         newValue: T
-    ) {
-        if (property.get() == newValue) return
-        items += DeferredProductItem(shopifyProduct, property.changeMessage(newValue)) { property.set(newValue) }
-    }
+    ) = change(property, newValue)?.let { UpdateProductItem(shopifyProduct, it.message, it.action) }
 
     private fun prepareUpdateProductMetafield(
         shopifyProduct: ShopifyProduct,
@@ -194,10 +195,10 @@ class ShopifySynchronizationService(
         val oldMetafield = shopifyProduct.metafields.findById(newMetafield)
         if (oldMetafield == null) {
             val message = additionMessage(newMetafield.key, newMetafield.value)
-            items += DeferredProductItem(shopifyProduct, message) { shopifyProduct.metafields.add(newMetafield) }
+            items += UpdateProductItem(shopifyProduct, message) { shopifyProduct.metafields.add(newMetafield) }
         } else if (oldMetafield.value != newMetafield.value) {
             val message = changeMessage(newMetafield.key, oldMetafield.value, newMetafield.value)
-            items += DeferredProductItem(shopifyProduct, message) { oldMetafield.value = newMetafield.value }
+            items += UpdateProductItem(shopifyProduct, message) { oldMetafield.value = newMetafield.value }
         }
     }
 
@@ -206,18 +207,16 @@ class ShopifySynchronizationService(
         variant: ShopifyProductVariant,
         property: KMutableProperty0<T>,
         newValue: T
-    ): VariantItem? {
-        if (property.get() == newValue) return null
-        return UpdateVariantItem(product, variant, property.changeMessage(newValue)) { property.set(newValue) }
-    }
+    ) = change(property, newValue)?.let { UpdateVariantItem(product, variant, it.message, it.action) }
 
     private fun prepareUpdateVariantOptionValue(
-        shopifyProduct: ShopifyProduct,
-        shopifyVariant: ShopifyProductVariant,
+        product: ShopifyProduct,
+        variant: ShopifyProductVariant,
         artooVariation: ArtooMappedVariation
     ) = when {
         artooVariation.isDefaultVariant -> null
-        else -> prepareUpdateVariantProperty(shopifyProduct, shopifyVariant, shopifyVariant.options[0]::value, artooVariation.name)
+        else -> change(variant.options[0]::value, artooVariation.name, ChangeField.OPTION_VALUE, variant.options[0].name)
+            ?.let { UpdateVariantItem(product, variant, it.message, it.action) }
     }
 
     private suspend fun applyDeleteVariants(
@@ -258,7 +257,7 @@ class ShopifySynchronizationService(
         val block: suspend () -> Unit
     ) : ProductItem()
 
-    private inner class DeferredProductItem(
+    private inner class UpdateProductItem(
         val product: ShopifyProduct,
         override val message: String,
         val block: () -> Unit,
@@ -271,7 +270,7 @@ class ShopifySynchronizationService(
         override val children: List<VariantItem>
     ) : ProductItem() {
         override val title by product::title
-        override val message = "Varianten geändert"
+        override val message = "${children.size} Varianten geändert"
     }
 
     sealed class VariantItem : Item {

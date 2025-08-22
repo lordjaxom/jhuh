@@ -16,14 +16,12 @@ import com.vaadin.flow.component.html.H1
 import com.vaadin.flow.component.html.NativeLabel
 import com.vaadin.flow.component.html.Span
 import com.vaadin.flow.component.icon.IconFactory
-import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.textfield.BigDecimalField
 import com.vaadin.flow.component.textfield.IntegerField
 import com.vaadin.flow.component.textfield.TextArea
 import com.vaadin.flow.component.textfield.TextField
-import com.vaadin.flow.component.treegrid.TreeGrid
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -137,12 +135,6 @@ inline fun (@VaadinDsl HasComponents).textArea(label: String? = null, block: (@V
 inline fun (@VaadinDsl HasComponents).textField(label: String? = null, block: (@VaadinDsl TextField).() -> Unit = {}): TextField {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     return init(TextField(label), block)
-}
-
-@VaadinDsl
-inline fun <T> (@VaadinDsl HasComponents).treeGrid(block: (@VaadinDsl TreeGrid<T>).() -> Unit = {}): TreeGrid<T> {
-    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    return init(TreeGrid<T>(), block)
 }
 
 @VaadinDsl

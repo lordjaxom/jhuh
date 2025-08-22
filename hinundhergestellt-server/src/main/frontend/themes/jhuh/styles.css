@@ -85,3 +85,10 @@ vaadin-ckeditor label {
         transform: rotate(360deg);
     }
 }
+
+.ellipsis-cell {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

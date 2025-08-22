@@ -171,7 +171,8 @@ class ShopifyProduct private constructor(
             productType = productType,
             status = status,
             tags = tags.toList(),
-            metafields = metafields.map { it.toMetafieldInput() }
+            metafields = metafields.map { it.toMetafieldInput() },
+            descriptionHtml = descriptionHtml
         )
 
     internal fun toProductDeleteInput() =

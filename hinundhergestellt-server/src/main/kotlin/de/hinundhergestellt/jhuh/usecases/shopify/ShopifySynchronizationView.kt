@@ -11,14 +11,16 @@ import com.vaadin.flow.router.Route
 import de.hinundhergestellt.jhuh.components.CustomIcon
 import de.hinundhergestellt.jhuh.components.VaadinCoroutineScope
 import de.hinundhergestellt.jhuh.components.button
-import de.hinundhergestellt.jhuh.components.hierarchyComponentColumn
+import de.hinundhergestellt.jhuh.components.ellipsisColumn
 import de.hinundhergestellt.jhuh.components.horizontalLayout
 import de.hinundhergestellt.jhuh.components.progressOverlay
 import de.hinundhergestellt.jhuh.components.root
 import de.hinundhergestellt.jhuh.components.span
 import de.hinundhergestellt.jhuh.components.text
 import de.hinundhergestellt.jhuh.components.textColumn
-import de.hinundhergestellt.jhuh.components.treeGrid
+import de.hinundhergestellt.jhuh.components.treegrid.hierarchyComponentColumn
+import de.hinundhergestellt.jhuh.components.treegrid.recursiveSelectTreeGrid
+import de.hinundhergestellt.jhuh.components.treegrid.treeGrid
 import de.hinundhergestellt.jhuh.usecases.shopify.ShopifySynchronizationService.Item
 import de.hinundhergestellt.jhuh.usecases.shopify.ShopifySynchronizationService.ProductItem
 import de.hinundhergestellt.jhuh.usecases.shopify.ShopifySynchronizationService.VariantItem
@@ -55,15 +57,15 @@ class ShopifySynchronizationView(
                 addClickListener { applySelectedItems() }
             }
         }
-        itemsGrid = treeGrid<Item> {
+        itemsGrid = recursiveSelectTreeGrid<Item> {
             emptyStateText = "Keine abweichenden Einträge gefunden"
             hierarchyComponentColumn({ treeItemLabel(it) }) {
                 setHeader("Bezeichnung")
                 flexGrow = 1
             }
-            textColumn({ it.message }) {
+            ellipsisColumn({ it.message }) {
                 setHeader("Sachverhalt")
-                flexGrow = 1
+                flexGrow = 2
             }
             selectionMode = Grid.SelectionMode.MULTI
 //            expandRecursively(treeDataProvider.fetchChildren(HierarchicalQuery(null, null)), Int.MAX_VALUE)
