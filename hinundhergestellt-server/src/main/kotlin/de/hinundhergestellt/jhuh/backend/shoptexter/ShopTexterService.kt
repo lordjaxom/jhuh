@@ -1,36 +1,21 @@
 package de.hinundhergestellt.jhuh.backend.shoptexter
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
-import com.fasterxml.jackson.module.kotlin.KotlinFeature
-import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.addMixIn
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.kotlinModule
-import de.hinundhergestellt.jhuh.backend.shoptexter.model.ArtooMappedProductForAiMixin
-import de.hinundhergestellt.jhuh.backend.shoptexter.model.ArtooMappedVariationForAiMixin
+import de.hinundhergestellt.jhuh.backend.shoptexter.model.ProductMapper
 import de.hinundhergestellt.jhuh.backend.shoptexter.model.ShopifyMetafieldForAiMixin
 import de.hinundhergestellt.jhuh.backend.shoptexter.model.ShopifyProductForAiMixin
 import de.hinundhergestellt.jhuh.backend.shoptexter.model.ShopifyProductOptionForAiMixin
-import de.hinundhergestellt.jhuh.backend.shoptexter.model.SyncProductForAiMixin
-import de.hinundhergestellt.jhuh.backend.shoptexter.model.SyncTechnicalDetailForAiMixin
-import de.hinundhergestellt.jhuh.backend.shoptexter.model.SyncVariantForAiMixin
-import de.hinundhergestellt.jhuh.backend.shoptexter.model.SyncVendorForAiMixin
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProductRepository
-import de.hinundhergestellt.jhuh.backend.syncdb.SyncTechnicalDetail
-import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariant
-import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendor
 import de.hinundhergestellt.jhuh.backend.vectorstore.ExtendedVectorStore
 import de.hinundhergestellt.jhuh.backend.vectorstore.findById
 import de.hinundhergestellt.jhuh.core.loadTextResource
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
-import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedVariation
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafield
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
-import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductCommonFields
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOption
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -56,18 +41,13 @@ class ShopTexterService(
     private val objectMapper = JsonMapper.builder()
         .addModule(kotlinModule())
         .configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true)
-        .addMixIn<ArtooMappedProduct, ArtooMappedProductForAiMixin>()
-        .addMixIn<ArtooMappedVariation, ArtooMappedVariationForAiMixin>()
         .addMixIn<ShopifyProduct, ShopifyProductForAiMixin>()
         .addMixIn<ShopifyProductOption, ShopifyProductOptionForAiMixin>()
         .addMixIn<ShopifyMetafield, ShopifyMetafieldForAiMixin>()
-        .addMixIn<SyncProduct, SyncProductForAiMixin>()
-        .addMixIn<SyncTechnicalDetail, SyncTechnicalDetailForAiMixin>()
-        .addMixIn<SyncVariant, SyncVariantForAiMixin>()
-        .addMixIn<SyncVendor, SyncVendorForAiMixin>()
         .build()
 
     private val productDetailsConverter = BeanOutputConverter(GeneratedProductDetails::class.java)
+    private val productTagsConverter = BeanOutputConverter(GeneratedProductTags::class.java)
     private val categoryDescriptionConverter = BeanOutputConverter(GeneratedCategoryDescription::class.java)
 
     private val examplesPromptTemplate = PromptTemplate(loadTextResource { "examples-prompt.txt" })
@@ -86,41 +66,9 @@ class ShopTexterService(
         vectorStore.removeById(id.toString())
     }
 
-    fun generateProductDetails(product: ShopifyProductCommonFields): GeneratedProductDetails {
-        logger.info { "Generating product description for $product" }
+    fun generateProductDetails(artooProduct: ArtooMappedProduct, syncProduct: SyncProduct): GeneratedProductDetails {
+        val product = ProductMapper.map(artooProduct, syncProduct)
 
-        val callResponse = shopTexterChatClient.prompt()
-            .system(loadTextResource { "product-details-prompt.txt" })
-            .user {
-                it.text("Produkt: {product}\n\n{format}")
-                    .param("product", objectMapper.writeValueAsString(product))
-                    .param("format", productDetailsConverter.format)
-            }
-            .advisors { it.param(ChatMemory.CONVERSATION_ID, "productDetails") }
-            .advisors(
-                QuestionAnswerAdvisor
-                    .builder(vectorStore)
-                    .promptTemplate(examplesPromptTemplate)
-                    .searchRequest(
-                        SearchRequest.builder()
-                            .query("Produkte ähnlich ${product.title}")
-                            .topK(3)
-                            .build()
-                    )
-                    .build()
-            )
-            .call()
-        val response = productDetailsConverter.convert(callResponse.content()!!)!!
-
-        logger.debug { "Generated product description: ${response.descriptionHtml}" }
-        logger.debug { "Generated techical details: ${response.technicalDetails}" }
-        logger.debug { "Generated tags: ${response.tags}" }
-        logger.debug { "Consulted web sites: ${response.consultedUrls}" }
-
-        return response
-    }
-
-    fun generateProductDetails(product: ProductDetailsInput): GeneratedProductDetails {
         logger.info { "Generating product description for ${objectMapper.writeValueAsString(product)}" }
 
         val callResponse = shopTexterChatClient.prompt()
@@ -137,7 +85,7 @@ class ShopTexterService(
                     .promptTemplate(examplesPromptTemplate)
                     .searchRequest(
                         SearchRequest.builder()
-                            .query("Produkte ähnlich ${product.artoo.name}")
+                            .query("Produkte ähnlich ${product.name}")
                             .topK(3)
                             .build()
                     )
@@ -148,6 +96,28 @@ class ShopTexterService(
 
         logger.debug { "Generated product description: ${response.descriptionHtml}" }
         logger.debug { "Generated techical details: ${response.technicalDetails}" }
+        logger.debug { "Generated tags: ${response.tags}" }
+        logger.debug { "Consulted web sites: ${response.consultedUrls}" }
+
+        return response
+    }
+
+    fun generateProductTags(artooProduct: ArtooMappedProduct, syncProduct: SyncProduct): GeneratedProductTags {
+        val product = ProductMapper.map(artooProduct, syncProduct)
+
+        logger.info { "Generating product tags for ${objectMapper.writeValueAsString(product)}" }
+
+        val callResponse = shopTexterChatClient.prompt()
+            .system(loadTextResource { "product-tags-prompt.txt" })
+            .user {
+                it.text("Produkt: {product}\n\n{format}")
+                    .param("product", objectMapper.writeValueAsString(product))
+                    .param("format", productTagsConverter.format)
+            }
+            .advisors { it.param(ChatMemory.CONVERSATION_ID, "productTags") }
+            .call()
+        val response = productTagsConverter.convert(callResponse.content()!!)!!
+
         logger.debug { "Generated tags: ${response.tags}" }
         logger.debug { "Consulted web sites: ${response.consultedUrls}" }
 
@@ -197,14 +167,14 @@ class ShopTexterService(
     }
 }
 
-class ProductDetailsInput(
-    val artoo: ArtooMappedProduct,
-    val sync: SyncProduct
-)
-
 class GeneratedProductDetails(
     val descriptionHtml: String,
     val technicalDetails: Map<String, String>,
+    val tags: List<String>,
+    val consultedUrls: List<String>
+)
+
+class GeneratedProductTags(
     val tags: List<String>,
     val consultedUrls: List<String>
 )

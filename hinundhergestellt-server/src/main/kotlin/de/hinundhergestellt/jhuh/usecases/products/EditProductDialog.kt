@@ -37,6 +37,7 @@ import de.hinundhergestellt.jhuh.components.textField
 import de.hinundhergestellt.jhuh.components.toProperty
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
@@ -181,10 +182,14 @@ private class EditProductDialog(
         }
         footer {
             button("Werte ausfüllen") {
+                isEnabled = service.canFillInValues(artooProduct)
                 addClickListener { fillInValues() }
             }
             button("Texte generieren") {
                 addClickListener { generateTexts() }
+            }
+            button("Nur Tags generieren") {
+                addClickListener { generateTags() }
             }
             button("Speichern") {
                 addThemeVariants(ButtonVariant.LUMO_PRIMARY)
@@ -203,15 +208,29 @@ private class EditProductDialog(
         values.weight?.also { weightBigDecimalField?.value = it }
     }
 
-    private fun generateTexts() = vaadinScope.launch {
-        isEnabled = false
-        try {
-            val details = application { async { service.generateProductDetails(artooProduct, syncProduct) }.await() }
-            descriptionHtmlEditor.value = details.descriptionHtml
-            technicalDetailsGridField.value = details.technicalDetails.map { ReorderableGridField.Item(it.key, it.value) }
-            additionalTagsTextField.addTags(details.tags.toSet() - inheritedTagsTextField.value)
-        } finally {
-            isEnabled = true
+    private fun generateTexts() {
+        vaadinScope.launch {
+            isEnabled = false
+            try {
+                val details = application { async { service.generateProductDetails(artooProduct, syncProduct) }.await() }
+                descriptionHtmlEditor.value = details.descriptionHtml
+                technicalDetailsGridField.value = details.technicalDetails.map { ReorderableGridField.Item(it.key, it.value) }
+                additionalTagsTextField.addTags(details.tags.toSet() - inheritedTagsTextField.value)
+            } finally {
+                isEnabled = true
+            }
+        }
+    }
+
+    private fun generateTags() {
+        vaadinScope.launch {
+            isEnabled = false
+            try {
+                val tags = application { async { service.generateProductTags(artooProduct, syncProduct) }.await() }
+                additionalTagsTextField.addTags(tags.tags.toSet() - inheritedTagsTextField.value)
+            } finally {
+                isEnabled = true
+            }
         }
     }
 

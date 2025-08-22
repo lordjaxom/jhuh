@@ -1,7 +1,6 @@
 package de.hinundhergestellt.jhuh.usecases.products
 
 import de.hinundhergestellt.jhuh.backend.mapping.MappingService
-import de.hinundhergestellt.jhuh.backend.shoptexter.ProductDetailsInput
 import de.hinundhergestellt.jhuh.backend.shoptexter.ShopTexterService
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendor
@@ -26,22 +25,30 @@ class EditProductService(
     fun sanitizeTag(tag: String) = mappingService.sanitizeTag(tag)
 
     fun generateProductDetails(artooProduct: ArtooMappedProduct, syncProduct: SyncProduct) =
-        shopTexterService.generateProductDetails(ProductDetailsInput(artooProduct, syncProduct))
+        shopTexterService.generateProductDetails(artooProduct, syncProduct)
+
+    fun generateProductTags(artooProduct: ArtooMappedProduct, syncProduct: SyncProduct) =
+        shopTexterService.generateProductTags(artooProduct, syncProduct)
+
+    fun canFillInValues(artooProduct: ArtooMappedProduct) = findRayherVariations(artooProduct) != null
 
     fun fillInValues(artooProduct: ArtooMappedProduct): FilledInProductValues {
-        val rayherVariations = artooProduct.variations
+        return findRayherVariations(artooProduct)
+            ?.let { rayherVariations ->
+                FilledInProductValues(
+                    vendor = syncVendorRepository.findByNameIgnoreCase("Rayher")!!,
+                    description = rayherVariations.map { it.description }.distinct().takeIf { it.size == 1 }?.getOrNull(0),
+                    weight = rayherVariations.map { it.weight }.distinct().takeIf { it.size == 1 }?.getOrNull(0)
+                )
+            }
+            ?: FilledInProductValues()
+    }
+
+    private fun findRayherVariations(artooProduct: ArtooMappedProduct) =
+        artooProduct.variations
             .filter { it.barcode != null }
             .mapNotNull { rayherDataStore.findByEan(it.barcode!!) }
-        if (rayherVariations.size == artooProduct.variations.size) {
-            return FilledInProductValues(
-                vendor = syncVendorRepository.findByNameIgnoreCase("Rayher")!!,
-                description = rayherVariations.map { it.description }.distinct().takeIf { it.size == 1 }?.getOrNull(0),
-                weight = rayherVariations.map { it.weight }.distinct().takeIf { it.size == 1 }?.getOrNull(0)
-            )
-        }
-
-        return FilledInProductValues()
-    }
+            .takeIf { it.size == artooProduct.variations.size }
 }
 
 class FilledInProductValues(
