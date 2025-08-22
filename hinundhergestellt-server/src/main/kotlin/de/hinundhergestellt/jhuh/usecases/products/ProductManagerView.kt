@@ -161,7 +161,7 @@ class ProductManagerView(
 
     private fun editProductItem(product: ProductItem) {
         vaadinScope.launch {
-            val result = editProductDialogFactory(product.value, product.syncProduct)
+            val result = editProductDialogFactory(product.value, product.syncProduct, vaadinScope)
             if (result != null) {
                 application { service.update(result.artoo, result.sync) }
                 treeDataProvider.refreshItem(product, true)

@@ -36,15 +36,13 @@ import de.hinundhergestellt.jhuh.components.tagsTextField
 import de.hinundhergestellt.jhuh.components.textField
 import de.hinundhergestellt.jhuh.components.toProperty
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
 
 private class EditProductDialog(
     private val service: EditProductService,
-    applicationScope: CoroutineScope,
+    private val vaadinScope: VaadinCoroutineScope<*>,
     private val artooProduct: ArtooMappedProduct,
     private val syncProduct: SyncProduct,
     private val callback: (EditProductResult?) -> Unit
@@ -60,8 +58,6 @@ private class EditProductDialog(
     private val inheritedTagsTextField: TagsTextField
     private val additionalTagsTextField: TagsTextField
     private val weightBigDecimalField: BigDecimalField?
-
-    private val vaadinScope = VaadinCoroutineScope(this, applicationScope, null)
 
     init {
         width = "1000px"
@@ -202,35 +198,29 @@ private class EditProductDialog(
     }
 
     private fun fillInValues() {
-        val values = service.fillInValues(artooProduct)
-        values.vendor?.also { vendorComboBox.value = it }
-        values.description?.also { descriptionTextField.value = it }
-        values.weight?.also { weightBigDecimalField?.value = it }
+        vaadinScope.launchWithReporting {
+            val values = service.fillInValues(artooProduct, ::report)
+            values.vendor?.also { vendorComboBox.value = it }
+            values.description?.also { descriptionTextField.value = it }
+            values.weight?.also { weightBigDecimalField?.value = it }
+        }
     }
 
     private fun generateTexts() {
-        vaadinScope.launch {
-            isEnabled = false
-            try {
-                val details = application { async { service.generateProductDetails(artooProduct, syncProduct) }.await() }
-                descriptionHtmlEditor.value = details.descriptionHtml
-                technicalDetailsGridField.value = details.technicalDetails.map { ReorderableGridField.Item(it.key, it.value) }
-                additionalTagsTextField.addTags(details.tags.toSet() - inheritedTagsTextField.value)
-            } finally {
-                isEnabled = true
-            }
+        vaadinScope.launchWithReporting {
+            report("Generiere Produktdetails mit ChatGPT...")
+            val details = application { async { service.generateProductDetails(artooProduct, syncProduct) }.await() }
+            descriptionHtmlEditor.value = details.descriptionHtml
+            technicalDetailsGridField.value = details.technicalDetails.map { ReorderableGridField.Item(it.key, it.value) }
+            additionalTagsTextField.addTags(details.tags.toSet() - inheritedTagsTextField.value)
         }
     }
 
     private fun generateTags() {
-        vaadinScope.launch {
-            isEnabled = false
-            try {
-                val tags = application { async { service.generateProductTags(artooProduct, syncProduct) }.await() }
-                additionalTagsTextField.addTags(tags.tags.toSet() - inheritedTagsTextField.value)
-            } finally {
-                isEnabled = true
-            }
+        vaadinScope.launchWithReporting {
+            report("Generiere Produkt-Tags mit ChatGPT...")
+            val tags = application { async { service.generateProductTags(artooProduct, syncProduct) }.await() }
+            additionalTagsTextField.addTags(tags.tags.toSet() - inheritedTagsTextField.value)
         }
     }
 
@@ -259,14 +249,17 @@ class EditProductResult(
     val sync: SyncProduct?
 )
 
-typealias EditProduct = suspend (artooProduct: ArtooMappedProduct, syncProduct: SyncProduct) -> EditProductResult?
+typealias EditProduct = suspend (
+    artooProduct: ArtooMappedProduct,
+    syncProduct: SyncProduct,
+    vaadinScope: VaadinCoroutineScope<*>
+) -> EditProductResult?
 
 @Component
 class EditProductDialogFactory(
-    private val service: EditProductService,
-    private val applicationScope: CoroutineScope,
+    private val service: EditProductService
 ) : EditProduct {
 
-    override suspend fun invoke(artooProduct: ArtooMappedProduct, syncProduct: SyncProduct) =
-        suspendableDialog { EditProductDialog(service, applicationScope, artooProduct, syncProduct, it) }
+    override suspend fun invoke(artooProduct: ArtooMappedProduct, syncProduct: SyncProduct, vaadinScope: VaadinCoroutineScope<*>) =
+        suspendableDialog { EditProductDialog(service, vaadinScope, artooProduct, syncProduct, it) }
 }

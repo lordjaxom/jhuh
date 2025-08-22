@@ -12,6 +12,7 @@ import de.hinundhergestellt.jhuh.vendors.ready2order.client.UnsavedArtooProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.client.UnsavedArtooProductGroup
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
@@ -24,7 +25,12 @@ import kotlin.test.Test
 
 private val logger = KotlinLogging.logger {}
 
-@SpringBootTest
+@SpringBootTest(
+    properties = [
+        "hinundhergestellt.image-directory=/media/lordjaxom/akv-soft.de/sascha/Hin- und Hergestellt/Shopify",
+        "hinundhergestellt.download-threads=4"
+    ]
+)
 @Disabled("Only run manually")
 class ArtooProductFixITCase {
 
@@ -189,6 +195,18 @@ class ArtooProductFixITCase {
                 throw e
             }
         }
+    }
+
+    @Test
+    fun fixGroupOfRayerSilikonformen() = runBlocking{
+        val group = artooProductGroupClient.findAll().first { it.name == "Rayher Silikonformen" }
+        artooProductClient.findAll()
+            .filter { it.name.contains("Silikon Gießform") && it.productGroupId != group.id }
+            .collect { product ->
+                logger.info { "Updating group of ${product.name}"}
+                product.productGroupId = group.id
+                artooProductClient.update(product)
+            }
     }
 }
 

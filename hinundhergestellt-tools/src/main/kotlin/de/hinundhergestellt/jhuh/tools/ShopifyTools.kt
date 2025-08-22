@@ -205,18 +205,11 @@ class ShopifyTools(
         return EvaluatedImage(imageFilePath, variant, swatchColor, taxonomyReference, swatchFilePath)
     }
 
-    private fun extractProductName(product: ShopifyProduct) = product.title.substringBefore(",")
-
-    private fun generateImageFileName(productName: String, suffix: String, extension: String): String {
-        val productNamePart = IMAGE_FILE_NAME_REPLACEMENTS
-            .fold(productName) { value, (regex, replacement) -> value.replace(regex, replacement) }
-            .lowercase()
-        return "${productNamePart}-${suffix}.$extension"
-    }
+    private fun extractProductName(product: ShopifyProduct) = product.title.extractProductName()
 
     private fun generateImageFileSuffix(sku: String) = sku.replace(" ", "-").lowercase()
 
-    private fun extractImageFileExtension(imageUrl: String) = URI(imageUrl).path.substringAfterLast(".")
+    private fun extractImageFileExtension(imageUrl: String) = URI(imageUrl).extractFileExtension()
     private fun generateColorSwatchHandle(optionValue: String) =
         UMLAUT_REPLACEMENTS
             .fold(optionValue) { value, (regex, replacement) -> value.replace(regex, replacement) }
@@ -258,3 +251,13 @@ private val IMAGE_FILE_NAME_REPLACEMENTS = listOf(
     """\s+$""".toRegex() to "",
     """\s+""".toRegex() to "-"
 )
+
+fun String.extractProductName() = substringBefore(",")
+fun URI.extractFileExtension() = path.substringAfterLast(".")
+
+fun generateImageFileName(productName: String, suffix: String, extension: String): String {
+    val productNamePart = IMAGE_FILE_NAME_REPLACEMENTS
+        .fold(productName) { value, (regex, replacement) -> value.replace(regex, replacement) }
+        .lowercase()
+    return "${productNamePart}-${suffix}.$extension"
+}
