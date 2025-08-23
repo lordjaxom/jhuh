@@ -86,6 +86,13 @@ class ShopifyProductsFixITCase {
     }
 
     @Test
+    fun replaceProductImagesForAllWithoutMedia() = runBlocking {
+        productClient.fetchAll()
+            .filter { it.media.isEmpty() }
+            .collect { shopifyTools.replaceProductImages(it) }
+    }
+
+    @Test
     fun replaceProductVariantImages() = runBlocking {
         val product = productClient.fetchAll("'Oracal® 631 Exhibition Cal Matt, 20cm x 30cm'").first()
         shopifyTools.replaceProductVariantImages(product)

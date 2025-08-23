@@ -35,7 +35,7 @@ class ShopifyProductClient(
         val request = buildMutation {
             productCreate(product.toProductCreateInput()) {
                 product {
-                    id
+                    id; descriptionHtml
                     options { id }
                 }
                 userErrors { message; field }
@@ -47,17 +47,20 @@ class ShopifyProductClient(
             .zip(payload.product!!.options.asSequence())
             .map { (option, created) -> ShopifyProductOption(option, created.id) }
             .toList()
+        product.descriptionHtml = payload.product!!.descriptionHtml
         return ShopifyProduct(product, payload.product!!.id, options)
     }
 
     suspend fun update(product: ShopifyProduct) {
         val request = buildMutation {
             productUpdate(product.toProductUpdateInput()) {
+                product { descriptionHtml }
                 userErrors { message; field }
             }
         }
 
-        shopifyGraphQLClient.executeMutation(request, ProductUpdatePayload::userErrors)
+        val payload = shopifyGraphQLClient.executeMutation(request, ProductUpdatePayload::userErrors)
+        product.descriptionHtml = payload.product!!.descriptionHtml
     }
 
     suspend fun delete(product: ShopifyProduct) {

@@ -1,6 +1,8 @@
 package de.hinundhergestellt.jhuh.usecases.products
 
 import com.vaadin.flow.component.Key
+import com.vaadin.flow.component.Text
+import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.button.ButtonVariant
 import com.vaadin.flow.component.combobox.ComboBox
 import com.vaadin.flow.component.dialog.Dialog
@@ -32,9 +34,13 @@ import de.hinundhergestellt.jhuh.components.itemLabelGenerator
 import de.hinundhergestellt.jhuh.components.lightHeaderSpan
 import de.hinundhergestellt.jhuh.components.reorderableGridField
 import de.hinundhergestellt.jhuh.components.setColspan
+import de.hinundhergestellt.jhuh.components.span
 import de.hinundhergestellt.jhuh.components.tagsTextField
+import de.hinundhergestellt.jhuh.components.text
 import de.hinundhergestellt.jhuh.components.textField
 import de.hinundhergestellt.jhuh.components.toProperty
+import de.hinundhergestellt.jhuh.components.verticalLayout
+import de.hinundhergestellt.jhuh.core.isNullOrZero
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
 import kotlinx.coroutines.async
 import org.springframework.stereotype.Component
@@ -54,10 +60,15 @@ private class EditProductDialog(
     private val descriptionTextField: TextField
     private val descriptionHtmlEditor: VaadinCKEditor
     private val technicalDetailsGridField: ReorderableGridField
+    private val productImagesText: Text
+    private val variantImagesText: Text?
     private val vendorComboBox: ComboBox<SyncVendor>
+    private val productTypeTextField: TextField
     private val inheritedTagsTextField: TagsTextField
     private val additionalTagsTextField: TagsTextField
     private val weightBigDecimalField: BigDecimalField?
+    private val autoFillButton: Button
+    private val downloadImagesButton: Button
 
     init {
         width = "1000px"
@@ -90,6 +101,7 @@ private class EditProductDialog(
             }
             descriptionTextField = textField("Beschreibung (Titel in Shopify)") {
                 this@formLayout.setColspan(2)
+                addValueChangeListener { updateImageTexts(); validateActions() }
                 bind(artooBinder)
                     .asRequired("Beschreibung darf nicht leer sein.")
                     .toProperty(ArtooMappedProduct::description)
@@ -125,6 +137,18 @@ private class EditProductDialog(
                         }
                     )
                 }
+                verticalLayout {
+                    isPadding = true
+                    style.set("gap", "0")
+                    span {
+                        productImagesText = text("0 Produktbilder")
+                    }
+                    span {
+                        variantImagesText =
+                            if (!artooProduct.hasOnlyDefaultVariant) text("0 Variantenbilder")
+                            else null
+                    }
+                }
             }
             div {
                 this@formLayout.setColspan(1)
@@ -143,7 +167,7 @@ private class EditProductDialog(
                         .asRequired("Hersteller darf nicht leer sein.")
                         .toProperty(SyncProduct::vendor)
                 }
-                textField("Produktart") {
+                productTypeTextField = textField("Produktart") {
                     setWidthFull()
                     addValueChangeListener { updateInheritedTags(it.oldValue, it.value) }
                     bind(syncBinder)
@@ -164,7 +188,7 @@ private class EditProductDialog(
                 }
                 weightBigDecimalField =
                     if (artooProduct.hasOnlyDefaultVariant) {
-                        bigDecimalField("Gewicht") {
+                        bigDecimalField("Gewicht (Gramm)") {
                             bind(syncBinder)
                                 .asRequired("Gewicht darf nicht leer sein.")
                                 .withValidator({ it >= BigDecimal("0.5") }, "Gewicht darf nicht weniger als 0.5 sein.")
@@ -177,15 +201,14 @@ private class EditProductDialog(
             }
         }
         footer {
-            button("Werte ausfüllen") {
-                isEnabled = service.canFillInValues(artooProduct)
-                addClickListener { fillInValues() }
+            autoFillButton = button("Aus Katalog ausfüllen") {
+                addClickListener { autoFillInValues() }
+            }
+            downloadImagesButton = button("Bilder herunterladen") {
+                addClickListener { downloadImages() }
             }
             button("Texte generieren") {
                 addClickListener { generateTexts() }
-            }
-            button("Nur Tags generieren") {
-                addClickListener { generateTags() }
             }
             button("Speichern") {
                 addThemeVariants(ButtonVariant.LUMO_PRIMARY)
@@ -195,32 +218,59 @@ private class EditProductDialog(
 
         artooBinder.readBean(artooProduct)
         syncBinder.readBean(syncProduct)
+        updateImageTexts()
+
+        validateActions()
     }
 
-    private fun fillInValues() {
+    private fun updateImageTexts() {
+        val syncImages = service.findSyncImages(artooProduct, descriptionTextField.value)
+        productImagesText.text = "${syncImages.count { it.variantSku == null }} Produktbilder"
+        variantImagesText?.text = "${syncImages.count { it.variantSku != null }} Variantenbilder"
+    }
+
+    private fun validateActions() {
+        val canFillInValues = service.canFillInValues(artooProduct)
+        val needsFillInValues = vendorComboBox.value == null ||
+                descriptionTextField.value.isNullOrEmpty() ||
+                (weightBigDecimalField != null && weightBigDecimalField.value.isNullOrZero())
+        autoFillButton.isEnabled = canFillInValues && needsFillInValues
+        downloadImagesButton.isEnabled = service.canDownloadImages(artooProduct, descriptionTextField.value)
+    }
+
+    private fun autoFillInValues() {
+        val values = service.fillInValues(artooProduct)
+        if (vendorComboBox.value == null && values.vendor != null) vendorComboBox.value = values.vendor
+        if (descriptionTextField.value.isNullOrEmpty() && values.description != null) descriptionTextField.value = values.description
+        if (weightBigDecimalField != null && weightBigDecimalField.value.isNullOrZero() && values.weight != null)
+            weightBigDecimalField.value = values.weight
+    }
+
+    private fun downloadImages() {
         vaadinScope.launchWithReporting {
-            val values = service.fillInValues(artooProduct, ::report)
-            values.vendor?.also { vendorComboBox.value = it }
-            values.description?.also { descriptionTextField.value = it }
-            values.weight?.also { weightBigDecimalField?.value = it }
+            application { service.downloadImages(artooProduct, descriptionTextField.value, ::report) }
         }
     }
 
     private fun generateTexts() {
         vaadinScope.launchWithReporting {
-            report("Generiere Produktdetails mit ChatGPT...")
-            val details = application { async { service.generateProductDetails(artooProduct, syncProduct) }.await() }
-            descriptionHtmlEditor.value = details.descriptionHtml
-            technicalDetailsGridField.value = details.technicalDetails.map { ReorderableGridField.Item(it.key, it.value) }
-            additionalTagsTextField.addTags(details.tags.toSet() - inheritedTagsTextField.value)
-        }
-    }
+            if (descriptionHtmlEditor.value.isNullOrEmpty() || technicalDetailsGridField.value.isNullOrEmpty()) {
+                report("Generiere Produktdetails mit ChatGPT...")
+                val details = application {
+                    async { service.generateProductDetails(artooProduct, syncProduct, descriptionTextField.value) }.await()
+                }
+                descriptionHtmlEditor.value = details.descriptionHtml
+                technicalDetailsGridField.value = details.technicalDetails.map { ReorderableGridField.Item(it.key, it.value) }
+                additionalTagsTextField.addTags(details.tags.toSet() - inheritedTagsTextField.value)
 
-    private fun generateTags() {
-        vaadinScope.launchWithReporting {
-            report("Generiere Produkt-Tags mit ChatGPT...")
-            val tags = application { async { service.generateProductTags(artooProduct, syncProduct) }.await() }
-            additionalTagsTextField.addTags(tags.tags.toSet() - inheritedTagsTextField.value)
+                if (productTypeTextField.value.isNullOrEmpty()) productTypeTextField.value = details.productType
+            } else {
+                report("Generiere zusätzliche Tags mit ChatGPT...")
+                val tags = application {
+                    async { service.generateProductTags(artooProduct, syncProduct, descriptionTextField.value) }.await()
+                }
+                additionalTagsTextField.addTags(tags.tags.toSet() - inheritedTagsTextField.value)
+            }
         }
     }
 

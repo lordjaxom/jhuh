@@ -17,3 +17,5 @@ class FixedScaleBigDecimal(
         this.value = value.setScale(scale)
     }
 }
+
+fun BigDecimal?.isNullOrZero() = this == null || this.compareTo(BigDecimal.ZERO) == 0

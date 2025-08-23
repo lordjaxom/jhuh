@@ -5,6 +5,9 @@ import de.hinundhergestellt.jhuh.backend.shoptexter.ShopTexterService
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendor
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendorRepository
+import de.hinundhergestellt.jhuh.core.forEachIndexedParallel
+import de.hinundhergestellt.jhuh.tools.SyncImage
+import de.hinundhergestellt.jhuh.tools.SyncImageTools
 import de.hinundhergestellt.jhuh.tools.downloadFileTo
 import de.hinundhergestellt.jhuh.tools.extractFileExtension
 import de.hinundhergestellt.jhuh.tools.extractProductName
@@ -13,12 +16,6 @@ import de.hinundhergestellt.jhuh.vendors.rayher.csv.RayherProduct
 import de.hinundhergestellt.jhuh.vendors.rayher.datastore.RayherDataStore
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
@@ -36,6 +33,7 @@ class EditProductService(
     private val shopTexterService: ShopTexterService,
     private val rayherDataStore: RayherDataStore,
     private val syncVendorRepository: SyncVendorRepository,
+    private val syncImageTools: SyncImageTools,
     private val toolsWebClient: WebClient,
     @Value("\${hinundhergestellt.image-directory}") private val imageDirectory: Path,
     @Value("\${hinundhergestellt.download-threads}") private val downloadThreads: Int
@@ -47,18 +45,18 @@ class EditProductService(
 
     fun sanitizeTag(tag: String) = mappingService.sanitizeTag(tag)
 
-    fun generateProductDetails(artooProduct: ArtooMappedProduct, syncProduct: SyncProduct) =
-        shopTexterService.generateProductDetails(artooProduct, syncProduct)
+    fun generateProductDetails(artooProduct: ArtooMappedProduct, syncProduct: SyncProduct, description: String?) =
+        shopTexterService.generateProductDetails(artooProduct, syncProduct, description)
 
-    fun generateProductTags(artooProduct: ArtooMappedProduct, syncProduct: SyncProduct) =
-        shopTexterService.generateProductTags(artooProduct, syncProduct)
+    fun generateProductTags(artooProduct: ArtooMappedProduct, syncProduct: SyncProduct, description: String?) =
+        shopTexterService.generateProductTags(artooProduct, syncProduct, description)
 
-    fun canFillInValues(artooProduct: ArtooMappedProduct) = findRayherProduct(artooProduct) != null
+    fun canFillInValues(artooProduct: ArtooMappedProduct) =
+        findRayherProduct(artooProduct) != null
 
-    suspend fun fillInValues(artooProduct: ArtooMappedProduct, report: suspend (String) -> Unit): FilledInProductValues {
+    fun fillInValues(artooProduct: ArtooMappedProduct): FilledInProductValues {
         val rayherProduct = findRayherProduct(artooProduct)
         if (rayherProduct != null) {
-            downloadRayherImages(artooProduct, rayherProduct, report)
             return FilledInProductValues(
                 vendor = syncVendorRepository.findByNameIgnoreCase("Rayher")!!,
                 description = rayherProduct.description,
@@ -69,33 +67,47 @@ class EditProductService(
         return FilledInProductValues()
     }
 
+    fun findSyncImages(artooProduct: ArtooMappedProduct, description: String?): List<SyncImage> {
+        val productTitle = description?.takeIf { it.isNotEmpty() }
+            ?: artooProduct.description.takeIf { it.isNotEmpty() }
+            ?: return listOf()
+        return syncImageTools.findSyncImages(productTitle, artooProduct.variations.mapNotNull { it.itemNumber })
+    }
+
+    fun canDownloadImages(artooProduct: ArtooMappedProduct, description: String?) =
+        (findRayherProduct(artooProduct)?.imageUrls?.isNotEmpty() ?: false) &&
+                (!description.isNullOrEmpty() || artooProduct.description.isNotEmpty())
+
+    suspend fun downloadImages(artooProduct: ArtooMappedProduct, description: String?, report: suspend (String) -> Unit) {
+        val rayherProduct = findRayherProduct(artooProduct)
+        if (rayherProduct != null) {
+            downloadRayherImages(artooProduct, description, rayherProduct, report)
+        }
+    }
+
     private fun findRayherProduct(artooProduct: ArtooMappedProduct) =
         if (artooProduct.hasOnlyDefaultVariant) artooProduct.variations[0].barcode?.let { rayherDataStore.findByEan(it) }
         else null
 
     private suspend fun downloadRayherImages(
         artooProduct: ArtooMappedProduct,
+        description: String?,
         rayherProduct: RayherProduct,
         report: suspend (String) -> Unit
     ) {
-        val productName = artooProduct.description.extractProductName()
+        val productTitle = description?.takeIf { it.isNotEmpty() }
+            ?: artooProduct.description.takeIf { it.isNotEmpty() }
+            ?: return
+        val productName = productTitle.extractProductName()
         val productPath = imageDirectory.resolve(productName)
         productPath.createDirectories()
 
-        coroutineScope {
-            val semaphore = Semaphore(downloadThreads)
-            rayherProduct.imageUrls
-                .sortedBy { it.computeRayherSortSelector() }
-                .mapIndexed { index, imageUrl ->
-                    async(Dispatchers.IO) {
-                        semaphore.withPermit {
-                            report("Downloading image ${index + 1} of ${rayherProduct.imageUrls.size}")
-                            downloadRayherImage(productName, productPath, index, imageUrl)
-                        }
-                    }
-                }.awaitAll()
-        }
+        report("Lade ${rayherProduct.imageUrls.size} Produktbilder herunter...")
+        rayherProduct.imageUrls
+            .sortedBy { it.computeRayherSortSelector() }
+            .forEachIndexedParallel(downloadThreads) { index, imageUrl -> downloadRayherImage(productName, productPath, index, imageUrl) }
     }
+
 
     private suspend fun downloadRayherImage(productName: String, productPath: Path, index: Int, imageUrl: String) {
         val extension = URI(imageUrl).extractFileExtension()
@@ -112,7 +124,7 @@ class EditProductService(
 
     private fun String.computeRayherSortSelector(): String {
         val stem = substringBeforeLast(".")
-        val discrimitator = when  {
+        val discrimitator = when {
             stem.endsWith("_VP") -> 1
             stem.endsWith("_PF") -> 2
             stem.endsWith("_DI") -> 3

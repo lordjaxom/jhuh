@@ -27,6 +27,7 @@ import de.hinundhergestellt.jhuh.components.filterChipBox
 import de.hinundhergestellt.jhuh.components.horizontalLayout
 import de.hinundhergestellt.jhuh.components.progressOverlay
 import de.hinundhergestellt.jhuh.components.root
+import de.hinundhergestellt.jhuh.components.span
 import de.hinundhergestellt.jhuh.components.textColumn
 import de.hinundhergestellt.jhuh.components.textField
 import de.hinundhergestellt.jhuh.components.treegrid.hierarchyComponentColumn
@@ -205,7 +206,7 @@ class ProductManagerView(
                     is ProductItem -> CustomIcon.PRODUCT
                     is VariationItem -> CustomIcon.VARIATION
                 }
-                add(icon.create().apply { setSize("var(--lumo-icon-size-s)"); color = "var(--lumo-secondary-text-color)" })
+                span { add(icon.create().apply { setSize("var(--lumo-icon-size-s)"); color = "var(--lumo-secondary-text-color)" }) }
                 add(item.name)
             }
         }

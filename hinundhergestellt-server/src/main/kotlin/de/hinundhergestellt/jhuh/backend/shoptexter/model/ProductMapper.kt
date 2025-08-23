@@ -5,10 +5,10 @@ import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduc
 
 object ProductMapper {
 
-    fun map(artoo: ArtooMappedProduct, sync: SyncProduct) =
+    fun map(artoo: ArtooMappedProduct, sync: SyncProduct, description: String?) =
         Product(
             name = artoo.name,
-            title = artoo.description,
+            title = description?.takeIf { it.isNotEmpty() } ?: artoo.description,
             description = sync.descriptionHtml ?: "",
             productType = sync.type ?: "",
             vendor = sync.vendor?.name ?: "",

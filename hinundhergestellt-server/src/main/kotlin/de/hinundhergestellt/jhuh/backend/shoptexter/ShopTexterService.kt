@@ -66,8 +66,8 @@ class ShopTexterService(
         vectorStore.removeById(id.toString())
     }
 
-    fun generateProductDetails(artooProduct: ArtooMappedProduct, syncProduct: SyncProduct): GeneratedProductDetails {
-        val product = ProductMapper.map(artooProduct, syncProduct)
+    fun generateProductDetails(artooProduct: ArtooMappedProduct, syncProduct: SyncProduct, description: String?): GeneratedProductDetails {
+        val product = ProductMapper.map(artooProduct, syncProduct, description)
 
         logger.info { "Generating product description for ${objectMapper.writeValueAsString(product)}" }
 
@@ -102,8 +102,8 @@ class ShopTexterService(
         return response
     }
 
-    fun generateProductTags(artooProduct: ArtooMappedProduct, syncProduct: SyncProduct): GeneratedProductTags {
-        val product = ProductMapper.map(artooProduct, syncProduct)
+    fun generateProductTags(artooProduct: ArtooMappedProduct, syncProduct: SyncProduct, description: String?): GeneratedProductTags {
+        val product = ProductMapper.map(artooProduct, syncProduct, description)
 
         logger.info { "Generating product tags for ${objectMapper.writeValueAsString(product)}" }
 
@@ -171,6 +171,7 @@ class GeneratedProductDetails(
     val descriptionHtml: String,
     val technicalDetails: Map<String, String>,
     val tags: List<String>,
+    val productType: String,
     val consultedUrls: List<String>
 )
 

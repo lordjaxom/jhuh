@@ -7,12 +7,10 @@ import de.hinundhergestellt.jhuh.backend.mapping.additionMessage
 import de.hinundhergestellt.jhuh.backend.mapping.change
 import de.hinundhergestellt.jhuh.backend.mapping.changeMessage
 import de.hinundhergestellt.jhuh.backend.shoptexter.ShopTexterService
-import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategoryRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProductRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariant
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariantRepository
-import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendorRepository
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedVariation
@@ -24,8 +22,8 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.findById
 import de.hinundhergestellt.jhuh.vendors.shopify.client.isDryRun
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionOperations
 import java.util.UUID
@@ -42,8 +40,6 @@ class ShopifySynchronizationService(
     private val shopifyVariantMapper: ShopifyVariantMapper,
     private val syncProductRepository: SyncProductRepository,
     private val syncVariantRepository: SyncVariantRepository,
-    private val syncCategoryRepository: SyncCategoryRepository,
-    private val syncVendorRepository: SyncVendorRepository,
     private val shopTexterService: ShopTexterService,
     private val mappingService: MappingService,
     private val transactionOperations: TransactionOperations,
@@ -53,9 +49,9 @@ class ShopifySynchronizationService(
     suspend fun refresh(report: suspend (String) -> Unit) {
         report("Aktualisiere Shopify- und ready2order-Produktkataloge...")
         coroutineScope {
-            val job = async { shopifyDataStore.refreshAndAwait() }
+            val job = launch { shopifyDataStore.refreshAndAwait() }
             artooDataStore.refreshAndAwait()
-            job.await()
+            job.join()
         }
 
         // TODO: Missing SyncVariants for variations new in ready2order (would report mapping error anyway, necessary?)
@@ -178,7 +174,10 @@ class ShopifySynchronizationService(
             if (!savedShopifyProduct.isDryRun)
                 unsavedVariants.forEachIndexed { index, (sync, _) -> sync.shopifyId = savedShopifyProduct.variants[index].id }
             shopTexterService.updateProduct(syncProduct.id, savedShopifyProduct)
-            transactionOperations.execute { syncProductRepository.save(syncProduct) }
+            transactionOperations.execute {
+                syncProduct.descriptionHtml = savedShopifyProduct.descriptionHtml
+                syncProductRepository.save(syncProduct)
+            }
         }
     }
 

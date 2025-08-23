@@ -12,6 +12,7 @@ import de.hinundhergestellt.jhuh.components.ProgressOverlay
 import de.hinundhergestellt.jhuh.components.VaadinCoroutineScope
 import de.hinundhergestellt.jhuh.components.accordionSummary
 import de.hinundhergestellt.jhuh.components.button
+import de.hinundhergestellt.jhuh.components.ellipsisColumn
 import de.hinundhergestellt.jhuh.components.grid
 import de.hinundhergestellt.jhuh.components.horizontalLayout
 import de.hinundhergestellt.jhuh.components.iconColumn
@@ -63,7 +64,9 @@ private class ReconcileFromShopifyPanel(
             emptyStateText = "Keine abweichenden Einträge gefunden."
             iconColumn { itemIcon(it).create().apply { color = "var(--lumo-secondary-text-color)" } }
             textColumn("Bezeichnung") { it.title }
-            textColumn("Sachverhalte") { it.message }
+            ellipsisColumn({ it.message }) {
+                setHeader("Sachverhalt")
+            }
             rangeMultiSelectionMode()
             setWidthFull()
             setHeight(600.0F, Unit.PIXELS)

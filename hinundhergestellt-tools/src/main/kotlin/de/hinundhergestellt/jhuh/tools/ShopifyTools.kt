@@ -64,6 +64,30 @@ class ShopifyTools(
         mediaClient.update(mediaToDetach, referencesToRemove = listOf(product.id))
     }
 
+    suspend fun replaceProductImages(product: ShopifyProduct) {
+        val productName = extractProductName(product)
+        val productDirectory = imageDirectory.resolve(productName)
+        val images = productDirectory
+            .takeIf { it.isDirectory() }
+            ?.listDirectoryEntries(generateImageFileName(productName, "produktbild-*", "*"))
+            ?.sortedBy { it.computeImageSortSelector() }
+            ?: listOf()
+
+        if (images.isEmpty()) {
+            logger.warn { "No product images found for $productName" }
+            return
+        }
+
+        require(product.hasOnlyDefaultVariant) { "Currently only products without variants" }
+
+        if (product.media.isNotEmpty()) {
+            mediaClient.delete(product.media)
+        }
+
+        val media = mediaClient.upload(images).onEach { it.altText = generateAltText(productName, null) }
+        mediaClient.update(media, referencesToAdd = listOf(product.id))
+    }
+
     suspend fun replaceProductVariantImages(product: ShopifyProduct) {
         require(product.variants.all { it.sku.isNotEmpty() }) { "All product variants must have SKU" }
 
@@ -207,7 +231,7 @@ class ShopifyTools(
 
     private fun extractProductName(product: ShopifyProduct) = product.title.extractProductName()
 
-    private fun generateImageFileSuffix(sku: String) = sku.replace(" ", "-").lowercase()
+    private fun generateImageFileSuffix(sku: String) = sku.generateImageFileSuffix()
 
     private fun extractImageFileExtension(imageUrl: String) = URI(imageUrl).extractFileExtension()
     private fun generateColorSwatchHandle(optionValue: String) =
@@ -237,6 +261,12 @@ class ShopifyTools(
     )
 }
 
+fun Path.computeImageSortSelector(): String {
+    return Regex("""produktbild-(\d+)$""").find(nameWithoutExtension)
+        ?.let { "1:${it.groupValues[1].padStart(4, '0')}" }
+        ?: "2:$nameWithoutExtension"
+}
+
 private val UMLAUT_REPLACEMENTS = listOf(
     """[Ää]+""".toRegex() to "ae",
     """[Öö]+""".toRegex() to "oe",
@@ -254,6 +284,8 @@ private val IMAGE_FILE_NAME_REPLACEMENTS = listOf(
 
 fun String.extractProductName() = substringBefore(",")
 fun URI.extractFileExtension() = path.substringAfterLast(".")
+
+fun String.generateImageFileSuffix() = replace(" ", "-").lowercase() // TODO: remove unwanted characters
 
 fun generateImageFileName(productName: String, suffix: String, extension: String): String {
     val productNamePart = IMAGE_FILE_NAME_REPLACEMENTS
