@@ -3,7 +3,6 @@ package de.hinundhergestellt.jhuh
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import de.hinundhergestellt.jhuh.tools.PointPct
 import de.hinundhergestellt.jhuh.tools.RectPct
 import de.hinundhergestellt.jhuh.tools.ShopifyTools
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMedia
@@ -32,12 +31,7 @@ import kotlin.io.path.readText
 import kotlin.io.path.writeText
 import kotlin.test.Test
 
-@SpringBootTest(
-    properties = [
-        "hinundhergestellt.image-directory=/media/lordjaxom/akv-soft.de/sascha/Hin- und Hergestellt/Shopify",
-        "hinundhergestellt.download-threads=4"
-    ]
-)
+@SpringBootTest
 @Disabled("Only run manually")
 class ShopifyProductsFixITCase {
 

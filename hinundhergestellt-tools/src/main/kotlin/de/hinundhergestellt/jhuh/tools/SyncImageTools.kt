@@ -10,7 +10,6 @@ import kotlin.io.path.listDirectoryEntries
 class SyncImageTools(
     @Value("\${hinundhergestellt.image-directory}") private val imageDirectory: Path,
 ) {
-
     fun findSyncImages(productTitle: String, variantSkus: List<String> = listOf()): List<SyncImage> {
         require(productTitle.isNotEmpty()) { "productTitle must not be empty" }
         val productName = productTitle.extractProductName()

@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.4</version>
+        <version>3.5.5</version>
     </parent>
 
     <groupId>de.akvsoft</groupId>
@@ -26,6 +26,7 @@
 
     <modules>
         <module>hinundhergestellt-core</module>
+        <module>hinundhergestellt-base</module>
         <module>hinundhergestellt-vendor-ready2order-api</module>
         <module>hinundhergestellt-vendor-shopify-api</module>
         <module>hinundhergestellt-vendor-rayher-api</module>
@@ -38,6 +39,11 @@
             <dependency>
                 <groupId>de.akvsoft</groupId>
                 <artifactId>hinundhergestellt-core</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>de.akvsoft</groupId>
+                <artifactId>hinundhergestellt-base</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
             </dependency>
             <dependency>

@@ -1,6 +1,8 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
 import com.netflix.graphql.dgs.client.WebClientGraphQLClient
+import de.hinundhergestellt.jhuh.HuhProperties
+import de.hinundhergestellt.jhuh.core.mapParallel
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.DgsClient.buildMutation
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.DgsClient.buildQuery
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.File
@@ -20,15 +22,10 @@ import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.StagedUploadInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.StagedUploadTargetGenerateUploadResource
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.StagedUploadsCreatePayload
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.awaitFirstOrNull
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.core.io.FileSystemResource
 import org.springframework.http.HttpStatus
@@ -46,21 +43,16 @@ private val logger = KotlinLogging.logger {}
 @Component
 @ConditionalOnProperty("shopify.read-only", havingValue = "false", matchIfMissing = true)
 class ShopifyMediaClient(
-    private val shopifyGraphQLClient: WebClientGraphQLClient
+    private val shopifyGraphQLClient: WebClientGraphQLClient,
+    private val genericWebClient: WebClient,
+    private val properties: HuhProperties
 ) {
-    private val uploadWebClient by lazy { WebClient.builder().build() }
-
     fun fetchAll(query: String? = null) = pageAll { fetchNextPage(it, query) }.map { it.toShopifyMedia() }
 
-    suspend fun upload(files: List<Path>, parallelism: Int = 4) = coroutineScope {
+    suspend fun upload(files: List<Path>) = coroutineScope {
         val stagedTargets = createStagedUploads(files)
 
-        val semaphore = Semaphore(parallelism)
-        files.asSequence()
-            .zip(stagedTargets.asSequence())
-            .map { (file, staged) -> async(Dispatchers.IO) { semaphore.withPermit { uploadToStaging(file, staged) } } }
-            .toList()
-            .awaitAll()
+        files.zip(stagedTargets).mapParallel(properties.processingThreads) { (file, staged) -> uploadToStaging(file, staged) }
 
         val createdFiles = createFiles(stagedTargets)
         val processedFiles = waitForFiles(createdFiles)
@@ -176,7 +168,7 @@ class ShopifyMediaClient(
         val bodyBuilder = MultipartBodyBuilder()
         stagedTarget.parameters.forEach { bodyBuilder.part(it.name, it.value) }
         bodyBuilder.part("file", FileSystemResource(file))
-        uploadWebClient.post()
+        genericWebClient.post()
             .uri(stagedTarget.url!!)
             .body(BodyInserters.fromMultipartData(bodyBuilder.build()))
             .exchangeToMono {

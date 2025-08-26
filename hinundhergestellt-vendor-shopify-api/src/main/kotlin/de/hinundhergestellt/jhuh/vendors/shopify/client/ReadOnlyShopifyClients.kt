@@ -1,21 +1,25 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
 import com.netflix.graphql.dgs.client.WebClientGraphQLClient
+import de.hinundhergestellt.jhuh.HuhProperties
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.web.reactive.function.client.WebClient
 import java.nio.file.Path
 import java.util.UUID
 
 @Configuration
 @ConditionalOnProperty("shopify.read-only", havingValue = "true")
 class ReadOnlyShopifyClients(
-    private val shopifyGraphQLClient: WebClientGraphQLClient
+    private val shopifyGraphQLClient: WebClientGraphQLClient,
+    private val genericWebClient: WebClient,
+    private val properties: HuhProperties
 ) {
     @Bean
     fun shopifyMediaClient() =
-        object : ShopifyMediaClient(shopifyGraphQLClient) {
-            override suspend fun upload(files: List<Path>, parallelism: Int) = files.map { it.toDryRunShopifyMedia() }
+        object : ShopifyMediaClient(shopifyGraphQLClient, genericWebClient, properties) {
+            override suspend fun upload(files: List<Path>) = files.map { it.toDryRunShopifyMedia() }
             override suspend fun update(medias: List<ShopifyMedia>, referencesToAdd: List<String>?, referencesToRemove: List<String>?) {}
             override suspend fun delete(medias: List<ShopifyMedia>) {}
         }

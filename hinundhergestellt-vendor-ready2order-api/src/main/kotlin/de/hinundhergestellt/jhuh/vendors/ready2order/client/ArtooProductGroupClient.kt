@@ -2,12 +2,13 @@ package de.hinundhergestellt.jhuh.vendors.ready2order.client
 
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.api.ProductGroupApi
 import kotlinx.coroutines.reactive.awaitSingle
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 
 @Component
 class ArtooProductGroupClient(
-    ready2orderWebClient: WebClient
+    @Qualifier("ready2orderWebClient") ready2orderWebClient: WebClient
 ) {
     private val api: ProductGroupApi = ProductGroupApi(ready2orderWebClient)
 

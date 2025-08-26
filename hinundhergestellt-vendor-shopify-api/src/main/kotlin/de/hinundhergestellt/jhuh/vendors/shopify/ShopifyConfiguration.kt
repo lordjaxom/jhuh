@@ -11,13 +11,13 @@ class ShopifyConfiguration {
 
     @Bean
     fun shopifyGraphQLClient(
+        builder: WebClient.Builder,
         @Value("\${shopify.domain}") domain: String,
         @Value("\${shopify.token}") token: String
     ): WebClientGraphQLClient {
-        val webClient = WebClient.builder()
+        val webClient = builder
             .baseUrl("https://$domain.myshopify.com/admin/api/2025-04/graphql.json")
             .defaultHeader("X-Shopify-Access-Token", token)
-            .codecs { it.defaultCodecs().maxInMemorySize(5 * 1024 * 1024) }
             .build()
         return WebClientGraphQLClient(webClient)
     }

@@ -10,24 +10,16 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>hinundhergestellt-tools</artifactId>
+    <artifactId>hinundhergestellt-base</artifactId>
 
     <dependencies>
         <dependency>
-            <groupId>de.akvsoft</groupId>
-            <artifactId>hinundhergestellt-base</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
         </dependency>
         <dependency>
-            <groupId>de.akvsoft</groupId>
-            <artifactId>hinundhergestellt-vendor-ready2order-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>de.akvsoft</groupId>
-            <artifactId>hinundhergestellt-vendor-shopify-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>de.akvsoft</groupId>
-            <artifactId>hinundhergestellt-vendor-rayher-api</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
 
         <dependency>
@@ -35,18 +27,25 @@
             <artifactId>kotlin-stdlib</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-reflect</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlinx</groupId>
+            <artifactId>kotlinx-coroutines-core-jvm</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jetbrains.kotlinx</groupId>
             <artifactId>kotlinx-coroutines-reactor</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlinx</groupId>
+            <artifactId>kotlinx-coroutines-reactive</artifactId>
         </dependency>
 
         <dependency>
             <groupId>io.github.oshai</groupId>
             <artifactId>kotlin-logging-jvm</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-yaml</artifactId>
         </dependency>
 
         <dependency>
@@ -63,7 +62,6 @@
 
     <build>
         <sourceDirectory>src/main/kotlin</sourceDirectory>
-        <testSourceDirectory>src/test/kotlin</testSourceDirectory>
 
         <plugins>
             <plugin>

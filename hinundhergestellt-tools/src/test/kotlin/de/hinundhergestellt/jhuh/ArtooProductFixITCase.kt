@@ -25,12 +25,7 @@ import kotlin.test.Test
 
 private val logger = KotlinLogging.logger {}
 
-@SpringBootTest(
-    properties = [
-        "hinundhergestellt.image-directory=/media/lordjaxom/akv-soft.de/sascha/Hin- und Hergestellt/Shopify",
-        "hinundhergestellt.download-threads=4"
-    ]
-)
+@SpringBootTest
 @Disabled("Only run manually")
 class ArtooProductFixITCase {
 

@@ -1,6 +1,8 @@
 package de.hinundhergestellt.jhuh.tools
 
 import arrow.atomic.AtomicInt
+import de.hinundhergestellt.jhuh.HuhProperties
+import de.hinundhergestellt.jhuh.core.mapIndexedParallel
 import de.hinundhergestellt.jhuh.vendors.shopify.client.LinkedMetafield
 import de.hinundhergestellt.jhuh.vendors.shopify.client.MetaobjectField
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMedia
@@ -13,14 +15,9 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyMetaobject
 import de.hinundhergestellt.jhuh.vendors.shopify.client.update
+import de.hinundhergestellt.jhuh.vendors.shopify.taxonomy.ShopifyColorTaxonomy
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import java.awt.Color
@@ -42,9 +39,9 @@ class ShopifyTools(
     private val optionClient: ShopifyProductOptionClient,
     private val mediaClient: ShopifyMediaClient,
     private val metaobjectClient: ShopifyMetaobjectClient,
-    private val toolsWebClient: WebClient,
-    @Value("\${hinundhergestellt.image-directory}") private val imageDirectory: Path,
-    @Value("\${hinundhergestellt.download-threads}") private val downloadThreads: Int
+    private val colorTaxonomy: ShopifyColorTaxonomy,
+    private val genericWebClient: WebClient,
+    private val properties: HuhProperties
 ) {
     suspend fun reorganizeProductImages(product: ShopifyProduct) {
         require(product.variants.all { it.sku.isNotEmpty() }) { "All product variants must have SKU" }
@@ -66,7 +63,7 @@ class ShopifyTools(
 
     suspend fun replaceProductImages(product: ShopifyProduct) {
         val productName = extractProductName(product)
-        val productDirectory = imageDirectory.resolve(productName)
+        val productDirectory = properties.imageDirectory.resolve(productName)
         val images = productDirectory
             .takeIf { it.isDirectory() }
             ?.listDirectoryEntries(generateImageFileName(productName, "produktbild-*", "*"))
@@ -146,17 +143,10 @@ class ShopifyTools(
     private suspend fun normalizeMediaImages(product: ShopifyProduct) = coroutineScope {
         val productName = extractProductName(product)
         val indexOfNonVariantImage = AtomicInt(1)
-        val semaphore = Semaphore(downloadThreads)
-        product.media
-            .mapIndexed { index, media ->
-                async(Dispatchers.IO) {
-                    semaphore.withPermit {
-                        logger.info { "Normalizing image ${index + 1} of ${product.media.size}" }
-                        normalizeMediaImage(productName, product, media, indexOfNonVariantImage)
-                    }
-                }
-            }
-            .awaitAll()
+        product.media.mapIndexedParallel(properties.processingThreads) { index, media ->
+            logger.info { "Normalizing image ${index + 1} of ${product.media.size}" }
+            normalizeMediaImage(productName, product, media, indexOfNonVariantImage)
+        }
     }
 
     private suspend fun normalizeMediaImage(
@@ -170,16 +160,16 @@ class ShopifyTools(
         val imageFileExtension = extractImageFileExtension(media.src)
         val imageFileSuffix = variant?.sku?.let { generateImageFileSuffix(it) } ?: "produktbild-${indexOfNonVariantImage.andIncrement}"
         val imageFileName = generateImageFileName(productName, imageFileSuffix, imageFileExtension)
-        val imageFilePath = imageDirectory.resolve(productName).resolve(imageFileName)
+        val imageFilePath = properties.imageDirectory.resolve(productName).resolve(imageFileName)
 
         imageFilePath.parent.createDirectories()
-        toolsWebClient.downloadFileTo(media.src, imageFilePath)
+        genericWebClient.downloadFileTo(media.src, imageFilePath)
 
         val finalImagePath =
             if (imageFileExtension != "webp") imageFilePath
             else {
                 val newImageFileName = generateImageFileName(productName, imageFileSuffix, "png")
-                val newImagePath = imageDirectory.resolve(productName).resolve(newImageFileName)
+                val newImagePath = properties.imageDirectory.resolve(productName).resolve(newImageFileName)
                 val result = Runtime.getRuntime().exec(arrayOf("convert", imageFilePath.toString(), newImagePath.toString())).waitFor()
                 require(result == 0) { "Conversion of webp to png failed" }
                 imageFilePath.deleteExisting()
@@ -190,23 +180,21 @@ class ShopifyTools(
         return NormalizedImage(finalImagePath, variant, altText)
     }
 
-    private suspend fun evaluateMediaImages(product: ShopifyProduct, colorRect: RectPct?, swatchRect: RectPct?, ignoreWhite: Boolean) =
-        coroutineScope {
-            val productName = extractProductName(product)
-            val imagePath = imageDirectory.resolve(productName)
-            require(imagePath.isDirectory()) { "Image directory for $productName does not exist or is not a directory" }
-            val semaphore = Semaphore(downloadThreads)
-            product.variants
-                .mapIndexed { index, variant ->
-                    async(Dispatchers.IO) {
-                        semaphore.withPermit {
-                            logger.info { "Evaluating image ${index + 1} of ${product.variants.size}" }
-                            evaluateMediaImage(productName, variant, imagePath, colorRect, swatchRect, ignoreWhite)
-                        }
-                    }
-                }
-                .awaitAll()
+    private suspend fun evaluateMediaImages(
+        product: ShopifyProduct,
+        colorRect: RectPct?,
+        swatchRect: RectPct?,
+        ignoreWhite: Boolean
+    ) = coroutineScope {
+        val productName = extractProductName(product)
+        val imagePath = properties.imageDirectory.resolve(productName)
+        require(imagePath.isDirectory()) { "Image directory for $productName does not exist or is not a directory" }
+
+        product.variants.mapIndexedParallel(properties.processingThreads) { index, variant ->
+            logger.info { "Evaluating image ${index + 1} of ${product.variants.size}" }
+            evaluateMediaImage(productName, variant, imagePath, colorRect, swatchRect, ignoreWhite)
         }
+    }
 
     private fun evaluateMediaImage(
         productName: String,
@@ -221,7 +209,7 @@ class ShopifyTools(
         val imageFilePath = imagePath.listDirectoryEntries(imageFilePattern).first()
 
         val swatchColor = colorRect?.let { MediaImageTools.averageColorPercent(imageFilePath, it, ignoreWhite = ignoreWhite) }
-        val taxonomyReference = swatchColor?.let { ShopifyColorTaxonomy.findByColor(it) }
+        val taxonomyReference = swatchColor?.let { colorTaxonomy.findByColor(it) }
 
         val swatchFilePath = swatchRect
             ?.let { imageFilePath.parent.resolve("${imageFilePath.nameWithoutExtension}-swatch.${imageFilePath.extension}") }
