@@ -40,6 +40,7 @@ class ShopifyTools(
     private val mediaClient: ShopifyMediaClient,
     private val metaobjectClient: ShopifyMetaobjectClient,
     private val colorTaxonomy: ShopifyColorTaxonomy,
+    private val syncImageTools: SyncImageTools,
     private val genericWebClient: WebClient,
     private val properties: HuhProperties
 ) {
@@ -63,13 +64,7 @@ class ShopifyTools(
 
     suspend fun replaceProductImages(product: ShopifyProduct) {
         val productName = extractProductName(product)
-        val productDirectory = properties.imageDirectory.resolve(productName)
-        val images = productDirectory
-            .takeIf { it.isDirectory() }
-            ?.listDirectoryEntries(generateImageFileName(productName, "produktbild-*", "*"))
-            ?.sortedBy { it.computeImageSortSelector() }
-            ?: listOf()
-
+        val images = syncImageTools.findSyncImages(productName).map { it.path }
         if (images.isEmpty()) {
             logger.warn { "No product images found for $productName" }
             return
@@ -86,21 +81,25 @@ class ShopifyTools(
     }
 
     suspend fun replaceProductVariantImages(product: ShopifyProduct) {
-        require(product.variants.all { it.sku.isNotEmpty() }) { "All product variants must have SKU" }
+        val variantSkus = product.variants.map { it.sku }
+        require(variantSkus.all { it.isNotEmpty() }) { "All product variants must have SKU" }
 
         // check if all images are accounted for before deleting
-        val images = evaluateMediaImages(product, null, null, false)
+        val images = syncImageTools.findSyncImages(product.title.extractProductName(), variantSkus)
+            .filter { it.variantSku != null }
+        require(images.size == product.variants.size) { "Not all variants have an image" }
 
         mediaClient.delete(product.media.filter { media -> product.variants.any { it.mediaId == media.id } }.toList())
 
-        val media = mediaClient.upload(images.map { it.imagePath })
+        val mediaVariants = mediaClient.upload(images.map { it.path })
             .asSequence()
             .zip(images.asSequence())
-            .map { (media, image) -> media.apply { altText = generateAltText(product, image.variant); image.variant.mediaId = id } }
+            .map { (media, image) -> media to product.variants.first { it.sku == image.variantSku } }
+            .onEach { (media, variant) -> media.altText = generateAltText(product, variant); variant.mediaId = media.id }
             .toList()
 
-        mediaClient.update(media, referencesToAdd = listOf(product.id))
-        variantClient.update(product, images.map { it.variant })
+        mediaClient.update(mediaVariants.map { it.first }, referencesToAdd = listOf(product.id))
+        variantClient.update(product, mediaVariants.map { it.second })
     }
 
     suspend fun generateVariantColorSwatches(

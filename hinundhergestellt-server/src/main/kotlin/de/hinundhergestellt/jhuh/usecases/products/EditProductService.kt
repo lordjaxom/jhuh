@@ -71,7 +71,7 @@ class EditProductService(
         val productTitle = description?.takeIf { it.isNotEmpty() }
             ?: artooProduct.description.takeIf { it.isNotEmpty() }
             ?: return listOf()
-        return syncImageTools.findSyncImages(productTitle, artooProduct.variations.mapNotNull { it.itemNumber })
+        return syncImageTools.findSyncImages(productTitle.extractProductName(), artooProduct.variations.mapNotNull { it.itemNumber })
     }
 
     fun canDownloadImages(artooProduct: ArtooMappedProduct, description: String?) =

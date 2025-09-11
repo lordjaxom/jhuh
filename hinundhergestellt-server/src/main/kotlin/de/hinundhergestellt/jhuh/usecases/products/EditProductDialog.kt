@@ -249,6 +249,7 @@ private class EditProductDialog(
     private fun downloadImages() {
         vaadinScope.launchWithReporting {
             application { service.downloadImages(artooProduct, descriptionTextField.value, ::report) }
+            updateImageTexts()
         }
     }
 

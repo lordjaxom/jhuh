@@ -1,6 +1,6 @@
 package de.hinundhergestellt.jhuh.tools
 
-import org.springframework.beans.factory.annotation.Value
+import de.hinundhergestellt.jhuh.HuhProperties
 import org.springframework.stereotype.Component
 import java.nio.file.Path
 import kotlin.io.path.isDirectory
@@ -8,12 +8,12 @@ import kotlin.io.path.listDirectoryEntries
 
 @Component
 class SyncImageTools(
-    @Value("\${hinundhergestellt.image-directory}") private val imageDirectory: Path,
+    private var properties: HuhProperties
 ) {
-    fun findSyncImages(productTitle: String, variantSkus: List<String> = listOf()): List<SyncImage> {
-        require(productTitle.isNotEmpty()) { "productTitle must not be empty" }
-        val productName = productTitle.extractProductName()
-        val productDirectory = imageDirectory.resolve(productName).takeIf { it.isDirectory() } ?: return listOf()
+    fun findSyncImages(productName: String, variantSkus: List<String> = listOf()): List<SyncImage> {
+        require(productName.isNotEmpty()) { "productName must not be empty" }
+
+        val productDirectory = properties.imageDirectory.resolve(productName).takeIf { it.isDirectory() } ?: return listOf()
 
         val productImages = productDirectory
             .listDirectoryEntries(generateImageFileName(productName, "produktbild-*", "*"))
