@@ -81,7 +81,7 @@ class ShopifyProductsFixITCase {
 
     @Test
     fun reorganizeProductImages() = runBlocking {
-        val product = productClient.fetchAll("'Ricorumi Twinkly Twinkly dk, 99% Baumwolle 1% Polyester, 25g'").first()
+        val product = productClient.fetchAll("'Ricorumi Chenillove Sparkle, 100% PES, 100g'").first()
         shopifyTools.reorganizeProductImages(product)
     }
 
@@ -100,11 +100,11 @@ class ShopifyProductsFixITCase {
 
     @Test
     fun generateVariantColorSwatches() = runBlocking {
-        val product = productClient.fetchAll("'Ricorumi Twinkly Twinkly dk, 99% Baumwolle 1% Polyester, 25g'").first()
+        val product = productClient.fetchAll("'Ricorumi Chenillove Sparkle, 100% PES, 100g'").first()
         shopifyTools.generateVariantColorSwatches(
             product,
             "aslan-ca23",
-            RectPct(40.0, 16.0, 60.0, 34.0),
+            RectPct(40.0, 10.0, 60.0, 30.0),
             null
         )
     }
