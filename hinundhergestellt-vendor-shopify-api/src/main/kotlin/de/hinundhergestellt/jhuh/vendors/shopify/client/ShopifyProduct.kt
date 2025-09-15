@@ -178,3 +178,5 @@ class ShopifyProduct private constructor(
     internal fun toProductDeleteInput() =
         ProductDeleteInput(id)
 }
+
+val ShopifyProduct.variantSkus get() = variants.asSequence().map { it.sku }.filter { it.isNotEmpty() }.toList()

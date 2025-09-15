@@ -10,9 +10,9 @@ import de.hinundhergestellt.jhuh.core.forEachIndexedParallel
 import de.hinundhergestellt.jhuh.tools.SyncImage
 import de.hinundhergestellt.jhuh.tools.SyncImageTools
 import de.hinundhergestellt.jhuh.tools.downloadFileTo
-import de.hinundhergestellt.jhuh.tools.extractFileExtension
-import de.hinundhergestellt.jhuh.tools.extractProductName
+import de.hinundhergestellt.jhuh.tools.extension
 import de.hinundhergestellt.jhuh.tools.generateImageFileName
+import de.hinundhergestellt.jhuh.tools.syncImageProductName
 import de.hinundhergestellt.jhuh.vendors.rayher.csv.RayherProduct
 import de.hinundhergestellt.jhuh.vendors.rayher.datastore.RayherDataStore
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
@@ -70,7 +70,7 @@ class EditProductService(
         val productTitle = description?.takeIf { it.isNotEmpty() }
             ?: artooProduct.description.takeIf { it.isNotEmpty() }
             ?: return listOf()
-        return syncImageTools.findSyncImages(productTitle.extractProductName(), artooProduct.variations.mapNotNull { it.itemNumber })
+        return syncImageTools.findSyncImages(productTitle.syncImageProductName, artooProduct.variations.mapNotNull { it.itemNumber })
     }
 
     fun canDownloadImages(artooProduct: ArtooMappedProduct, description: String?) =
@@ -97,7 +97,7 @@ class EditProductService(
         val productTitle = description?.takeIf { it.isNotEmpty() }
             ?: artooProduct.description.takeIf { it.isNotEmpty() }
             ?: return
-        val productName = productTitle.extractProductName()
+        val productName = productTitle.syncImageProductName
         val productPath = properties.imageDirectory.resolve(productName)
         productPath.createDirectories()
 
@@ -110,7 +110,7 @@ class EditProductService(
     }
 
     private suspend fun downloadRayherImage(productName: String, productPath: Path, index: Int, imageUrl: String) {
-        val extension = URI(imageUrl).extractFileExtension()
+        val extension = URI(imageUrl).extension
         val suffix = "produktbild-${index + 1}"
         val fileName = generateImageFileName(productName, suffix, extension)
         val filePath = productPath.resolve(fileName)

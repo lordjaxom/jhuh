@@ -15,6 +15,7 @@ target/
 .idea/jpa-buddy-datasource.xml
 .idea/libraries/
 .idea/inspectionProfiles/
+.idea/copilot.*
 *.iws
 *.iml
 *.ipr

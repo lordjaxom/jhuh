@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import de.hinundhergestellt.jhuh.tools.RectPct
-import de.hinundhergestellt.jhuh.tools.ShopifyTools
+import de.hinundhergestellt.jhuh.tools.ShopifyImageTools
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMedia
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMediaClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafieldClient
@@ -54,7 +54,7 @@ class ShopifyProductsFixITCase {
     private lateinit var metaobjectClient: ShopifyMetaobjectClient
 
     @Autowired
-    private lateinit var shopifyTools: ShopifyTools
+    private lateinit var shopifyImageTools: ShopifyImageTools
 
     @Test
     fun findAllProducts(): Unit = runBlocking {
@@ -76,26 +76,26 @@ class ShopifyProductsFixITCase {
     @Test
     fun reorganizeProductImages() = runBlocking {
         val product = productClient.fetchAll("'Ricorumi Chenillove Sparkle, 100% PES, 100g'").first()
-        shopifyTools.reorganizeProductImages(product)
+        shopifyImageTools.reorganizeProductImages(product)
     }
 
     @Test
     fun replaceProductImagesForAllWithoutMedia() = runBlocking {
         productClient.fetchAll()
             .filter { it.media.isEmpty() }
-            .collect { shopifyTools.replaceProductImages(it) }
+            .collect { shopifyImageTools.replaceProductImages(it) }
     }
 
     @Test
     fun replaceProductVariantImages() = runBlocking {
         val product = productClient.fetchAll("'Oracal® 631 Exhibition Cal Matt, 20cm x 30cm'").first()
-        shopifyTools.replaceProductVariantImages(product)
+        shopifyImageTools.replaceProductVariantImages(product)
     }
 
     @Test
     fun generateVariantColorSwatches() = runBlocking {
         val product = productClient.fetchAll("'Ricorumi Chenillove Sparkle, 100% PES, 100g'").first()
-        shopifyTools.generateVariantColorSwatches(
+        shopifyImageTools.generateVariantColorSwatches(
             product,
             "aslan-ca23",
             RectPct(40.0, 10.0, 60.0, 30.0),

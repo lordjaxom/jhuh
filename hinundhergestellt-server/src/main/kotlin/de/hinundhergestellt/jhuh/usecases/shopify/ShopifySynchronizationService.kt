@@ -259,7 +259,7 @@ class ShopifySynchronizationService(
     private inner class UpdateProductItem(
         val product: ShopifyProduct,
         override val message: String,
-        val block: () -> Unit,
+        val block: Any?.() -> Unit,
     ) : ProductItem() {
         override val title by product::title
     }
@@ -298,7 +298,7 @@ class ShopifySynchronizationService(
         val product: ShopifyProduct,
         val variant: ShopifyProductVariant,
         override val message: String,
-        val block: () -> Unit
+        val block: Any?.() -> Unit
     ) : VariantItem() {
         override val title by variant::title
     }

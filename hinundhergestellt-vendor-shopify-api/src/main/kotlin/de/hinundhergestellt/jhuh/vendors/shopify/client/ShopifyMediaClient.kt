@@ -137,7 +137,7 @@ class ShopifyMediaClient(
         while (unprocessed.isNotEmpty()) {
             logger.info { "Still ${unprocessed.size} files unprocessed, delaying..." }
 
-            delay(5_000)
+            delay(1_000)
 
             val query = unprocessed.keys.joinToString(" OR ") { "(id:${it.substringAfterLast("/")})" }
             val request = buildQuery {

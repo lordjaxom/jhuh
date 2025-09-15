@@ -1,6 +1,7 @@
 package de.hinundhergestellt.jhuh.backend.mapping
 
 import kotlin.reflect.KMutableProperty0
+import kotlin.reflect.KMutableProperty1
 
 internal fun Collection<*>.toQuotedString() = joinToString(", ", prefix = "\"", postfix = "\"")
 internal fun Any?.toQuotedString() = if (this is Collection<*>) toQuotedString() else "\"${this ?: ""}\""
@@ -33,11 +34,11 @@ internal fun <T> additionMessage(fieldName: String, value: T): String {
 internal enum class ChangeField(
     val displayName: String,
     val showChange: Boolean,
-    val fieldName: String? = null
+    vararg val fieldName: String
 ) {
     PRODUCT_TITLE("Titel", true, "title"),
     PRODUCT_VENDOR("Hersteller", true, "vendor"),
-    PRODUCT_TYPE("Produktart", true, "productType"),
+    PRODUCT_TYPE("Produktart", true, "productType", "type"),
     PRODUCT_DESCRIPTION("Produktbeschreibung", false, "descriptionHtml"),
     PRODUCT_TAGS("Tags", true, "tags"),
     VARIANT_BARCODE("Barcode", true, "barcode"),
@@ -46,20 +47,24 @@ internal enum class ChangeField(
     OPTION_VALUE("Option %1\$s", true);
 
     companion object {
-        fun fromFieldName(fieldName: String) = entries.first { it.fieldName == fieldName }
+        fun fromFieldName(fieldName: String) = entries.first { it.fieldName.contains(fieldName) }
     }
 }
 
-internal class Change(
+internal class Change<T>(
     val message: String,
-    val action: () -> Unit
+    val action: T.() -> Unit
 )
 
 internal fun <T> change(property: KMutableProperty0<T>, newValue: T, field: ChangeField? = null, vararg args: Any) =
-    property.get()
-        .takeIf { it != newValue }
+    property.get().takeIf { it != newValue }
         ?.let { changeMessage(field ?: ChangeField.fromFieldName(property.name), it, newValue, *args) }
-        ?.let { Change(it) { property.set(newValue) } }
+        ?.let { Change<Any?>(it) { property.set(newValue) } }
+
+internal fun <T, V> change(instance: T, property: KMutableProperty1<T, V>, newValue: V, field: ChangeField? = null, vararg args: Any) =
+    property.get(instance).takeIf { it != newValue }
+        ?.let { changeMessage(field ?: ChangeField.fromFieldName(property.name), it, newValue, *args) }
+        ?.let { Change<T>(it) { property.set(this, newValue) } }
 
 private fun <T> changeMessage(field: ChangeField, oldValue: T, newValue: T, vararg args: Any) =
     "${field.displayName.format(*args)}${if (field.showChange) " von ${oldValue.toQuotedString()} zu ${newValue.toQuotedString()}" else ""} geändert"

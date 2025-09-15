@@ -12,14 +12,15 @@ import de.hinundhergestellt.jhuh.components.ProgressOverlay
 import de.hinundhergestellt.jhuh.components.VaadinCoroutineScope
 import de.hinundhergestellt.jhuh.components.accordionSummary
 import de.hinundhergestellt.jhuh.components.button
+import de.hinundhergestellt.jhuh.components.componentColumn
 import de.hinundhergestellt.jhuh.components.ellipsisColumn
 import de.hinundhergestellt.jhuh.components.grid
 import de.hinundhergestellt.jhuh.components.horizontalLayout
-import de.hinundhergestellt.jhuh.components.iconColumn
 import de.hinundhergestellt.jhuh.components.rangeMultiSelectionMode
 import de.hinundhergestellt.jhuh.components.textColumn
-import de.hinundhergestellt.jhuh.usecases.maintenance.ReconcileFromShopifyService.ProductReconcileItem
-import de.hinundhergestellt.jhuh.usecases.maintenance.ReconcileFromShopifyService.VariantReconcileItem
+import de.hinundhergestellt.jhuh.usecases.maintenance.ReconcileFromShopifyService.Item
+import de.hinundhergestellt.jhuh.usecases.maintenance.ReconcileFromShopifyService.ProductItem
+import de.hinundhergestellt.jhuh.usecases.maintenance.ReconcileFromShopifyService.VariantItem
 import kotlinx.coroutines.CoroutineScope
 import org.springframework.stereotype.Component
 
@@ -30,7 +31,7 @@ private class ReconcileFromShopifyPanel(
 ) : AccordionPanel() {
 
     private val applyButton: Button
-    private val itemsGrid: Grid<ReconcileItem>
+    private val itemsGrid: Grid<Item>
 
     private val vaadinScope = VaadinCoroutineScope(this, applicationScope, progressOverlay)
 
@@ -60,12 +61,19 @@ private class ReconcileFromShopifyPanel(
                 addClickListener { applySelectedItems() }
             }
         }
-        itemsGrid = grid<ReconcileItem> {
+        itemsGrid = grid<Item> {
             emptyStateText = "Keine abweichenden Einträge gefunden."
-            iconColumn { itemIcon(it).create().apply { color = "var(--lumo-secondary-text-color)" } }
-            textColumn("Bezeichnung") { it.title }
+            componentColumn({ gridIconColumn(it)}) {
+                isAutoWidth = true
+                flexGrow = 0
+            }
+            textColumn({ it.title }) {
+                setHeader("Bezeichnung")
+                flexGrow = 1
+            }
             ellipsisColumn({ it.message }) {
                 setHeader("Sachverhalt")
+                flexGrow = 2
             }
             rangeMultiSelectionMode()
             setWidthFull()
@@ -97,11 +105,11 @@ private class ReconcileFromShopifyPanel(
         applyButton.isEnabled = itemsGrid.selectedItems.isNotEmpty()
     }
 
-    private fun itemIcon(item: ReconcileItem) =
+    private fun gridIconColumn(item: Item) =
         when (item) {
-            is ProductReconcileItem -> CustomIcon.PRODUCT
-            is VariantReconcileItem -> CustomIcon.VARIATION
-        }
+            is ProductItem -> CustomIcon.PRODUCT
+            is VariantItem -> CustomIcon.VARIATION
+        }.create().apply { color = "var(--lumo-secondary-text-color)" }
 }
 
 @Component

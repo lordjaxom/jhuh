@@ -1,7 +1,9 @@
 package de.hinundhergestellt.jhuh.usecases.maintenance
 
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
+import de.hinundhergestellt.jhuh.HuhProperties
 import de.hinundhergestellt.jhuh.backend.mapping.MappingService
+import de.hinundhergestellt.jhuh.backend.mapping.change
 import de.hinundhergestellt.jhuh.backend.mapping.toQuotedString
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategory
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategoryRepository
@@ -12,6 +14,9 @@ import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariant
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariantRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendor
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendorRepository
+import de.hinundhergestellt.jhuh.core.mapParallel
+import de.hinundhergestellt.jhuh.tools.ShopifyImageTools
+import de.hinundhergestellt.jhuh.tools.isValidSyncImageFor
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedCategory
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
@@ -19,10 +24,9 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightUnit
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionOperations
-import java.util.UUID
+import kotlin.reflect.KMutableProperty1
 import kotlin.streams.asSequence
 
 private val logger = KotlinLogging.logger { }
@@ -37,9 +41,11 @@ class ReconcileFromShopifyService(
     private val syncVariantRepository: SyncVariantRepository,
     private val syncCategoryRepository: SyncCategoryRepository,
     private val syncVendorRepository: SyncVendorRepository,
-    private val transactionOperations: TransactionOperations
+    private val shopifyImageTools: ShopifyImageTools,
+    private val transactionOperations: TransactionOperations,
+    private val properties: HuhProperties,
 ) {
-    val items = mutableListOf<ReconcileItem>()
+    val items = mutableListOf<Item>()
 
     suspend fun refresh(report: suspend (String) -> Unit) {
         report("Aktualisiere Shopify-Produktkatalog...")
@@ -47,78 +53,69 @@ class ReconcileFromShopifyService(
 
         report("Gleiche Shopify-Produkte mit Datenbank ab...")
         items.clear()
-        shopifyDataStore.products.forEach { reconcile(it) }
+        items += shopifyDataStore.products
+            .mapParallel(properties.processingThreads) { reconcile(it) }
+            .flatten()
 
 //        report("Unbekannte Kategorien abgleichen...")
 //        artooDataStore.rootCategories.forEach { reconcileCategories(it) }
     }
 
-    suspend fun apply(items: Set<ReconcileItem>, report: suspend (String) -> Unit) {
+    suspend fun apply(items: Set<Item>, report: suspend (String) -> Unit) {
         report("Übernehme markierte Änderungen in Datenbank...")
-        transactionOperations.execute { items.forEach { it.reconcile() } }
+
+        val repositoryUpdates = mutableListOf<() -> Unit>()
+        items.forEach { item ->
+            when (item) {
+                is ImmediateProductItem -> item.block()
+
+                is UpdateSyncProductItem -> repositoryUpdates += {
+                    syncProductRepository.save(syncProductRepository.findById(item.product.id).orElseThrow().apply(item.block))
+                }
+
+                is UpdateSyncVariantItem -> repositoryUpdates += {
+                    syncVariantRepository.save(syncVariantRepository.findById(item.variant.id).orElseThrow().apply(item.block))
+                }
+            }
+        }
+
+        transactionOperations.execute { repositoryUpdates.forEach { it() } }
     }
 
-    private fun reconcile(product: ShopifyProduct) {
+    private fun reconcile(product: ShopifyProduct) = buildList {
         val syncProduct = syncProductRepository.findByShopifyId(product.id) ?: run {
             val matchingArtooProducts = artooDataStore.findProductsByBarcodes(product.variants.map { it.barcode }).toList()
             if (matchingArtooProducts.isEmpty()) {
                 logger.info { "ShopifyProduct ${product.title} does not match any ArtooProduct, skip reconciliation" }
-                return
+                return@buildList
             }
             require(matchingArtooProducts.size == 1) { "More than one ArtooProduct matches barcodes of ShopifyProduct" }
 
             syncProductRepository.findByArtooId(matchingArtooProducts[0].id)
                 ?.also {
-                    items += ProductReconcileItem(it, product.title, "Produktzuordnung (Shopify-ID) geändert") {
-                        shopifyId = product.id
-                    }
+                    add(UpdateSyncProductItem(it, product.title, "Produktzuordnung (Shopify-ID) geändert") { shopifyId = product.id })
                 }
                 ?: product.toSyncProduct(matchingArtooProducts[0].id)
         }
 
-        if (syncProduct.type != product.productType) {
-            val oldText = syncProduct.type.toQuotedString()
-            val newText = product.productType.toQuotedString()
-            items += ProductReconcileItem(syncProduct, product.title, "Produktart von $oldText zu $newText geändert") {
-                type = product.productType
-            }
-        }
-
-        val shopifyTags = product.tags - mappingService.inheritedTags(syncProduct)
-        if (syncProduct.tags != shopifyTags) {
-            val addedTags = shopifyTags - syncProduct.tags
-            val removedTags = syncProduct.tags - shopifyTags
-            val message = "Tags ${addedTags.toQuotedString()} hinzugefügt, ${removedTags.toQuotedString()} entfernt"
-            items += ProductReconcileItem(syncProduct, product.title, message) {
-                tags.clear()
-                tags += shopifyTags
-            }
-        }
-
-        if (syncProduct.descriptionHtml != product.descriptionHtml) {
-            items += ProductReconcileItem(syncProduct, product.title, "Produktbeschreibung geändert") {
-                descriptionHtml = product.descriptionHtml
-            }
-        }
-
-        val loadedTechnicalDetails = mappingService.extractTechnicalDetails(product)
-        val knownTechnicalDetails = syncProduct.technicalDetails.map { it.name to it.value }
-        if (loadedTechnicalDetails != knownTechnicalDetails) {
-            items += ProductReconcileItem(syncProduct, product.title, "Technische Daten geändert") {
-                technicalDetails.clear()
-                technicalDetails += loadedTechnicalDetails.mapIndexed { index, (name, value) -> SyncTechnicalDetail(name, value, index) }
-            }
-        }
-
-        product.variants.forEach { reconcile(product, it, syncProduct) }
+        addAll(
+            listOfNotNull(
+                checkReconcileProductProperty(syncProduct, product.title, SyncProduct::type, product.productType),
+                checkReconcileProductProperty(syncProduct, product.title, SyncProduct::descriptionHtml, product.descriptionHtml),
+                checkReconcileProductTags(syncProduct, product),
+                checkReconcileProductTechnicalDetails(syncProduct, product)
+            )
+        )
+        addAll(checkReconcileProductImages(product))
+        product.variants.forEach { addAll(reconcile(product, it, syncProduct)) }
     }
 
-    private fun reconcile(product: ShopifyProduct, variant: ShopifyProductVariant, syncProduct: SyncProduct) {
+    private fun reconcile(product: ShopifyProduct, variant: ShopifyProductVariant, syncProduct: SyncProduct) = buildList {
         val syncVariant = syncVariantRepository.findByShopifyId(variant.id) ?: run {
             val artooVariation = artooDataStore.findVariationByBarcode(variant.barcode)
             if (artooVariation == null) {
                 logger.info { "ShopifyProductVariant ${variant.title} does not match any ArtooVariation, skip reconciliation" }
-                return
+                return@buildList
             }
             syncVariantRepository.findByArtooId(artooVariation.id)
                 ?.also { it.shopifyId = variant.id }
@@ -129,12 +126,69 @@ class ReconcileFromShopifyService(
         require(variant.weight.unit == WeightUnit.GRAMS) { "Only GRAMS are supported at this time" }
         val loadedWeight = variant.weight.value
         if (syncVariant.weight == null || loadedWeight.compareTo(syncVariant.weight) != 0) {
-            items += VariantReconcileItem(
-                syncVariant,
-                "${product.title} (${variant.title})",
-                "Gewicht von ${syncVariant.weight ?: "leer"} auf $loadedWeight geändert",
-                { weight = loadedWeight }
+            add(
+                UpdateSyncVariantItem(
+                    syncVariant, "${product.title} (${variant.title})",
+                    "Gewicht von ${syncVariant.weight ?: "leer"} auf $loadedWeight geändert",
+                    { weight = loadedWeight }
+                )
             )
+        }
+    }
+
+    private fun <T> checkReconcileProductProperty(
+        product: SyncProduct,
+        title: String,
+        property: KMutableProperty1<SyncProduct, T>,
+        newValue: T
+    ) = change(product, property, newValue)?.let { UpdateSyncProductItem(product, title, it.message, it.action) }
+
+    private fun checkReconcileProductTags(
+        syncProduct: SyncProduct,
+        shopifyProduct: ShopifyProduct
+    ): UpdateSyncProductItem? {
+        val shopifyTags = shopifyProduct.tags - mappingService.inheritedTags(syncProduct)
+        if (syncProduct.tags == shopifyTags) return null
+
+        val addedTags = shopifyTags - syncProduct.tags
+        val removedTags = syncProduct.tags - shopifyTags
+        val message = "Tags ${addedTags.toQuotedString()} hinzugefügt, ${removedTags.toQuotedString()} entfernt"
+        return UpdateSyncProductItem(syncProduct, shopifyProduct.title, message) { tags.clear(); tags += shopifyTags }
+    }
+
+    private fun checkReconcileProductTechnicalDetails(
+        syncProduct: SyncProduct,
+        shopifyProduct: ShopifyProduct
+    ): UpdateSyncProductItem? {
+        val loadedTechnicalDetails = mappingService.extractTechnicalDetails(shopifyProduct)
+        val knownTechnicalDetails = syncProduct.technicalDetails.map { it.name to it.value }
+        if (loadedTechnicalDetails == knownTechnicalDetails) return null
+        return UpdateSyncProductItem(syncProduct, shopifyProduct.title, "Technische Daten geändert") {
+            technicalDetails.clear()
+            technicalDetails += loadedTechnicalDetails.mapIndexed { index, (name, value) -> SyncTechnicalDetail(name, value, index) }
+        }
+    }
+
+    private fun checkReconcileProductImages(product: ShopifyProduct) = buildList {
+        if (product.media.any { !it.fileName.isValidSyncImageFor(product) }) {
+            add(ImmediateProductItem(product.title, "Produktbilder in Shopify nicht normalisiert") {
+                shopifyImageTools.reorganizeProductImages(product)
+            })
+            return@buildList
+        }
+
+        logger.info { "Enumerating images of product ${product.title}" }
+        val syncImages = shopifyImageTools.findSyncImages(product)
+
+        val imagesNotKnownLocally = product.media.filter { media -> syncImages.none { it.path.fileName.toString() == media.fileName } }
+        if (imagesNotKnownLocally.isNotEmpty()) {
+            add(ImmediateProductItem(product.title, "${imagesNotKnownLocally.size} Bilder lokal nicht vorhanden") {
+
+            })
+        }
+        val imagesNotKnownShopify = syncImages.filter { image -> product.media.none { it.fileName == image.path.fileName.toString() } }
+        if (imagesNotKnownLocally.isNotEmpty() || imagesNotKnownShopify.isNotEmpty()) {
+            logger.info { "${product.title}: ${imagesNotKnownLocally.size} images only in Shopify, ${imagesNotKnownShopify.size} images only local" }
         }
     }
 
@@ -186,36 +240,32 @@ class ReconcileFromShopifyService(
         if (isNotEmpty()) syncVendorRepository.findByNameIgnoreCase(this) ?: SyncVendor(this)
         else null
 
-    inner class ProductReconcileItem(
-        product: SyncProduct,
-        title: String,
-        message: String,
-        action: SyncProduct.() -> Unit
-    ) : TypedReconcileItem<SyncProduct>(syncProductRepository, product.id, title, message, action)
-
-    inner class VariantReconcileItem(
-        variant: SyncVariant,
-        title: String,
-        message: String,
-        action: SyncVariant.() -> Unit
-    ) : TypedReconcileItem<SyncVariant>(syncVariantRepository, variant.id, title, message, action)
-}
-
-sealed interface ReconcileItem {
-    val title: String
-    val message: String
-    fun reconcile()
-}
-
-sealed class TypedReconcileItem<T : Any>(
-    private val repository: JpaRepository<T, UUID>,
-    private val id: UUID,
-    override val title: String,
-    override val message: String,
-    private val action: T.() -> Unit
-) : ReconcileItem {
-
-    override fun reconcile() {
-        repository.save(repository.findById(id).orElseThrow().apply(action))
+    sealed interface Item {
+        val title: String
+        val message: String
     }
+
+    sealed interface ProductItem : Item
+
+    private inner class ImmediateProductItem(
+        override val title: String,
+        override val message: String,
+        val block: suspend () -> Unit
+    ) : ProductItem
+
+    private inner class UpdateSyncProductItem(
+        val product: SyncProduct,
+        override val title: String,
+        override val message: String,
+        val block: SyncProduct.() -> Unit
+    ) : ProductItem
+
+    sealed interface VariantItem : Item
+
+    private inner class UpdateSyncVariantItem(
+        val variant: SyncVariant,
+        override val title: String,
+        override val message: String,
+        val block: SyncVariant.() -> Unit
+    ) : VariantItem
 }

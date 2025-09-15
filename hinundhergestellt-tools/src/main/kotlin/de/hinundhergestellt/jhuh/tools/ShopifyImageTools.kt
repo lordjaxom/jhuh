@@ -15,6 +15,7 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyMetaobject
 import de.hinundhergestellt.jhuh.vendors.shopify.client.update
+import de.hinundhergestellt.jhuh.vendors.shopify.client.variantSkus
 import de.hinundhergestellt.jhuh.vendors.shopify.taxonomy.ShopifyColorTaxonomy
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.coroutineScope
@@ -33,7 +34,7 @@ import kotlin.io.path.nameWithoutExtension
 private val logger = KotlinLogging.logger { }
 
 @Component
-class ShopifyTools(
+class ShopifyImageTools(
     private val productClient: ShopifyProductClient,
     private val variantClient: ShopifyProductVariantClient,
     private val optionClient: ShopifyProductOptionClient,
@@ -44,7 +45,10 @@ class ShopifyTools(
     private val genericWebClient: WebClient,
     private val properties: HuhProperties
 ) {
-    suspend fun reorganizeProductImages(product: ShopifyProduct) {
+    fun findSyncImages(product: ShopifyProduct) =
+        syncImageTools.findSyncImages(product.syncImageProductName, product.variantSkus)
+
+    suspend fun reorganizeProductImages(product: ShopifyProduct) { // TODO: Move to SyncImageTools
         require(product.variants.all { it.sku.isNotEmpty() }) { "All product variants must have SKU" }
 
         // save old media ids before attaching the new ones
@@ -85,7 +89,7 @@ class ShopifyTools(
         require(variantSkus.all { it.isNotEmpty() }) { "All product variants must have SKU" }
 
         // check if all images are accounted for before deleting
-        val images = syncImageTools.findSyncImages(product.title.extractProductName(), variantSkus)
+        val images = syncImageTools.findSyncImages(product.title.syncImageProductName, variantSkus)
             .filter { it.variantSku != null }
         require(images.size == product.variants.size) { "Not all variants have an image" }
 
@@ -157,7 +161,7 @@ class ShopifyTools(
         val variant = product.variants.firstOrNull { it.mediaId == media.id }
 
         val imageFileExtension = extractImageFileExtension(media.src)
-        val imageFileSuffix = variant?.sku?.let { generateImageFileSuffix(it) } ?: "produktbild-${indexOfNonVariantImage.andIncrement}"
+        val imageFileSuffix = variant?.sku?.syncImageSuffix ?: "produktbild-${indexOfNonVariantImage.andIncrement}"
         val imageFileName = generateImageFileName(productName, imageFileSuffix, imageFileExtension)
         val imageFilePath = properties.imageDirectory.resolve(productName).resolve(imageFileName)
 
@@ -203,7 +207,7 @@ class ShopifyTools(
         swatchRect: RectPct?,
         ignoreWhite: Boolean
     ): EvaluatedImage {
-        val imageFileSuffix = generateImageFileSuffix(variant.sku)
+        val imageFileSuffix = variant.sku.syncImageSuffix
         val imageFilePattern = generateImageFileName(productName, imageFileSuffix, "*")
         val imageFilePath = imagePath.listDirectoryEntries(imageFilePattern).first()
 
@@ -216,11 +220,9 @@ class ShopifyTools(
         return EvaluatedImage(imageFilePath, variant, swatchColor, taxonomyReference, swatchFilePath)
     }
 
-    private fun extractProductName(product: ShopifyProduct) = product.title.extractProductName()
+    private fun extractProductName(product: ShopifyProduct) = product.title.syncImageProductName
 
-    private fun generateImageFileSuffix(sku: String) = sku.generateImageFileSuffix()
-
-    private fun extractImageFileExtension(imageUrl: String) = URI(imageUrl).extractFileExtension()
+    private fun extractImageFileExtension(imageUrl: String) = URI(imageUrl).extension
     private fun generateColorSwatchHandle(optionValue: String) =
         UMLAUT_REPLACEMENTS
             .fold(optionValue) { value, (regex, replacement) -> value.replace(regex, replacement) }
@@ -228,7 +230,7 @@ class ShopifyTools(
             .lowercase()
 
     private fun generateAltText(productName: String, variant: ShopifyProductVariant?) =
-        "$productName ${variant?.let { "in Farbe ${it.options[0].value}" } ?: " Produktbild"}"
+        "$productName ${variant?.let { "in Farbe ${it.options[0].value}" } ?: "Produktbild"}"
 
     private fun generateAltText(product: ShopifyProduct, variant: ShopifyProductVariant) =
         generateAltText(extractProductName(product), variant)
@@ -248,6 +250,11 @@ class ShopifyTools(
     )
 }
 
+val ShopifyProduct.syncImageProductName get() = title.syncImageProductName
+
+fun String.isValidSyncImageFor(product: ShopifyProduct) =
+    isValidSyncImageFor(product.syncImageProductName, product.variantSkus)
+
 fun Path.computeImageSortSelector(): String {
     return Regex("""produktbild-(\d+)$""").find(nameWithoutExtension)
         ?.let { "1:${it.groupValues[1].padStart(4, '0')}" }
@@ -260,23 +267,3 @@ private val UMLAUT_REPLACEMENTS = listOf(
     """[Üü]+""".toRegex() to "ue",
     """ß+""".toRegex() to "ss"
 )
-
-private val IMAGE_FILE_NAME_REPLACEMENTS = listOf(
-    *UMLAUT_REPLACEMENTS.toTypedArray(),
-    """[^A-Za-z0-9 -]+""".toRegex() to "",
-    """^\s+""".toRegex() to "",
-    """\s+$""".toRegex() to "",
-    """\s+""".toRegex() to "-"
-)
-
-fun String.extractProductName() = substringBefore(",")
-fun URI.extractFileExtension() = path.substringAfterLast(".")
-
-fun String.generateImageFileSuffix() = replace(" ", "-").lowercase() // TODO: remove unwanted characters
-
-fun generateImageFileName(productName: String, suffix: String, extension: String): String {
-    val productNamePart = IMAGE_FILE_NAME_REPLACEMENTS
-        .fold(productName) { value, (regex, replacement) -> value.replace(regex, replacement) }
-        .lowercase()
-    return "${productNamePart}-${suffix}.$extension"
-}
