@@ -68,7 +68,11 @@ class ReconcileFromShopifyService(
             require(matchingArtooProducts.size == 1) { "More than one ArtooProduct matches barcodes of ShopifyProduct" }
 
             syncProductRepository.findByArtooId(matchingArtooProducts[0].id)
-                ?.also { it.shopifyId = product.id }
+                ?.also {
+                    items += ProductReconcileItem(it, product.title, "Produktzuordnung (Shopify-ID) geändert") {
+                        shopifyId = product.id
+                    }
+                }
                 ?: product.toSyncProduct(matchingArtooProducts[0].id)
         }
 
@@ -80,14 +84,14 @@ class ReconcileFromShopifyService(
             }
         }
 
-        val inheritedTags = mappingService.inheritedTags(syncProduct)
-        val directTags = product.tags - inheritedTags
-        if (syncProduct.tags != directTags) {
-            val oldText = syncProduct.tags.toQuotedString()
-            val newText = directTags.toQuotedString()
-            items += ProductReconcileItem(syncProduct, product.title, "Tags von $oldText zu $newText geändert") {
+        val shopifyTags = product.tags - mappingService.inheritedTags(syncProduct)
+        if (syncProduct.tags != shopifyTags) {
+            val addedTags = shopifyTags - syncProduct.tags
+            val removedTags = syncProduct.tags - shopifyTags
+            val message = "Tags ${addedTags.toQuotedString()} hinzugefügt, ${removedTags.toQuotedString()} entfernt"
+            items += ProductReconcileItem(syncProduct, product.title, message) {
                 tags.clear()
-                tags += directTags
+                tags += shopifyTags
             }
         }
 

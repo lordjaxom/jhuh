@@ -1,6 +1,7 @@
 package de.hinundhergestellt.jhuh.vendors.ready2order
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.addMixIn
 import de.hinundhergestellt.jhuh.vendors.ready2order.openapi.RateLimitEnforcingFilter
@@ -27,10 +28,11 @@ class ArtooConfiguration {
         @Value("\${ready2order.apikey}") apikey: String
     ): WebClient {
         val objectMapper = ObjectMapper()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .setSerializationInclusion(JsonInclude.Include.ALWAYS)
             .addMixIn<ProductsIdPutRequest, ProductsIdPutRequestMixin>()
             .addMixIn<ProductsPostRequest, ProductsPostRequestMixin>()
             .addMixIn<ProductsPostRequestProductBase, ProductsPostRequestProductBaseMixin>()
-            .setSerializationInclusion(JsonInclude.Include.ALWAYS)
 
         return builder
             .baseUrl("https://api.ready2order.com/v1")
