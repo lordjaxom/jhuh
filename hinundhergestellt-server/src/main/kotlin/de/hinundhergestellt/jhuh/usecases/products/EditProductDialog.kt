@@ -139,7 +139,7 @@ private class EditProductDialog(
                 }
                 verticalLayout {
                     isPadding = true
-                    style.set("gap", "0")
+                    style["gap"] = "0"
                     span {
                         productImagesText = text("0 Produktbilder")
                     }
@@ -291,6 +291,7 @@ private class EditProductDialog(
             callback(result)
             close()
         } catch (_: ValidationException) {
+            // handled by framework
         }
     }
 }

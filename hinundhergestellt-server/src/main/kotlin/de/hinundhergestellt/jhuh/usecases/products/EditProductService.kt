@@ -1,5 +1,6 @@
 package de.hinundhergestellt.jhuh.usecases.products
 
+import de.hinundhergestellt.jhuh.HuhProperties
 import de.hinundhergestellt.jhuh.backend.mapping.MappingService
 import de.hinundhergestellt.jhuh.backend.shoptexter.ShopTexterService
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
@@ -16,7 +17,6 @@ import de.hinundhergestellt.jhuh.vendors.rayher.csv.RayherProduct
 import de.hinundhergestellt.jhuh.vendors.rayher.datastore.RayherDataStore
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientException
@@ -35,8 +35,7 @@ class EditProductService(
     private val syncVendorRepository: SyncVendorRepository,
     private val syncImageTools: SyncImageTools,
     private val toolsWebClient: WebClient,
-    @Value("\${hinundhergestellt.image-directory}") private val imageDirectory: Path,
-    @Value("\${hinundhergestellt.download-threads}") private val downloadThreads: Int
+    private val properties: HuhProperties
 ) {
     val vendors get() = syncVendorRepository.findAll()
 
@@ -99,15 +98,16 @@ class EditProductService(
             ?: artooProduct.description.takeIf { it.isNotEmpty() }
             ?: return
         val productName = productTitle.extractProductName()
-        val productPath = imageDirectory.resolve(productName)
+        val productPath = properties.imageDirectory.resolve(productName)
         productPath.createDirectories()
 
         report("Lade ${rayherProduct.imageUrls.size} Produktbilder herunter...")
         rayherProduct.imageUrls
             .sortedBy { it.computeRayherSortSelector() }
-            .forEachIndexedParallel(downloadThreads) { index, imageUrl -> downloadRayherImage(productName, productPath, index, imageUrl) }
+            .forEachIndexedParallel(properties.processingThreads) { index, imageUrl ->
+                downloadRayherImage(productName, productPath, index, imageUrl)
+            }
     }
-
 
     private suspend fun downloadRayherImage(productName: String, productPath: Path, index: Int, imageUrl: String) {
         val extension = URI(imageUrl).extractFileExtension()

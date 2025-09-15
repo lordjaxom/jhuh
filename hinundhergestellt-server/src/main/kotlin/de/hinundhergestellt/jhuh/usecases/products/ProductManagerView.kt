@@ -199,7 +199,7 @@ class ProductManagerView(
         root {
             horizontalLayout {
                 alignItems = FlexComponent.Alignment.CENTER
-                style.set("gap", "var(--lumo-space-xs)")
+                style["gap"] = "var(--lumo-space-xs)"
 
                 val icon = when (item) {
                     is CategoryItem -> CustomIcon.CATEGORY
@@ -272,9 +272,9 @@ class ProductManagerView(
             }
         }
 
-    private inner class TreeDataProvider : AbstractBackEndHierarchicalDataProvider<Item, Void?>() {
+    private inner class TreeDataProvider : AbstractBackEndHierarchicalDataProvider<Item, Unit>() {
 
-        override fun fetchChildrenFromBackEnd(query: HierarchicalQuery<Item, Void?>): Stream<Item> {
+        override fun fetchChildrenFromBackEnd(query: HierarchicalQuery<Item, Unit>): Stream<Item> {
             val markedForSync = markedForSyncFilterChipBox.value.takeIf { it.size == 1 }?.first()
             val hasProblems = hasProblemsFilterChipBox.value.takeIf { it.size == 1 }?.first()
             val children = query.parent?.children ?: service.rootCategories
@@ -286,7 +286,7 @@ class ProductManagerView(
         }
 
         override fun hasChildren(item: Item) = item.hasChildren
-        override fun getChildCount(query: HierarchicalQuery<Item, Void?>) = fetchChildren(query).count().toInt()
+        override fun getChildCount(query: HierarchicalQuery<Item, Unit>) = fetchChildren(query).count().toInt()
         override fun getId(item: Item) = item.itemId
 
         fun fetchCategoriesRecursively() =
