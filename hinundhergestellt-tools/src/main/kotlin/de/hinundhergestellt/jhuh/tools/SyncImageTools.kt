@@ -6,6 +6,7 @@ import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.isDirectory
 import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.nameWithoutExtension
 import kotlin.text.Regex.Companion.escape
 
 @Component
@@ -18,15 +19,23 @@ class SyncImageTools(
         val productDirectory = properties.imageDirectory.resolve(productName).takeIf { it.isDirectory() } ?: return listOf()
 
         val productImages = productDirectory
-            .listDirectoryEntries(generateImageFileName(productName, "produktbild-*", "*"))
+            .listDirectoryEntries(generateImageFileName(productName, "$PRODUCT_SUFFIX-*", "*"))
             .asSequence()
-            .sortedBy { it.computeImageSortSelector() }
+            .filter { it.fileName.toString().isValidSyncImageFor(productName, variantSkus) }
+            .sortedBy { it.syncImageSortSelector }
             .map { SyncImage(it, null) }
 
         val variantImages = variantSkus
             .asSequence()
             .map { it to generateImageFileName(productName, it.syncImageSuffix, "*") }
-            .mapNotNull { (sku, glob) -> productDirectory.listDirectoryEntries(glob).firstOrNull()?.let { sku to it } }
+            .mapNotNull { (sku, glob) ->
+                productDirectory
+                    .listDirectoryEntries(glob)
+                    .asSequence()
+                    .filter { it.fileName.toString().isValidSyncImageFor(productName, sku) }
+                    .firstOrNull()
+                    ?.let { sku to it }
+            }
             .map { (sku, path) -> SyncImage(path, sku) }
 
         return (productImages + variantImages).toList()
@@ -42,6 +51,19 @@ val String.syncImageProductName get() = substringBefore(",")
 val String.syncImageSuffix get() = replace(" ", "-").lowercase() // TODO: remove unwanted characters
 val URI.extension get() = path.substringAfterLast(".", "")
 
+val Path.syncImageSortSelector
+    get() = Regex("""$PRODUCT_SUFFIX-(\d+)$""").find(nameWithoutExtension)
+        ?.let { "1:${it.groupValues[1].padStart(4, '0')}" }
+        ?: "2:$nameWithoutExtension"
+
+fun String.isValidSyncImageFor(productName: String, variantSkus: List<String> = listOf()): Boolean {
+    return Regex(generateImageFileName(productName, "produktbild-[0-9]+", EXTENSIONS)).matches(this) ||
+            variantSkus.any { isValidSyncImageFor(productName, it) }
+}
+
+fun String.isValidSyncImageFor(productName: String, variantSku: String) =
+    Regex(generateImageFileName(productName, escape(variantSku.syncImageSuffix), EXTENSIONS)).matches(this)
+
 fun generateImageFileName(productName: String, suffix: String, extension: String): String {
     val productNamePart = IMAGE_FILE_NAME_REPLACEMENTS
         .fold(productName) { value, (regex, replacement) -> value.replace(regex, replacement) }
@@ -49,16 +71,7 @@ fun generateImageFileName(productName: String, suffix: String, extension: String
     return "${productNamePart}-${suffix}.$extension"
 }
 
-
-fun String.isValidSyncImageFor(productName: String, variantSkus: List<String> = listOf()): Boolean {
-    return Regex(generateImageFileName(productName, "produktbild-[0-9]+", "(png|jpg)")).matches(this) ||
-            variantSkus.any { isValidSyncImageFor(productName, it) }
-}
-
-private fun String.isValidSyncImageFor(productName: String, variantSku: String) =
-    Regex(generateImageFileName(productName, escape(variantSku.syncImageSuffix), EXTENSIONS)).matches(this)
-
-
+private const val PRODUCT_SUFFIX = "produktbild"
 private const val EXTENSIONS = "(png|jpg)"
 
 private val UMLAUT_REPLACEMENTS = listOf(

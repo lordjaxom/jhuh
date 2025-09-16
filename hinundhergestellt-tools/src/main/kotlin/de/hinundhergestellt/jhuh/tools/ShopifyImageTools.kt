@@ -255,12 +255,6 @@ val ShopifyProduct.syncImageProductName get() = title.syncImageProductName
 fun String.isValidSyncImageFor(product: ShopifyProduct) =
     isValidSyncImageFor(product.syncImageProductName, product.variantSkus)
 
-fun Path.computeImageSortSelector(): String {
-    return Regex("""produktbild-(\d+)$""").find(nameWithoutExtension)
-        ?.let { "1:${it.groupValues[1].padStart(4, '0')}" }
-        ?: "2:$nameWithoutExtension"
-}
-
 private val UMLAUT_REPLACEMENTS = listOf(
     """[Ää]+""".toRegex() to "ae",
     """[Öö]+""".toRegex() to "oe",
