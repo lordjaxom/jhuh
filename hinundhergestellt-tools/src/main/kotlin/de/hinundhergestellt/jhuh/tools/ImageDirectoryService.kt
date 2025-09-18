@@ -6,7 +6,6 @@ import de.hinundhergestellt.jhuh.HuhProperties
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -41,15 +40,15 @@ class ImageDirectoryService(
 ) : AutoCloseable {
 
     private val root: Path = properties.imageDirectory.toAbsolutePath().normalize()
-    private val indexFile: Path = root.resolve(INDEX_JSON)
     private val objectMapper = jacksonObjectMapper()
     private val watchService: WatchService = root.fileSystem.newWatchService()
     private val watchKeyToDir = ConcurrentHashMap<WatchKey, Path>()
-    private val dirContent = HashMap<Path, MutableSet<Path>>() // directory -> immediate file children
     private val lock = ReentrantReadWriteLock()
     private val initialized = CompletableFuture<Unit>()
     private val closed = AtomicBoolean(false)
     private val job: Job
+
+    private val dirContent = loadIndexJsonIfPresent()
 
     // Debounce / Throttle (>=5s nach letzter Änderung, <=10s nach erster) für index.json
     @Volatile
@@ -64,15 +63,13 @@ class ImageDirectoryService(
     init {
         require(Files.isDirectory(root)) { "path $root must be a directory" }
 
-        // Index laden (falls vorhanden) und initialisieren
         loadIndexJsonIfPresent()
 
-        job = applicationScope.launch(Dispatchers.IO) {
+        job = applicationScope.launch {
             try {
-                initialWalk() // ersetzt sukzessive geladene Einträge durch reale
-                // Nach abgeschlossenem Walk einmal schreiben (sofern nicht schon durch Debounce erledigt)
+                walkDirectory(root)
                 writeIndexNow()
-                initialized.complete(Unit) // falls nicht schon gesetzt
+                initialized.complete(Unit)
                 eventLoop()
             } catch (_: CancellationException) {
                 // normal shutdown
@@ -86,77 +83,75 @@ class ImageDirectoryService(
     }
 
     fun listDirectoryEntries(path: Path): List<Path> {
-        // Blockiert nur, wenn kein Index vorhanden war und initialWalk noch läuft
-        initialized.join()
         val absolute = if (path.isAbsolute) path.normalize() else root.resolve(path).normalize()
         require(absolute == root || absolute.startsWith(root)) { "path must be relative or below imageDirectory" }
-        lock.read {
-            val children = dirContent[absolute] ?: return listOf()
-            return children.asSequence()
-                .sortedBy { it.fileName.toString().lowercase() }
-                .toList()
+
+        initialized.join() // ensure initial load
+        return lock.read { dirContent[absolute]?.map { absolute.resolve(it) } ?: listOf() }
+    }
+
+    fun listDirectoryEntries(path: Path, glob: String): List<Path> {
+        val matcher = root.fileSystem.getPathMatcher("glob:$glob")
+        return listDirectoryEntries(path).filter { matcher.matches(it.fileName) }
+    }
+
+    override fun close() {
+        if (closed.compareAndSet(false, true)) {
+            job.cancel()
+            writeJob?.cancel()
+            safeCloseWatchService()
         }
     }
 
-    private fun loadIndexJsonIfPresent() {
-        if (!Files.exists(indexFile)) return
+    private fun loadIndexJsonIfPresent() =
         runCatching {
-            val map: Map<String, List<String>> = objectMapper.readValue(indexFile.toFile())
-            lock.write {
-                dirContent.clear()
-                map.forEach { (relDir, files) ->
-                    val dirPath = if (relDir.isEmpty()) root else root.resolve(relDir).normalize()
-                    val set = dirContent.getOrPut(dirPath) { mutableSetOf() }
-                    files.forEach { name -> set.add(dirPath.resolve(name)) }
-                }
-            }
-            if (dirContent.isNotEmpty()) {
-                // Sofortige Verfügbarkeit des (evtl. veralteten) Index
+            val indexFile = root.resolve(INDEX_JSON)
+            val snapshot: Map<String, List<String>> = objectMapper.readValue(indexFile.toFile())
+            if (snapshot.isNotEmpty()) {
                 initialized.complete(Unit)
-                logger.info { "Loaded index.json with ${dirContent.size} entries will be used preliminary." }
+                logger.info { "Preliminary index with ${snapshot.size} directories loaded from $indexFile." }
             }
-        }.onFailure { e ->
-            logger.error(e) { "Couldn't load index.json - rebuilding tree" }
+            snapshot.asSequence().associate { (dir, files) -> root.resolve(dir) to files.toMutableSet() }.toMutableMap()
+        }.getOrElse { e ->
+            logger.error(e) { "Couldn't load index.json - rebuilding tree from scratch" }
+            mutableMapOf()
         }
-    }
 
-    private suspend fun initialWalk() {
-        logger.info { "Starting initial walk of directory $root" }
+    private fun walkDirectory(start: Path) {
+        logger.info { "Start scanning directory $start" }
+
         val visitedDirs = mutableSetOf<Path>()
-        val temp = HashMap<Path, MutableSet<Path>>()
-        Files.walkFileTree(root, object : SimpleFileVisitor<Path>() {
+        val newContent = mutableMapOf<Path, MutableSet<String>>()
+        Files.walkFileTree(start, object : SimpleFileVisitor<Path>() {
             override fun preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult {
                 registerDirectoryWatcher(dir)
                 visitedDirs.add(dir)
-                // Lokalen Container vorbereiten, aber alten Inhalt noch nicht verwerfen
-                temp[dir] = mutableSetOf()
+                newContent[dir] = mutableSetOf()
                 return FileVisitResult.CONTINUE
             }
 
             override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
-                if (!attrs.isDirectory) {
-                    temp[file.parent]?.add(file)
-                }
+                if (!attrs.isDirectory) newContent[file.parent]!!.add(file.fileName.toString())
                 return FileVisitResult.CONTINUE
             }
 
             override fun postVisitDirectory(dir: Path, exc: IOException?): FileVisitResult {
-                // Jetzt atomar ersetzen
-                val newSet = temp[dir] ?: mutableSetOf()
-                lock.write { dirContent[dir] = newSet }
+                lock.write { dirContent[dir] = newContent[dir]!! }
                 return FileVisitResult.CONTINUE
             }
         })
-        // Entferne Einträge für Verzeichnisse, die nicht mehr existieren
         lock.write {
-            val toRemove = dirContent.keys.filter { it !in visitedDirs }
-            toRemove.forEach { dirContent.remove(it) }
+            dirContent.keys
+                .filter { it.startsWith(start) && it !in newContent }
+                .forEach { dirContent.remove(it) }
         }
-        logger.info { "Initial walk of directory $root finished" }
+
+        logger.info { "Scanning directory $start finished" }
     }
 
-    private suspend fun eventLoop() {
-        logger.info { "Starting WatchService event loop" }
+    private fun eventLoop() {
+        logger.info { "Starting file system watch service event loop" }
+
         while (isActiveAndOpen()) {
             val key = try {
                 watchService.take()
@@ -183,8 +178,6 @@ class ImageDirectoryService(
                 when (kind) {
                     StandardWatchEventKinds.ENTRY_CREATE -> handleCreate(child)
                     StandardWatchEventKinds.ENTRY_DELETE -> handleDelete(child)
-                    StandardWatchEventKinds.ENTRY_MODIFY -> { /* ignorieren */
-                    }
                 }
             }
             val valid = key.reset()
@@ -198,91 +191,60 @@ class ImageDirectoryService(
     }
 
     private fun handleCreate(path: Path) {
-        logger.debug { "handleCreate for $path" }
+        logger.debug { "Handling CREATE event for $path" }
         try {
             if (Files.isDirectory(path)) {
                 registerDirectoryWatcher(path)
-                rewalkDirectory(path) // erfasst Dateien und Unterverzeichnisse
+                rewalkDirectory(path)
             } else {
-                lock.write { dirContent.getOrPut(path.parent) { mutableSetOf() }.add(path) }
+                lock.write { dirContent.getOrPut(path.parent) { mutableSetOf() }.add(path.fileName.toString()) }
                 markDirty()
             }
         } catch (ex: Exception) {
-            logger.error(ex) { "Couldn't handle CREATE $path" }
+            logger.error(ex) { "Couldn't handle CREATE event for $path" }
         }
     }
 
     private fun handleDelete(path: Path) {
-        logger.debug { "handleDelete for $path" }
+        logger.debug { "Handling DELETE event for $path" }
         try {
             if (Files.isDirectory(path)) {
                 removeDirectoryRecursively(path)
             } else {
-                lock.write { dirContent[path.parent]?.remove(path) }
+                lock.write { dirContent[path.parent]?.remove(path.fileName.toString()) }
                 markDirty()
             }
         } catch (ex: Exception) {
-            logger.error(ex) { "Couldn't handle DELETE for $path" }
+            logger.error(ex) { "Couldn't handle DELETE event for $path" }
         }
     }
 
     private fun removeDirectoryRecursively(dir: Path) {
-        var changed = false
         lock.write {
-            val toRemove = dirContent.keys.filter { it == dir || it.startsWith(dir) }
-            toRemove.forEach { d ->
-                d.parent?.also { parent ->
-                    if (dirContent[parent]?.remove(d) == true) changed = true
+            dirContent.keys
+                .filter { it == dir || it.startsWith(dir) }
+                .forEach { toRemove ->
+                    toRemove.parent?.also { dirContent[it]?.remove(toRemove.fileName.toString()) }
+                    dirContent.remove(toRemove)
                 }
-                if (dirContent.remove(d) != null) changed = true
-            }
         }
         watchKeyToDir.entries
             .filter { it.value == dir || it.value.startsWith(dir) }
-            .forEach {
-                it.key.cancel()
-                watchKeyToDir.remove(it.key)
-            }
-        if (changed) markDirty()
+            .forEach { it.key.cancel(); watchKeyToDir.remove(it.key) }
+        markDirty()
     }
 
     private fun rewalkDirectory(start: Path) {
         if (!Files.isDirectory(start)) return
-        val temp = HashMap<Path, MutableSet<Path>>()
-        var changed = false
         try {
-            Files.walkFileTree(start, object : SimpleFileVisitor<Path>() {
-                override fun preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult {
-                    registerDirectoryWatcher(dir)
-                    temp[dir] = mutableSetOf()
-                    return FileVisitResult.CONTINUE
-                }
-
-                override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
-                    if (!attrs.isDirectory) temp[file.parent]?.add(file)
-                    return FileVisitResult.CONTINUE
-                }
-
-                override fun postVisitDirectory(dir: Path, exc: IOException?): FileVisitResult {
-                    val newSet = temp[dir] ?: mutableSetOf()
-                    lock.write {
-                        val old = dirContent[dir]
-                        if (old == null || old.size != newSet.size || !old.containsAll(newSet)) {
-                            dirContent[dir] = newSet
-                            changed = true
-                        }
-                    }
-                    return FileVisitResult.CONTINUE
-                }
-            })
+            walkDirectory(start)
         } catch (ex: IOException) {
-            logger.warn(ex) { "Couldn't rewalk $start" }
+            logger.error(ex) { "Couldn't rewalk directory $start" }
         }
-        if (changed) markDirty()
+        markDirty()
     }
 
     private fun registerDirectoryWatcher(dir: Path) {
-        if (!Files.isDirectory(dir)) return
         if (watchKeyToDir.values.any { it == dir }) return
         val key = try {
             dir.register(
@@ -292,7 +254,7 @@ class ImageDirectoryService(
                 StandardWatchEventKinds.ENTRY_MODIFY
             )
         } catch (ex: Exception) {
-            logger.warn(ex) { "Couldn't register watcher for $dir" }
+            logger.error(ex) { "Couldn't register watcher for $dir" }
             return
         }
         watchKeyToDir[key] = dir
@@ -314,7 +276,7 @@ class ImageDirectoryService(
     }
 
     private fun scheduleWriteJob() {
-        writeJob = applicationScope.launch(Dispatchers.IO) {
+        writeJob = applicationScope.launch {
             while (isActive) {
                 val (first, last) = synchronized(this@ImageDirectoryService) { firstDirtyAt to lastDirtyAt }
                 if (first == null || last == null) break // nichts zu tun
@@ -342,33 +304,24 @@ class ImageDirectoryService(
         lock.read {
             dirContent
                 .asSequence()
-                .associate { (dir, files) -> root.relativize(dir).toString() to files.map { it.fileName.toString() }.sorted() }
+                .associate { (dir, files) -> root.relativize(dir).toString() to files.toList() }
         }
 
     private fun writeIndexNow() {
-        val data = snapshotIndex()
-        runCatching {
-            Files.createDirectories(indexFile.parent)
-            objectMapper.writeValue(indexFile.toFile(), data)
-            logger.debug { "Wrote index.json (${data.size} directories)" }
-        }.onFailure { e -> logger.error(e) { "Couldn't write index.json" } }
+        try {
+            val indexFile = root.resolve(INDEX_JSON)
+            val snapshot = snapshotIndex()
+            objectMapper.writeValue(indexFile.toFile(), snapshot)
+            logger.info { "Wrote ${snapshot.size} directories to $indexFile" }
+        } catch (e: Exception) {
+            logger.error(e) { "Couldn't write index.json" }
+        }
     }
 
     private fun isActiveAndOpen(): Boolean =
         !closed.get() && job.isActive
 
-    override fun close() {
-        if (closed.compareAndSet(false, true)) {
-            job.cancel()
-            writeJob?.cancel()
-            safeCloseWatchService()
-        }
-    }
-
     private fun safeCloseWatchService() {
-        try {
-            watchService.close()
-        } catch (_: Exception) {
-        }
+        runCatching { watchService.close() }
     }
 }
