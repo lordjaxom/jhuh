@@ -19,7 +19,7 @@ class ShopTexterConfiguration {
         builder
             .defaultOptions(
                 OpenAiChatOptions.builder()
-                    .model(OpenAiApi.ChatModel.GPT_4_1)
+                    .model(OpenAiApi.ChatModel.GPT_5)
                     .build()
             )
             .defaultAdvisors(
