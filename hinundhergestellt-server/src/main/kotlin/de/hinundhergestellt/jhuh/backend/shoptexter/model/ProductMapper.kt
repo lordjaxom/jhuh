@@ -2,6 +2,7 @@ package de.hinundhergestellt.jhuh.backend.shoptexter.model
 
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 
 object ProductMapper {
 
@@ -15,6 +16,23 @@ object ProductMapper {
             tags = sync.tags,
             technicalDetails = sync.technicalDetails.associate { it.name to it.value },
             hasOnlyDefaultVariant = artoo.hasOnlyDefaultVariant,
-            variants = artoo.variations.map { it.name }.filter { it.isNotEmpty() },
+            variants =
+                if (!artoo.hasOnlyDefaultVariant) artoo.variations.map { it.name }
+                else listOf(),
+        )
+
+    fun map(shopify: ShopifyProduct, sync: SyncProduct) =
+        Product(
+            name = shopify.title.substringBefore(",").trim(),
+            title = shopify.title,
+            description = sync.descriptionHtml ?: shopify.descriptionHtml,
+            productType = sync.type ?: shopify.productType,
+            vendor = sync.vendor?.name ?: shopify.vendor,
+            tags = sync.tags,
+            technicalDetails = sync.technicalDetails.associate { it.name to it.value },
+            hasOnlyDefaultVariant = shopify.hasOnlyDefaultVariant,
+            variants =
+                if (!shopify.hasOnlyDefaultVariant) shopify.variants.map { it.title }
+                else listOf()
         )
 }

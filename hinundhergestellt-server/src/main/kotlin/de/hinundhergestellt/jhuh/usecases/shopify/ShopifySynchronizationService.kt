@@ -79,7 +79,7 @@ class ShopifySynchronizationService(
             }
         }
 
-        productsToChange.forEach { shopifyDataStore.update(it) }
+        productsToChange.forEach { shopifyDataStore.update(it); shopTexterService.updateProduct(it) }
         variantsToDelete.forEach { (product, variants) -> applyDeleteVariants(product, variants) }
         variantsToCreate.forEach { (product, variants) -> applyCreateVariants(product, variants) }
         variantsToUpdate.forEach { (product, variants) -> shopifyDataStore.update(product, variants) }
@@ -173,7 +173,7 @@ class ShopifySynchronizationService(
             shopifyDataStore.create(savedShopifyProduct, unsavedVariants.map { it.second })
             if (!savedShopifyProduct.isDryRun)
                 unsavedVariants.forEachIndexed { index, (sync, _) -> sync.shopifyId = savedShopifyProduct.variants[index].id }
-            shopTexterService.updateProduct(syncProduct.id, savedShopifyProduct)
+            shopTexterService.updateProduct(savedShopifyProduct, syncProduct)
             transactionOperations.execute {
                 syncProduct.descriptionHtml = savedShopifyProduct.descriptionHtml
                 syncProductRepository.save(syncProduct)

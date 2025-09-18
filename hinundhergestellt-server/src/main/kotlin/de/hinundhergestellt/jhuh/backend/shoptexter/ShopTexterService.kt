@@ -53,13 +53,17 @@ class ShopTexterService(
     private val examplesPromptTemplate = PromptTemplate(loadTextResource { "examples-prompt.txt" })
 
     init {
-        val productsWithUUID = shopifyDataStore.products
-            .mapNotNull { syncProductRepository.findByShopifyId(it.id)?.run { id to it } }
-        updateProducts(productsWithUUID)
+        val productsWithSync = shopifyDataStore.products
+            .mapNotNull { product -> syncProductRepository.findByShopifyId(product.id)?.let { product to it } }
+        updateProducts(productsWithSync)
     }
 
-    fun updateProduct(id: UUID, product: ShopifyProduct) {
-        updateProducts(listOf(Pair(id, product)))
+    fun updateProduct(shopify: ShopifyProduct, sync: SyncProduct) {
+        updateProducts(listOf(Pair(shopify, sync)))
+    }
+
+    fun updateProduct(product: ShopifyProduct) {
+        updateProduct(product, syncProductRepository.findByShopifyId(product.id) ?: return)
     }
 
     fun removeProduct(id: UUID) {
@@ -156,8 +160,9 @@ class ShopTexterService(
         return response
     }
 
-    fun updateProducts(products: List<Pair<UUID, ShopifyProduct>>) {
+    private fun updateProducts(products: List<Pair<ShopifyProduct, SyncProduct>>) {
         val newOrChangedDocuments = products.asSequence()
+            .map { (shopify, sync) -> Pair(sync.id, ProductMapper.map(shopify, sync)) }
             .map { (id, product) -> Triple(id, objectMapper.writeValueAsString(product), vectorStore.findById(id)?.text) }
             .filter { (_, newText, oldText) -> oldText == null || oldText != newText }
             .map { (id, text, _) -> Document(id.toString(), text, mapOf<String, Any>()) }
