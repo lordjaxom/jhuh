@@ -19,4 +19,12 @@ class ShopTexterITCase {
         )
         println(result.description)
     }
+
+    @Test
+    fun generateCategoryTexts() {
+        val keywords = shopTexterService.generateCategoryKeywords("Flexfolien", setOf("Flexfolie"))
+        val texts = shopTexterService.generateCategoryTexts("Flexfolien", setOf("Flexfolie"), keywords)
+        val optimized = shopTexterService.optimizeCategoryTexts("Flexfolien", texts)
+        println(optimized)
+    }
 }

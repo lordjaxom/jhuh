@@ -1,0 +1,4 @@
+{query}
+
+PRODUKTBEISPIELE:
+{question_answer_context}

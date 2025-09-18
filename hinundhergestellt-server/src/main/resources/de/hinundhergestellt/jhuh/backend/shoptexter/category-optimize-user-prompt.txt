@@ -1,0 +1,15 @@
+AUFGABE:
+- Gliedere die übergebenen Texte für die Kategorie {category} in eine SEO-gerechte Struktur mit H2- und H3-Überschriften.
+- Achte auf ein gutes Verhältnis:
+   - H2 für Hauptthemen (ca. 3–5 Stück, Keyword-basiert).
+   - H3 für Unterthemen (je 1–3 Stück pro H2, spezifischere Keywords).
+- Erhalte einen organischen Textfluss (keine reine Keyword-Liste).
+- Platziere Keywords in Überschriften natürlich.
+- Verwende kurze Absätze (max. 80 Wörter).
+- Schließe den Text mit einem motivierenden Call-to-Action (H2 oder H3).
+
+ROHTEXTE:
+{texts}
+
+FORMAT:
+{format}

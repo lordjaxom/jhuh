@@ -63,8 +63,6 @@ class ImageDirectoryService(
     init {
         require(Files.isDirectory(root)) { "path $root must be a directory" }
 
-        loadIndexJsonIfPresent()
-
         job = applicationScope.launch {
             try {
                 walkDirectory(root)

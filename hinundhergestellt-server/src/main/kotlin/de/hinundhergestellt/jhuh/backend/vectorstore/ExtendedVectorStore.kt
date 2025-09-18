@@ -26,13 +26,13 @@ class MariaDBExtendedVectorStore(
     private val jdbcTemplate = vectorStore.getNativeClient<JdbcTemplate>().get()
     private val fullyQualifiedTableName = sequenceOf(properties.schemaName, properties.tableName).filterNotNull().joinToString(".")
     private val idFieldName: String by properties::idFieldName
-    private val contentFieldname: String by properties::contentFieldName
+    private val contentFieldName: String by properties::contentFieldName
 
     override fun findById(id: String) =
         singleResult(
             jdbcTemplate.query(
-                "select $idFieldName, $contentFieldname from $fullyQualifiedTableName where id=?",
-                { rs, rowNum -> Document(rs.getString(1), rs.getString(2), mapOf()) },
+                "select $idFieldName, $contentFieldName from $fullyQualifiedTableName where id=?",
+                { rs, _ -> Document(rs.getString(1), rs.getString(2), mapOf()) },
                 id
             )
         )

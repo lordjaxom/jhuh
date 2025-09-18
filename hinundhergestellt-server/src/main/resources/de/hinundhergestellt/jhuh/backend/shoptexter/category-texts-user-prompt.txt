@@ -1,0 +1,17 @@
+AUFGABE:
+- Schreibe eine Kategoriebeschreibung für die Kategorie {category}, die Produkte mit den Tags {tags} enthält.
+- Verwende die Keywordcluster aus der vorigen Analyse (Schritt 1).
+- Erstelle:
+   1. **SEO-Titel** (mit passenden Emojis/Sonderzeichen, nutze hierbei den Beitrag von
+      [https://www.sistrix.com/blog/emojis-and-special-characters-in-google-serps-what-still-works-today/] als
+      Grundlage).
+   2. **Meta-Description** (max. 155 Zeichen, Call-to-Action, Keyword enthalten).
+   3. **Intro-Absatz** (lockerer, persönlicher Stil, kurze Sätze, gerne kleine Fragen).
+   4. **Haupttext** (300–500 Wörter, lockerer Schreibstil, mit klaren Absätzen; Fokus: Nutzen, Tipps, Inspiration).
+   5. **Call-to-Action** (Shop/Workshops/Ladenbesuch).
+
+KEYWORDS:
+{keywords}
+
+FORMAT:
+{format}

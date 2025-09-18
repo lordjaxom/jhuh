@@ -20,6 +20,7 @@ class ShopTexterConfiguration {
             .defaultOptions(
                 OpenAiChatOptions.builder()
                     .model(OpenAiApi.ChatModel.GPT_5)
+                    .temperature(1.0)
                     .build()
             )
             .defaultAdvisors(

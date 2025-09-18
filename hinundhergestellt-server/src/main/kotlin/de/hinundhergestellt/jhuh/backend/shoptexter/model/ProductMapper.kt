@@ -25,10 +25,10 @@ object ProductMapper {
         Product(
             name = shopify.title.substringBefore(",").trim(),
             title = shopify.title,
-            description = sync.descriptionHtml ?: shopify.descriptionHtml,
-            productType = sync.type ?: shopify.productType,
-            vendor = sync.vendor?.name ?: shopify.vendor,
-            tags = sync.tags,
+            description = shopify.descriptionHtml,
+            productType = shopify.productType,
+            vendor = shopify.vendor,
+            tags = shopify.tags,
             technicalDetails = sync.technicalDetails.associate { it.name to it.value },
             hasOnlyDefaultVariant = shopify.hasOnlyDefaultVariant,
             variants =
