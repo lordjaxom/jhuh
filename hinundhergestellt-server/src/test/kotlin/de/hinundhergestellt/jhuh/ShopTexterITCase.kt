@@ -22,9 +22,21 @@ class ShopTexterITCase {
 
     @Test
     fun generateCategoryTexts() {
-        val keywords = shopTexterService.generateCategoryKeywords("Flexfolien", setOf("Flexfolie"))
-        val texts = shopTexterService.generateCategoryTexts("Flexfolien", setOf("Flexfolie"), keywords)
-        val optimized = shopTexterService.optimizeCategoryTexts("Flexfolien", texts)
-        println(optimized)
+        val category = "Bastelbedarf"
+        val tags = setOf("Bastelbedarf")
+        val allOf = true
+        val keywords = shopTexterService.generateCategoryKeywords(category, tags, allOf)
+        val texts = shopTexterService.generateCategoryTexts(category, tags, keywords)
+        val optimized = shopTexterService.optimizeCategoryTexts(category, texts)
+
+        println()
+        println("SEO-Titel:")
+        println(texts.seoTitle)
+        println()
+        println("Meta-Beschreibung:")
+        println(texts.metaDescription)
+        println()
+        println("HTML-Beschreibung:")
+        println(optimized.description)
     }
 }

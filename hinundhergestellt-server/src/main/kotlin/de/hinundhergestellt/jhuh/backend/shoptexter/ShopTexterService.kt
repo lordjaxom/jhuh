@@ -164,11 +164,11 @@ class ShopTexterService(
         return response
     }
 
-    fun generateCategoryKeywords(category: String, tags: Set<String>): KeywordClusters {
+    fun generateCategoryKeywords(category: String, tags: Set<String>, allOf: Boolean): KeywordClusters {
         logger.info { "Generating category keywords for $category with tags $tags" }
 
         val examples = shopifyDataStore.products
-            .filter { it.tags.intersect(tags).isNotEmpty() }
+            .filter { if (allOf) it.tags.containsAll(tags) else it.tags.any { tag -> tags.contains(tag) } }
             .mapNotNull { product -> syncProductRepository.findByShopifyId(product.id)?.let { product to it } }
             .map { (shopify, sync) -> ProductMapper.map(shopify, sync) }
             .take(10)

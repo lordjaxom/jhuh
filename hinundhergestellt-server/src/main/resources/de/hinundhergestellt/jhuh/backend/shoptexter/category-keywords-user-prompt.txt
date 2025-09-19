@@ -1,5 +1,6 @@
 AUFGABE:
-Generiere Keywordcluster für die Kategorie {category}, welche Produkte mit den Tags {tags} enthält. Sortiere die
+Generiere Keywordcluster für die Kategorie {category}, welche Produkte mit den Tags {tags} enthält. Verwende auch wiederkehrende Keywords
+aus den Produktbeispielen, da diese oft Synonyme für die Kategorie-Tags darstellen. Sortiere die
 Keywords nach den Intentionen intentToKnow, intentToDo, intentToBuyOnline, intentToBuyLocal und multiIntent.
 
 FORMAT:
