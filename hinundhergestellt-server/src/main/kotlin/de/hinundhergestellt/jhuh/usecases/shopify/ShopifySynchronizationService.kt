@@ -79,6 +79,7 @@ class ShopifySynchronizationService(
             }
         }
 
+        // TODO: Update all changed products together in shopTexter, and remove deleted products
         productsToChange.forEach { shopifyDataStore.update(it); shopTexterService.updateProduct(it) }
         variantsToDelete.forEach { (product, variants) -> applyDeleteVariants(product, variants) }
         variantsToCreate.forEach { (product, variants) -> applyCreateVariants(product, variants) }
@@ -155,7 +156,7 @@ class ShopifySynchronizationService(
     private fun prepareDeleteProduct(syncProduct: SyncProduct, shopifyProduct: ShopifyProduct) {
         items += ImmediateItem(shopifyProduct.title, "Produkt entfernt") {
             shopifyDataStore.delete(shopifyProduct)
-            shopTexterService.removeProduct(syncProduct.id)
+            shopTexterService.removeProduct(shopifyProduct.id)
             transactionOperations.execute { syncProductRepository.delete(syncProduct) }
         }
     }
@@ -167,13 +168,13 @@ class ShopifySynchronizationService(
             .map { (sync, artoo) -> sync to shopifyVariantMapper.mapToVariant(artooProduct, sync, artoo) }
         val variantsText = if (!artooProduct.hasOnlyDefaultVariant) " mit ${unsavedVariants.size} Varianten" else ""
 
-        items += ImmediateItem(unsavedShopifyProduct.title, "Produkt${variantsText} hinzugefügt") {
+        items += ImmediateItem(unsavedShopifyProduct.title, "Produkt$variantsText hinzugefügt") {
             val savedShopifyProduct = shopifyDataStore.create(unsavedShopifyProduct)
             if (!savedShopifyProduct.isDryRun) syncProduct.shopifyId = savedShopifyProduct.id
             shopifyDataStore.create(savedShopifyProduct, unsavedVariants.map { it.second })
             if (!savedShopifyProduct.isDryRun)
                 unsavedVariants.forEachIndexed { index, (sync, _) -> sync.shopifyId = savedShopifyProduct.variants[index].id }
-            shopTexterService.updateProduct(savedShopifyProduct, syncProduct)
+            shopTexterService.updateProduct(savedShopifyProduct)
             transactionOperations.execute {
                 syncProduct.descriptionHtml = savedShopifyProduct.descriptionHtml
                 syncProductRepository.save(syncProduct)

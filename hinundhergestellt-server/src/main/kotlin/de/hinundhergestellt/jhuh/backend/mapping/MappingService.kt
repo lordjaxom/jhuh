@@ -63,8 +63,7 @@ class MappingService(
     fun extractTechnicalDetails(shopifyProduct: ShopifyProduct) =
         shopifyProduct.metafields.findById(METAFIELD_NAMESPACE, "technical_details")
             ?.let { objectMapper.readValue<Map<String, String>>(it.value) }
-            ?.map { it.key to it.value }
-            ?: listOf()
+            ?: mapOf()
 
     fun checkForProblems(artoo: ArtooMappedProduct, sync: SyncProduct) = buildList {
         if (artoo.description.isEmpty()) add(MappingProblem("Produkt hat keine Beschreibung (Titel in Shopify)", true))

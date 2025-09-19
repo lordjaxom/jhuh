@@ -2,18 +2,15 @@ package de.hinundhergestellt.jhuh.backend.vectorstore
 
 import org.springframework.ai.document.Document
 import org.springframework.ai.vectorstore.VectorStore
+import org.springframework.ai.vectorstore.filter.FilterExpressionTextParser
 import org.springframework.ai.vectorstore.mariadb.MariaDBVectorStore
 import org.springframework.ai.vectorstore.mariadb.autoconfigure.MariaDbStoreProperties
-import org.springframework.dao.support.DataAccessUtils.singleResult
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Component
-import java.util.UUID
 
 interface ExtendedVectorStore : VectorStore {
 
-    fun findById(id: String): Document?
-
-    fun removeById(id: String)
+    fun find(filterExpression: String): List<Document>
 }
 
 @Component
@@ -28,21 +25,12 @@ class MariaDBExtendedVectorStore(
     private val idFieldName: String by properties::idFieldName
     private val contentFieldName: String by properties::contentFieldName
 
-    override fun findById(id: String) =
-        singleResult(
-            jdbcTemplate.query(
-                "select $idFieldName, $contentFieldName from $fullyQualifiedTableName where id=?",
-                { rs, _ -> Document(rs.getString(1), rs.getString(2), mapOf()) },
-                id
-            )
+    override fun find(filterExpression: String): List<Document> {
+        val nativeFilterExpression = vectorStore.filterExpressionConverter
+            .convertExpression(FilterExpressionTextParser().parse(filterExpression));
+        return jdbcTemplate.query(
+            "select $idFieldName, $contentFieldName from $fullyQualifiedTableName where $nativeFilterExpression",
+            { rs, _ -> Document(rs.getString(1), rs.getString(2), mapOf()) },
         )
-
-    override fun removeById(id: String) {
-        jdbcTemplate.update("delete from $fullyQualifiedTableName where id=?", id)
     }
-}
-
-fun ExtendedVectorStore.findById(id: UUID) = when (this) {
-    is MariaDBExtendedVectorStore -> findById(id.toString())
-    else -> throw UnsupportedOperationException("findById")
 }

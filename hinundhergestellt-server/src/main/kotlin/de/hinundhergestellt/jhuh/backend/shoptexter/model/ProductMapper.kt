@@ -1,10 +1,15 @@
 package de.hinundhergestellt.jhuh.backend.shoptexter.model
 
+import de.hinundhergestellt.jhuh.backend.mapping.MappingService
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
+import org.springframework.stereotype.Component
 
-object ProductMapper {
+@Component
+class ProductMapper(
+    private val mappingService: MappingService
+) {
 
     fun map(artoo: ArtooMappedProduct, sync: SyncProduct, description: String?) =
         Product(
@@ -21,7 +26,7 @@ object ProductMapper {
                 else listOf(),
         )
 
-    fun map(shopify: ShopifyProduct, sync: SyncProduct) =
+    fun map(shopify: ShopifyProduct) =
         Product(
             name = shopify.title.substringBefore(",").trim(),
             title = shopify.title,
@@ -29,7 +34,7 @@ object ProductMapper {
             productType = shopify.productType,
             vendor = shopify.vendor,
             tags = shopify.tags,
-            technicalDetails = sync.technicalDetails.associate { it.name to it.value },
+            technicalDetails = mappingService.extractTechnicalDetails(shopify),
             hasOnlyDefaultVariant = shopify.hasOnlyDefaultVariant,
             variants =
                 if (!shopify.hasOnlyDefaultVariant) shopify.variants.map { it.title }

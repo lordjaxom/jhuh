@@ -11,7 +11,6 @@ import de.hinundhergestellt.jhuh.backend.shoptexter.model.ShopifyProductOptionFo
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProductRepository
 import de.hinundhergestellt.jhuh.backend.vectorstore.ExtendedVectorStore
-import de.hinundhergestellt.jhuh.backend.vectorstore.findById
 import de.hinundhergestellt.jhuh.core.loadTextResource
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafield
@@ -27,7 +26,6 @@ import org.springframework.ai.converter.BeanOutputConverter
 import org.springframework.ai.document.Document
 import org.springframework.ai.vectorstore.SearchRequest
 import org.springframework.stereotype.Service
-import java.util.UUID
 
 
 private val logger = KotlinLogging.logger { }
@@ -38,6 +36,7 @@ class ShopTexterService(
     private val vectorStore: ExtendedVectorStore,
     private val shopifyDataStore: ShopifyDataStore,
     private val syncProductRepository: SyncProductRepository,
+    private val productMapper: ProductMapper
 ) {
     private val objectMapper = JsonMapper.builder()
         .addModule(kotlinModule())
@@ -57,25 +56,19 @@ class ShopTexterService(
     private val examplesPromptTemplate = PromptTemplate(loadTextResource { "examples-prompt.txt" })
 
     init {
-        val productsWithSync = shopifyDataStore.products
-            .mapNotNull { product -> syncProductRepository.findByShopifyId(product.id)?.let { product to it } }
-        updateProducts(productsWithSync)
-    }
-
-    fun updateProduct(shopify: ShopifyProduct, sync: SyncProduct) {
-        updateProducts(listOf(Pair(shopify, sync)))
+        updateProducts(shopifyDataStore.products)
     }
 
     fun updateProduct(product: ShopifyProduct) {
-        updateProduct(product, syncProductRepository.findByShopifyId(product.id) ?: return)
+        updateProducts(listOf(product))
     }
 
-    fun removeProduct(id: UUID) {
-        vectorStore.removeById(id.toString())
+    fun removeProduct(shopifyId: String) {
+        vectorStore.delete("shopifyId == '$shopifyId'")
     }
 
     fun generateProductDetails(artooProduct: ArtooMappedProduct, syncProduct: SyncProduct, description: String?): GeneratedProductDetails {
-        val product = ProductMapper.map(artooProduct, syncProduct, description)
+        val product = productMapper.map(artooProduct, syncProduct, description)
 
         logger.info { "Generating product description for ${objectMapper.writeValueAsString(product)}" }
 
@@ -111,7 +104,7 @@ class ShopTexterService(
     }
 
     fun generateProductTags(artooProduct: ArtooMappedProduct, syncProduct: SyncProduct, description: String?): GeneratedProductTags {
-        val product = ProductMapper.map(artooProduct, syncProduct, description)
+        val product = productMapper.map(artooProduct, syncProduct, description)
 
         logger.info { "Generating product tags for ${objectMapper.writeValueAsString(product)}" }
 
@@ -169,8 +162,7 @@ class ShopTexterService(
 
         val examples = shopifyDataStore.products
             .filter { if (allOf) it.tags.containsAll(tags) else it.tags.any { tag -> tags.contains(tag) } }
-            .mapNotNull { product -> syncProductRepository.findByShopifyId(product.id)?.let { product to it } }
-            .map { (shopify, sync) -> ProductMapper.map(shopify, sync) }
+            .map { productMapper.map(it) }
             .take(10)
         val callResponse = shopTexterChatClient.prompt()
             .system(loadTextResource { "category-keywords-system-prompt.txt" })
@@ -231,11 +223,11 @@ class ShopTexterService(
         return categoryDescriptionConverter.convert(responseContent)!!
     }
 
-    private fun updateProducts(products: List<Pair<ShopifyProduct, SyncProduct>>) {
-        val newOrChangedDocuments = products.mapNotNull { (shopify, sync) ->
-            val oldText = vectorStore.findById(sync.id)?.text
-            val newText = objectMapper.writeValueAsString(ProductMapper.map(shopify, sync))
-            if (oldText == null || oldText != newText) Document(sync.id.toString(), newText, mapOf())
+    private fun updateProducts(products: List<ShopifyProduct>) {
+        val newOrChangedDocuments = products.mapNotNull { product ->
+            val oldText = vectorStore.find("shopifyId == '${product.id}'").firstOrNull()?.text
+            val newText = objectMapper.writeValueAsString(productMapper.map(product))
+            if (oldText == null || oldText != newText) Document(newText, mapOf("shopifyId" to product.id))
             else null
         }
         logger.info { "Updating ${newOrChangedDocuments.size} products in vector store" }

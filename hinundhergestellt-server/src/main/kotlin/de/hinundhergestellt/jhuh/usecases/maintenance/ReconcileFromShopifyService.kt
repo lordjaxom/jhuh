@@ -161,11 +161,12 @@ class ReconcileFromShopifyService(
         shopifyProduct: ShopifyProduct
     ): UpdateSyncProductItem? {
         val loadedTechnicalDetails = mappingService.extractTechnicalDetails(shopifyProduct)
-        val knownTechnicalDetails = syncProduct.technicalDetails.map { it.name to it.value }
+        val knownTechnicalDetails = syncProduct.technicalDetails.associate { it.name to it.value }
         if (loadedTechnicalDetails == knownTechnicalDetails) return null
         return UpdateSyncProductItem(syncProduct, shopifyProduct.title, "Technische Daten geändert") {
             technicalDetails.clear()
-            technicalDetails += loadedTechnicalDetails.mapIndexed { index, (name, value) -> SyncTechnicalDetail(name, value, index) }
+            technicalDetails += loadedTechnicalDetails.entries
+                .mapIndexed { index, (name, value) -> SyncTechnicalDetail(name, value, index) }
         }
     }
 
