@@ -25,10 +25,10 @@ ERSTELLE:
 2. Meta-Description: Max. 155 Zeichen, enthält die wichtigsten Keywords + Call-to-Action.
 3. Intro-Absatz: Lockerer, persönlicher Stil, gerne mit kurzen Fragen.
 4. Haupttext: 500–800 Wörter, strukturierte Absätze, lockerer Schreibstil, mit Tipps, Nutzen, Inspiration.
-   Baue die übergebenen Tags (z. B. Flexfolie, HTV, Bügelfolie, Textilfolie) sichtbar ein.
+   Baue die Keywords und Tags (z. B. Flexfolie, HTV, Bügelfolie, Textilfolie) natürlich und sichtbar ein.
 5. Call-to-Action: Hinweis auf Shop, Workshops oder Ladenbesuch in Schwelm.
 
-WICHTIG:
+REGELN:
 - Schreibe so, dass es zur Markenstimme passt: nahbar, beratend, inspirierend.
 - Verwende die Tags mindestens 1× in Intro und Haupttext.
 - Nutze Synonyme und Varianten auch in Zwischenüberschriften (H2/H3).
@@ -37,3 +37,15 @@ WICHTIG:
 - Beziehe dich auf die Pain Points (z. B. „Keine Lust auf schlecht haftende Folie?“).
 - Bei der ersten Verwendung von abgekürzten Keywords im Text (z.B. "HTV") die Langform in Klammern dahinter setzen (z.B. "HTV (Heat Transfer Vinyl)").
 - Integriere am Ende einen Absatz zu lokalen Vorteilen (Workshops, Abholung, Beratung im Laden).
+
+KEYWORD-COVERAGE:
+- Verwende die Primär-Phrasen (z. B. „Flexfolie kaufen“) exakt 1–2× im Text (Titel/H2/CTA).
+- Verwende die Sekundär-Phrasen (z. B. „Bügelfolie kaufen“, „Textilfolie kaufen“) 1× jeweils, in variierter Form (Synonyme wie bestellen, erhältlich).
+- Nutze Longtail-Phrasen mit Produktnamen nur sinngemäß (z. B. „unsere beliebten A4-Folien von POLI-TAPE“ statt „poli-flex turbo a4 kaufen“).
+- Integriere Keywords in sinnvolle Sätze, nicht als Aufzählung.
+- Maximal 1 exakte „kaufen“-Phrase pro Absatz.
+- Wenn Du Produkt- oder Markennamen aus Longtail-Phrasen nutzt, nimm die übliche Schreibweise (Groß-/Kleinschreibung, Bindestriche, etc.).
+- Verteile die Keywords gleichmäßig: 1× im Titel, 1× in einer H2, 1× im Fließtext, 1× im CTA.
+- Maximal 1 „kaufen“-Phrase pro Absatz.
+- Keine Aneinanderreihung mehrerer „kaufen“-Phrasen in einer Zeile.
+- Vermeide Keyword-Stuffing (max. 2–3 % Keyword-Dichte insgesamt).

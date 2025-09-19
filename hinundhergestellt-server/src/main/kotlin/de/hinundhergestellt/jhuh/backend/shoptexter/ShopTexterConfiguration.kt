@@ -1,21 +1,19 @@
 package de.hinundhergestellt.jhuh.backend.shoptexter
 
+import com.fasterxml.jackson.databind.MapperFeature
+import com.fasterxml.jackson.module.kotlin.jsonMapper
 import org.springframework.ai.chat.client.ChatClient
-import org.springframework.ai.chat.client.advisor.PromptChatMemoryAdvisor
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor
-import org.springframework.ai.chat.memory.MessageWindowChatMemory
-import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryRepository
 import org.springframework.ai.openai.OpenAiChatOptions
 import org.springframework.ai.openai.api.OpenAiApi
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import javax.sql.DataSource
 
 @Configuration
 class ShopTexterConfiguration {
 
     @Bean
-    fun shopTexterChatClient(builder: ChatClient.Builder, dataSource: DataSource) =
+    fun shopTexterChatClient(builder: ChatClient.Builder) =
         builder
             .defaultOptions(
                 OpenAiChatOptions.builder()
@@ -23,20 +21,11 @@ class ShopTexterConfiguration {
                     .temperature(1.0)
                     .build()
             )
-            .defaultAdvisors(
-//                PromptChatMemoryAdvisor
-//                    .builder(
-//                        MessageWindowChatMemory.builder()
-//                            .chatMemoryRepository(
-//                                JdbcChatMemoryRepository.builder()
-//                                    .dataSource(dataSource)
-//                                    .build()
-//                            )
-//                            .build()
-//                    )
-//                    .build(),
-                SimpleLoggerAdvisor()
-            )
+            .defaultAdvisors(SimpleLoggerAdvisor())
             .build()
+
+    @Bean(defaultCandidate = false)
+    fun shopTexterJsonMapper() =
+        jsonMapper { configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true) }
 }
 

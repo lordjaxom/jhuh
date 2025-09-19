@@ -17,15 +17,6 @@ class ShopTexterITCase {
     private lateinit var shopifyDataStore: ShopifyDataStore
 
     @Test
-    fun generateCategoryDescription() {
-        val result = shopTexterService.generateCategoryDescription(
-            "Plotten",
-            setOf("Plotten", "Plotterfolie", "Flexfolie", "Transferfolie", "Vinylfolie", "Flockfolie", "Zubehör")
-        )
-        println(result.description)
-    }
-
-    @Test
     fun generateCategoryTexts() {
         //generateCategoryTexts("Flexfolien", setOf("Flexfolie", "HTV", "Bügelfolie", "Textilfolie")) { "Flexfolie" in it.tags }
         //generateCategoryTexts("Bastelbedarf", setOf("Bastelbedarf")) { "Bastelbedarf" in it.tags }
@@ -34,23 +25,26 @@ class ShopTexterITCase {
         //generateCategoryTexts("Häkeln und Stricken", setOf("Häkeln", "Stricken", "Wolle", "Füllwatte", "Häkelnadel", "Nadelspiel")) {
         //    "Häkeln" in it.tags || "Stricken" in it.tags
         //}
-        generateCategoryTexts("Bastelsets", setOf("Bastelset")) { "Bastelset" in it.tags }
+        //generateCategoryTexts("Bastelsets", setOf("Bastelset")) { "Bastelset" in it.tags }
+        //generateCategoryTexts("Flockfolien", setOf("Flockfolie", "HTV", "Bügelfolie", "Textilfolie")) { "Flockfolie" in it.tags }
+        //generateCategoryTexts("Plotten", setOf("Plotten", "Flexfolie", "Flockfolie", "HTV", "Bügelfolie", "Textilfolie",
+        //    "Vinylfolie", "Klebefolie", "Möbelfolie")) { "Plotten" in it.tags }
+        //generateCategoryTexts("Transferfolien", setOf("Transferfolie")) { "Transferfolie" in it.tags }
+        generateCategoryTexts("Vinylfolien", setOf("Vinylfolie", "Klebefolie", "selbstklebend")) { "Vinylfolie" in it.tags }
     }
 
     private fun generateCategoryTexts(category: String, tags: Set<String>, filter: (ShopifyProduct) -> Boolean) {
         val products = shopifyDataStore.products.filter(filter)
-        val keywords = shopTexterService.generateCategoryKeywords(category, tags, products)
-        val texts = shopTexterService.generateCategoryTexts(category, tags, products, keywords)
-        val optimized = shopTexterService.optimizeCategoryTexts(category, texts)
+        val category = shopTexterService.generateForCategory(category, tags, products)
 
         println()
         println("SEO-Titel:")
-        println(texts.seoTitle)
+        println(category.seoTitle)
         println()
         println("Meta-Beschreibung:")
-        println(texts.metaDescription)
+        println(category.metaDescription)
         println()
         println("HTML-Beschreibung:")
-        println(optimized.description)
+        println(category.descriptionHtml)
     }
 }
