@@ -1,6 +1,7 @@
 package de.hinundhergestellt.jhuh
 
 import de.hinundhergestellt.jhuh.backend.shoptexter.ShopTexterService
+import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import kotlin.test.Test
@@ -10,6 +11,9 @@ class ShopTexterITCase {
 
     @Autowired
     private lateinit var shopTexterService: ShopTexterService
+
+    @Autowired
+    private lateinit var shopifyDataStore: ShopifyDataStore
 
     @Test
     fun generateCategoryDescription() {
@@ -22,11 +26,11 @@ class ShopTexterITCase {
 
     @Test
     fun generateCategoryTexts() {
-        val category = "Bastelbedarf"
-        val tags = setOf("Bastelbedarf")
-        val allOf = true
-        val keywords = shopTexterService.generateCategoryKeywords(category, tags, allOf)
-        val texts = shopTexterService.generateCategoryTexts(category, tags, keywords)
+        val category = "Flexfolien"
+        val tags = setOf("Flexfolie", "HTV", "Bügelfolie", "Textilfolie")
+        val products = shopifyDataStore.products.filter { "Flexfolie" in it.tags }
+        val keywords = shopTexterService.generateCategoryKeywords(category, tags, products)
+        val texts = shopTexterService.generateCategoryTexts(category, tags, products, keywords)
         val optimized = shopTexterService.optimizeCategoryTexts(category, texts)
 
         println()

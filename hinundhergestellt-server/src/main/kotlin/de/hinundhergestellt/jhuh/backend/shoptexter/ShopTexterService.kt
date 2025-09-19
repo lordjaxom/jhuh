@@ -157,21 +157,18 @@ class ShopTexterService(
         return response
     }
 
-    fun generateCategoryKeywords(category: String, tags: Set<String>, allOf: Boolean): KeywordClusters {
+    fun generateCategoryKeywords(category: String, tags: Set<String>, products: List<ShopifyProduct>): KeywordClusters {
         logger.info { "Generating category keywords for $category with tags $tags" }
 
-        val examples = shopifyDataStore.products
-            .filter { if (allOf) it.tags.containsAll(tags) else it.tags.any { tag -> tags.contains(tag) } }
-            .map { productMapper.map(it) }
-            .take(10)
+        val mappedProducts = products.map { productMapper.map(it) }
         val callResponse = shopTexterChatClient.prompt()
             .system(loadTextResource { "category-keywords-system-prompt.txt" })
             .user {
                 it.text(loadTextResource { "category-keywords-user-prompt.txt" })
                     .param("category", category)
-                    .param("tags", tags)
+                    .param("tags", tags.joinToString(", "))
                     .param("format", keywordClustersConverter.format)
-                    .param("examples", examples.joinToString("\n") { product -> objectMapper.writeValueAsString(product) })
+                    .param("products", mappedProducts.joinToString("\n") { product -> objectMapper.writeValueAsString(product) })
             }
             .advisors { it.param(ChatMemory.CONVERSATION_ID, "generateCategoryKeywords") }
             .call()
@@ -182,16 +179,23 @@ class ShopTexterService(
         return keywordClustersConverter.convert(responseContent)!!
     }
 
-    fun generateCategoryTexts(category: String, tags: Set<String>, keywords: KeywordClusters): CategoryTexts {
+    fun generateCategoryTexts(
+        category: String,
+        tags: Set<String>,
+        products: List<ShopifyProduct>,
+        keywords: KeywordClusters
+    ): CategoryTexts {
         logger.info { "Generating category description for $category with keywords cluster" }
 
+        val mappedProducts = products.map { productMapper.map(it) }
         val callResponse = shopTexterChatClient.prompt()
             .system(loadTextResource { "category-texts-system-prompt.txt" })
             .user {
                 it.text(loadTextResource { "category-texts-user-prompt.txt" })
                     .param("category", category)
-                    .param("tags", tags)
+                    .param("tags", tags.joinToString(", "))
                     .param("keywords", objectMapper.writeValueAsString(keywords))
+                    .param("products", mappedProducts.joinToString("\n") { product -> objectMapper.writeValueAsString(product) })
                     .param("format", categoryTextsConverter.format)
             }
             .advisors { it.param(ChatMemory.CONVERSATION_ID, "generateCategoryTexts") }
