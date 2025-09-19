@@ -223,10 +223,12 @@ private fun ArtooMappedCategory.toSyncCategory() =
 
 private fun ArtooMappedProduct.toSyncProduct() =
     SyncProduct(artooId = id).apply {
-        variants += variations
+        variations
             .filter { it.barcode != null }
-            .map { it.toSyncVariant(this) }
+            .forEach { it.toSyncVariant(this) }
     }
 
 private fun ArtooMappedVariation.toSyncVariant(product: SyncProduct) =
-    SyncVariant(product = product, barcode = barcode ?: "", artooId = id)
+    SyncVariant(product = product, barcode = barcode ?: "", artooId = id).apply {
+        product.variants += this
+    }
