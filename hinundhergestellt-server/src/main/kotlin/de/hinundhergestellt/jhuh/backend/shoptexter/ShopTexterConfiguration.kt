@@ -24,17 +24,17 @@ class ShopTexterConfiguration {
                     .build()
             )
             .defaultAdvisors(
-                PromptChatMemoryAdvisor
-                    .builder(
-                        MessageWindowChatMemory.builder()
-                            .chatMemoryRepository(
-                                JdbcChatMemoryRepository.builder()
-                                    .dataSource(dataSource)
-                                    .build()
-                            )
-                            .build()
-                    )
-                    .build(),
+//                PromptChatMemoryAdvisor
+//                    .builder(
+//                        MessageWindowChatMemory.builder()
+//                            .chatMemoryRepository(
+//                                JdbcChatMemoryRepository.builder()
+//                                    .dataSource(dataSource)
+//                                    .build()
+//                            )
+//                            .build()
+//                    )
+//                    .build(),
                 SimpleLoggerAdvisor()
             )
             .build()

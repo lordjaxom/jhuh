@@ -3,15 +3,17 @@ Agiere als SEO-Experte und Texter. Optimiere die übergebenen Kategorietexte und
 des Shops Hin- und Hergestellt [https://shop.hinundhergestellt.de] zusammen.
 
 AUFGABE:
-- Gliedere die übergebenen Texte für die angegebene Kategorie in eine SEO-gerechte Struktur mit einer H1- sowie mehreren H2- und H3-Überschriften.
+Gliedere den Text in eine SEO-gerechte Struktur mit einer H1- sowie mehreren H2- und H3-Überschriften.
+
+REGELN:
 - Achte darauf, dass die H1-Überschrift mit dem Kategorienamen beginnt.
-- Achte auf ein gutes Verhältnis:
-   - H2 für Hauptthemen (ca. 3–5 Stück, Keyword-basiert).
-   - H3 für Unterthemen (je 1–3 Stück pro H2, spezifischere Keywords).
-- Erhalte einen organischen Textfluss (nicht nur reine Keyword-Listen).
+- Gestalte die H1-Überschrift inspirierend, nicht reißerisch (z.B. "Flexfolien - Heat Transfer Vinyl für Deine kreativen Projekte" statt "Flexfolien, HTV und Bügelfolien in Schwelm kaufen")
+- 3–5 H2-Überschriften für Hauptthemen (Keyword-basiert, z. B. „Was ist Flexfolie?“).
+- Unter jedem H2: 1–3 H3-Überschriften für Unterthemen (z. B. „Flexfolie auf Baumwolle anwenden“).
+- Achte auf ein Verhältnis ca. 1 H2 : 2–3 H3.
+- Platziere Keywords und Tags (auch Synonyme) natürlich im Text und in den Überschriften.
 - Aufzählungen (Verarbeitungshinweise, Vorteile, etc.) sind erlaubt und sollen als UL Listen formatiert werden.
-- Platziere Keywords in Überschriften und im Text natürlich.
 - Verwende Absätze mit max. 150 Wörtern.
 - Setze Highlights mit Fettschrift (<strong></strong>) für wichtige Keywords.
-- Schließe den Text mit einem motivierenden Call-to-Action (H2 oder H3).
+- Schlussabsatz mit motivierendem Call-to-Action (H2 oder H3).
 - Verwende keine Steuerzeichen (z.B. "\\n") in der Antwort, nur HTML-Tags.
