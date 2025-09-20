@@ -8,7 +8,8 @@ import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.VariantOptionValu
 class ShopifyProductVariantOption(
     val name: String,
     value: String,
-    linkedMetafieldValue: String? = null
+    linkedMetafieldValue: String? = null,
+    private val id: String? = null
 ) : HasDirtyTracker {
 
     override val dirtyTracker = DirtyTracker()
@@ -19,13 +20,14 @@ class ShopifyProductVariantOption(
     internal constructor(option: SelectedOption) : this(
         option.name,
         option.value,
-        option.optionValue.linkedMetafieldValue
+        option.optionValue.linkedMetafieldValue,
+        option.optionValue.id
     )
 
     override fun toString() =
         "ShopifyProductVariantOption(name='$name', value='$value')"
 
     internal fun toVariantOptionValueInput() =
-        if (linkedMetafieldValue != null) VariantOptionValueInput(optionName = name, linkedMetafieldValue = linkedMetafieldValue)
+        if (linkedMetafieldValue != null) VariantOptionValueInput(id = id, optionName = name, linkedMetafieldValue = linkedMetafieldValue)
         else VariantOptionValueInput(optionName = name, name = value)
 }

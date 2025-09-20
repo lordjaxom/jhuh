@@ -118,7 +118,7 @@ class ShopifyProductClient(
         variants(first = 100, after = after) {
             edges {
                 node {
-                    id; title; price; sku; barcode
+                    id; title; price; sku; barcode; inventoryQuantity
                     inventoryItem {
                         measurement {
                             weight { unit; value }
@@ -126,7 +126,7 @@ class ShopifyProductClient(
                     }
                     selectedOptions {
                         name; value
-                        optionValue { linkedMetafieldValue }
+                        optionValue { id; linkedMetafieldValue }
                     }
                     media(first = 1) {
                         edges {

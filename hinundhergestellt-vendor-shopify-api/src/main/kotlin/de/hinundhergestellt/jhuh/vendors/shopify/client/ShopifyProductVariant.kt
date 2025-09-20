@@ -98,7 +98,8 @@ class ShopifyProductVariant private constructor(
     private val base: BaseShopifyProductVariant,
     val id: String,
     val title: String,
-    mediaId: String?
+    mediaId: String?,
+    val inventoryQuantity: Int? = null
 ) : ShopifyProductVariantCommonFields, HasDirtyTracker {
 
     override val dirtyTracker = DirtyTracker()
@@ -116,7 +117,8 @@ class ShopifyProductVariant private constructor(
         BaseShopifyProductVariant(variant),
         variant.id,
         variant.title,
-        variant.media.edges.firstOrNull()?.node?.id
+        variant.media.edges.firstOrNull()?.node?.id,
+        variant.inventoryQuantity
     ) {
         require(!variant.media.pageInfo.hasNextPage) { "ProductVariant has more media than is supported" }
     }
