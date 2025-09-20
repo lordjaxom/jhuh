@@ -77,8 +77,11 @@ class MappingService(
             add(MappingProblem("Produkt hat Variationen mit gleichem Namen", true))
         if (!artoo.hasOnlyDefaultVariant && artoo.variations.any { it.name.isEmpty() })
             add(MappingProblem("Nicht alle Variationen haben einen Namen", false))
-        if (artoo.hasOnlyDefaultVariant && !sync.variants.firstOrNull().hasWeight())
-            add(MappingProblem("Produkt hat keine Gewichtsangabe", true))
+
+        if (artoo.hasOnlyDefaultVariant) {
+            if (!sync.variants.firstOrNull().hasWeight()) add(MappingProblem("Produkt hat keine Gewichtsangabe", true))
+            else if (!sync.variants.firstOrNull().hasValidWeight()) add(MappingProblem("Gewichtsangabe ungültig (0,5g oder >= 30g)", true))
+        }
 
         sync.vendor.also {
             if (it == null) add(MappingProblem("Produkt hat keinen Hersteller", true))
@@ -90,10 +93,13 @@ class MappingService(
 
     fun checkForProblems(artoo: ArtooMappedVariation, sync: SyncVariant, product: ArtooMappedProduct) = buildList {
         if (artoo.barcode == null) add(MappingProblem("Variation hat keinen Barcode", true))
+
         if (artoo.name.isEmpty()) add(MappingProblem("Variation hat keinen Namen", true))
         else if (artoo.name.startsWith(product.name, ignoreCase = true))
             add(MappingProblem("Variationsname beginnt mit Produktnamen", true))
+
         if (!sync.hasWeight()) add(MappingProblem("Variation hat keine Gewichtsangabe", true))
+        else if (!sync.hasValidWeight()) add(MappingProblem("Gewichtsangabe ungültig (0,5g oder >= 30g)", true))
     }
 
     private fun technicalDetails(syncProduct: SyncProduct) =
@@ -110,4 +116,8 @@ class MappingService(
 
 private fun metafield(key: String, value: String, type: ShopifyMetafieldType) = ShopifyMetafield(METAFIELD_NAMESPACE, key, value, type)
 
-private fun SyncVariant?.hasWeight() = this?.weight?.run { compareTo(BigDecimal.ZERO) != 0 } ?: false
+private fun SyncVariant?.hasWeight() =
+    this?.weight?.run { compareTo(BigDecimal.ZERO) != 0 } ?: false
+
+private fun SyncVariant?.hasValidWeight() =
+    this?.weight?.run { compareTo(BigDecimal("0.5")) == 0 || compareTo(BigDecimal("30.0")) >= 0 } ?: false

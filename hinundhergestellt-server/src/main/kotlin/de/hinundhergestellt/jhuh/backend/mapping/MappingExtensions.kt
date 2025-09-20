@@ -6,31 +6,6 @@ import kotlin.reflect.KMutableProperty1
 internal fun Collection<*>.toQuotedString() = joinToString(", ", prefix = "\"", postfix = "\"")
 internal fun Any?.toQuotedString() = if (this is Collection<*>) toQuotedString() else "\"${this ?: ""}\""
 
-private val FIELD_NAME_TO_READABLE = mapOf(
-    "title" to Pair("Titel", true),
-    "vendor" to Pair("Hersteller", true),
-    "productType" to Pair("Produktart", true),
-    "descriptionHtml" to Pair("Beschreibung", false),
-    "tags" to Pair("Tags", true),
-    "vendor_email" to Pair("Hersteller-Email", true),
-    "vendor_address" to Pair("Herstelleradresse", false),
-    "product_specs" to Pair("Produktspezifikationen", false),
-    "barcode" to Pair("Barcode", true),
-    "sku" to Pair("Artikelnummer", true),
-    "price" to Pair("Preis", true),
-    "technical_details" to Pair("Technische Daten", false)
-)
-
-internal fun <T> changeMessage(fieldName: String, oldValue: T, newValue: T): String {
-    val field = FIELD_NAME_TO_READABLE[fieldName] ?: Pair("Property $fieldName", false)
-    return "${field.first}${if (field.second) " von ${oldValue.toQuotedString()} zu ${newValue.toQuotedString()}" else ""} geändert"
-}
-
-internal fun <T> additionMessage(fieldName: String, value: T): String {
-    val field = FIELD_NAME_TO_READABLE[fieldName] ?: Pair("Property $fieldName", false)
-    return "${field.first}${if (field.second) " ${value.toQuotedString()}" else ""} hinzugefügt"
-}
-
 internal enum class ChangeField(
     val displayName: String,
     val showChange: Boolean,
@@ -41,9 +16,11 @@ internal enum class ChangeField(
     PRODUCT_TYPE("Produktart", true, "productType", "type"),
     PRODUCT_DESCRIPTION("Produktbeschreibung", false, "descriptionHtml"),
     PRODUCT_TAGS("Tags", true, "tags"),
+    PRODUCT_TECHNICAL_DETAILS("Technische Daten", false),
     VARIANT_BARCODE("Barcode", true, "barcode"),
     VARIANT_SKU("Artikelnummer", true, "sku"),
     VARIANT_PRICE("Preis", true, "price"),
+    VARIANT_WEIGHT("Gewicht", true),
     OPTION_VALUE("Option %1\$s", true);
 
     companion object {
@@ -66,5 +43,16 @@ internal fun <T, V> change(instance: T, property: KMutableProperty1<T, V>, newVa
         ?.let { changeMessage(field ?: ChangeField.fromFieldName(property.name), it, newValue, *args) }
         ?.let { Change<T>(it) { property.set(this, newValue) } }
 
+internal fun <T> change(getter: () -> T, setter: (T) -> Unit, newValue: T, field: ChangeField, vararg args: Any) =
+    getter().takeIf { it != newValue }
+        ?.let { changeMessage(field, it, newValue, *args) }
+        ?.let { Change<Any?>(it) { setter(newValue) } }
+
+internal fun <T> addition(setter: (T) -> Unit, newValue: T, field: ChangeField, vararg args: Any) =
+    Change<Any?>(additionMessage(field, newValue, *args)) { setter(newValue) }
+
 private fun <T> changeMessage(field: ChangeField, oldValue: T, newValue: T, vararg args: Any) =
     "${field.displayName.format(*args)}${if (field.showChange) " von ${oldValue.toQuotedString()} zu ${newValue.toQuotedString()}" else ""} geändert"
+
+private fun <T> additionMessage(field: ChangeField, value: T, vararg args: Any) =
+    "${field.displayName.format(*args)}${if (field.showChange) " ${value.toQuotedString()}" else ""} hinzugefügt"

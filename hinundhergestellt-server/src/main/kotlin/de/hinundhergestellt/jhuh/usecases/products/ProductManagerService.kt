@@ -225,7 +225,7 @@ private fun ArtooMappedProduct.toSyncProduct() =
     SyncProduct(artooId = id).apply {
         variations
             .filter { it.barcode != null }
-            .forEach { it.toSyncVariant(this) }
+            .forEach { it.toSyncVariant(this) } // will be added to product below
     }
 
 private fun ArtooMappedVariation.toSyncVariant(product: SyncProduct) =
