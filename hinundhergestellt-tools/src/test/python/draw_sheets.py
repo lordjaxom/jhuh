@@ -17,6 +17,8 @@ img = Image.open(sys.argv[1]).convert("RGB")
 arr = np.array(img)
 r, g, b = [int(np.median(arr[:,:,i])) for i in range(3)]
 dominant_color = (r, g, b)
+hex_code = '#{:02x}{:02x}{:02x}'.format(*dominant_color)
+print(f"{hex_code}")
 
 # 2. Blattgröße so bestimmen, dass es (inkl. Schatten) bei maximaler Drehung noch passt
 def get_max_sheet_size(canvas, shadow, angle_deg, aspect_ratio):

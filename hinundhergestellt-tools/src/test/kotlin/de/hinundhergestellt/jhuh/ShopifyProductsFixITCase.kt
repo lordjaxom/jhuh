@@ -7,13 +7,16 @@ import de.hinundhergestellt.jhuh.tools.RectPct
 import de.hinundhergestellt.jhuh.tools.ShopifyImageTools
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMedia
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMediaClient
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafield
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafieldClient
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafieldType
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetaobjectClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOptionClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyWeight
+import de.hinundhergestellt.jhuh.vendors.shopify.client.findById
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightUnit
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
@@ -136,6 +139,46 @@ class ShopifyProductsFixITCase {
 
         variantClient.update(product, variants)
         mediaClient.update(media)
+    }
+
+    @Test
+    fun updateAllProducts() = runBlocking {
+        val products = productClient.fetchAll().toList()
+        products.forEach {
+            it.descriptionHtml += "&nbsp;"
+            productClient.update(it)
+        }
+    }
+
+    @Test
+    fun updateGoogleAttributes() = runBlocking {
+        val metaGoogleConditionNew = ShopifyMetafield("mm-google-shopping", "condition", "new", ShopifyMetafieldType.STRING)
+        val metaGoogleCategoryToyCraftKits = ShopifyMetafield("mm-google-shopping", "google_product_category", "4986", ShopifyMetafieldType.STRING)
+        val metaGoogleCategoryArtCraftKits = ShopifyMetafield("mm-google-shopping", "google_product_category", "505370", ShopifyMetafieldType.STRING)
+
+        val products = productClient.fetchAll().toList()
+        products.forEach { product ->
+            var dirty = false
+
+            val googleCondition = product.metafields.findById(metaGoogleConditionNew)
+            if (googleCondition == null) {
+                product.metafields.add(metaGoogleConditionNew)
+                dirty = true
+            } else if (googleCondition.value != metaGoogleConditionNew.value) {
+                googleCondition.value = metaGoogleConditionNew.value
+                dirty = true
+            }
+
+            val googleCategory = product.metafields.findById(metaGoogleCategoryToyCraftKits)
+            if (googleCategory != null && googleCategory.value == metaGoogleCategoryToyCraftKits.value) {
+                googleCategory.value = metaGoogleCategoryArtCraftKits.value
+                dirty = true
+            }
+
+            if (dirty) {
+                productClient.update(product)
+            }
+        }
     }
 
     @Test

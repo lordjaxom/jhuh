@@ -30,7 +30,7 @@ class ShopTexterITCase {
         //generateCategoryTexts("Plotten", setOf("Plotten", "Flexfolie", "Flockfolie", "HTV", "Bügelfolie", "Textilfolie",
         //    "Vinylfolie", "Klebefolie", "Möbelfolie")) { "Plotten" in it.tags }
         //generateCategoryTexts("Transferfolien", setOf("Transferfolie")) { "Transferfolie" in it.tags }
-        generateCategoryTexts("Vinylfolien", setOf("Vinylfolie", "Klebefolie", "selbstklebend")) { "Vinylfolie" in it.tags }
+        generateCategoryTexts("Alle Produkte", setOf()) { true }
     }
 
     private fun generateCategoryTexts(category: String, tags: Set<String>, filter: (ShopifyProduct) -> Boolean) {
