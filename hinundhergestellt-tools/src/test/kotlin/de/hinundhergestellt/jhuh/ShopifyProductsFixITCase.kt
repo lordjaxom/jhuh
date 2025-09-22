@@ -145,8 +145,11 @@ class ShopifyProductsFixITCase {
     fun updateAllProducts() = runBlocking {
         val products = productClient.fetchAll().toList()
         products.forEach {
-            it.descriptionHtml += "&nbsp;"
-            productClient.update(it)
+            val old = it.descriptionHtml
+            it.descriptionHtml = old.trim()
+            if (old != it.descriptionHtml) {
+                productClient.update(it)
+            }
         }
     }
 

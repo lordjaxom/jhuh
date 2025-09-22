@@ -1,9 +1,9 @@
 package de.hinundhergestellt.jhuh.backend.shoptexter
 
 import com.fasterxml.jackson.databind.json.JsonMapper
+import de.hinundhergestellt.jhuh.backend.shoptexter.model.Product
 import de.hinundhergestellt.jhuh.backend.shoptexter.model.ProductMapper
 import de.hinundhergestellt.jhuh.core.loadTextResource
-import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.ai.chat.client.ChatClient
 import org.springframework.ai.chat.memory.ChatMemory
@@ -18,16 +18,15 @@ class CategoryTexterService(
     private val shopTexterChatClient: ChatClient,
     private val productMapper: ProductMapper,
     @param:Qualifier("shopTexterJsonMapper")
-    private val jsonMapper: JsonMapper,
+    private val jsonMapper: JsonMapper
 ) {
-    private val keywordClustersConverter = BeanOutputConverter(KeywordClusters::class.java)
-    private val rawCategoryTextsConverter = BeanOutputConverter(RawCategoryTexts::class.java)
-    private val categoryDescriptionConverter = BeanOutputConverter(CategoryDescription::class.java)
+    private val keywordClustersConverter = BeanOutputConverter(CategoryKeywordClusters::class.java)
+    private val rawTextsConverter = BeanOutputConverter(CategoryRawTexts::class.java)
+    private val descriptionConverter = BeanOutputConverter(CategoryDescription::class.java)
 
-    fun generateCategoryKeywords(category: String, tags: Set<String>, products: List<ShopifyProduct>): KeywordClusters {
+    fun generateCategoryKeywords(category: String, tags: Set<String>, products: List<Product>): CategoryKeywordClusters {
         logger.info { "Generating category keywords for $category with tags $tags" }
 
-        val mappedProducts = products.map { productMapper.map(it) }
         val callResponse = shopTexterChatClient.prompt()
             .system(loadTextResource { "category-keywords-system-prompt.txt" })
             .user {
@@ -35,7 +34,7 @@ class CategoryTexterService(
                     .param("category", category)
                     .param("tags", tags.joinToString(", "))
                     .param("format", keywordClustersConverter.format)
-                    .param("products", mappedProducts.joinToString("\n") { product -> jsonMapper.writeValueAsString(product) })
+                    .param("products", products.joinToString("\n") { product -> jsonMapper.writeValueAsString(product) })
             }
             .advisors { it.param(ChatMemory.CONVERSATION_ID, "generateCategoryKeywords") }
             .call()
@@ -46,15 +45,10 @@ class CategoryTexterService(
         return keywordClustersConverter.convert(responseContent)!!
     }
 
-    fun generateCategoryTexts(
-        category: String,
-        tags: Set<String>,
-        products: List<ShopifyProduct>,
-        keywords: KeywordClusters
-    ): RawCategoryTexts {
+    fun generateCategoryTexts(category: String, tags: Set<String>, products: List<Product>, keywords: CategoryKeywordClusters)
+            : CategoryRawTexts {
         logger.info { "Generating category description for $category with keywords cluster" }
 
-        val mappedProducts = products.map { productMapper.map(it) }
         val callResponse = shopTexterChatClient.prompt()
             .system(loadTextResource { "category-texts-system-prompt.txt" })
             .user {
@@ -62,8 +56,8 @@ class CategoryTexterService(
                     .param("category", category)
                     .param("tags", tags.joinToString(", "))
                     .param("keywords", jsonMapper.writeValueAsString(keywords))
-                    .param("products", mappedProducts.joinToString("\n") { product -> jsonMapper.writeValueAsString(product) })
-                    .param("format", rawCategoryTextsConverter.format)
+                    .param("products", products.joinToString("\n") { product -> jsonMapper.writeValueAsString(product) })
+                    .param("format", rawTextsConverter.format)
             }
             .advisors { it.param(ChatMemory.CONVERSATION_ID, "generateCategoryTexts") }
             .call()
@@ -71,10 +65,10 @@ class CategoryTexterService(
 
         logger.info { "Generated category texts: $responseContent" }
 
-        return rawCategoryTextsConverter.convert(responseContent)!!
+        return rawTextsConverter.convert(responseContent)!!
     }
 
-    fun optimizeCategoryTexts(category: String, texts: RawCategoryTexts): CategoryDescription {
+    fun optimizeCategoryTexts(category: String, texts: CategoryRawTexts): CategoryDescription {
         logger.info { "Optimizing category description for $category from previous prompt" }
 
         val callResponse = shopTexterChatClient.prompt()
@@ -83,7 +77,7 @@ class CategoryTexterService(
                 it.text(loadTextResource { "category-optimize-user-prompt.txt" })
                     .param("category", category)
                     .param("texts", jsonMapper.writeValueAsString(texts))
-                    .param("format", categoryDescriptionConverter.format)
+                    .param("format", descriptionConverter.format)
             }
             .advisors { it.param(ChatMemory.CONVERSATION_ID, "optimizeCategoryTexts") }
             .call()
@@ -91,11 +85,11 @@ class CategoryTexterService(
 
         logger.info { "Optimized category texts: $responseContent" }
 
-        return categoryDescriptionConverter.convert(responseContent)!!
+        return descriptionConverter.convert(responseContent)!!
     }
 }
 
-class KeywordClusters(
+class CategoryKeywordClusters(
     val intentToKnow: List<String>,
     val intentToDo: List<String>,
     val intentToBuyOnline: List<String>,
@@ -103,7 +97,7 @@ class KeywordClusters(
     val multiIntent: List<String>
 )
 
-class RawCategoryTexts(
+class CategoryRawTexts(
     val seoTitle: String,
     val metaDescription: String,
     val intro: String,

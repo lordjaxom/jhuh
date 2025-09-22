@@ -25,6 +25,7 @@ private val logger = KotlinLogging.logger { }
 @Service
 class ShopTexterService(
     private val categoryTexterService: CategoryTexterService,
+    private val productTexterService: ProductTexterService,
     private val shopTexterChatClient: ChatClient,
     private val vectorStore: ExtendedVectorStore,
     shopifyDataStore: ShopifyDataStore,
@@ -107,22 +108,43 @@ class ShopTexterService(
         return response
     }
 
-    fun generateForCategory(category: String, tags: Set<String>, products: List<ShopifyProduct>): Category {
-        val keywords = categoryTexterService.generateCategoryKeywords(category, tags, products)
-        val texts = categoryTexterService.generateCategoryTexts(category, tags, products, keywords)
+    fun generateCategoryTexts(category: String, tags: Set<String>, products: List<ShopifyProduct>): CategoryTexts {
+        val mappedProducts = products.map { productMapper.map(it) }
+        val keywords = categoryTexterService.generateCategoryKeywords(category, tags, mappedProducts)
+        val texts = categoryTexterService.generateCategoryTexts(category, tags, mappedProducts, keywords)
         val optimized = categoryTexterService.optimizeCategoryTexts(category, texts)
-        return Category(
+        return CategoryTexts(
             texts.seoTitle,
             texts.metaDescription,
             optimized.descriptionHtml
         )
     }
 
+    fun generateProductTexts(product: ShopifyProduct): ProductTexts {
+        val mappedProduct = productMapper.map(product)
+        val keywords = productTexterService.generateProductKeywords(mappedProduct)
+        val texts = productTexterService.generateProductTexts(mappedProduct, keywords)
+        val optimized = productTexterService.optimizeProductTexts(mappedProduct, texts)
+        return ProductTexts(
+            texts.seoTitle,
+            texts.metaDescription,
+            optimized.descriptionHtml
+        )
+    }
+
+    fun generateProductDetails(product: ShopifyProduct): ProductDetails {
+        val mappedProduct = productMapper.map(product)
+        return productTexterService.generateProductDetails(mappedProduct)
+    }
+
     private fun updateProducts(products: List<ShopifyProduct>) {
         val newOrChangedDocuments = products.mapNotNull { product ->
             val oldText = vectorStore.find("shopifyId == '${product.id}'").firstOrNull()?.text
             val newText = jsonMapper.writeValueAsString(productMapper.map(product))
-            if (oldText == null || oldText != newText) Document(newText, mapOf("shopifyId" to product.id))
+            if (oldText == null || oldText != newText) {
+                println("DIFF")
+                Document(newText, mapOf("shopifyId" to product.id))
+            }
             else null
         }
         logger.info { "Updating ${newOrChangedDocuments.size} products in vector store" }
@@ -143,7 +165,13 @@ class GeneratedProductTags(
     val consultedUrls: List<String>
 )
 
-class Category(
+class CategoryTexts(
+    val seoTitle: String,
+    val metaDescription: String,
+    val descriptionHtml: String
+)
+
+class ProductTexts(
     val seoTitle: String,
     val metaDescription: String,
     val descriptionHtml: String

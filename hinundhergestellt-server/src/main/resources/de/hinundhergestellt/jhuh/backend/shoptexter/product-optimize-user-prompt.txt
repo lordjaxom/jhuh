@@ -1,0 +1,8 @@
+PRODUKT:
+{product}
+
+TEXTE:
+{texts}
+
+FORMAT:
+{format}

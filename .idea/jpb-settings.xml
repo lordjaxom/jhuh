@@ -23,5 +23,17 @@
     <exclude-change idName="sync_product_tags#sync_product_id" tagName="addColumn" />
     <exclude-change idName="sync_product_tags#sync_product_id" tagName="addNotNullConstraint" />
     <exclude-change idName="sync_product#vendor_id" tagName="addColumn" />
+    <exclude-change idName="ignored_unused_file#id" tagName="dropColumn" />
+    <exclude-change idName="ignored_unused_file#id" tagName="addColumn" />
+    <exclude-change idName="sync_product_technical_details#sync_product_id" tagName="dropColumn" />
+    <exclude-change idName="sync_product_technical_details#sync_product_id" tagName="addColumn" />
+    <exclude-change idName="sync_variant#weight" tagName="modifyDataType" />
+    <exclude-change idName="idx_synccategory_artooid" tagName="createIndex" />
+    <exclude-change idName="idx_syncproduct_artooid" tagName="createIndex" />
+    <exclude-change idName="idx_syncproduct_shopifyid" tagName="createIndex" />
+    <exclude-change idName="idx_syncvariant_artooid" tagName="createIndex" />
+    <exclude-change idName="idx_syncvariant_barcode" tagName="createIndex" />
+    <exclude-change idName="idx_syncvariant_shopifyid" tagName="createIndex" />
+    <exclude-change idName="idx_syncvendor_name" tagName="createIndex" />
   </component>
 </project>

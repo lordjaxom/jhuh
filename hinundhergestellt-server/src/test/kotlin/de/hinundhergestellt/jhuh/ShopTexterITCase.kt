@@ -35,7 +35,7 @@ class ShopTexterITCase {
 
     private fun generateCategoryTexts(category: String, tags: Set<String>, filter: (ShopifyProduct) -> Boolean) {
         val products = shopifyDataStore.products.filter(filter)
-        val category = shopTexterService.generateForCategory(category, tags, products)
+        val category = shopTexterService.generateCategoryTexts(category, tags, products)
 
         println()
         println("SEO-Titel:")
@@ -46,5 +46,34 @@ class ShopTexterITCase {
         println()
         println("HTML-Beschreibung:")
         println(category.descriptionHtml)
+    }
+
+    @Test
+    fun generateProductTexts(){
+        val product = shopifyDataStore.products.first { it.title.contains("handmade with love") }
+        val generated = shopTexterService.generateProductTexts(product)
+
+        println()
+        println("SEO-Titel:")
+        println(generated.seoTitle)
+        println()
+        println("Meta-Beschreibung:")
+        println(generated.metaDescription)
+        println()
+        println("HTML-Beschreibung:")
+        println(generated.descriptionHtml)
+    }
+
+    @Test
+    fun generateProductDetails() {
+        val product = shopifyDataStore.products.first { it.title.contains("handmade with love") }
+        val generated = shopTexterService.generateProductDetails(product)
+
+        println()
+        println("Produktart: ${generated.productType}")
+        println("Tags: ${generated.tags}")
+        println()
+        println("Technische Daten:")
+        println(generated.technicalDetails)
     }
 }

@@ -1,0 +1,8 @@
+PRODUKT:
+{product}
+
+KEYWORDS:
+{keywords}
+
+FORMAT:
+{format}
