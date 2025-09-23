@@ -1,7 +1,0 @@
-{query}
-
-Der Schreibstil soll sich an den Beschreibungen folgender Beispiele orientieren. Die Beispiele sind mit --------------------- umschlossen.
-
----------------------
-{question_answer_context}
----------------------

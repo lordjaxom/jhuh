@@ -44,11 +44,11 @@ class EditProductService(
 
     fun sanitizeTag(tag: String) = mappingService.sanitizeTag(tag)
 
-    fun generateProductDetails(artooProduct: ArtooMappedProduct, syncProduct: SyncProduct, description: String?) =
-        shopTexterService.generateProductDetails(artooProduct, syncProduct, description)
+    fun generateProductTexts(artoo: ArtooMappedProduct, sync: SyncProduct, description: String?) =
+        shopTexterService.generateProductTexts(artoo, sync, description)
 
-    fun generateProductTags(artooProduct: ArtooMappedProduct, syncProduct: SyncProduct, description: String?) =
-        shopTexterService.generateProductTags(artooProduct, syncProduct, description)
+    fun generateProductDetails(artoo: ArtooMappedProduct, sync: SyncProduct, description: String?) =
+        shopTexterService.generateProductDetails(artoo, sync, description)
 
     fun canFillInValues(artooProduct: ArtooMappedProduct) =
         findRayherProduct(artooProduct) != null

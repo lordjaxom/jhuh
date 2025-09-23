@@ -69,6 +69,7 @@ private class EditProductDialog(
     private val weightBigDecimalField: BigDecimalField?
     private val autoFillButton: Button
     private val downloadImagesButton: Button
+    private val generateTextsButton: Button
 
     init {
         width = "1000px"
@@ -207,7 +208,7 @@ private class EditProductDialog(
             downloadImagesButton = button("Bilder herunterladen") {
                 addClickListener { downloadImages() }
             }
-            button("Texte generieren") {
+            generateTextsButton = button("Texte generieren") {
                 addClickListener { generateTexts() }
             }
             button("Speichern") {
@@ -255,22 +256,26 @@ private class EditProductDialog(
 
     private fun generateTexts() {
         vaadinScope.launchWithReporting {
-            if (descriptionHtmlEditor.value.isNullOrEmpty() || technicalDetailsGridField.value.isNullOrEmpty()) {
-                report("Generiere Produktdetails mit ChatGPT...")
-                val details = application {
+            if (descriptionHtmlEditor.value.isNullOrEmpty()) {
+                report("Generiere Produkttexte mit AI...")
+                val generated = application {
+                    async { service.generateProductTexts(artooProduct, syncProduct, descriptionTextField.value) }.await()
+                }
+                descriptionHtmlEditor.value = generated.descriptionHtml
+            }
+            if (technicalDetailsGridField.value.isNullOrEmpty() ||
+                additionalTagsTextField.value.isEmpty() ||
+                productTypeTextField.value.isNullOrEmpty()
+            ) {
+                val generated = application {
                     async { service.generateProductDetails(artooProduct, syncProduct, descriptionTextField.value) }.await()
                 }
-                descriptionHtmlEditor.value = details.descriptionHtml
-                technicalDetailsGridField.value = details.technicalDetails.map { ReorderableGridField.Item(it.key, it.value) }
-                additionalTagsTextField.addTags(details.tags.toSet() - inheritedTagsTextField.value)
-
-                if (productTypeTextField.value.isNullOrEmpty()) productTypeTextField.value = details.productType
-            } else {
-                report("Generiere zusätzliche Tags mit ChatGPT...")
-                val tags = application {
-                    async { service.generateProductTags(artooProduct, syncProduct, descriptionTextField.value) }.await()
-                }
-                additionalTagsTextField.addTags(tags.tags.toSet() - inheritedTagsTextField.value)
+                if (technicalDetailsGridField.value.isNullOrEmpty())
+                    technicalDetailsGridField.value = generated.technicalDetails.map { ReorderableGridField.Item(it.key, it.value) }
+                if (additionalTagsTextField.value.isEmpty())
+                    additionalTagsTextField.addTags(generated.tags.toSet() - inheritedTagsTextField.value)
+                if (productTypeTextField.value.isNullOrEmpty())
+                    productTypeTextField.value = generated.productType
             }
         }
     }
