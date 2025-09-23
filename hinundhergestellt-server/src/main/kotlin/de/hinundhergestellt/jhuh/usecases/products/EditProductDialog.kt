@@ -187,6 +187,14 @@ private class EditProductDialog(
                         { target, value -> target.tags.clear(); target.tags += value }
                     )
                 }
+                if (!artooProduct.hasOnlyDefaultVariant) {
+                    textField("Optionsname") {
+                        setWidthFull()
+                        bind(syncBinder)
+                            .asRequired("Optionsname darf nicht leer sein.")
+                            .toProperty(SyncProduct::optionName)
+                    }
+                }
                 weightBigDecimalField =
                     if (artooProduct.hasOnlyDefaultVariant) {
                         bigDecimalField("Gewicht (Gramm)") {

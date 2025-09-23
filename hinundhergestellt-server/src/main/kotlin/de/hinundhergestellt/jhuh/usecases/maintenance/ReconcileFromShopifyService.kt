@@ -2,7 +2,7 @@ package de.hinundhergestellt.jhuh.usecases.maintenance
 
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.backend.mapping.MappingService
-import de.hinundhergestellt.jhuh.backend.mapping.change
+import de.hinundhergestellt.jhuh.backend.mapping.changeMessage
 import de.hinundhergestellt.jhuh.backend.mapping.toQuotedString
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategory
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategoryRepository
@@ -28,6 +28,8 @@ import kotlin.reflect.KMutableProperty1
 import kotlin.streams.asSequence
 
 private val logger = KotlinLogging.logger { }
+
+private typealias ProductProperty<T> = KMutableProperty1<SyncProduct, T>
 
 @Service
 @VaadinSessionScope
@@ -101,6 +103,9 @@ class ReconcileFromShopifyService(
                 checkReconcileProductTechnicalDetails(syncProduct, product)
             )
         )
+        if (!product.hasOnlyDefaultVariant) {
+            checkReconcileProductProperty(syncProduct, product.title, SyncProduct::optionName, product.options[0].name)?.let { add(it) }
+        }
         addAll(checkReconcileProductImages(product))
         product.variants.forEach { addAll(reconcile(product, it, syncProduct)) }
     }
@@ -131,12 +136,10 @@ class ReconcileFromShopifyService(
         }
     }
 
-    private fun <T> checkReconcileProductProperty(
-        product: SyncProduct,
-        title: String,
-        property: KMutableProperty1<SyncProduct, T>,
-        newValue: T
-    ) = change(product, property, newValue)?.let { UpdateSyncProductItem(product, title, it.message, it.action) }
+    private fun <T> checkReconcileProductProperty(product: SyncProduct, title: String, property: ProductProperty<T>, newValue: T) =
+        changeMessage(property.get(product), newValue, property.name)?.let { message ->
+            UpdateSyncProductItem(product, title, message) { property.set(this, newValue) }
+        }
 
     private fun checkReconcileProductTags(
         syncProduct: SyncProduct,
@@ -173,7 +176,6 @@ class ReconcileFromShopifyService(
             return@buildList
         }
 
-        logger.info { "Enumerating images of product ${product.title}" }
         val syncImages = shopifyImageTools.findSyncImages(product)
 
         val imagesNotKnownLocally = product.media.filter { media -> syncImages.none { it.path.fileName.toString() == media.fileName } }

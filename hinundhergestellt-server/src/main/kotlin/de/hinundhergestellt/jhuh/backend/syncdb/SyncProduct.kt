@@ -51,6 +51,9 @@ class SyncProduct(
     @OrderBy("sortOrder")
     val technicalDetails: MutableList<SyncTechnicalDetail> = mutableListOf(),
 
+    @Column
+    var optionName: String? = null,
+
     @Id
     val id: UUID = UUID.randomUUID()
 )

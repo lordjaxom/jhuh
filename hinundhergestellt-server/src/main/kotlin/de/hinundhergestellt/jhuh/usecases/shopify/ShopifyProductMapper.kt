@@ -32,8 +32,9 @@ class ShopifyProductMapper(
         protected fun tags() = mappingService.allTags(syncProduct, artooProduct)
         protected fun metafields() = mappingService.customMetafields(syncProduct)
 
-        private fun options() =
-            if (!artooProduct.hasOnlyDefaultVariant) listOf(UnsavedShopifyProductOption("Farbe", artooProduct.variations.map { it.name }))
-            else listOf()
+        private fun options() = buildList {
+            if (!artooProduct.hasOnlyDefaultVariant)
+                add(UnsavedShopifyProductOption(syncProduct.optionName!!, artooProduct.variations.map { it.name }))
+        }
     }
 }

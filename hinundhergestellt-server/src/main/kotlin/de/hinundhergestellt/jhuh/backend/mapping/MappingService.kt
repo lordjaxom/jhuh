@@ -89,6 +89,8 @@ class MappingService(
         }
 
         if (sync.type == null) add(MappingProblem("Produkt hat keine Produktart", true))
+
+        if (!artoo.hasOnlyDefaultVariant && sync.optionName == null) add(MappingProblem("Optionsname für Varianten fehlt", true))
     }
 
     fun checkForProblems(artoo: ArtooMappedVariation, sync: SyncVariant, product: ArtooMappedProduct) = buildList {

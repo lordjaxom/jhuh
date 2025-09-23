@@ -1,5 +1,6 @@
 package de.hinundhergestellt.jhuh.usecases.shopify
 
+import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariant
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedVariation
@@ -15,10 +16,15 @@ class ShopifyVariantMapper(
     private val shopifyDataStore: ShopifyDataStore
 ) {
 
-    fun mapToVariant(artooProduct: ArtooMappedProduct, syncVariant: SyncVariant, artooVariation: ArtooMappedVariation) =
-        Builder(artooProduct, syncVariant, artooVariation).build()
+    fun mapToVariant(
+        syncProduct: SyncProduct,
+        artooProduct: ArtooMappedProduct,
+        syncVariant: SyncVariant,
+        artooVariation: ArtooMappedVariation
+    ) = Builder(syncProduct, artooProduct, syncVariant, artooVariation).build()
 
     private inner class Builder(
+        private val syncProduct: SyncProduct,
         private val artooProduct: ArtooMappedProduct,
         private val syncVariant: SyncVariant,
         private val artooVariation: ArtooMappedVariation
@@ -34,9 +40,9 @@ class ShopifyVariantMapper(
                 variantOptions()
             )
 
-        private fun variantOptions() =
+        private fun variantOptions() = buildList {
             if (!artooProduct.hasOnlyDefaultVariant)
-                listOf(ShopifyProductVariantOption("Farbe", artooVariation.name)) // TODO: Option name
-            else listOf()
+                add(ShopifyProductVariantOption(syncProduct.optionName!!, artooVariation.name))
+        }
     }
 }

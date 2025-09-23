@@ -132,7 +132,7 @@ class ShopifyProductsFixITCase {
                 variants.add(variant)
             }
             if (image.altText.isEmpty()) {
-                image.altText = "${product.title} in Farbe ${variant.options[0].value}"
+                image.altText = "${product.title} in ${product.options[0].name} ${variant.options[0].value}"
                 media.add(image)
             }
         }

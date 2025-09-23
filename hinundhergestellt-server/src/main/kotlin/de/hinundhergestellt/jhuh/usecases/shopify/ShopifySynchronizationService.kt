@@ -118,13 +118,17 @@ class ShopifySynchronizationService(
         items += mappingService.customMetafields(syncProduct).mapNotNull { prepareUpdateProductMetafield(shopifyProduct, it) }
 
         syncProduct.variants
-            .flatMap { synchronize(it, artooProduct, shopifyProduct) }
+            .flatMap { synchronize(syncProduct, it, artooProduct, shopifyProduct) }
             .takeIf { it.isNotEmpty() }
             ?.also { items += VariantProductItem(shopifyProduct, it) }
     }
 
-    private fun synchronize(syncVariant: SyncVariant, artooProduct: ArtooMappedProduct, shopifyProduct: ShopifyProduct)
-            : List<VariantItem> {
+    private fun synchronize(
+        syncProduct: SyncProduct,
+        syncVariant: SyncVariant,
+        artooProduct: ArtooMappedProduct,
+        shopifyProduct: ShopifyProduct
+    ): List<VariantItem> {
         val artooVariation = artooProduct.findVariationByBarcode(syncVariant.barcode)
         val shopifyVariant = shopifyProduct.findVariantByBarcode(syncVariant.barcode)
 
@@ -140,7 +144,7 @@ class ShopifySynchronizationService(
         }
 
         if (shopifyVariant == null) {
-            val unsavedShopifyVariant = shopifyVariantMapper.mapToVariant(artooProduct, syncVariant, artooVariation)
+            val unsavedShopifyVariant = shopifyVariantMapper.mapToVariant(syncProduct, artooProduct, syncVariant, artooVariation)
             return listOf(CreateVariantItem(shopifyProduct, unsavedShopifyVariant, syncVariant.id))
         }
 
@@ -165,7 +169,7 @@ class ShopifySynchronizationService(
         val unsavedShopifyProduct = shopifyProductMapper.mapToProduct(syncProduct, artooProduct)
         val unsavedVariants = syncProduct.variants
             .mapNotNull { variant -> variant.artooId?.let { artooProduct.findVariationById(it) }?.let { variant to it } }
-            .map { (sync, artoo) -> sync to shopifyVariantMapper.mapToVariant(artooProduct, sync, artoo) }
+            .map { (sync, artoo) -> sync to shopifyVariantMapper.mapToVariant(syncProduct, artooProduct, sync, artoo) }
         val variantsText = if (!artooProduct.hasOnlyDefaultVariant) " mit ${unsavedVariants.size} Varianten" else ""
 
         items += ImmediateItem(unsavedShopifyProduct.title, "Produkt$variantsText hinzugefügt") {
@@ -282,7 +286,7 @@ class ShopifySynchronizationService(
         override val children: List<VariantItem>
     ) : ProductItem() {
         override val title by product::title
-        override val message = "${children.size} Varianten geändert"
+        override val message = "Insg. ${children.size} Änderungen in Varianten"
     }
 
     sealed class VariantItem : Item {
@@ -294,8 +298,8 @@ class ShopifySynchronizationService(
         val variant: ShopifyProductVariant,
         val id: UUID
     ) : VariantItem() {
-        override val title by variant::title
-        override val message = "Variante $title entfernt"
+        override val title = "${variant.options[0].name} ${variant.options[0].value}"
+        override val message = "$title entfernt"
     }
 
     private inner class CreateVariantItem(
@@ -303,8 +307,8 @@ class ShopifySynchronizationService(
         val variant: UnsavedShopifyProductVariant,
         val id: UUID
     ) : VariantItem() {
-        override val title = variant.options[0].value
-        override val message = "Variante $title hinzugefügt"
+        override val title = "${variant.options[0].name} ${variant.options[0].value}"
+        override val message = "$title hinzugefügt"
     }
 
     private inner class UpdateVariantItem(
@@ -313,6 +317,6 @@ class ShopifySynchronizationService(
         override val message: String,
         val block: Any?.() -> Unit
     ) : VariantItem() {
-        override val title by variant::title
+        override val title = "${variant.options[0].name} ${variant.options[0].value}"
     }
 }

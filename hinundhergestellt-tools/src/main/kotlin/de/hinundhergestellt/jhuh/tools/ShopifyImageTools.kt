@@ -67,7 +67,7 @@ class ShopifyImageTools(
     }
 
     suspend fun replaceProductImages(product: ShopifyProduct) {
-        val productName = extractProductName(product)
+        val productName = product.syncImageProductName
         val images = syncImageTools.findSyncImages(productName).map { it.path }
         if (images.isEmpty()) {
             logger.warn { "No product images found for $productName" }
@@ -80,7 +80,7 @@ class ShopifyImageTools(
             mediaClient.delete(product.media)
         }
 
-        val media = mediaClient.upload(images).onEach { it.altText = generateAltText(productName, null) }
+        val media = mediaClient.upload(images).onEach { it.altText = generateAltText(product, null) }
         mediaClient.update(media, referencesToAdd = listOf(product.id))
     }
 
@@ -144,7 +144,7 @@ class ShopifyImageTools(
     }
 
     private suspend fun normalizeMediaImages(product: ShopifyProduct) = coroutineScope {
-        val productName = extractProductName(product)
+        val productName = product.syncImageProductName
         val indexOfNonVariantImage = AtomicInt(1)
         product.media.mapIndexedParallel(properties.processingThreads) { index, media ->
             logger.info { "Normalizing image ${index + 1} of ${product.media.size}" }
@@ -179,7 +179,7 @@ class ShopifyImageTools(
                 newImagePath
             }
 
-        val altText = generateAltText(productName, variant)
+        val altText = generateAltText(product, variant)
         return NormalizedImage(finalImagePath, variant, altText)
     }
 
@@ -189,7 +189,7 @@ class ShopifyImageTools(
         swatchRect: RectPct?,
         ignoreWhite: Boolean
     ) = coroutineScope {
-        val productName = extractProductName(product)
+        val productName = product.syncImageProductName
         val imagePath = properties.imageDirectory.resolve(productName)
         require(imagePath.isDirectory()) { "Image directory for $productName does not exist or is not a directory" }
 
@@ -220,8 +220,6 @@ class ShopifyImageTools(
         return EvaluatedImage(imageFilePath, variant, swatchColor, taxonomyReference, swatchFilePath)
     }
 
-    private fun extractProductName(product: ShopifyProduct) = product.title.syncImageProductName
-
     private fun extractImageFileExtension(imageUrl: String) = URI(imageUrl).extension
     private fun generateColorSwatchHandle(optionValue: String) =
         UMLAUT_REPLACEMENTS
@@ -229,11 +227,8 @@ class ShopifyImageTools(
             .replace(" ", "-")
             .lowercase()
 
-    private fun generateAltText(productName: String, variant: ShopifyProductVariant?) =
-        "$productName ${variant?.let { "in Farbe ${it.options[0].value}" } ?: "Produktbild"}"
-
-    private fun generateAltText(product: ShopifyProduct, variant: ShopifyProductVariant) =
-        generateAltText(extractProductName(product), variant)
+    private fun generateAltText(product: ShopifyProduct, variant: ShopifyProductVariant?) =
+        "${product.syncImageProductName} ${variant?.let { "in ${product.options[0].name} ${it.options[0].value}" } ?: "Produktbild"}"
 
     private class NormalizedImage(
         val imagePath: Path,
