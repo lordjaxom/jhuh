@@ -17,10 +17,8 @@ import de.hinundhergestellt.jhuh.components.progressOverlay
 import de.hinundhergestellt.jhuh.components.root
 import de.hinundhergestellt.jhuh.components.span
 import de.hinundhergestellt.jhuh.components.text
-import de.hinundhergestellt.jhuh.components.textColumn
 import de.hinundhergestellt.jhuh.components.treegrid.hierarchyComponentColumn
 import de.hinundhergestellt.jhuh.components.treegrid.recursiveSelectTreeGrid
-import de.hinundhergestellt.jhuh.components.treegrid.treeGrid
 import de.hinundhergestellt.jhuh.usecases.shopify.ShopifySynchronizationService.Item
 import de.hinundhergestellt.jhuh.usecases.shopify.ShopifySynchronizationService.ProductItem
 import de.hinundhergestellt.jhuh.usecases.shopify.ShopifySynchronizationService.VariantItem

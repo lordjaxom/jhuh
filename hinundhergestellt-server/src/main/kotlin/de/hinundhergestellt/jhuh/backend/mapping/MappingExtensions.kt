@@ -48,11 +48,8 @@ internal fun <T> change(getter: () -> T, setter: (T) -> Unit, newValue: T, field
         ?.let { changeMessage(field, it, newValue, *args) }
         ?.let { Change<Any?>(it) { setter(newValue) } }
 
-internal fun <T> addition(setter: (T) -> Unit, newValue: T, field: ChangeField, vararg args: Any) =
-    Change<Any?>(additionMessage(field, newValue, *args)) { setter(newValue) }
+internal fun <T> addition(value: T, field: ChangeField, vararg args: Any) =
+    "${field.displayName.format(*args)}${if (field.showChange) " ${value.toQuotedString()}" else ""} hinzugefügt"
 
 private fun <T> changeMessage(field: ChangeField, oldValue: T, newValue: T, vararg args: Any) =
     "${field.displayName.format(*args)}${if (field.showChange) " von ${oldValue.toQuotedString()} zu ${newValue.toQuotedString()}" else ""} geändert"
-
-private fun <T> additionMessage(field: ChangeField, value: T, vararg args: Any) =
-    "${field.displayName.format(*args)}${if (field.showChange) " ${value.toQuotedString()}" else ""} hinzugefügt"

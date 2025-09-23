@@ -194,8 +194,9 @@ class ShopifySynchronizationService(
     ): UpdateProductItem? {
         val oldMetafield = shopifyProduct.metafields.findById(newMetafield)
         return if (oldMetafield == null) {
-            addition({ shopifyProduct.metafields.add(newMetafield) }, newMetafield, ChangeField.PRODUCT_TECHNICAL_DETAILS)
-                .let { UpdateProductItem(shopifyProduct, it.message, it.action) }
+            UpdateProductItem(shopifyProduct, addition(newMetafield.value, ChangeField.PRODUCT_TECHNICAL_DETAILS)) {
+                shopifyProduct.metafields.add(newMetafield)
+            }
         } else {
             change(oldMetafield::value, newMetafield.value, ChangeField.PRODUCT_TECHNICAL_DETAILS)
                 ?.let { UpdateProductItem(shopifyProduct, it.message, it.action) }
