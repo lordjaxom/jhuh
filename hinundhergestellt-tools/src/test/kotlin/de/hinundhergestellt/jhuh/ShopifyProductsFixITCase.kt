@@ -142,6 +142,19 @@ class ShopifyProductsFixITCase {
     }
 
     @Test
+    fun fixTubithermImageOrder() = runBlocking {
+        val product = productClient.fetchAll().first { it.title.startsWith("POLI-TAPE® TUBITHERM®") }
+
+        product.variants.forEach { variant ->
+            val media = product.media.first { it.fileName.contains(variant.sku.replace(" ", "-").lowercase()) }
+            variant.mediaId = media.id
+            media.altText = "${product.title} in ${variant.options[0].name} ${variant.options[0].value}"
+        }
+        variantClient.update(product, product.variants)
+        mediaClient.update(product.media)
+    }
+
+    @Test
     fun updateAllProducts() = runBlocking {
         val products = productClient.fetchAll().toList()
         products.forEach {

@@ -16,6 +16,7 @@ private interface ShopifyProductVariantCommonFields {
     var barcode: String
     var price: BigDecimal
     var weight: ShopifyWeight
+    var mediaId: String?
 
     val options: List<ShopifyProductVariantOption>
 }
@@ -25,6 +26,7 @@ internal class BaseShopifyProductVariant(
     override var barcode: String,
     price: BigDecimal,
     override var weight: ShopifyWeight,
+    override var mediaId: String?,
     override val options: List<ShopifyProductVariantOption>
 ) : ShopifyProductVariantCommonFields {
 
@@ -35,6 +37,7 @@ internal class BaseShopifyProductVariant(
         variant.barcode!!,
         BigDecimal(variant.price),
         ShopifyWeight(variant.inventoryItem.measurement.weight!!),
+        variant.media.edges.firstOrNull()?.node?.id,
         variant.selectedOptions.map { ShopifyProductVariantOption(it) }
     )
 
@@ -69,6 +72,7 @@ class UnsavedShopifyProductVariant private constructor(
             barcode,
             price,
             weight,
+            null,
             options
         ),
         inventoryLocationId,
@@ -84,7 +88,8 @@ class UnsavedShopifyProductVariant private constructor(
             price = price.toPlainString(),
             optionValues = options.map { it.toVariantOptionValueInput() },
             inventoryItem = base.toInventoryItemInput(),
-            inventoryQuantities = listOf(toInventoryLevelInput())
+            inventoryQuantities = listOf(toInventoryLevelInput()),
+            mediaId = mediaId
         )
 
     private fun toInventoryLevelInput() =
@@ -98,7 +103,6 @@ class ShopifyProductVariant private constructor(
     private val base: BaseShopifyProductVariant,
     val id: String,
     val title: String,
-    mediaId: String?,
     val inventoryQuantity: Int? = null
 ) : ShopifyProductVariantCommonFields, HasDirtyTracker {
 
@@ -108,16 +112,14 @@ class ShopifyProductVariant private constructor(
     override var barcode by dirtyTracker.track(base::barcode)
     override var price by dirtyTracker.track(base::price)
     override var weight by dirtyTracker.track(base::weight)
+    override var mediaId by dirtyTracker.track(base::mediaId)
 
     override val options by dirtyTracker.track(base.options)
-
-    var mediaId by dirtyTracker.track(mediaId)
 
     internal constructor(variant: ProductVariant) : this(
         BaseShopifyProductVariant(variant),
         variant.id,
         variant.title,
-        variant.media.edges.firstOrNull()?.node?.id,
         variant.inventoryQuantity
     ) {
         require(!variant.media.pageInfo.hasNextPage) { "ProductVariant has more media than is supported" }
@@ -145,11 +147,11 @@ class ShopifyProductVariant private constructor(
             barcode,
             price,
             weight,
+            mediaId,
             options
         ),
         id,
-        title,
-        mediaId
+        title
     )
 
     override fun toString() =

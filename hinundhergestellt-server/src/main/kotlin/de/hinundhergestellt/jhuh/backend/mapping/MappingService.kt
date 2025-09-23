@@ -5,6 +5,9 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategoryRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariant
+import de.hinundhergestellt.jhuh.tools.ArtooImageTools
+import de.hinundhergestellt.jhuh.tools.SyncImageTools
+import de.hinundhergestellt.jhuh.tools.syncImageProductName
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedCategory
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
@@ -24,7 +27,8 @@ private val INVALID_TAG_CHARACTERS = """[^A-ZÄÖÜa-zäöüß0-9\\._ -]""".toRe
 @Service
 class MappingService(
     private val artooDataStore: ArtooDataStore,
-    private val syncCategoryRepository: SyncCategoryRepository
+    private val syncCategoryRepository: SyncCategoryRepository,
+    private val artooImageTools: ArtooImageTools
 ) {
     private val objectMapper = jacksonObjectMapper()
 
@@ -91,10 +95,14 @@ class MappingService(
         if (sync.type == null) add(MappingProblem("Produkt hat keine Produktart", true))
 
         if (!artoo.hasOnlyDefaultVariant && sync.optionName == null) add(MappingProblem("Optionsname für Varianten fehlt", true))
+
+        if (artooImageTools.findSyncImages(artoo).none { it.variantSku == null })
+            add(MappingProblem("Keine Produktbilder vorhanden", false))
     }
 
     fun checkForProblems(artoo: ArtooMappedVariation, sync: SyncVariant, product: ArtooMappedProduct) = buildList {
         if (artoo.barcode == null) add(MappingProblem("Variation hat keinen Barcode", true))
+        if (artoo.itemNumber == null) add(MappingProblem("Variation hat keine Artikelnummer", true))
 
         if (artoo.name.isEmpty()) add(MappingProblem("Variation hat keinen Namen", true))
         else if (artoo.name.startsWith(product.name, ignoreCase = true))
@@ -102,6 +110,9 @@ class MappingService(
 
         if (!sync.hasWeight()) add(MappingProblem("Variation hat keine Gewichtsangabe", true))
         else if (!sync.hasValidWeight()) add(MappingProblem("Gewichtsangabe ungültig (0,5g oder >= 30g)", true))
+
+        if (artoo.itemNumber == null || artooImageTools.findSyncImages(product).none { it.variantSku == artoo.itemNumber })
+            add(MappingProblem("Kein Variantenbild vorhanden", false)) // TODO: true if linkedMetaField used
     }
 
     private fun technicalDetails(syncProduct: SyncProduct) =

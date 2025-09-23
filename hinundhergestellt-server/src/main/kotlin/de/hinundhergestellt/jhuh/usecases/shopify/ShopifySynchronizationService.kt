@@ -10,6 +10,9 @@ import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProductRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariant
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariantRepository
+import de.hinundhergestellt.jhuh.tools.RectPct
+import de.hinundhergestellt.jhuh.tools.ShopifyImageTools
+import de.hinundhergestellt.jhuh.tools.SyncImageTools
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedVariation
@@ -36,13 +39,14 @@ private val logger = KotlinLogging.logger {}
 class ShopifySynchronizationService(
     private val artooDataStore: ArtooDataStore,
     private val shopifyDataStore: ShopifyDataStore,
+    private val shopifyImageTools: ShopifyImageTools,
     private val shopifyProductMapper: ShopifyProductMapper,
     private val shopifyVariantMapper: ShopifyVariantMapper,
     private val syncProductRepository: SyncProductRepository,
     private val syncVariantRepository: SyncVariantRepository,
     private val shopTexterService: ShopTexterService,
     private val mappingService: MappingService,
-    private val transactionOperations: TransactionOperations,
+    private val transactionOperations: TransactionOperations
 ) {
     val items = mutableListOf<Item>()
 
@@ -131,6 +135,11 @@ class ShopifySynchronizationService(
     ): List<VariantItem> {
         val artooVariation = artooProduct.findVariationByBarcode(syncVariant.barcode)
         val shopifyVariant = shopifyProduct.findVariantByBarcode(syncVariant.barcode)
+
+        if (artooVariation != null && mappingService.checkForProblems(artooVariation, syncVariant, artooProduct).any { it.error }) {
+            logger.warn { "Variant ${artooProduct.name} (${artooVariation.name}) has problems, skip synchronization"}
+            return listOf()
+        }
 
 //        if (artooVariation == null && shopifyVariant == null) {
 //            logger.info { "Variant of ${artooProduct.name} with barcode ${syncVariant.barcode} vanished, forget" }
@@ -247,6 +256,12 @@ class ShopifySynchronizationService(
         product: ShopifyProduct,
         variants: MutableMap<UUID, UnsavedShopifyProductVariant>
     ) {
+        shopifyImageTools.uploadVariantImages(product, variants.values)
+        if (product.options[0].linkedMetafield != null) {
+            shopifyImageTools.generateColorSwatches(product, variants.values, "poli-tubitherm", RectPct.CENTER_20)
+        }
+
+        // MISSING: set option id
         val created = shopifyDataStore.create(product, variants.values)
         transactionOperations.execute {
             created.map { it.id }.zip(variants.keys).forEach { (shopifyId, syncId) ->

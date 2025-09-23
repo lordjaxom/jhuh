@@ -206,7 +206,7 @@ class ProductManagerService(
         fun checkForProblems() = mappingService.checkForProblems(value, syncVariant, parent.value)
 
         override val itemId = "variation-$id"
-        override val name by value::name
+        override val name get() = "${syncVariant.product.optionName} ${value.name}"
         override val vendor = null
         override val type = null
         override val tagsAsSet = setOf<String>()

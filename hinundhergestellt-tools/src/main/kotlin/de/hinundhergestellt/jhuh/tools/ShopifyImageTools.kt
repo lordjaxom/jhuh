@@ -2,6 +2,7 @@ package de.hinundhergestellt.jhuh.tools
 
 import arrow.atomic.AtomicInt
 import de.hinundhergestellt.jhuh.HuhProperties
+import de.hinundhergestellt.jhuh.core.forEachParallel
 import de.hinundhergestellt.jhuh.core.mapIndexedParallel
 import de.hinundhergestellt.jhuh.vendors.shopify.client.LinkedMetafield
 import de.hinundhergestellt.jhuh.vendors.shopify.client.MetaobjectField
@@ -14,6 +15,7 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOptionClie
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyMetaobject
+import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.update
 import de.hinundhergestellt.jhuh.vendors.shopify.client.variantSkus
 import de.hinundhergestellt.jhuh.vendors.shopify.taxonomy.ShopifyColorTaxonomy
@@ -48,6 +50,53 @@ class ShopifyImageTools(
     fun findSyncImages(product: ShopifyProduct) =
         syncImageTools.findSyncImages(product.syncImageProductName, product.variantSkus)
 
+    suspend fun uploadVariantImages(product: ShopifyProduct, variants: Collection<UnsavedShopifyProductVariant>) {
+        val variantsSkus = variants.map { it.sku }
+        val imagesToUpload = syncImageTools.findSyncImages(product.syncImageProductName, variantsSkus).filter { it.variantSku != null }
+        val uploadedMedias = mediaClient.upload(imagesToUpload.map { it.path })
+        variants.forEach { variant ->
+            val media = uploadedMedias.first { it.fileName.isValidSyncImageFor(product, variant) }
+            variant.mediaId = media.id
+            media.altText = generateAltText(product, variant)
+        }
+        mediaClient.update(uploadedMedias, referencesToAdd = listOf(product.id))
+    }
+
+    suspend fun generateColorSwatches(
+        product: ShopifyProduct,
+        variants: Collection<UnsavedShopifyProductVariant>,
+        swatchHandle: String,
+        colorRect: RectPct = RectPct.EVERYTHING,
+        swatchRect: RectPct? = null,
+        ignoreWhite: Boolean = false
+    ) {
+        require(swatchRect == null) { "swatchRect not yet supported" }
+
+        val variantsSkus = variants.map { it.sku }
+        syncImageTools.findSyncImages(product.syncImageProductName, variantsSkus)
+            .filter {  it.variantSku != null }
+            .forEach /*Parallel(properties.processingThreads)*/ { image ->
+                val variant = variants.first { it.sku == image.variantSku }
+                val color = MediaImageTools.averageColorPercent(image.path, colorRect, ignoreWhite)
+                val taxonomy = colorTaxonomy.findByColor(color)
+
+                val variantOption = variant.options[0]
+                val metaobject = metaobjectClient.create(
+                    UnsavedShopifyMetaobject(
+                        "shopify--color-pattern",
+                        "$swatchHandle-${generateColorSwatchHandle(variantOption.value)}",
+                        listOf(
+                            MetaobjectField("label", variantOption.value),
+                            MetaobjectField("color", color.toHex()),
+                            MetaobjectField("color_taxonomy_reference", "[\"${taxonomy}\"]"),
+                            MetaobjectField("pattern_taxonomy_reference", "gid://shopify/TaxonomyValue/2874")
+                        )
+                    )
+                )
+                variantOption.linkedMetafieldValue = metaobject.id
+            }
+    }
+
     suspend fun reorganizeProductImages(product: ShopifyProduct) { // TODO: Move to SyncImageTools
         require(product.variants.all { it.sku.isNotEmpty() }) { "All product variants must have SKU" }
 
@@ -55,6 +104,7 @@ class ShopifyImageTools(
         val mediaToDetach = product.media.toList()
 
         val images = normalizeMediaImages(product)
+        TODO("Result of mediaClient.upload has different sort order than images!!!")
         val media = mediaClient.upload(images.map { it.imagePath })
             .asSequence()
             .zip(images.asSequence())
@@ -80,7 +130,7 @@ class ShopifyImageTools(
             mediaClient.delete(product.media)
         }
 
-        val media = mediaClient.upload(images).onEach { it.altText = generateAltText(product, null) }
+        val media = mediaClient.upload(images).onEach { it.altText = generateAltText(product, null as ShopifyProductVariant?) }
         mediaClient.update(media, referencesToAdd = listOf(product.id))
     }
 
@@ -228,7 +278,10 @@ class ShopifyImageTools(
             .lowercase()
 
     private fun generateAltText(product: ShopifyProduct, variant: ShopifyProductVariant?) =
-        "${product.syncImageProductName} ${variant?.let { "in ${product.options[0].name} ${it.options[0].value}" } ?: "Produktbild"}"
+        "${product.title} ${variant?.let { "in ${product.options[0].name} ${it.options[0].value}" } ?: "Produktbild"}"
+
+    private fun generateAltText(product: ShopifyProduct, variant: UnsavedShopifyProductVariant?) =
+        "${product.title} ${variant?.let { "in ${product.options[0].name} ${it.options[0].value}" } ?: "Produktbild"}"
 
     private class NormalizedImage(
         val imagePath: Path,
@@ -249,6 +302,12 @@ val ShopifyProduct.syncImageProductName get() = title.syncImageProductName
 
 fun String.isValidSyncImageFor(product: ShopifyProduct) =
     isValidSyncImageFor(product.syncImageProductName, product.variantSkus)
+
+fun String.isValidSyncImageFor(product: ShopifyProduct, variant: UnsavedShopifyProductVariant) =
+    isValidSyncImageFor(product.syncImageProductName, variant.sku)
+
+fun Path.isValidSyncImageFor(product: ShopifyProduct, variant: UnsavedShopifyProductVariant) =
+    fileName.toString().isValidSyncImageFor(product, variant)
 
 private val UMLAUT_REPLACEMENTS = listOf(
     """[Ää]+""".toRegex() to "ae",
