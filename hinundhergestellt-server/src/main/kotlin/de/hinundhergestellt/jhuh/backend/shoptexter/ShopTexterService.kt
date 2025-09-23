@@ -76,15 +76,18 @@ class ShopTexterService(
         productTexterService.generateProductDetails(product)
 
     private fun updateProducts(products: List<ShopifyProduct>) {
-        val newOrChangedDocuments = products.mapNotNull { product ->
-            val oldText = vectorStore.find("shopifyId == '${product.id}'").firstOrNull()?.text
+        val outdatedDocumentIds = mutableListOf<String>()
+        val newOrChangedDocuments = mutableListOf<Document>()
+        products.forEach { product ->
+            val document = vectorStore.find("shopifyId == '${product.id}'").firstOrNull()
             val newText = jsonMapper.writeValueAsString(productMapper.map(product))
-            if (oldText == null || oldText != newText) {
-                println("DIFF")
-                Document(newText, mapOf("shopifyId" to product.id))
-            } else null
+            if (document === null || document.text!! != newText) {
+                if (document !== null) outdatedDocumentIds += document.id
+                newOrChangedDocuments += Document(newText, mapOf("shopifyId" to product.id))
+            }
         }
         logger.info { "Updating ${newOrChangedDocuments.size} products in vector store" }
+        vectorStore.delete(outdatedDocumentIds)
         vectorStore.add(newOrChangedDocuments)
     }
 }
