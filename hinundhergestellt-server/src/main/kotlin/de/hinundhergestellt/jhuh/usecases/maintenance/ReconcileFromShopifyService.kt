@@ -1,7 +1,6 @@
 package de.hinundhergestellt.jhuh.usecases.maintenance
 
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
-import de.hinundhergestellt.jhuh.HuhProperties
 import de.hinundhergestellt.jhuh.backend.mapping.MappingService
 import de.hinundhergestellt.jhuh.backend.mapping.change
 import de.hinundhergestellt.jhuh.backend.mapping.toQuotedString
@@ -14,7 +13,6 @@ import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariant
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariantRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendor
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendorRepository
-import de.hinundhergestellt.jhuh.core.mapParallel
 import de.hinundhergestellt.jhuh.tools.ShopifyImageTools
 import de.hinundhergestellt.jhuh.tools.isValidSyncImageFor
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
@@ -42,8 +40,7 @@ class ReconcileFromShopifyService(
     private val syncCategoryRepository: SyncCategoryRepository,
     private val syncVendorRepository: SyncVendorRepository,
     private val shopifyImageTools: ShopifyImageTools,
-    private val transactionOperations: TransactionOperations,
-    private val properties: HuhProperties,
+    private val transactionOperations: TransactionOperations
 ) {
     val items = mutableListOf<Item>()
 
@@ -53,9 +50,7 @@ class ReconcileFromShopifyService(
 
         report("Gleiche Shopify-Produkte mit Datenbank ab...")
         items.clear()
-        items += shopifyDataStore.products
-            .mapParallel(properties.processingThreads) { reconcile(it) }
-            .flatten()
+        items += shopifyDataStore.products.map { reconcile(it) }.flatten()
 
 //        report("Unbekannte Kategorien abgleichen...")
 //        artooDataStore.rootCategories.forEach { reconcileCategories(it) }

@@ -1,42 +1,33 @@
 package de.hinundhergestellt.jhuh.tools
 
-import de.hinundhergestellt.jhuh.HuhProperties
 import org.springframework.stereotype.Component
 import java.net.URI
 import java.nio.file.Path
-import kotlin.io.path.isDirectory
-import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.Path
 import kotlin.io.path.nameWithoutExtension
 import kotlin.text.Regex.Companion.escape
 
 @Component
 class SyncImageTools(
-    private var properties: HuhProperties
+    private val imageDirectoryService: ImageDirectoryService
 ) {
     fun findSyncImages(productName: String, variantSkus: List<String> = listOf()): List<SyncImage> {
         require(productName.isNotEmpty()) { "productName must not be empty" }
 
-        val productDirectory = properties.imageDirectory.resolve(productName).takeIf { it.isDirectory() } ?: return listOf()
+        val entries = imageDirectoryService.listDirectoryEntries(Path(productName))
 
-        val productImages = productDirectory
-            .listDirectoryEntries(generateImageFileName(productName, "$PRODUCT_SUFFIX-*", "*"))
-            .asSequence()
-            .filter { it.fileName.toString().isValidSyncImageFor(productName, variantSkus) }
+        val productImages = entries.asSequence()
+            .filter { it.isValidSyncImageFor(productName) }
             .sortedBy { it.syncImageSortSelector }
             .map { SyncImage(it, null) }
 
-        val variantImages = variantSkus
-            .asSequence()
-            .map { it to generateImageFileName(productName, it.syncImageSuffix, "*") }
-            .mapNotNull { (sku, glob) ->
-                productDirectory
-                    .listDirectoryEntries(glob)
-                    .asSequence()
-                    .filter { it.fileName.toString().isValidSyncImageFor(productName, sku) }
+        val variantImages = variantSkus.asSequence()
+            .mapNotNull { sku ->
+                entries.asSequence()
+                    .filter { it.isValidSyncImageFor(productName, sku) }
                     .firstOrNull()
-                    ?.let { sku to it }
+                    ?.let { SyncImage(it, sku) }
             }
-            .map { (sku, path) -> SyncImage(path, sku) }
 
         return (productImages + variantImages).toList()
     }
@@ -57,12 +48,18 @@ val Path.syncImageSortSelector
         ?: "2:$nameWithoutExtension"
 
 fun String.isValidSyncImageFor(productName: String, variantSkus: List<String> = listOf()): Boolean {
-    return Regex(generateImageFileName(productName, "produktbild-[0-9]+", EXTENSIONS)).matches(this) ||
+    return Regex(generateImageFileName(productName, "$PRODUCT_SUFFIX-[0-9]+", EXTENSIONS)).matches(this) ||
             variantSkus.any { isValidSyncImageFor(productName, it) }
 }
 
+fun Path.isValidSyncImageFor(productName: String, variantSkus: List<String> = listOf()) =
+    fileName.toString().isValidSyncImageFor(productName, variantSkus)
+
 fun String.isValidSyncImageFor(productName: String, variantSku: String) =
     Regex(generateImageFileName(productName, escape(variantSku.syncImageSuffix), EXTENSIONS)).matches(this)
+
+fun Path.isValidSyncImageFor(productName: String, variantSku: String) =
+    fileName.toString().isValidSyncImageFor(productName, variantSku)
 
 fun generateImageFileName(productName: String, suffix: String, extension: String): String {
     val productNamePart = IMAGE_FILE_NAME_REPLACEMENTS

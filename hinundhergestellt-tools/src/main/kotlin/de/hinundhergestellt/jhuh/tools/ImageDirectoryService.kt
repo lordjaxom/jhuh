@@ -39,7 +39,7 @@ class ImageDirectoryService(
     properties: HuhProperties
 ) : AutoCloseable {
 
-    private val root: Path = properties.imageDirectory.toAbsolutePath().normalize()
+    private val root = properties.imageDirectory.toAbsolutePath().normalize()
     private val objectMapper = jacksonObjectMapper()
     private val watchService: WatchService = root.fileSystem.newWatchService()
     private val watchKeyToDir = ConcurrentHashMap<WatchKey, Path>()
