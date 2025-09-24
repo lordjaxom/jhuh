@@ -60,7 +60,26 @@ class CleanUpDatabaseService(
         if (items.any { it is ProductCleanUpItem && it.syncProduct.id == syncVariant.product.id }) {
             return null
         }
-        // TODO: Provide implementation
+
+        val shopifyId = syncVariant.shopifyId
+        val artooId = syncVariant.artooId
+        if (shopifyId == null && artooId == null) {
+            return VariantCleanUpItem(syncVariant, "Variante hat weder Verbindung zu Shopify noch zu ready2order")
+        }
+
+        val shopifyVariant = shopifyId?.let { shopifyDataStore.findVariantById(it)}
+        val artooVariation = artooId?.let { artooDataStore.findVariationById(it)}
+        if (shopifyId != null && shopifyVariant == null && artooId != null && artooVariation == null) {
+            return VariantCleanUpItem(syncVariant, "Variante ist sowohl in Shopify als auch ready2order nicht mehr vorhanden")
+        }
+        if (shopifyId != null && shopifyVariant == null) {
+            val details = if (artooId == null) "ohne Verbindung zu ready2order" else "(${artooVariation!!.name} in ready2order)"
+            return VariantCleanUpItem(syncVariant, "Produkt $details in Shopify nicht mehr vorhanden")
+        }
+        if (artooId != null && artooVariation == null) {
+            val details = if (shopifyId == null) "ohne Verbindung zu Shopify" else "(${shopifyVariant!!.title} in Shopify)"
+            return VariantCleanUpItem(syncVariant, "Produkt $details in ready2order nicht mehr vorhanden")
+        }
         return null
     }
 
@@ -71,6 +90,16 @@ class CleanUpDatabaseService(
 
         override fun cleanUp() {
             syncProductRepository.delete(syncProduct)
+        }
+    }
+
+    inner class VariantCleanUpItem(
+        val syncVariant: SyncVariant,
+        override val message: String
+    ) : CleanUpItem {
+
+        override fun cleanUp() {
+            syncVariantRepository.delete(syncVariant)
         }
     }
 }

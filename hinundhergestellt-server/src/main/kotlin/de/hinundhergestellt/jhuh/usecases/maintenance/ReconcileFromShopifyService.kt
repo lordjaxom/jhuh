@@ -90,6 +90,7 @@ class ReconcileFromShopifyService(
 
             syncProductRepository.findByArtooId(matchingArtooProducts[0].id)
                 ?.also {
+                    // TODO: clear handling of add and update of shopifyId
                     add(UpdateSyncProductItem(it, product.title, "Produktzuordnung (Shopify-ID) geändert") { shopifyId = product.id })
                 }
                 ?: product.toSyncProduct(matchingArtooProducts[0].id)
@@ -117,8 +118,14 @@ class ReconcileFromShopifyService(
                 logger.info { "ShopifyProductVariant ${variant.title} does not match any ArtooVariation, skip reconciliation" }
                 return@buildList
             }
+
             syncVariantRepository.findByArtooId(artooVariation.id)
-                ?.also { it.shopifyId = variant.id }
+                ?.also {
+                    // TODO: clear handling of add and update of shopifyId
+                    add(UpdateSyncVariantItem(it, "${product.title} (${variant.title})", "Variantenzuordnung ergänzen") {
+                        shopifyId = variant.id
+                    })
+                }
                 ?: variant.toSyncVariant(syncProduct)
         }
         require(syncVariant.product.id == syncProduct.id) { "SyncVariant.product does not match ShopifyVariant.product" }
