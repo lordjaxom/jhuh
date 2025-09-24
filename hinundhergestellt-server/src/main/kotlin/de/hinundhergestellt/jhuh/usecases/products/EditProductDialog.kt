@@ -183,7 +183,7 @@ private class EditProductDialog(
                 additionalTagsTextField = tagsTextField("Weitere Tags") {
                     setWidthFull()
                     bind(syncBinder).bind(
-                        { it.tags },
+                        { it.tags.toSet() }, // create copy otherwise value is it.tags in setter
                         { target, value -> target.tags.clear(); target.tags += value }
                     )
                 }

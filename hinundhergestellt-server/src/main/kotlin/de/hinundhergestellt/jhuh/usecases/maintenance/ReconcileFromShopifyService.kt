@@ -157,7 +157,10 @@ class ReconcileFromShopifyService(
 
         val addedTags = shopifyTags - syncProduct.tags
         val removedTags = syncProduct.tags - shopifyTags
-        val message = "Tags ${addedTags.toQuotedString()} hinzugefügt, ${removedTags.toQuotedString()} entfernt"
+        val message = "Tags" +
+                (if (addedTags.isNotEmpty()) " ${addedTags.toQuotedString()} hinzugefügt" else "") +
+                (if (addedTags.isNotEmpty() && removedTags.isNotEmpty()) "," else "") +
+                (if (removedTags.isNotEmpty()) " ${removedTags.toQuotedString()} entfernt" else "")
         return UpdateSyncProductItem(syncProduct, shopifyProduct.title, message) { tags.clear(); tags += shopifyTags }
     }
 
