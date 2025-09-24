@@ -66,15 +66,12 @@ class ShopifySynchronizationView(
                 flexGrow = 2
             }
             selectionMode = Grid.SelectionMode.MULTI
-//            expandRecursively(treeDataProvider.fetchChildren(HierarchicalQuery(null, null)), Int.MAX_VALUE)
             setSizeFull()
             addThemeVariants(GridVariant.LUMO_ROW_STRIPES)
             addSelectionListener { validateActions() }
+
+            setItems(service.items, Item::children)
         }
-//
-//        val refreshHandler: () -> Unit = { vaadinScope.launch { treeDataProvider.refreshAll(); progressOverlay.isVisible = false } }
-//        addAttachListener { service.refreshListeners += refreshHandler }
-//        addDetachListener { service.refreshListeners -= refreshHandler }
     }
 
     private fun refresh() {
@@ -89,9 +86,10 @@ class ShopifySynchronizationView(
         vaadinScope.launchWithReporting {
             application {
                 service.apply(itemsGrid.selectedItems, ::report)
-                service.refresh(::report)
+                service.rebuild(::report)
             }
             itemsGrid.setItems(service.items, Item::children)
+            itemsGrid.recalculateColumnWidths()
         }
     }
 
@@ -103,7 +101,7 @@ class ShopifySynchronizationView(
         root {
             horizontalLayout {
                 alignItems = FlexComponent.Alignment.CENTER
-                style.set("gap", "var(--lumo-space-xs)")
+                style["gap"] = "var(--lumo-space-xs)"
 
                 val icon = when (item) {
                     is ProductItem -> CustomIcon.PRODUCT

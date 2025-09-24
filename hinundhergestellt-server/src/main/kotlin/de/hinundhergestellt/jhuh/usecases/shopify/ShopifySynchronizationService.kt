@@ -48,6 +48,11 @@ class ShopifySynchronizationService(
 ) {
     val items = mutableListOf<Item>()
 
+    init {
+        // TODO: Refresh when other service refreshes data stores
+        syncProductRepository.findAllBySyncedIsTrue().forEach { synchronize(it) }
+    }
+
     suspend fun refresh(report: suspend (String) -> Unit) {
         report("Aktualisiere Shopify- und ready2order-Produktkataloge...")
         coroutineScope {
@@ -58,6 +63,10 @@ class ShopifySynchronizationService(
 
         // TODO: Missing SyncVariants for variations new in ready2order (would report mapping error anyway, necessary?)
 
+        rebuild(report)
+    }
+
+    suspend fun rebuild(report: suspend (String) -> Unit) {
         report("Gleiche synchronisierte Produkte mit Shopify ab...")
         items.clear()
         syncProductRepository.findAllBySyncedIsTrue().forEach { synchronize(it) }
@@ -88,7 +97,7 @@ class ShopifySynchronizationService(
         variantsToUpdate.forEach { (product, variants) -> shopifyDataStore.update(product, variants) }
     }
 
-    private suspend fun synchronize(syncProduct: SyncProduct) {
+    private fun synchronize(syncProduct: SyncProduct) {
         val artooProduct = syncProduct.artooId?.let { artooDataStore.findProductById(it) }
         val shopifyProduct = syncProduct.shopifyId?.let { shopifyDataStore.findProductById(it) }
 
