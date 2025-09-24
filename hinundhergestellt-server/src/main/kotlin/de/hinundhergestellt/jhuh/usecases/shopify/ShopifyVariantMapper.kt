@@ -4,7 +4,7 @@ import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariant
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedVariation
-import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantOption
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOptionValue
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyWeight
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
@@ -15,13 +15,26 @@ import org.springframework.stereotype.Component
 class ShopifyVariantMapper(
     private val shopifyDataStore: ShopifyDataStore
 ) {
-
     fun mapToVariant(
         syncProduct: SyncProduct,
         artooProduct: ArtooMappedProduct,
         syncVariant: SyncVariant,
         artooVariation: ArtooMappedVariation
     ) = Builder(syncProduct, artooProduct, syncVariant, artooVariation).build()
+
+    fun mapToVariant(sync: SyncVariant, artoo: ArtooMappedVariation) =
+        UnsavedShopifyProductVariant(
+            artoo.itemNumber!!,
+            artoo.barcode!!,
+            artoo.price,
+            ShopifyWeight(WeightUnit.GRAMS, sync.weight!!),
+            shopifyDataStore.location.id,
+            artoo.stockValue.intValueExact(),
+            listOfNotNull(
+                if (!artoo.parent.hasOnlyDefaultVariant) ShopifyProductOptionValue(sync.product.optionName!!, artoo.name)
+                else null
+            )
+        )
 
     private inner class Builder(
         private val syncProduct: SyncProduct,
@@ -41,8 +54,9 @@ class ShopifyVariantMapper(
             )
 
         private fun variantOptions() = buildList {
+            // TODO: option id
             if (!artooProduct.hasOnlyDefaultVariant)
-                add(ShopifyProductVariantOption(syncProduct.optionName!!, artooVariation.name))
+                add(ShopifyProductOptionValue(syncProduct.optionName!!, artooVariation.name))
         }
     }
 }

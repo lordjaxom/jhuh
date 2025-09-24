@@ -2,7 +2,6 @@ package de.hinundhergestellt.jhuh.tools
 
 import arrow.atomic.AtomicInt
 import de.hinundhergestellt.jhuh.HuhProperties
-import de.hinundhergestellt.jhuh.core.forEachParallel
 import de.hinundhergestellt.jhuh.core.mapIndexedParallel
 import de.hinundhergestellt.jhuh.vendors.shopify.client.LinkedMetafield
 import de.hinundhergestellt.jhuh.vendors.shopify.client.MetaobjectField
@@ -16,7 +15,7 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyMetaobject
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVariant
-import de.hinundhergestellt.jhuh.vendors.shopify.client.update
+import de.hinundhergestellt.jhuh.vendors.shopify.client.findByLinkedMetafield
 import de.hinundhergestellt.jhuh.vendors.shopify.client.variantSkus
 import de.hinundhergestellt.jhuh.vendors.shopify.taxonomy.ShopifyColorTaxonomy
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -72,6 +71,8 @@ class ShopifyImageTools(
     ) {
         require(swatchRect == null) { "swatchRect not yet supported" }
 
+        val option = product.options.findByLinkedMetafield("shopify", "color-pattern") ?: return
+
         val variantsSkus = variants.map { it.sku }
         syncImageTools.findVariantImages(product.syncImageProductName, variantsSkus)
             .forEach /*Parallel(properties.processingThreads)*/ { image ->
@@ -79,20 +80,20 @@ class ShopifyImageTools(
                 val color = MediaImageTools.averageColorPercent(image.path, colorRect, ignoreWhite)
                 val taxonomy = colorTaxonomy.findByColor(color)
 
-                val variantOption = variant.options[0]
+                val optionValue = variant.options.first { it.name == option.name }
                 val metaobject = metaobjectClient.create(
                     UnsavedShopifyMetaobject(
                         "shopify--color-pattern",
-                        "$swatchHandle-${generateColorSwatchHandle(variantOption.value)}",
+                        "$swatchHandle-${generateColorSwatchHandle(optionValue.value)}",
                         listOf(
-                            MetaobjectField("label", variantOption.value),
+                            MetaobjectField("label", optionValue.value),
                             MetaobjectField("color", color.toHex()),
                             MetaobjectField("color_taxonomy_reference", "[\"${taxonomy}\"]"),
                             MetaobjectField("pattern_taxonomy_reference", "gid://shopify/TaxonomyValue/2874")
                         )
                     )
                 )
-                variantOption.linkedMetafieldValue = metaobject.id
+                optionValue.linkedMetafieldValue = metaobject.id
             }
     }
 
@@ -184,7 +185,8 @@ class ShopifyImageTools(
             )
 
             val index = productOption.optionValues.indexOfFirst { it.name == variantOption.value }
-            productOption.optionValues[index] = productOption.optionValues[index].update { withLinkedMetafieldValue(metaobject.id) }
+            TODO("Functionality broken")
+            //productOption.optionValues[index] = productOption.optionValues[index].update { withLinkedMetafieldValue(metaobject.id) }
         }
 
         productOption.linkedMetafield = LinkedMetafield("shopify", "color-pattern")

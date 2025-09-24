@@ -18,7 +18,7 @@ private interface ShopifyProductVariantCommonFields {
     var weight: ShopifyWeight
     var mediaId: String?
 
-    val options: List<ShopifyProductVariantOption>
+    val options: List<ShopifyProductOptionValue>
 }
 
 internal class BaseShopifyProductVariant(
@@ -27,7 +27,7 @@ internal class BaseShopifyProductVariant(
     price: BigDecimal,
     override var weight: ShopifyWeight,
     override var mediaId: String?,
-    override val options: List<ShopifyProductVariantOption>
+    override val options: List<ShopifyProductOptionValue>
 ) : ShopifyProductVariantCommonFields {
 
     override var price by fixedScale(price, 2)
@@ -38,7 +38,7 @@ internal class BaseShopifyProductVariant(
         BigDecimal(variant.price),
         ShopifyWeight(variant.inventoryItem.measurement.weight!!),
         variant.media.edges.firstOrNull()?.node?.id,
-        variant.selectedOptions.map { ShopifyProductVariantOption(it) }
+        variant.selectedOptions.map { ShopifyProductOptionValue(it) }
     )
 
     internal fun toInventoryItemInput() =
@@ -65,7 +65,7 @@ class UnsavedShopifyProductVariant private constructor(
         weight: ShopifyWeight,
         inventoryLocationId: String,
         inventoryQuantity: Int,
-        options: List<ShopifyProductVariantOption>
+        options: List<ShopifyProductOptionValue>
     ) : this(
         BaseShopifyProductVariant(
             sku,
@@ -139,7 +139,7 @@ class ShopifyProductVariant private constructor(
         barcode: String,
         price: BigDecimal,
         weight: ShopifyWeight,
-        options: List<ShopifyProductVariantOption>,
+        options: List<ShopifyProductOptionValue>,
         mediaId: String?
     ) : this(
         BaseShopifyProductVariant(

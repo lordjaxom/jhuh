@@ -41,7 +41,7 @@ internal class BaseShopifyProduct(
 
 class UnsavedShopifyProduct private constructor(
     internal val base: BaseShopifyProduct,
-    val options: List<UnsavedShopifyProductOption>,
+    val options: List<ShopifyProductOption>,
     val metafields: MutableList<ShopifyMetafield>,
 ) : ShopifyProductCommonFields by base {
 
@@ -52,7 +52,7 @@ class UnsavedShopifyProduct private constructor(
         status: ProductStatus = ProductStatus.DRAFT,
         descriptionHtml: String = "",
         tags: Set<String> = setOf(),
-        options: List<UnsavedShopifyProductOption> = listOf(),
+        options: List<ShopifyProductOption> = listOf(),
         metafields: MutableList<ShopifyMetafield> = mutableListOf()
     ) : this(
         BaseShopifyProduct(
@@ -87,7 +87,7 @@ class ShopifyProduct private constructor(
     private val base: BaseShopifyProduct,
     val id: String,
     val hasOnlyDefaultVariant: Boolean,
-    options: List<ShopifyProductOption>,
+    options: MutableList<ShopifyProductOption>,
     metafields: MutableList<ShopifyMetafield>,
     val variants: MutableList<ShopifyProductVariant>, // not dirty tracked, separate update workflow
     val media: List<ShopifyMedia>,
@@ -117,11 +117,11 @@ class ShopifyProduct private constructor(
         require(!product.metafields.pageInfo.hasNextPage) { "Product has more metafields than were loaded" }
     }
 
-    internal constructor(unsaved: UnsavedShopifyProduct, id: String, options: List<ShopifyProductOption>) : this(
+    internal constructor(unsaved: UnsavedShopifyProduct, id: String) : this(
         unsaved.base,
         id,
-        options.isEmpty(),
-        CopyOnWriteArrayList(options),
+        unsaved.options.isEmpty(),
+        CopyOnWriteArrayList(unsaved.options),
         CopyOnWriteArrayList(unsaved.metafields).asRemoveProtectedMutableList(),
         CopyOnWriteArrayList(),
         listOf()
@@ -136,7 +136,7 @@ class ShopifyProduct private constructor(
         descriptionHtml: String,
         hasOnlyDefaultVariant: Boolean,
         tags: Set<String>,
-        options: List<ShopifyProductOption>,
+        options: MutableList<ShopifyProductOption>,
         metafields: MutableList<ShopifyMetafield>,
         variants: MutableList<ShopifyProductVariant>,
         media: List<ShopifyMedia>

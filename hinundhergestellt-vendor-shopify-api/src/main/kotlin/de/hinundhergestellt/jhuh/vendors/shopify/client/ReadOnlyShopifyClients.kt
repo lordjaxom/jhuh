@@ -61,12 +61,8 @@ val ShopifyProduct.isDryRun get() = id.startsWith("uid://")
 private fun UnsavedShopifyProduct.toDryRunShopifyProduct() =
     ShopifyProduct(
         this,
-        "uid://${UUID.randomUUID()}",
-        options.asSequence().map { it.toDryRunShopifyProductOption() }.toMutableList()
+        "uid://${UUID.randomUUID()}"
     )
-
-private fun UnsavedShopifyProductOption.toDryRunShopifyProductOption() =
-    ShopifyProductOption(this, "uid://${UUID.randomUUID()}")
 
 private fun UnsavedShopifyProductVariant.toDryRunShopifyProductVariant() =
     ShopifyProductVariant(

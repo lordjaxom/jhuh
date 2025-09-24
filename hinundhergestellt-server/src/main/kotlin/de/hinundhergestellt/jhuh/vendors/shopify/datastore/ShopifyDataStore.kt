@@ -4,6 +4,7 @@ import de.hinundhergestellt.jhuh.core.deferredWithRefresh
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyLocationClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductClient
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOptionClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProduct
@@ -20,6 +21,7 @@ class ShopifyDataStore(
     private val productClient: ShopifyProductClient,
     private val variantClient: ShopifyProductVariantClient,
     private val locationClient: ShopifyLocationClient,
+    private val optionClient: ShopifyProductOptionClient,
     applicationCoroutineScope: CoroutineScope
 ) {
     private val productsDeferred = deferredWithRefresh(applicationCoroutineScope) { fetchProducts() }
@@ -67,6 +69,12 @@ class ShopifyDataStore(
 
     suspend fun create(product: ShopifyProduct, variants: Collection<UnsavedShopifyProductVariant>): List<ShopifyProductVariant> {
         requireLock()
+
+        product.options.forEach { option ->
+            val valuesToAdd = variants.mapNotNull { variant -> variant.options.firstOrNull { it.name == option.name && it.isNew } }
+            optionClient.addValues(product, option, valuesToAdd)
+        }
+
         val created = variantClient.create(product, variants)
         product.variants.addAll(created)
         return created

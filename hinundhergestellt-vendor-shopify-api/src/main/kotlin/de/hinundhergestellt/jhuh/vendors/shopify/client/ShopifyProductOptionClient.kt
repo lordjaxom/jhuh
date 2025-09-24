@@ -2,6 +2,7 @@ package de.hinundhergestellt.jhuh.vendors.shopify.client
 
 import com.netflix.graphql.dgs.client.WebClientGraphQLClient
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.DgsClient.buildMutation
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.OptionUpdateInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductOptionUpdatePayload
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductOptionsDeletePayload
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -17,7 +18,7 @@ class ShopifyProductOptionClient(
             productOptionUpdate(
                 productId = product.id,
                 option = option.toOptionUpdateInput(),
-                optionValuesToUpdate = option.optionValues.map { it.toOptionValueUpdateInput() }
+                optionValuesToUpdate = option.optionValues.map { it.toOptionValueUpdateInput() },
             ) {
                 userErrors { message; field }
             }
@@ -34,5 +35,29 @@ class ShopifyProductOptionClient(
         }
 
         shopifyGraphQLClient.executeMutation(request, ProductOptionsDeletePayload::userErrors)
+    }
+
+    suspend fun addValues(product: ShopifyProduct, option: ShopifyProductOption, values: List<ShopifyProductOptionValue>) {
+        val request = buildMutation {
+            productOptionUpdate(
+                productId = product.id,
+                option = OptionUpdateInput(option.id),
+                optionValuesToAdd = values.map { it.toOptionValueCreateInput() }
+            ) {
+                product {
+                    options {
+                        // TODO: consolidate with ShopifyProductClient
+                        id; name
+                        linkedMetafield { namespace; key }
+                        optionValues { id; name; linkedMetafieldValue }
+                    }
+                }
+                userErrors { message; field }
+            }
+        }
+
+        val payload = shopifyGraphQLClient.executeMutation(request, ProductOptionUpdatePayload::userErrors)
+        val changedOption = payload.product!!.options.first { it.id == option.id }
+        option.optionValues += values.onEach { value -> value.internalId = changedOption.optionValues.first { it.name == value.value }.id }
     }
 }

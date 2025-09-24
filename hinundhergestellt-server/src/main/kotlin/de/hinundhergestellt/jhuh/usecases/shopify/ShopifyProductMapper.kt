@@ -3,8 +3,8 @@ package de.hinundhergestellt.jhuh.usecases.shopify
 import de.hinundhergestellt.jhuh.backend.mapping.MappingService
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOption
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProduct
-import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductOption
 import org.springframework.stereotype.Component
 
 @Component
@@ -34,7 +34,7 @@ class ShopifyProductMapper(
 
         private fun options() = buildList {
             if (!artooProduct.hasOnlyDefaultVariant)
-                add(UnsavedShopifyProductOption(syncProduct.optionName!!, artooProduct.variations.map { it.name }))
+                add(ShopifyProductOption(syncProduct.optionName!!, artooProduct.variations.map { it.name }))
         }
     }
 }

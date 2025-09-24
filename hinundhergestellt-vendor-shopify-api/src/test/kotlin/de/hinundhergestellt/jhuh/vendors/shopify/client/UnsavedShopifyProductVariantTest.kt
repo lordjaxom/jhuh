@@ -14,7 +14,7 @@ class UnsavedShopifyProductVariantTest {
             barcode = "BAR111",
             price = BigDecimal("10.00"),
             weight = ShopifyWeight(WeightUnit.GRAMS, BigDecimal("500.0")),
-            options = listOf(ShopifyProductVariantOption("Material", "Cotton")),
+            options = listOf(ShopifyProductOptionValue("Material", "Cotton")),
             inventoryLocationId = "LOC001",
             inventoryQuantity = 20
         )
@@ -35,7 +35,7 @@ class UnsavedShopifyProductVariantTest {
             barcode = "BAR222",
             price = BigDecimal("19.95"),
             weight = ShopifyWeight(WeightUnit.KILOGRAMS, BigDecimal("1.2")),
-            options = listOf(ShopifyProductVariantOption("Style", "Modern")),
+            options = listOf(ShopifyProductOptionValue("Style", "Modern")),
             inventoryLocationId = "LOC002",
             inventoryQuantity = 15
         )

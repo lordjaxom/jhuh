@@ -43,12 +43,11 @@ class ShopifyProductClient(
         }
 
         val payload = shopifyGraphQLClient.executeMutation(request, ProductCreatePayload::userErrors)
-        val options = product.options.asSequence()
+        product.options.asSequence()
             .zip(payload.product!!.options.asSequence())
-            .map { (option, created) -> ShopifyProductOption(option, created.id) }
-            .toList()
+            .forEach { (option, created) -> option.internalId = created.id }
         product.descriptionHtml = payload.product!!.descriptionHtml
-        return ShopifyProduct(product, payload.product!!.id, options)
+        return ShopifyProduct(product, payload.product!!.id)
     }
 
     suspend fun update(product: ShopifyProduct) {
@@ -81,6 +80,7 @@ class ShopifyProductClient(
                         handle; id; title; vendor; productType; status; tags; hasOnlyDefaultVariant; descriptionHtml
                         variants()
                         options {
+                            // TODO: consolidate with ShopifyProductOptionClient
                             id; name
                             linkedMetafield { namespace; key }
                             optionValues { id; name; linkedMetafieldValue }
