@@ -73,9 +73,14 @@ class MappingService(
         if (artoo.description.isEmpty()) add(MappingProblem("Produkt hat keine Beschreibung (Titel in Shopify)", true))
 
         if (artoo.barcodes.isEmpty())
-            add(MappingProblem(if (artoo.hasOnlyDefaultVariant) "Produkt hat keinen Barcode" else "Produkt hat keine Barcodes", true))
+            add(MappingProblem( "Produkt hat keine Barcode(s)", true))
         else if (artoo.barcodes.size < artoo.variations.size)
             add(MappingProblem("Nicht alle Variationen haben einen Barcode", false))
+
+        if (artoo.itemNumbers.isEmpty())
+            add(MappingProblem("Produkt hat keine Artikelnummer(n)", true))
+        else if (artoo.itemNumbers.size < artoo.variations.size)
+            add(MappingProblem("Nicht alle Variationen haben eine Artikelnummer", false))
 
         if (artoo.variations.groupingBy { it.name }.eachCount().any { (_, count) -> count > 1 })
             add(MappingProblem("Produkt hat Variationen mit gleichem Namen", true))
@@ -100,18 +105,18 @@ class MappingService(
             add(MappingProblem("Keine Produktbilder vorhanden", false))
     }
 
-    fun checkForProblems(artoo: ArtooMappedVariation, sync: SyncVariant, product: ArtooMappedProduct) = buildList {
+    fun checkForProblems(artoo: ArtooMappedVariation, sync: SyncVariant) = buildList {
         if (artoo.barcode == null) add(MappingProblem("Variation hat keinen Barcode", true))
         if (artoo.itemNumber == null) add(MappingProblem("Variation hat keine Artikelnummer", true))
 
         if (artoo.name.isEmpty()) add(MappingProblem("Variation hat keinen Namen", true))
-        else if (artoo.name.startsWith(product.name, ignoreCase = true))
+        else if (artoo.name.startsWith(artoo.parent.name, ignoreCase = true))
             add(MappingProblem("Variationsname beginnt mit Produktnamen", true))
 
         if (!sync.hasWeight()) add(MappingProblem("Variation hat keine Gewichtsangabe", true))
         else if (!sync.hasValidWeight()) add(MappingProblem("Gewichtsangabe ungültig (0,5g oder >= 30g)", true))
 
-        if (artoo.itemNumber == null || artooImageTools.findVariantImages(product).none { it.variantSku == artoo.itemNumber })
+        if (artoo.itemNumber == null || artooImageTools.findVariantImages(artoo.parent).none { it.variantSku == artoo.itemNumber })
             add(MappingProblem("Kein Variantenbild vorhanden", false)) // TODO: true if linkedMetaField used
     }
 

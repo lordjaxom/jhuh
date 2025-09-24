@@ -6,14 +6,12 @@ import de.hinundhergestellt.jhuh.backend.mapping.MappingService
 import de.hinundhergestellt.jhuh.backend.mapping.addition
 import de.hinundhergestellt.jhuh.backend.mapping.change
 import de.hinundhergestellt.jhuh.backend.shoptexter.ShopTexterService
-import de.hinundhergestellt.jhuh.backend.shoptexter.model.ProductMapper
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProductRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariant
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariantRepository
 import de.hinundhergestellt.jhuh.tools.RectPct
 import de.hinundhergestellt.jhuh.tools.ShopifyImageTools
-import de.hinundhergestellt.jhuh.tools.SyncImageTools
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedVariation
@@ -21,9 +19,7 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafield
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyWeight
-import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.findById
-import de.hinundhergestellt.jhuh.vendors.shopify.client.findByLinkedMetafield
 import de.hinundhergestellt.jhuh.vendors.shopify.client.isDryRun
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -48,8 +44,7 @@ class ShopifySynchronizationService(
     private val syncVariantRepository: SyncVariantRepository,
     private val shopTexterService: ShopTexterService,
     private val mappingService: MappingService,
-    private val transactionOperations: TransactionOperations,
-    private val productMapper: ProductMapper
+    private val transactionOperations: TransactionOperations
 ) {
     val items = mutableListOf<Item>()
 
@@ -125,13 +120,12 @@ class ShopifySynchronizationService(
         items += mappingService.customMetafields(syncProduct).mapNotNull { prepareUpdateProductMetafield(shopifyProduct, it) }
 
         syncProduct.variants
-            .flatMap { synchronize(syncProduct, it, artooProduct, shopifyProduct) }
+            .flatMap { synchronize(it, artooProduct, shopifyProduct) }
             .takeIf { it.isNotEmpty() }
             ?.also { items += VariantProductItem(shopifyProduct, it) }
     }
 
     private fun synchronize(
-        syncProduct: SyncProduct,
         syncVariant: SyncVariant,
         artooProduct: ArtooMappedProduct,
         shopifyProduct: ShopifyProduct
@@ -139,8 +133,11 @@ class ShopifySynchronizationService(
         val artooVariation = artooProduct.findVariationByBarcode(syncVariant.barcode)
         val shopifyVariant = shopifyProduct.findVariantByBarcode(syncVariant.barcode)
 
-        if (artooVariation != null && mappingService.checkForProblems(artooVariation, syncVariant, artooProduct).any { it.error }) {
-            logger.warn { "Variant ${artooProduct.name} (${artooVariation.name}) has problems, skip synchronization"}
+        if (artooVariation != null &&
+            !artooProduct.hasOnlyDefaultVariant &&
+            mappingService.checkForProblems(artooVariation, syncVariant).any { it.error }
+        ) {
+            logger.warn { "Variant ${artooProduct.name} (${artooVariation.name}) has problems, skip synchronization" }
             return listOf()
         }
 
@@ -258,6 +255,7 @@ class ShopifySynchronizationService(
         product: ShopifyProduct,
         items: Set<CreateVariantItem>
     ) {
+        TODO("swatch handle and rect!!!")
         val variants = items.map { shopifyVariantMapper.mapToVariant(it.sync, it.artoo) }
         shopifyImageTools.uploadVariantImages(product, variants)
         shopifyImageTools.generateColorSwatches(product, variants, "poli-tubitherm", RectPct.CENTER_20)

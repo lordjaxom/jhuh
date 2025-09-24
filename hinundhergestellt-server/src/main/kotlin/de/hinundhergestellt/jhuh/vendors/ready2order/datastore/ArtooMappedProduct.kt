@@ -11,8 +11,8 @@ sealed class ArtooMappedProduct protected constructor(
     abstract var description: String
     abstract val hasOnlyDefaultVariant: Boolean
 
-    val barcodes
-        get() = variations.mapNotNull { variation -> variation.barcode?.takeIf { it.isNotEmpty() } }
+    val barcodes get() = variations.mapNotNull { variation -> variation.barcode?.takeIf { it.isNotEmpty() } }
+    val itemNumbers get() = variations.mapNotNull { variation -> variation.itemNumber?.takeIf { it.isNotEmpty() } }
 
     init {
         variations.forEach { it.parent = this }

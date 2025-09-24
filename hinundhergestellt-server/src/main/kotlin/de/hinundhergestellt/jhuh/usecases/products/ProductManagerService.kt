@@ -203,7 +203,7 @@ class ProductManagerService(
 
         val id by value::id
 
-        fun checkForProblems() = mappingService.checkForProblems(value, syncVariant, parent.value)
+        fun checkForProblems() = mappingService.checkForProblems(value, syncVariant)
 
         override val itemId = "variation-$id"
         override val name get() = "${syncVariant.product.optionName} ${value.name}"
