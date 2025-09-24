@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component
 class ProductMapper(
     private val mappingService: MappingService
 ) {
-
     fun map(artoo: ArtooMappedProduct, sync: SyncProduct, description: String?) =
         Product(
             name = artoo.name,
@@ -21,9 +20,13 @@ class ProductMapper(
             tags = sync.tags,
             technicalDetails = sync.technicalDetails.associate { it.name to it.value },
             hasOnlyDefaultVariant = artoo.hasOnlyDefaultVariant,
-            variants =
-                if (!artoo.hasOnlyDefaultVariant) artoo.variations.map { it.name }
-                else listOf(),
+            variants = artoo.variations.map {
+                Variant(
+                    name = if (it.isDefaultVariant) "Default Title" else it.name,
+                    itemNumber = it.itemNumber ?: "",
+                    ean = it.barcode ?: ""
+                )
+            }
         )
 
     fun map(shopify: ShopifyProduct) =
@@ -36,8 +39,12 @@ class ProductMapper(
             tags = shopify.tags,
             technicalDetails = mappingService.extractTechnicalDetails(shopify),
             hasOnlyDefaultVariant = shopify.hasOnlyDefaultVariant,
-            variants =
-                if (!shopify.hasOnlyDefaultVariant) shopify.variants.map { it.title }
-                else listOf()
+            variants = shopify.variants.map {
+                Variant(
+                    name = it.title,
+                    itemNumber = it.sku,
+                    ean = it.barcode
+                )
+            }
         )
 }

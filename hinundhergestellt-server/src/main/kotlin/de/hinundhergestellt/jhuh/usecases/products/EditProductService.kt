@@ -14,7 +14,7 @@ import de.hinundhergestellt.jhuh.tools.extension
 import de.hinundhergestellt.jhuh.tools.generateImageFileName
 import de.hinundhergestellt.jhuh.tools.syncImageProductName
 import de.hinundhergestellt.jhuh.tools.variantSkus
-import de.hinundhergestellt.jhuh.vendors.rayher.csv.RayherProduct
+import de.hinundhergestellt.jhuh.vendors.hobbyfun.datastore.HobbyFunDataStore
 import de.hinundhergestellt.jhuh.vendors.rayher.datastore.RayherDataStore
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -33,6 +33,7 @@ class EditProductService(
     private val mappingService: MappingService,
     private val shopTexterService: ShopTexterService,
     private val rayherDataStore: RayherDataStore,
+    private val hobbyFunDataStore: HobbyFunDataStore,
     private val syncVendorRepository: SyncVendorRepository,
     private val syncImageTools: SyncImageTools,
     private val toolsWebClient: WebClient,
@@ -52,7 +53,7 @@ class EditProductService(
         shopTexterService.generateProductDetails(artoo, sync, description)
 
     fun canFillInValues(artooProduct: ArtooMappedProduct) =
-        findRayherProduct(artooProduct) != null
+        findRayherProduct(artooProduct) != null || findHobbyFunProduct(artooProduct) != null
 
     fun fillInValues(artooProduct: ArtooMappedProduct): FilledInProductValues {
         val rayherProduct = findRayherProduct(artooProduct)
@@ -61,6 +62,14 @@ class EditProductService(
                 vendor = syncVendorRepository.findByNameIgnoreCase("Rayher")!!,
                 description = rayherProduct.description,
                 weight = rayherProduct.weight
+            )
+        }
+
+        val hobbyFunProduct = findHobbyFunProduct(artooProduct)
+        if (hobbyFunProduct != null) {
+            return FilledInProductValues(
+                vendor = syncVendorRepository.findByNameIgnoreCase("HobbyFun")!!,
+                description = hobbyFunProduct.description
             )
         }
 
@@ -75,13 +84,20 @@ class EditProductService(
     }
 
     fun canDownloadImages(artooProduct: ArtooMappedProduct, description: String?) =
-        (findRayherProduct(artooProduct)?.imageUrls?.isNotEmpty() ?: false) &&
-                (!description.isNullOrEmpty() || artooProduct.description.isNotEmpty())
+        (!description.isNullOrEmpty() || artooProduct.description.isNotEmpty()) &&
+                (findRayherProduct(artooProduct)?.imageUrls?.isNotEmpty() == true ||
+                        findHobbyFunProduct(artooProduct)?.imageUrl?.isNotEmpty() == true)
 
     suspend fun downloadImages(artooProduct: ArtooMappedProduct, description: String?, report: suspend (String) -> Unit) {
         val rayherProduct = findRayherProduct(artooProduct)
         if (rayherProduct != null) {
-            downloadRayherImages(artooProduct, description, rayherProduct, report)
+            downloadProductImages(artooProduct, description, rayherProduct.imageUrls, report)
+            return
+        }
+
+        val hobbyFunProduct = findHobbyFunProduct(artooProduct)
+        if (hobbyFunProduct != null) {
+            downloadProductImages(artooProduct, description, listOf(hobbyFunProduct.imageUrl), report)
         }
     }
 
@@ -89,10 +105,14 @@ class EditProductService(
         if (artooProduct.hasOnlyDefaultVariant) artooProduct.variations[0].barcode?.let { rayherDataStore.findByEan(it) }
         else null
 
-    private suspend fun downloadRayherImages(
+    private fun findHobbyFunProduct(artooProduct: ArtooMappedProduct) =
+        if (artooProduct.hasOnlyDefaultVariant) artooProduct.variations[0].barcode?.let { hobbyFunDataStore.findByEan(it) }
+        else null
+
+    private suspend fun downloadProductImages(
         artooProduct: ArtooMappedProduct,
         description: String?,
-        rayherProduct: RayherProduct,
+        imageUrls: List<String>,
         report: suspend (String) -> Unit
     ) {
         val productTitle = description?.takeIf { it.isNotEmpty() }
@@ -102,15 +122,15 @@ class EditProductService(
         val productPath = properties.imageDirectory.resolve(productName)
         productPath.createDirectories()
 
-        report("Lade ${rayherProduct.imageUrls.size} Produktbilder herunter...")
-        rayherProduct.imageUrls
-            .sortedBy { it.computeRayherSortSelector() }
+        report("Lade ${imageUrls.size} Produktbilder herunter...")
+        imageUrls
+            .sortedBy { it.computeImageSortSelector() }
             .forEachIndexedParallel(properties.processingThreads) { index, imageUrl ->
-                downloadRayherImage(productName, productPath, index, imageUrl)
+                downloadProductImage(productName, productPath, index, imageUrl)
             }
     }
 
-    private suspend fun downloadRayherImage(productName: String, productPath: Path, index: Int, imageUrl: String) {
+    private suspend fun downloadProductImage(productName: String, productPath: Path, index: Int, imageUrl: String) {
         val extension = URI(imageUrl).extension
         val suffix = "produktbild-${index + 1}"
         val fileName = generateImageFileName(productName, suffix, extension)
@@ -119,11 +139,11 @@ class EditProductService(
         try {
             toolsWebClient.downloadFileTo(imageUrl, filePath)
         } catch (e: WebClientException) {
-            logger.error(e) { "Couldn't download image $fileName from Rayher" }
+            logger.error(e) { "Couldn't download image $fileName from Vendor" }
         }
     }
 
-    private fun String.computeRayherSortSelector(): String {
+    private fun String.computeImageSortSelector(): String {
         val stem = substringBeforeLast(".")
         val discrimitator = when {
             stem.endsWith("_VP") -> 1

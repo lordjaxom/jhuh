@@ -9,5 +9,11 @@ class Product(
     val tags: Set<String>,
     val technicalDetails: Map<String, String>,
     val hasOnlyDefaultVariant: Boolean,
-    val variants: List<String>
+    val variants: List<Variant>
+)
+
+class Variant(
+    val name: String,
+    val itemNumber: String,
+    val ean: String
 )

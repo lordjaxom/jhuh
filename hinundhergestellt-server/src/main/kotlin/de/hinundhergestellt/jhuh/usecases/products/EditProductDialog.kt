@@ -275,6 +275,7 @@ private class EditProductDialog(
                 additionalTagsTextField.value.isEmpty() ||
                 productTypeTextField.value.isNullOrEmpty()
             ) {
+                report("Generiere Produktdetails mit AI...")
                 val generated = application {
                     async { service.generateProductDetails(artooProduct, syncProduct, descriptionTextField.value) }.await()
                 }

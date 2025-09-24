@@ -8,15 +8,12 @@ class ArtooImageTools(
     private val syncImageTools: SyncImageTools
 ) {
     fun findProductImages(product: ArtooMappedProduct) =
-        syncImageTools.findProductImages(product.syncImageProductName)
+        product.syncImageProductName?.let { syncImageTools.findProductImages(it) } ?: listOf()
 
     fun findVariantImages(product: ArtooMappedProduct) =
-        syncImageTools.findVariantImages(product.syncImageProductName, product.variantSkus)
-
-    fun findAllImages(product: ArtooMappedProduct) =
-        syncImageTools.findAllImages(product.syncImageProductName, product.variantSkus)
+        product.syncImageProductName?.let { syncImageTools.findVariantImages(it, product.variantSkus) } ?: listOf()
 }
 
-val ArtooMappedProduct.syncImageProductName get() = description.syncImageProductName
+val ArtooMappedProduct.syncImageProductName get() = description.syncImageProductName.takeIf { it.isNotEmpty() }
 
 val ArtooMappedProduct.variantSkus get() = variations.asSequence().mapNotNull { it.itemNumber }.toList()
