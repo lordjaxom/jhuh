@@ -176,7 +176,7 @@ class ReconcileFromShopifyService(
             return@buildList
         }
 
-        val syncImages = shopifyImageTools.findSyncImages(product)
+        val syncImages = shopifyImageTools.findAllImages(product)
 
         val imagesNotKnownLocally = product.media.filter { media -> syncImages.none { it.path.fileName.toString() == media.fileName } }
         if (imagesNotKnownLocally.isNotEmpty()) {

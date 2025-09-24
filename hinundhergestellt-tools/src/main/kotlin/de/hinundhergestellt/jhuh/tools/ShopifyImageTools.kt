@@ -47,12 +47,12 @@ class ShopifyImageTools(
     private val genericWebClient: WebClient,
     private val properties: HuhProperties
 ) {
-    fun findSyncImages(product: ShopifyProduct) =
-        syncImageTools.findSyncImages(product.syncImageProductName, product.variantSkus)
+    fun findAllImages(product: ShopifyProduct) =
+        syncImageTools.findAllImages(product.syncImageProductName, product.variantSkus)
 
     suspend fun uploadVariantImages(product: ShopifyProduct, variants: Collection<UnsavedShopifyProductVariant>) {
         val variantsSkus = variants.map { it.sku }
-        val imagesToUpload = syncImageTools.findSyncImages(product.syncImageProductName, variantsSkus).filter { it.variantSku != null }
+        val imagesToUpload = syncImageTools.findVariantImages(product.syncImageProductName, variantsSkus)
         val uploadedMedias = mediaClient.upload(imagesToUpload.map { it.path })
         variants.forEach { variant ->
             val media = uploadedMedias.first { it.fileName.isValidSyncImageFor(product, variant) }
@@ -73,8 +73,7 @@ class ShopifyImageTools(
         require(swatchRect == null) { "swatchRect not yet supported" }
 
         val variantsSkus = variants.map { it.sku }
-        syncImageTools.findSyncImages(product.syncImageProductName, variantsSkus)
-            .filter {  it.variantSku != null }
+        syncImageTools.findVariantImages(product.syncImageProductName, variantsSkus)
             .forEach /*Parallel(properties.processingThreads)*/ { image ->
                 val variant = variants.first { it.sku == image.variantSku }
                 val color = MediaImageTools.averageColorPercent(image.path, colorRect, ignoreWhite)
@@ -118,7 +117,7 @@ class ShopifyImageTools(
 
     suspend fun replaceProductImages(product: ShopifyProduct) {
         val productName = product.syncImageProductName
-        val images = syncImageTools.findSyncImages(productName).map { it.path }
+        val images = syncImageTools.findProductImages(productName).map { it.path }
         if (images.isEmpty()) {
             logger.warn { "No product images found for $productName" }
             return
@@ -139,8 +138,7 @@ class ShopifyImageTools(
         require(variantSkus.all { it.isNotEmpty() }) { "All product variants must have SKU" }
 
         // check if all images are accounted for before deleting
-        val images = syncImageTools.findSyncImages(product.title.syncImageProductName, variantSkus)
-            .filter { it.variantSku != null }
+        val images = syncImageTools.findVariantImages(product.title.syncImageProductName, variantSkus)
         require(images.size == product.variants.size) { "Not all variants have an image" }
 
         mediaClient.delete(product.media.filter { media -> product.variants.any { it.mediaId == media.id } }.toList())

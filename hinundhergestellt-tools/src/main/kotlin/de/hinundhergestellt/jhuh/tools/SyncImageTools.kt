@@ -11,26 +11,26 @@ import kotlin.text.Regex.Companion.escape
 class SyncImageTools(
     private val imageDirectoryService: ImageDirectoryService
 ) {
-    fun findSyncImages(productName: String, variantSkus: List<String> = listOf()): List<SyncImage> {
+    fun findProductImages(productName: String): List<SyncImage> {
         require(productName.isNotEmpty()) { "productName must not be empty" }
-
-        val entries = imageDirectoryService.listDirectoryEntries(Path(productName))
-
-        val productImages = entries.asSequence()
+        return imageDirectoryService.listDirectoryEntries(Path(productName))
+            .asSequence()
             .filter { it.isValidSyncImageFor(productName) }
             .sortedBy { it.syncImageSortSelector }
             .map { SyncImage(it, null) }
-
-        val variantImages = variantSkus.asSequence()
-            .mapNotNull { sku ->
-                entries.asSequence()
-                    .filter { it.isValidSyncImageFor(productName, sku) }
-                    .firstOrNull()
-                    ?.let { SyncImage(it, sku) }
-            }
-
-        return (productImages + variantImages).toList()
+            .toList()
     }
+
+    fun findVariantImages(productName: String, variantSkus: List<String>): List<SyncImage> {
+        require(variantSkus.isNotEmpty()) { "variantSkus must not be empty" }
+        return imageDirectoryService.listDirectoryEntries(Path(productName))
+            .asSequence()
+            .mapNotNull { entry -> variantSkus.firstOrNull { entry.isValidSyncImageFor(productName, it) }?.let { SyncImage(entry, it) } }
+            .toList()
+    }
+
+    fun findAllImages(productName: String, variantSkus: List<String>) =
+        findProductImages(productName) + findVariantImages(productName, variantSkus)
 }
 
 class SyncImage(

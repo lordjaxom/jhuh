@@ -7,8 +7,14 @@ import org.springframework.stereotype.Component
 class ArtooImageTools(
     private val syncImageTools: SyncImageTools
 ) {
-    fun findSyncImages(product: ArtooMappedProduct) =
-        syncImageTools.findSyncImages(product.syncImageProductName, product.variantSkus)
+    fun findProductImages(product: ArtooMappedProduct) =
+        syncImageTools.findProductImages(product.syncImageProductName)
+
+    fun findVariantImages(product: ArtooMappedProduct) =
+        syncImageTools.findVariantImages(product.syncImageProductName, product.variantSkus)
+
+    fun findAllImages(product: ArtooMappedProduct) =
+        syncImageTools.findAllImages(product.syncImageProductName, product.variantSkus)
 }
 
 val ArtooMappedProduct.syncImageProductName get() = description.syncImageProductName

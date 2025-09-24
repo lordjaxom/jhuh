@@ -96,7 +96,7 @@ class MappingService(
 
         if (!artoo.hasOnlyDefaultVariant && sync.optionName == null) add(MappingProblem("Optionsname für Varianten fehlt", true))
 
-        if (artooImageTools.findSyncImages(artoo).none { it.variantSku == null })
+        if (artooImageTools.findProductImages(artoo).isEmpty())
             add(MappingProblem("Keine Produktbilder vorhanden", false))
     }
 
@@ -111,7 +111,7 @@ class MappingService(
         if (!sync.hasWeight()) add(MappingProblem("Variation hat keine Gewichtsangabe", true))
         else if (!sync.hasValidWeight()) add(MappingProblem("Gewichtsangabe ungültig (0,5g oder >= 30g)", true))
 
-        if (artoo.itemNumber == null || artooImageTools.findSyncImages(product).none { it.variantSku == artoo.itemNumber })
+        if (artoo.itemNumber == null || artooImageTools.findVariantImages(product).none { it.variantSku == artoo.itemNumber })
             add(MappingProblem("Kein Variantenbild vorhanden", false)) // TODO: true if linkedMetaField used
     }
 

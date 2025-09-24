@@ -13,6 +13,7 @@ import de.hinundhergestellt.jhuh.tools.downloadFileTo
 import de.hinundhergestellt.jhuh.tools.extension
 import de.hinundhergestellt.jhuh.tools.generateImageFileName
 import de.hinundhergestellt.jhuh.tools.syncImageProductName
+import de.hinundhergestellt.jhuh.tools.variantSkus
 import de.hinundhergestellt.jhuh.vendors.rayher.csv.RayherProduct
 import de.hinundhergestellt.jhuh.vendors.rayher.datastore.RayherDataStore
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
@@ -70,7 +71,7 @@ class EditProductService(
         val productTitle = description?.takeIf { it.isNotEmpty() }
             ?: artooProduct.description.takeIf { it.isNotEmpty() }
             ?: return listOf()
-        return syncImageTools.findSyncImages(productTitle.syncImageProductName, artooProduct.variations.mapNotNull { it.itemNumber })
+        return syncImageTools.findAllImages(productTitle.syncImageProductName, artooProduct.variantSkus)
     }
 
     fun canDownloadImages(artooProduct: ArtooMappedProduct, description: String?) =
