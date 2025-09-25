@@ -41,9 +41,11 @@ class ShopifyProductOptionValue private constructor(
     override fun toString() =
         "ShopifyProductOptionValue(id='$id', name='$name', value='$value', isLinkedMetafieldValue=$isLinkedMetafieldValue)"
 
-    internal fun toOptionValueCreateInput() =
-        if (linkedMetafieldValue == null) OptionValueCreateInput(name = value)
+    internal fun toOptionValueCreateInput(): OptionValueCreateInput {
+        require(internalId == null) { "Cannot recreate existing product option value" }
+        return if (linkedMetafieldValue == null) OptionValueCreateInput(name = value)
         else OptionValueCreateInput(linkedMetafieldValue = linkedMetafieldValue)
+    }
 
     internal fun toOptionValueUpdateInput() =
         if (linkedMetafieldValue == null) OptionValueUpdateInput(id = id, name = value)

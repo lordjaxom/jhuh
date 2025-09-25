@@ -8,13 +8,13 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.LinkedMetafield
 import de.hinundhergestellt.jhuh.vendors.shopify.client.MetaobjectField
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMedia
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMediaClient
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetaobject
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetaobjectClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOptionClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantClient
-import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyMetaobject
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.findByLinkedMetafield
 import de.hinundhergestellt.jhuh.vendors.shopify.client.variantSkus
@@ -90,18 +90,17 @@ class ShopifyImageTools(
             val variant = variants.first { it.sku == image.variantSku }
             val optionValue = variant.options.first { it.name == option.name }
             val taxonomy = colorTaxonomy.findByColor(color)
-            val metaobject = metaobjectClient.create(
-                UnsavedShopifyMetaobject(
-                    "shopify--color-pattern",
-                    "$swatchHandlePrefix${generateColorSwatchHandle(optionValue.value)}",
-                    listOf(
-                        MetaobjectField("label", optionValue.value),
-                        MetaobjectField("color", color.toHex()),
-                        MetaobjectField("color_taxonomy_reference", "[\"${taxonomy}\"]"),
-                        MetaobjectField("pattern_taxonomy_reference", "gid://shopify/TaxonomyValue/2874")
-                    )
+            val metaobject = ShopifyMetaobject(
+                "shopify--color-pattern",
+                "$swatchHandlePrefix${generateColorSwatchHandle(optionValue.value)}",
+                listOf(
+                    MetaobjectField("label", optionValue.value),
+                    MetaobjectField("color", color.toHex()),
+                    MetaobjectField("color_taxonomy_reference", "[\"${taxonomy}\"]"),
+                    MetaobjectField("pattern_taxonomy_reference", "gid://shopify/TaxonomyValue/2874")
                 )
             )
+            metaobjectClient.create(metaobject)
             optionValue.linkedMetafieldValue = metaobject.id
         }
     }
@@ -179,19 +178,18 @@ class ShopifyImageTools(
         val media = swatchRect?.let { mediaClient.upload(images.mapNotNull { it.swatchFilePath }) }
         images.forEachIndexed { index, image ->
             val variantOption = image.variant.options[0]
-            val metaobject = metaobjectClient.create(
-                UnsavedShopifyMetaobject(
-                    "shopify--color-pattern",
-                    "$swatchHandle-${generateColorSwatchHandle(variantOption.value)}",
-                    listOfNotNull(
-                        MetaobjectField("label", variantOption.value),
-                        MetaobjectField("color", image.swatchColor!!.toHex()),
-                        MetaobjectField("color_taxonomy_reference", "[\"${image.taxonomyReference}\"]"),
-                        MetaobjectField("pattern_taxonomy_reference", "gid://shopify/TaxonomyValue/2874"),
-                        media?.let { MetaobjectField("image", it[index].id) }
-                    )
+            val metaobject = ShopifyMetaobject(
+                "shopify--color-pattern",
+                "$swatchHandle-${generateColorSwatchHandle(variantOption.value)}",
+                listOfNotNull(
+                    MetaobjectField("label", variantOption.value),
+                    MetaobjectField("color", image.swatchColor!!.toHex()),
+                    MetaobjectField("color_taxonomy_reference", "[\"${image.taxonomyReference}\"]"),
+                    MetaobjectField("pattern_taxonomy_reference", "gid://shopify/TaxonomyValue/2874"),
+                    media?.let { MetaobjectField("image", it[index].id) }
                 )
             )
+            metaobjectClient.create(metaobject)
 
             val index = productOption.optionValues.indexOfFirst { it.name == variantOption.value }
             TODO("Functionality broken")

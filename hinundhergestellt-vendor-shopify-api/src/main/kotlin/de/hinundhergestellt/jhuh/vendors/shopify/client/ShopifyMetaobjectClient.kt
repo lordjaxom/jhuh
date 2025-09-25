@@ -59,7 +59,7 @@ class ShopifyMetaobjectClient(
         return payload?.toShopifyMetaobjectDefinition()
     }
 
-    suspend fun create(metaobject: UnsavedShopifyMetaobject): ShopifyMetaobject {
+    suspend fun create(metaobject: ShopifyMetaobject) {
         val request = buildMutation {
             metaobjectCreate(metaobject.toMetaobjectCreateInput()) {
                 metaobject { id }
@@ -68,7 +68,7 @@ class ShopifyMetaobjectClient(
         }
 
         val payload = shopifyGraphQLClient.executeMutation(request, MetaobjectCreatePayload::userErrors)
-        return ShopifyMetaobject(metaobject, payload.metaobject!!.id)
+        metaobject.internalId = payload.metaobject!!.id
     }
 
     suspend fun update(metaobject: ShopifyMetaobject) {
