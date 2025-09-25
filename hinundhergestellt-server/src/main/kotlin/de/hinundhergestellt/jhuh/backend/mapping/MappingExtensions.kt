@@ -1,5 +1,6 @@
 package de.hinundhergestellt.jhuh.backend.mapping
 
+import java.math.BigDecimal
 import kotlin.reflect.KMutableProperty0
 
 internal enum class ChangeField(
@@ -12,12 +13,14 @@ internal enum class ChangeField(
     PRODUCT_TYPE("Produktart", true, "productType", "type"),
     PRODUCT_DESCRIPTION("Produktbeschreibung", false, "descriptionHtml"),
     PRODUCT_TAGS("Tags", true, "tags"),
-    PRODUCT_TECHNICAL_DETAILS("Technische Daten", false),
+    PRODUCT_TECHNICAL_DETAILS("Technische Daten", false, "technical_details"),
+    PRODUCT_VENDOR_ADDRESS("Herstelleradresse", false, "vendor_address"),
+    PRODUCT_VENDOR_EMAIL("Hersteller-Email", false, "vendor_email"),
     PRODUCT_OPTION_NAME("Optionsname", true, "optionName"),
     VARIANT_BARCODE("Barcode", true, "barcode"),
     VARIANT_SKU("Artikelnummer", true, "sku"),
     VARIANT_PRICE("Preis", true, "price"),
-    VARIANT_WEIGHT("Gewicht", true),
+    VARIANT_WEIGHT("Gewicht", true, "weight"),
     OPTION_VALUE("Option %1\$s", true);
 
     companion object {
@@ -41,13 +44,10 @@ internal fun <T> change(getter: () -> T, setter: (T) -> Unit, newValue: T, field
         ?.let { Change<Any?>(it) { setter(newValue) } }
 
 internal fun <T> changeMessage(oldValue: T, newValue: T, field: ChangeField, vararg args: Any) =
-    if (oldValue != newValue) changeMessage(field, oldValue, newValue, *args) else null
+    if (!oldValue.isEqualTo(newValue)) changeMessage(field, oldValue, newValue, *args) else null
 
 internal fun <T> changeMessage(oldValue: T, newValue: T, fieldName: String, vararg args: Any) =
     changeMessage(oldValue, newValue, ChangeField.fromFieldName(fieldName), *args)
-
-internal fun <T> addition(value: T, field: ChangeField, vararg args: Any) =
-    "${field.displayName.format(*args)}${if (field.showChange) " ${value.toQuotedString()}" else ""} hinzugefügt"
 
 private fun <T> changeMessage(field: ChangeField, oldValue: T, newValue: T, vararg args: Any) =
     field.displayName.format(*args) +
@@ -65,4 +65,10 @@ private fun Any?.isNullOrEmpty() = when {
     this is String -> isEmpty()
     this is Collection<*> -> isEmpty()
     else -> false
+}
+
+private fun <T> T.isEqualTo(other: T) = when {
+    other == null -> this == null
+    this is BigDecimal -> compareTo(other as BigDecimal) == 0
+    else -> this == other
 }

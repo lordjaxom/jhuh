@@ -6,8 +6,6 @@ import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategoryRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariant
 import de.hinundhergestellt.jhuh.tools.ArtooImageTools
-import de.hinundhergestellt.jhuh.tools.SyncImageTools
-import de.hinundhergestellt.jhuh.tools.syncImageProductName
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedCategory
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
@@ -60,7 +58,6 @@ class MappingService(
         mutableListOf(
             metafield("vendor_address", syncProduct.vendor!!.address!!, ShopifyMetafieldType.MULTI_LINE_TEXT_FIELD),
             metafield("vendor_email", syncProduct.vendor!!.email!!, ShopifyMetafieldType.SINGLE_LINE_TEXT_FIELD),
-            metafield("product_specs", technicalDetails(syncProduct), ShopifyMetafieldType.MULTI_LINE_TEXT_FIELD),
             metafield("technical_details", technicalDetailsJson(syncProduct), ShopifyMetafieldType.JSON)
         )
 
@@ -102,7 +99,7 @@ class MappingService(
         if (!artoo.hasOnlyDefaultVariant && sync.optionName == null) add(MappingProblem("Optionsname für Varianten fehlt", true))
 
         if (artooImageTools.findProductImages(artoo).isEmpty())
-            add(MappingProblem("Keine Produktbilder vorhanden", false))
+            add(MappingProblem("Keine Produktbilder vorhanden", true))
     }
 
     fun checkForProblems(artoo: ArtooMappedVariation, sync: SyncVariant) = buildList {
@@ -117,16 +114,8 @@ class MappingService(
         else if (!sync.hasValidWeight()) add(MappingProblem("Gewichtsangabe ungültig (0,5g oder >= 30g)", true))
 
         if (artoo.itemNumber == null || artooImageTools.findVariantImages(artoo.parent).none { it.variantSku == artoo.itemNumber })
-            add(MappingProblem("Kein Variantenbild vorhanden", false)) // TODO: true if linkedMetaField used
+            add(MappingProblem("Kein Variantenbild vorhanden", true))
     }
-
-    private fun technicalDetails(syncProduct: SyncProduct) =
-        syncProduct.technicalDetails.joinToString(
-            separator = "",
-            prefix = "<table>",
-            postfix = "</table>",
-            transform = { "<tr><th>${it.name}</th><td>${it.value}</td></tr>" }
-        )
 
     private fun technicalDetailsJson(syncProduct: SyncProduct) =
         objectMapper.writeValueAsString(syncProduct.technicalDetails.associate { it.name to it.value })

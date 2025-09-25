@@ -1,10 +1,9 @@
 package de.hinundhergestellt.jhuh.usecases.shopify
 
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
-import de.hinundhergestellt.jhuh.backend.mapping.ChangeField
 import de.hinundhergestellt.jhuh.backend.mapping.MappingService
-import de.hinundhergestellt.jhuh.backend.mapping.addition
 import de.hinundhergestellt.jhuh.backend.mapping.change
+import de.hinundhergestellt.jhuh.backend.mapping.changeMessage
 import de.hinundhergestellt.jhuh.backend.shoptexter.ShopTexterService
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProductRepository
@@ -172,7 +171,7 @@ class ShopifySynchronizationService(
             prepareUpdateVariantProperty(shopifyProduct, shopifyVariant, shopifyVariant::barcode, artooVariation.barcode!!),
             prepareUpdateVariantProperty(shopifyProduct, shopifyVariant, shopifyVariant::sku, artooVariation.itemNumber ?: ""),
             prepareUpdateVariantProperty(shopifyProduct, shopifyVariant, shopifyVariant::price, artooVariation.price),
-            prepareUpdateVariantWeight(shopifyProduct, shopifyVariant, syncVariant),
+            prepareUpdateVariantProperty(shopifyProduct, shopifyVariant, shopifyVariant::weight, syncVariant.weight!!),
 //            prepareUpdateVariantOptionValue(shopifyProduct, shopifyVariant, artooVariation)
         )
     }
@@ -185,45 +184,26 @@ class ShopifySynchronizationService(
         }
     }
 
-    private fun <T> prepareUpdateProductProperty(
-        shopifyProduct: ShopifyProduct,
-        property: KMutableProperty0<T>,
-        newValue: T
-    ) = change(property, newValue)?.let { UpdateProductItem(shopifyProduct, it.message, it.action) }
+    private fun <T> prepareUpdateProductProperty(product: ShopifyProduct, property: KMutableProperty0<T>, newValue: T) =
+        change(property, newValue)?.let { UpdateProductItem(product, it.message, it.action) }
 
-    private fun prepareUpdateProductMetafield(
-        shopifyProduct: ShopifyProduct,
-        newMetafield: ShopifyMetafield
-    ): UpdateProductItem? {
-        val oldMetafield = shopifyProduct.metafields.findById(newMetafield)
-        return if (oldMetafield == null) {
-            UpdateProductItem(shopifyProduct, addition(newMetafield.value, ChangeField.PRODUCT_TECHNICAL_DETAILS)) {
-                shopifyProduct.metafields.add(newMetafield)
+    private fun prepareUpdateProductMetafield(product: ShopifyProduct, newField: ShopifyMetafield) =
+        product.metafields.findById(newField).let { oldField ->
+            changeMessage(oldField?.value, newField.value, newField.key)?.let {
+                UpdateProductItem(product, it) {
+                    if (oldField != null) oldField.value = newField.value
+                    else product.metafields.add(newField)
+                }
             }
-        } else {
-            change(oldMetafield::value, newMetafield.value, ChangeField.PRODUCT_TECHNICAL_DETAILS)
-                ?.let { UpdateProductItem(shopifyProduct, it.message, it.action) }
         }
-    }
 
     private fun <T> prepareUpdateVariantProperty(
         product: ShopifyProduct,
         variant: ShopifyProductVariant,
         property: KMutableProperty0<T>,
         newValue: T
-    ) = change(property, newValue)?.let { UpdateVariantItem(product, variant, it.message, it.action) }
+    ) = changeMessage(property.get(), newValue, property.name)?.let { UpdateVariantItem(product, variant, it) { property.set(newValue) } }
 
-    private fun prepareUpdateVariantWeight(
-        product: ShopifyProduct,
-        variant: ShopifyProductVariant,
-        syncVariant: SyncVariant
-    ) = change(
-        { variant.weight },
-        { variant.weight = it },
-        syncVariant.weight!!,
-        ChangeField.VARIANT_WEIGHT
-    )?.let { UpdateVariantItem(product, variant, it.message, it.action) }
-//
 //    private fun prepareUpdateVariantOptionValue(
 //        product: ShopifyProduct,
 //        variant: ShopifyProductVariant,
