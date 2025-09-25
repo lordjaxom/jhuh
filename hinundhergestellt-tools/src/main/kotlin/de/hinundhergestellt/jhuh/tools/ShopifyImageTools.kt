@@ -3,6 +3,7 @@ package de.hinundhergestellt.jhuh.tools
 import arrow.atomic.AtomicInt
 import de.hinundhergestellt.jhuh.HuhProperties
 import de.hinundhergestellt.jhuh.core.mapIndexedParallel
+import de.hinundhergestellt.jhuh.core.mapParallel
 import de.hinundhergestellt.jhuh.vendors.shopify.client.LinkedMetafield
 import de.hinundhergestellt.jhuh.vendors.shopify.client.MetaobjectField
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMedia
@@ -64,8 +65,7 @@ class ShopifyImageTools(
     suspend fun generateColorSwatches(
         product: ShopifyProduct,
         variants: Collection<UnsavedShopifyProductVariant>,
-        swatchHandle: String,
-        colorRect: RectPct = RectPct.EVERYTHING,
+        colorRect: RectPct = RectPct.CENTER_20,
         swatchRect: RectPct? = null,
         ignoreWhite: Boolean = false
     ) {
@@ -73,28 +73,37 @@ class ShopifyImageTools(
 
         val option = product.options.findByLinkedMetafield("shopify", "color-pattern") ?: return
 
-        val variantsSkus = variants.map { it.sku }
-        syncImageTools.findVariantImages(product.syncImageProductName, variantsSkus)
-            .forEach /*Parallel(properties.processingThreads)*/ { image ->
-                val variant = variants.first { it.sku == image.variantSku }
-                val color = MediaImageTools.averageColorPercent(image.path, colorRect, ignoreWhite)
-                val taxonomy = colorTaxonomy.findByColor(color)
+        val swatchHandlePrefix = metaobjectClient.fetchDefinitionByType("shopify--color-pattern")!!
+            .metaobjects.asSequence()
+            .filter { metaobject -> option.optionValues.any { it.linkedMetafieldValue == metaobject.id } }
+            .map { it.handle }
+            .zipWithNext()
+            .map { (current, next) -> current.commonPrefixWith(next) }
+            .minByOrNull { it.length }
+            ?.takeIf { it.isNotEmpty() }
+            ?: "${generateColorSwatchHandle(product.syncImageProductName)}-"
 
-                val optionValue = variant.options.first { it.name == option.name }
-                val metaobject = metaobjectClient.create(
-                    UnsavedShopifyMetaobject(
-                        "shopify--color-pattern",
-                        "$swatchHandle-${generateColorSwatchHandle(optionValue.value)}",
-                        listOf(
-                            MetaobjectField("label", optionValue.value),
-                            MetaobjectField("color", color.toHex()),
-                            MetaobjectField("color_taxonomy_reference", "[\"${taxonomy}\"]"),
-                            MetaobjectField("pattern_taxonomy_reference", "gid://shopify/TaxonomyValue/2874")
-                        )
+        val imagesWithColor = syncImageTools.findVariantImages(product.syncImageProductName, variants.map { it.sku })
+            .mapParallel(properties.processingThreads) { it to MediaImageTools.averageColorPercent(it.path, colorRect, ignoreWhite) }
+
+        imagesWithColor.forEach { (image, color) ->
+            val variant = variants.first { it.sku == image.variantSku }
+            val optionValue = variant.options.first { it.name == option.name }
+            val taxonomy = colorTaxonomy.findByColor(color)
+            val metaobject = metaobjectClient.create(
+                UnsavedShopifyMetaobject(
+                    "shopify--color-pattern",
+                    "$swatchHandlePrefix${generateColorSwatchHandle(optionValue.value)}",
+                    listOf(
+                        MetaobjectField("label", optionValue.value),
+                        MetaobjectField("color", color.toHex()),
+                        MetaobjectField("color_taxonomy_reference", "[\"${taxonomy}\"]"),
+                        MetaobjectField("pattern_taxonomy_reference", "gid://shopify/TaxonomyValue/2874")
                     )
                 )
-                optionValue.linkedMetafieldValue = metaobject.id
-            }
+            )
+            optionValue.linkedMetafieldValue = metaobject.id
+        }
     }
 
     suspend fun reorganizeProductImages(product: ShopifyProduct) { // TODO: Move to SyncImageTools
