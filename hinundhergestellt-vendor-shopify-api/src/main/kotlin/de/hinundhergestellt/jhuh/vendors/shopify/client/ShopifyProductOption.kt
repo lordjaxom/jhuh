@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalContracts::class)
-
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.client.ProductProjection
@@ -9,7 +7,6 @@ import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.LinkedMetafieldUp
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.OptionCreateInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.OptionUpdateInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductOption
-import kotlin.contracts.ExperimentalContracts
 
 class ShopifyProductOption private constructor(
     internal var internalId: String?,
@@ -37,7 +34,7 @@ class ShopifyProductOption private constructor(
     )
 
     override fun toString() =
-        "ShopifyProductOption(id='$id', name='$name', isLinkedMetafield=$isLinkedMetafield, values=$values)"
+        "ShopifyProductOption(id='$internalId', name='$name', isLinkedMetafield=$isLinkedMetafield, values=$values)"
 
     internal fun toOptionCreateInput(): OptionCreateInput {
         require(internalId == null) { "Cannot recreate existing product option" }

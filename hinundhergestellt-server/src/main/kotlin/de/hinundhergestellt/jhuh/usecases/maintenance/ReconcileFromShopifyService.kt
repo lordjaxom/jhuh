@@ -138,9 +138,8 @@ class ReconcileFromShopifyService(
         }
         require(syncVariant.product.id == syncProduct.id) { "SyncVariant.product does not match ShopifyVariant.product" }
 
-        require(variant.weight.unit == WeightUnit.GRAMS) { "Only GRAMS are supported at this time" }
-        val loadedWeight = variant.weight.value
-        if (syncVariant.weight == null || loadedWeight.compareTo(syncVariant.weight) != 0) {
+        val loadedWeight = variant.weight
+        if (syncVariant.weight?.let { it.compareTo(loadedWeight) == 0 } != false) {
             add(
                 UpdateSyncVariantItem(
                     syncVariant, "${product.title} (${variant.title})",

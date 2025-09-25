@@ -15,7 +15,6 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOptionClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantClient
-import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.findByLinkedMetafield
 import de.hinundhergestellt.jhuh.vendors.shopify.client.variantSkus
 import de.hinundhergestellt.jhuh.vendors.shopify.taxonomy.ShopifyColorTaxonomy
@@ -58,7 +57,7 @@ class ShopifyImageTools(
         // TODO: Add medias to product
     }
 
-    suspend fun uploadVariantImages(product: ShopifyProduct, variants: Collection<UnsavedShopifyProductVariant>) {
+    suspend fun uploadVariantImages(product: ShopifyProduct, variants: Collection<ShopifyProductVariant>) {
         val imagesToUpload = syncImageTools.findVariantImages(product.syncImageProductName, variants.map { it.sku })
         if (imagesToUpload.isEmpty()) return
 
@@ -74,7 +73,7 @@ class ShopifyImageTools(
 
     suspend fun generateColorSwatches(
         product: ShopifyProduct,
-        variants: Collection<UnsavedShopifyProductVariant>,
+        variants: Collection<ShopifyProductVariant>,
         colorRect: RectPct = RectPct.CENTER_20,
         swatchRect: RectPct? = null,
         ignoreWhite: Boolean = false
@@ -297,9 +296,6 @@ class ShopifyImageTools(
     private fun generateAltText(product: ShopifyProduct, variant: ShopifyProductVariant? = null) =
         "${product.title} ${variant?.let { "in ${product.options[0].name} ${it.options[0].value}" } ?: "Produktbild"}"
 
-    private fun generateAltText(product: ShopifyProduct, variant: UnsavedShopifyProductVariant?) =
-        "${product.title} ${variant?.let { "in ${product.options[0].name} ${it.options[0].value}" } ?: "Produktbild"}"
-
     private class NormalizedImage(
         val imagePath: Path,
         val variant: ShopifyProductVariant?,
@@ -320,11 +316,8 @@ val ShopifyProduct.syncImageProductName get() = title.syncImageProductName
 fun String.isValidSyncImageFor(product: ShopifyProduct) =
     isValidSyncImageFor(product.syncImageProductName, product.variantSkus)
 
-fun String.isValidSyncImageFor(product: ShopifyProduct, variant: UnsavedShopifyProductVariant) =
+fun String.isValidSyncImageFor(product: ShopifyProduct, variant: ShopifyProductVariant) =
     isValidSyncImageFor(product.syncImageProductName, variant.sku)
-
-fun Path.isValidSyncImageFor(product: ShopifyProduct, variant: UnsavedShopifyProductVariant) =
-    fileName.toString().isValidSyncImageFor(product, variant)
 
 private val UMLAUT_REPLACEMENTS = listOf(
     """[Ää]+""".toRegex() to "ae",

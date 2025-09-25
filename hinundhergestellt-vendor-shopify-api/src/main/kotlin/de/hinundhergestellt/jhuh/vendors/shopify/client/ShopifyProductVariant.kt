@@ -1,169 +1,106 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
-import de.hinundhergestellt.jhuh.core.DirtyTracker
-import de.hinundhergestellt.jhuh.core.HasDirtyTracker
 import de.hinundhergestellt.jhuh.core.fixedScale
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.InventoryItemInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.InventoryItemMeasurementInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.InventoryLevelInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductVariantsBulkInput
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.Weight
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightInput
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightUnit
 import java.math.BigDecimal
 
-private interface ShopifyProductVariantCommonFields {
-
-    var sku: String
-    var barcode: String
-    var price: BigDecimal
-    var weight: ShopifyWeight
-    var mediaId: String?
-
-    val options: List<ShopifyProductOptionValue>
-}
-
-internal class BaseShopifyProductVariant(
-    override var sku: String,
-    override var barcode: String,
+class ShopifyProductVariant private constructor(
+    internal var internalId: String?,
+    internal var internalTitle: String?,
+    var sku: String,
+    var barcode: String,
     price: BigDecimal,
-    override var weight: ShopifyWeight,
-    override var mediaId: String?,
-    override val options: List<ShopifyProductOptionValue>
-) : ShopifyProductVariantCommonFields {
-
-    override var price by fixedScale(price, 2)
-
-    internal constructor(variant: ProductVariant) : this(
-        variant.sku ?: "",
-        variant.barcode!!,
-        BigDecimal(variant.price),
-        ShopifyWeight(variant.inventoryItem.measurement.weight!!),
-        variant.media.edges.firstOrNull()?.node?.id,
-        variant.selectedOptions.map { ShopifyProductOptionValue(it) }
-    )
-
-    internal fun toInventoryItemInput() =
-        InventoryItemInput(
-            sku = sku,
-            tracked = true,
-            measurement = toInventoryItemMeasurementInput()
-        )
-
-    private fun toInventoryItemMeasurementInput() =
-        InventoryItemMeasurementInput(weight.toWeightInput())
-}
-
-class UnsavedShopifyProductVariant private constructor(
-    internal val base: BaseShopifyProductVariant,
-    val inventoryLocationId: String,
-    val inventoryQuantity: Int
-) : ShopifyProductVariantCommonFields by base {
+    weight: BigDecimal,
+    val inventoryQuantity: Int, // must not be mutated after creation
+    var mediaId: String?,
+    val options: List<ShopifyProductOptionValue>
+) {
+    val id get() = internalId!!
+    val title get() = internalTitle ?: options.variantTitle
+    var price by fixedScale(price, 2)
+    var weight by fixedScale(weight, 2)
 
     constructor(
         sku: String,
         barcode: String,
         price: BigDecimal,
-        weight: ShopifyWeight,
-        inventoryLocationId: String,
+        weight: BigDecimal,
         inventoryQuantity: Int,
         options: List<ShopifyProductOptionValue>
     ) : this(
-        BaseShopifyProductVariant(
-            sku,
-            barcode,
-            price,
-            weight,
-            null,
-            options
-        ),
-        inventoryLocationId,
-        inventoryQuantity
+        internalId = null,
+        internalTitle = null,
+        sku = sku,
+        barcode = barcode,
+        price = price,
+        weight = weight,
+        inventoryQuantity = inventoryQuantity,
+        mediaId = null,
+        options = options
+    )
+
+    internal constructor(variant: ProductVariant) : this(
+        variant.id,
+        variant.title,
+        variant.sku ?: "",
+        variant.barcode!!,
+        BigDecimal(variant.price),
+        variant.inventoryItem.measurement.weight!!.toGrams(),
+        variant.inventoryQuantity!!,
+        variant.media.edges.firstOrNull()?.node?.id,
+        variant.selectedOptions.map { ShopifyProductOptionValue(it) }
     )
 
     override fun toString() =
-        "UnsavedShopifyProductVariant(sku='$sku', barcode='$barcode', price=$price)"
+        "ShopifyProductVariant(id='$internalId', title='$title', sku='$sku', barcode='$barcode', price=$price)"
 
-    internal fun toProductVariantsBulkInput() =
-        ProductVariantsBulkInput(
+    internal fun toProductVariantsCreateBulkInput(inventoryLocationId: String): ProductVariantsBulkInput {
+        require(internalId == null) { "Cannot recreate existing product variant" }
+        return ProductVariantsBulkInput(
             barcode = barcode,
             price = price.toPlainString(),
             optionValues = options.map { it.toVariantOptionValueInput() },
-            inventoryItem = base.toInventoryItemInput(),
-            inventoryQuantities = listOf(toInventoryLevelInput()),
+            inventoryItem = toInventoryItemInput(),
+            inventoryQuantities = listOf(
+                InventoryLevelInput(
+                    locationId = inventoryLocationId,
+                    availableQuantity = inventoryQuantity
+                )
+            ),
             mediaId = mediaId
         )
-
-    private fun toInventoryLevelInput() =
-        InventoryLevelInput(
-            locationId = inventoryLocationId,
-            availableQuantity = inventoryQuantity
-        )
-}
-
-class ShopifyProductVariant private constructor(
-    private val base: BaseShopifyProductVariant,
-    val id: String,
-    val title: String,
-    val inventoryQuantity: Int? = null
-) : ShopifyProductVariantCommonFields, HasDirtyTracker {
-
-    override val dirtyTracker = DirtyTracker()
-
-    override var sku by dirtyTracker.track(base::sku)
-    override var barcode by dirtyTracker.track(base::barcode)
-    override var price by dirtyTracker.track(base::price)
-    override var weight by dirtyTracker.track(base::weight)
-    override var mediaId by dirtyTracker.track(base::mediaId)
-
-    override val options by dirtyTracker.track(base.options)
-
-    internal constructor(variant: ProductVariant) : this(
-        BaseShopifyProductVariant(variant),
-        variant.id,
-        variant.title,
-        variant.inventoryQuantity
-    ) {
-        require(!variant.media.pageInfo.hasNextPage) { "ProductVariant has more media than is supported" }
     }
 
-    internal constructor(unsaved: UnsavedShopifyProductVariant, id: String, title: String) : this(
-        unsaved.base,
-        id,
-        title,
-        null
-    )
-
-    internal constructor(
-        id: String,
-        title: String,
-        sku: String,
-        barcode: String,
-        price: BigDecimal,
-        weight: ShopifyWeight,
-        options: List<ShopifyProductOptionValue>,
-        mediaId: String?
-    ) : this(
-        BaseShopifyProductVariant(
-            sku,
-            barcode,
-            price,
-            weight,
-            mediaId,
-            options
-        ),
-        id,
-        title
-    )
-
-    override fun toString() =
-        "ShopifyProductVariant(id='$id', title='$title', sku='$sku', barcode='$barcode', price=$price)"
-
-    internal fun toProductVariantsBulkInput() =
+    internal fun toProductVariantsUpdateBulkInput() =
         ProductVariantsBulkInput(
             id = id,
             barcode = barcode,
             price = price.toPlainString(),
             optionValues = options.map { it.toVariantOptionValueInput() },
-            inventoryItem = base.toInventoryItemInput(),
+            inventoryItem = toInventoryItemInput(),
             mediaId = mediaId
         )
+
+    private fun toInventoryItemInput() =
+        InventoryItemInput(
+            sku = sku,
+            tracked = true,
+            measurement = InventoryItemMeasurementInput(
+                weight = WeightInput(weight, WeightUnit.GRAMS)
+            )
+        )
+}
+
+private fun Weight.toGrams() = when (unit) {
+    WeightUnit.KILOGRAMS -> value.multiply(BigDecimal(1000))
+    WeightUnit.GRAMS -> value
+    WeightUnit.POUNDS -> value.multiply(BigDecimal("453.592"))
+    WeightUnit.OUNCES -> value.multiply(BigDecimal("28.3495"))
 }

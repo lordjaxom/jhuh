@@ -15,7 +15,6 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOptionClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantClient
-import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyWeight
 import de.hinundhergestellt.jhuh.vendors.shopify.client.findById
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightUnit
 import kotlinx.coroutines.flow.filter
@@ -202,21 +201,11 @@ class ShopifyProductsFixITCase {
         val products = productClient.fetchAll().toList()
         products.forEach { product ->
             product.variants.forEach { variant ->
-                if (variant.weight.value.compareTo(BigDecimal.ZERO) == 0) {
+                if (variant.weight.compareTo(BigDecimal.ZERO) == 0) {
                     println("${product.title} - ${variant.title}")
                 }
             }
         }
-    }
-
-    @Test
-    fun assignWeightToProducts() = runBlocking {
-        productClient.fetchAll()
-            .filter { it.title.startsWith("Ricorumi Nilli Nilli") }
-            .collect { product ->
-                product.variants.forEach { it.weight = ShopifyWeight(WeightUnit.GRAMS, BigDecimal("25.0")) }
-                variantClient.update(product, product.variants)
-            }
     }
 
     @Test

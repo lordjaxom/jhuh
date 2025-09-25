@@ -19,7 +19,6 @@ import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedVariat
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafield
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
-import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyWeight
 import de.hinundhergestellt.jhuh.vendors.shopify.client.findById
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -219,8 +218,8 @@ class ShopifySynchronizationService(
         variant: ShopifyProductVariant,
         syncVariant: SyncVariant
     ) = change(
-        { variant.weight.value },
-        { variant.weight = ShopifyWeight(variant.weight.unit, it) },
+        { variant.weight },
+        { variant.weight = it },
         syncVariant.weight!!,
         ChangeField.VARIANT_WEIGHT
     )?.let { UpdateVariantItem(product, variant, it.message, it.action) }
@@ -264,12 +263,12 @@ class ShopifySynchronizationService(
         shopifyImageTools.uploadVariantImages(product, variants)
         shopifyImageTools.generateColorSwatches(product, variants, RectPct.CENTER_20)
 
-        val created = shopifyDataStore.create(product, variants)
+        shopifyDataStore.create(product, variants)
         // TODO: readonly
         transactionOperations.execute {
-            created.asSequence().zip(items.asSequence()).forEach { (variant, item) ->
-                syncVariantRepository.update(item.sync.id) { shopifyId = variant.id }
-            }
+            variants.asSequence()
+                .zip(items.asSequence())
+                .forEach { (variant, item) -> syncVariantRepository.update(item.sync.id) { shopifyId = variant.id } }
         }
     }
 

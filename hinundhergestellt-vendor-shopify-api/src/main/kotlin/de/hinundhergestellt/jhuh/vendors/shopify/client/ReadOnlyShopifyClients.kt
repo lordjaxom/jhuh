@@ -49,8 +49,8 @@ class ReadOnlyShopifyClients(
     @Bean
     fun shopifyProductVariantClient() =
         object : ShopifyProductVariantClient(shopifyGraphQLClient) {
-            override suspend fun create(product: ShopifyProduct, variants: Collection<UnsavedShopifyProductVariant>) =
-                variants.map { it.toDryRunShopifyProductVariant() }
+            override suspend fun create(product: ShopifyProduct, variants: Collection<ShopifyProductVariant>, locationId: String) =
+                variants.forEach { it.internalId = "uid://${UUID.randomUUID()}" }
 
             override suspend fun update(product: ShopifyProduct, variants: Collection<ShopifyProductVariant>) {}
             override suspend fun delete(product: ShopifyProduct, variants: Collection<ShopifyProductVariant>) {}
@@ -63,13 +63,6 @@ private fun UnsavedShopifyProduct.toDryRunShopifyProduct() =
     ShopifyProduct(
         this,
         "uid://${UUID.randomUUID()}"
-    )
-
-private fun UnsavedShopifyProductVariant.toDryRunShopifyProductVariant() =
-    ShopifyProductVariant(
-        this,
-        "uid://${UUID.randomUUID()}",
-        options.firstOrNull()?.value ?: "Default Title"
     )
 
 private fun Path.toDryRunShopifyMedia() =

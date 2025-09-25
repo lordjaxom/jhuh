@@ -39,7 +39,7 @@ class ShopifyProductOptionValue private constructor(
     )
 
     override fun toString() =
-        "ShopifyProductOptionValue(id='$id', name='$name', value='$value', isLinkedMetafieldValue=$isLinkedMetafieldValue)"
+        "ShopifyProductOptionValue(id='$internalId', name='$name', value='$value', isLinkedMetafieldValue=$isLinkedMetafieldValue)"
 
     internal fun toOptionValueCreateInput(): OptionValueCreateInput {
         require(internalId == null) { "Cannot recreate existing product option value" }
@@ -54,3 +54,5 @@ class ShopifyProductOptionValue private constructor(
     internal fun toVariantOptionValueInput() =
         VariantOptionValueInput(id = id, optionName = name)
 }
+
+internal val Iterable<ShopifyProductOptionValue>.variantTitle get() = joinToString(" / ") { it.value }.ifEmpty { "Default Title" }

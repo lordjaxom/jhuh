@@ -6,11 +6,9 @@ import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariant
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedVariation
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOptionValue
-import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyWeight
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProduct
-import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
-import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightUnit
 import org.springframework.stereotype.Component
 
 @Component
@@ -30,12 +28,11 @@ class ShopifyMapper(
         )
 
     fun map(sync: SyncVariant, artoo: ArtooMappedVariation) =
-        UnsavedShopifyProductVariant(
+        ShopifyProductVariant(
             artoo.itemNumber!!,
             artoo.barcode!!,
             artoo.price,
-            ShopifyWeight(WeightUnit.GRAMS, sync.weight!!),
-            shopifyDataStore.location.id,
+            sync.weight!!,
             artoo.stockValue.intValueExact(),
             listOfNotNull(
                 if (artoo.parent.hasOnlyDefaultVariant) null

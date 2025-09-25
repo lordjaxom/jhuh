@@ -29,7 +29,7 @@ class ShopifyMetaobject private constructor(
     )
 
     override fun toString(): String {
-        return "ShopifyMetaobject(id='$id', handle='$handle', type='$type')"
+        return "ShopifyMetaobject(id='$internalId', handle='$handle', type='$type')"
     }
 
     internal fun toMetaobjectCreateInput(): MetaobjectCreateInput {

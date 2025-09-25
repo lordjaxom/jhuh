@@ -8,7 +8,6 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOptionClie
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProduct
-import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProductVariant
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.sync.Mutex
@@ -67,7 +66,7 @@ class ShopifyDataStore(
         products.remove(product)
     }
 
-    suspend fun create(product: ShopifyProduct, variants: Collection<UnsavedShopifyProductVariant>): List<ShopifyProductVariant> {
+    suspend fun create(product: ShopifyProduct, variants: Collection<ShopifyProductVariant>) {
         requireLock()
 
         product.options.forEach { option ->
@@ -76,9 +75,8 @@ class ShopifyDataStore(
             option.optionValues += valuesToAdd
         }
 
-        val created = variantClient.create(product, variants)
-        product.variants += created
-        return created
+        variantClient.create(product, variants, location.id)
+        product.variants += variants
     }
 
     suspend fun update(product: ShopifyProduct, variants: Collection<ShopifyProductVariant>) {

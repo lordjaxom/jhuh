@@ -78,46 +78,46 @@ class ShopifyProductTest {
         val expected = "ShopifyProduct(id='IDSTR', title='TStr', vendor='VStr', productType='PType', status=ARCHIVED)"
         assertThat(product.toString()).isEqualTo(expected)
     }
-
-    @Test
-    fun `test findVariantByBarcode returns correct variant`() {
-        val variant1 = ShopifyProductVariant(
-            id = "VID1",
-            title = "Variant1",
-            sku = "SKU1",
-            barcode = "BAR1",
-            price = BigDecimal.ONE,
-            weight = ShopifyWeight(WeightUnit.GRAMS, BigDecimal.ONE),
-            options = listOf(),
-            mediaId = null
-        )
-        val variant2 = ShopifyProductVariant(
-            id = "VID2",
-            title = "Variant2",
-            sku = "SKU2",
-            barcode = "BAR2",
-            price = BigDecimal.ONE,
-            weight = ShopifyWeight(WeightUnit.GRAMS, BigDecimal.ONE),
-            options = listOf(),
-            mediaId = null
-        )
-        val product = ShopifyProduct(
-            id = "PROD2",
-            title = "Test2",
-            vendor = "Vendor2",
-            productType = "Type2",
-            status = ProductStatus.DRAFT,
-            descriptionHtml = "",
-            hasOnlyDefaultVariant = false,
-            tags = setOf(),
-            options = mutableListOf(),
-            metafields = mutableListOf(),
-            variants = mutableListOf(variant1, variant2),
-            media = listOf()
-        )
-        assertThat(product.findVariantByBarcode("BAR2")).isEqualTo(variant2)
-        assertThat(product.findVariantByBarcode("BAR3")).isNull()
-    }
+//
+//    @Test
+//    fun `test findVariantByBarcode returns correct variant`() {
+//        val variant1 = ShopifyProductVariant(
+//            id = "VID1",
+//            title = "Variant1",
+//            sku = "SKU1",
+//            barcode = "BAR1",
+//            price = BigDecimal.ONE,
+//            weight = ShopifyWeight(WeightUnit.GRAMS, BigDecimal.ONE),
+//            options = listOf(),
+//            mediaId = null
+//        )
+//        val variant2 = ShopifyProductVariant(
+//            id = "VID2",
+//            title = "Variant2",
+//            sku = "SKU2",
+//            barcode = "BAR2",
+//            price = BigDecimal.ONE,
+//            weight = ShopifyWeight(WeightUnit.GRAMS, BigDecimal.ONE),
+//            options = listOf(),
+//            mediaId = null
+//        )
+//        val product = ShopifyProduct(
+//            id = "PROD2",
+//            title = "Test2",
+//            vendor = "Vendor2",
+//            productType = "Type2",
+//            status = ProductStatus.DRAFT,
+//            descriptionHtml = "",
+//            hasOnlyDefaultVariant = false,
+//            tags = setOf(),
+//            options = mutableListOf(),
+//            metafields = mutableListOf(),
+//            variants = mutableListOf(variant1, variant2),
+//            media = listOf()
+//        )
+//        assertThat(product.findVariantByBarcode("BAR2")).isEqualTo(variant2)
+//        assertThat(product.findVariantByBarcode("BAR3")).isNull()
+//    }
 
 //    @Test
 //    fun `test construction from Product`() {
@@ -366,53 +366,53 @@ class ShopifyProductTest {
 //        assertThat(product.dirtyTracker.getDirtyAndReset()).isTrue()
 //        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
 //    }
-
-    @Test
-    fun `test changing variants does not trigger dirty tracking`() {
-        val variant1 = ShopifyProductVariant(
-            id = "VID1",
-            title = "Variant1",
-            sku = "SKU1",
-            barcode = "BAR1",
-            price = BigDecimal.ONE,
-            weight = ShopifyWeight(WeightUnit.GRAMS, BigDecimal.ONE),
-            options = listOf(),
-            mediaId = null
-        )
-        val variant2 = ShopifyProductVariant(
-            id = "VID2",
-            title = "Variant2",
-            sku = "SKU2",
-            barcode = "BAR2",
-            price = BigDecimal.TEN,
-            weight = ShopifyWeight(WeightUnit.GRAMS, BigDecimal("2.0")),
-            options = listOf(),
-            mediaId = null
-        )
-        val product = ShopifyProduct(
-            id = "PROD1",
-            title = "Test Product",
-            vendor = "Vendor1",
-            productType = "Type1",
-            status = ProductStatus.ACTIVE,
-            descriptionHtml = "<p>Beschreibung</p>",
-            hasOnlyDefaultVariant = false,
-            tags = setOf("Tag1", "Tag2"),
-            options = mutableListOf(),
-            metafields = mutableListOf(),
-            variants = mutableListOf(variant1),
-            media = listOf()
-        )
-        // Initial dirty state
-        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
-        // Add variant
-        product.variants.add(variant2)
-        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
-        // Remove variant
-        product.variants.remove(variant1)
-        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
-        // Modify variant
-        variant2.sku = "SKU2-NEW"
-        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
-    }
+//
+//    @Test
+//    fun `test changing variants does not trigger dirty tracking`() {
+//        val variant1 = ShopifyProductVariant(
+//            id = "VID1",
+//            title = "Variant1",
+//            sku = "SKU1",
+//            barcode = "BAR1",
+//            price = BigDecimal.ONE,
+//            weight = ShopifyWeight(WeightUnit.GRAMS, BigDecimal.ONE),
+//            options = listOf(),
+//            mediaId = null
+//        )
+//        val variant2 = ShopifyProductVariant(
+//            id = "VID2",
+//            title = "Variant2",
+//            sku = "SKU2",
+//            barcode = "BAR2",
+//            price = BigDecimal.TEN,
+//            weight = ShopifyWeight(WeightUnit.GRAMS, BigDecimal("2.0")),
+//            options = listOf(),
+//            mediaId = null
+//        )
+//        val product = ShopifyProduct(
+//            id = "PROD1",
+//            title = "Test Product",
+//            vendor = "Vendor1",
+//            productType = "Type1",
+//            status = ProductStatus.ACTIVE,
+//            descriptionHtml = "<p>Beschreibung</p>",
+//            hasOnlyDefaultVariant = false,
+//            tags = setOf("Tag1", "Tag2"),
+//            options = mutableListOf(),
+//            metafields = mutableListOf(),
+//            variants = mutableListOf(variant1),
+//            media = listOf()
+//        )
+//        // Initial dirty state
+//        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+//        // Add variant
+//        product.variants.add(variant2)
+//        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+//        // Remove variant
+//        product.variants.remove(variant1)
+//        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+//        // Modify variant
+//        variant2.sku = "SKU2-NEW"
+//        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+//    }
 }

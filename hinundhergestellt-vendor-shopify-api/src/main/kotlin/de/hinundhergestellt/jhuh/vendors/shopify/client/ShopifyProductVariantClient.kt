@@ -14,14 +14,14 @@ import org.springframework.stereotype.Component
 class ShopifyProductVariantClient(
     private val shopifyGraphQLClient: WebClientGraphQLClient
 ) {
-    suspend fun create(product: ShopifyProduct, variants: Collection<UnsavedShopifyProductVariant>): List<ShopifyProductVariant> {
+    suspend fun create(product: ShopifyProduct, variants: Collection<ShopifyProductVariant>, locationId: String) {
         val strategy =
             if (product.variants.isEmpty()) ProductVariantsBulkCreateStrategy.REMOVE_STANDALONE_VARIANT
             else ProductVariantsBulkCreateStrategy.DEFAULT
         val request = buildMutation {
             productVariantsBulkCreate(
                 productId = product.id,
-                variants = variants.map { it.toProductVariantsBulkInput() },
+                variants = variants.map { it.toProductVariantsCreateBulkInput(locationId) },
                 strategy = strategy
             ) {
                 productVariants { id; title }
@@ -30,14 +30,14 @@ class ShopifyProductVariantClient(
         }
 
         val payload = shopifyGraphQLClient.executeMutation(request, ProductVariantsBulkCreatePayload::userErrors)
-        return variants
-            .zip(payload.productVariants!!)
-            .map { (variant, created) -> ShopifyProductVariant(variant, created.id, created.title) }
+        variants.asSequence()
+            .zip(payload.productVariants!!.asSequence())
+            .forEach { (variant, created) -> variant.internalId = created.id; variant.internalTitle = created.title }
     }
 
     suspend fun update(product: ShopifyProduct, variants: Collection<ShopifyProductVariant>) {
         val request = buildMutation {
-            productVariantsBulkUpdate(productId = product.id, variants = variants.map { it.toProductVariantsBulkInput() }) {
+            productVariantsBulkUpdate(productId = product.id, variants = variants.map { it.toProductVariantsUpdateBulkInput() }) {
                 userErrors { message; field }
             }
         }
