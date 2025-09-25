@@ -30,9 +30,7 @@ class ShopifyMetaobjectClient(
         val request = buildQuery {
             metaobjectDefinitions(first = 250) {
                 edges {
-                    node {
-                        type
-                    }
+                    node { type }
                 }
                 pageInfo { hasNextPage }
             }

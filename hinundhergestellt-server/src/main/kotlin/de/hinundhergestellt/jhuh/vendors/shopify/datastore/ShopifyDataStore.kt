@@ -72,7 +72,8 @@ class ShopifyDataStore(
 
         product.options.forEach { option ->
             val valuesToAdd = variants.mapNotNull { variant -> variant.options.firstOrNull { it.name == option.name && it.isNew } }
-            optionClient.addValues(product, option, valuesToAdd)
+            optionClient.createValues(product, option, valuesToAdd)
+            option.optionValues += valuesToAdd
         }
 
         val created = variantClient.create(product, variants)

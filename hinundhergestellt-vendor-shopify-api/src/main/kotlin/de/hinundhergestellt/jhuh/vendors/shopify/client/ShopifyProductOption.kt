@@ -2,6 +2,7 @@
 
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.client.ProductProjection
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.LinkedMetafield
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.LinkedMetafieldCreateInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.LinkedMetafieldUpdateInput
@@ -63,6 +64,13 @@ fun LinkedMetafield(namespace: String, key: String) =
         .withNamespace(namespace)
         .withKey(key)
         .build()
+
+internal fun ProductProjection.optionsForWrapper() =
+    options {
+        id; name
+        linkedMetafield { namespace; key }
+        optionValues { id; name; linkedMetafieldValue }
+    }
 
 internal fun LinkedMetafield.toLinkedMetafieldCreateInput() =
     LinkedMetafieldCreateInput(namespace!!, key!!)

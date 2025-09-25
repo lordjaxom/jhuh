@@ -79,12 +79,7 @@ class ShopifyProductClient(
                     node {
                         handle; id; title; vendor; productType; status; tags; hasOnlyDefaultVariant; descriptionHtml
                         variants()
-                        options {
-                            // TODO: consolidate with ShopifyProductOptionClient
-                            id; name
-                            linkedMetafield { namespace; key }
-                            optionValues { id; name; linkedMetafieldValue }
-                        }
+                        optionsForWrapper()
                         metafields(first = 50) {
                             edges {
                                 node { id; namespace; key; value; type }

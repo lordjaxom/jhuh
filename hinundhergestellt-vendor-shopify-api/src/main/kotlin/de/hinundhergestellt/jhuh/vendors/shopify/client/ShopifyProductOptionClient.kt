@@ -37,27 +37,20 @@ class ShopifyProductOptionClient(
         shopifyGraphQLClient.executeMutation(request, ProductOptionsDeletePayload::userErrors)
     }
 
-    suspend fun addValues(product: ShopifyProduct, option: ShopifyProductOption, values: List<ShopifyProductOptionValue>) {
+    suspend fun createValues(product: ShopifyProduct, option: ShopifyProductOption, values: List<ShopifyProductOptionValue>) {
         val request = buildMutation {
             productOptionUpdate(
                 productId = product.id,
                 option = OptionUpdateInput(option.id),
                 optionValuesToAdd = values.map { it.toOptionValueCreateInput() }
             ) {
-                product {
-                    options {
-                        // TODO: consolidate with ShopifyProductClient
-                        id; name
-                        linkedMetafield { namespace; key }
-                        optionValues { id; name; linkedMetafieldValue }
-                    }
-                }
+                product { optionsForWrapper() }
                 userErrors { message; field }
             }
         }
 
         val payload = shopifyGraphQLClient.executeMutation(request, ProductOptionUpdatePayload::userErrors)
         val changedOption = payload.product!!.options.first { it.id == option.id }
-        option.optionValues += values.onEach { value -> value.internalId = changedOption.optionValues.first { it.name == value.value }.id }
+        values.forEach { value -> value.internalId = changedOption.optionValues.first { it.name == value.value }.id }
     }
 }
