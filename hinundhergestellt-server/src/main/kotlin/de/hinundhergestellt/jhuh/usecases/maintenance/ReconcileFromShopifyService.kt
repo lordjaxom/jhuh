@@ -46,16 +46,24 @@ class ReconcileFromShopifyService(
 ) {
     val items = mutableListOf<Item>()
 
+    init {
+        items += shopifyDataStore.products.map { reconcile(it) }.flatten()
+    }
+
     suspend fun refresh(report: suspend (String) -> Unit) {
         report("Aktualisiere Shopify-Produktkatalog...")
         shopifyDataStore.refreshAndAwait()
 
-        report("Gleiche Shopify-Produkte mit Datenbank ab...")
-        items.clear()
-        items += shopifyDataStore.products.map { reconcile(it) }.flatten()
+        rebuild(report)
 
 //        report("Unbekannte Kategorien abgleichen...")
 //        artooDataStore.rootCategories.forEach { reconcileCategories(it) }
+    }
+
+    suspend fun rebuild(report: suspend (String) -> Unit) {
+        report("Gleiche Shopify-Produkte mit Datenbank ab...")
+        items.clear()
+        items += shopifyDataStore.products.map { reconcile(it) }.flatten()
     }
 
     suspend fun apply(items: Set<Item>, report: suspend (String) -> Unit) {

@@ -35,19 +35,12 @@ private class ReconcileFromShopifyPanel(
 
     private val vaadinScope = VaadinCoroutineScope(this, applicationScope, progressOverlay)
 
-    private var loaded = false
-
     init {
         accordionSummary(
             "Shopify: Produktinformationen herunterladen",
             "Gleicht den lokalen Datenbestand für in ready2order vorhandene Produkte mit nur in Shopify getätigten Änderungen ab"
         )
         setWidthFull()
-        addOpenedChangeListener {
-            if (it.isOpened && !loaded) {
-                refresh(); loaded = true
-            }
-        }
 
         horizontalLayout {
             justifyContentMode = FlexComponent.JustifyContentMode.END
@@ -80,6 +73,8 @@ private class ReconcileFromShopifyPanel(
             setHeight(600.0F, Unit.PIXELS)
             addThemeVariants(GridVariant.LUMO_ROW_STRIPES)
             addSelectionListener { validateActions() }
+
+            setItems(service.items)
         }
     }
 
@@ -95,9 +90,10 @@ private class ReconcileFromShopifyPanel(
         vaadinScope.launchWithReporting {
             application {
                 service.apply(itemsGrid.selectedItems, ::report)
-                service.refresh(::report)
+                service.rebuild(::report)
             }
             itemsGrid.setItems(service.items)
+            itemsGrid.recalculateColumnWidths()
         }
     }
 
