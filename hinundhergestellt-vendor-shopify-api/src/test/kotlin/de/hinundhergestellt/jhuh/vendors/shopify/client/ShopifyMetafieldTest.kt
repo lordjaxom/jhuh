@@ -38,16 +38,5 @@ class ShopifyMetafieldTest {
         val expected = "ShopifyMetafield(namespace='ns', key='key', value='val', type=MULTI_LINE_TEXT_FIELD)"
         assertThat(metafield.toString()).isEqualTo(expected)
     }
-
-    @Test
-    fun `test dirty tracking`() {
-        val metafield = ShopifyMetafield("ns", "key", "val", ShopifyMetafieldType.SINGLE_LINE_TEXT_FIELD)
-        assertThat(metafield.dirtyTracker.getDirtyAndReset()).isFalse()
-        metafield.value = "newval"
-        assertThat(metafield.dirtyTracker.getDirtyAndReset()).isTrue()
-        assertThat(metafield.dirtyTracker.getDirtyAndReset()).isFalse()
-        metafield.type = ShopifyMetafieldType.MULTI_LINE_TEXT_FIELD
-        assertThat(metafield.dirtyTracker.getDirtyAndReset()).isTrue()
-    }
 }
 

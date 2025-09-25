@@ -8,12 +8,10 @@ import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedVariat
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOptionValue
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProduct
-import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
 import org.springframework.stereotype.Component
 
 @Component
 class ShopifyMapper(
-    private val shopifyDataStore: ShopifyDataStore,
     private val mappingService: MappingService
 ) {
     fun map(syncProduct: SyncProduct, artooProduct: ArtooMappedProduct) =

@@ -19,9 +19,6 @@ import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import kotlin.streams.asSequence
 
-private const val METAFIELD_NAMESPACE = "custom"
-private val INVALID_TAG_CHARACTERS = """[^A-ZÄÖÜa-zäöüß0-9\\._ -]""".toRegex()
-
 @Service
 class MappingService(
     private val artooDataStore: ArtooDataStore,
@@ -56,9 +53,9 @@ class MappingService(
 
     fun customMetafields(syncProduct: SyncProduct) =
         mutableListOf(
-            metafield("vendor_address", syncProduct.vendor!!.address!!, ShopifyMetafieldType.MULTI_LINE_TEXT_FIELD),
-            metafield("vendor_email", syncProduct.vendor!!.email!!, ShopifyMetafieldType.SINGLE_LINE_TEXT_FIELD),
-            metafield("technical_details", technicalDetailsJson(syncProduct), ShopifyMetafieldType.JSON)
+            customMetafield("vendor_address", syncProduct.vendor!!.address!!, ShopifyMetafieldType.MULTI_LINE_TEXT_FIELD),
+            customMetafield("vendor_email", syncProduct.vendor!!.email!!, ShopifyMetafieldType.SINGLE_LINE_TEXT_FIELD),
+            customMetafield("technical_details", technicalDetailsJson(syncProduct), ShopifyMetafieldType.JSON)
         )
 
     fun extractTechnicalDetails(shopifyProduct: ShopifyProduct) =
@@ -121,7 +118,11 @@ class MappingService(
         objectMapper.writeValueAsString(syncProduct.technicalDetails.associate { it.name to it.value })
 }
 
-private fun metafield(key: String, value: String, type: ShopifyMetafieldType) = ShopifyMetafield(METAFIELD_NAMESPACE, key, value, type)
+private const val METAFIELD_NAMESPACE = "custom"
+
+private val INVALID_TAG_CHARACTERS = """[^A-ZÄÖÜa-zäöüß0-9\\._ -]""".toRegex()
+
+private fun customMetafield(key: String, value: String, type: String) = ShopifyMetafield(METAFIELD_NAMESPACE, key, value, type)
 
 private fun SyncVariant?.hasWeight() =
     this?.weight?.run { compareTo(BigDecimal.ZERO) != 0 } ?: false
