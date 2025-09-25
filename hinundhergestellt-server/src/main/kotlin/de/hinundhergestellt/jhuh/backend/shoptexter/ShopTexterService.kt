@@ -33,6 +33,22 @@ class ShopTexterService(
         updateProducts(listOf(product))
     }
 
+    fun updateProducts(products: Collection<ShopifyProduct>) {
+        val outdatedDocumentIds = mutableListOf<String>()
+        val newOrChangedDocuments = mutableListOf<Document>()
+        products.forEach { product ->
+            val document = vectorStore.find("shopifyId == '${product.id}'").firstOrNull()
+            val newText = jsonMapper.writeValueAsString(productMapper.map(product))
+            if (document === null || document.text!! != newText) {
+                if (document !== null) outdatedDocumentIds += document.id
+                newOrChangedDocuments += Document(newText, mapOf("shopifyId" to product.id))
+            }
+        }
+        logger.info { "Updating ${newOrChangedDocuments.size} products in vector store" }
+        vectorStore.delete(outdatedDocumentIds)
+        vectorStore.add(newOrChangedDocuments)
+    }
+
     fun removeProduct(shopifyId: String) {
         vectorStore.delete("shopifyId == '$shopifyId'")
     }
@@ -74,22 +90,6 @@ class ShopTexterService(
 
     private fun generateProductDetails(product: Product) =
         productTexterService.generateProductDetails(product)
-
-    private fun updateProducts(products: List<ShopifyProduct>) {
-        val outdatedDocumentIds = mutableListOf<String>()
-        val newOrChangedDocuments = mutableListOf<Document>()
-        products.forEach { product ->
-            val document = vectorStore.find("shopifyId == '${product.id}'").firstOrNull()
-            val newText = jsonMapper.writeValueAsString(productMapper.map(product))
-            if (document === null || document.text!! != newText) {
-                if (document !== null) outdatedDocumentIds += document.id
-                newOrChangedDocuments += Document(newText, mapOf("shopifyId" to product.id))
-            }
-        }
-        logger.info { "Updating ${newOrChangedDocuments.size} products in vector store" }
-        vectorStore.delete(outdatedDocumentIds)
-        vectorStore.add(newOrChangedDocuments)
-    }
 }
 
 class CategoryTexts(

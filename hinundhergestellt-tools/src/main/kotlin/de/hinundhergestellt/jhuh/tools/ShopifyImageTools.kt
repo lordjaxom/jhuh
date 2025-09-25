@@ -50,9 +50,18 @@ class ShopifyImageTools(
     fun findAllImages(product: ShopifyProduct) =
         syncImageTools.findAllImages(product.syncImageProductName, product.variantSkus)
 
+    suspend fun uploadProductImages(product: ShopifyProduct) {
+        val imagesToUpload = syncImageTools.findProductImages(product.syncImageProductName)
+        val uploadedMedias = mediaClient.upload(imagesToUpload.map { it.path })
+        uploadedMedias.forEach { media -> media.altText = generateAltText(product) }
+        mediaClient.update(uploadedMedias, referencesToAdd = listOf(product.id))
+        // TODO: Add medias to product
+    }
+
     suspend fun uploadVariantImages(product: ShopifyProduct, variants: Collection<UnsavedShopifyProductVariant>) {
-        val variantsSkus = variants.map { it.sku }
-        val imagesToUpload = syncImageTools.findVariantImages(product.syncImageProductName, variantsSkus)
+        val imagesToUpload = syncImageTools.findVariantImages(product.syncImageProductName, variants.map { it.sku })
+        if (imagesToUpload.isEmpty()) return
+
         val uploadedMedias = mediaClient.upload(imagesToUpload.map { it.path })
         variants.forEach { variant ->
             val media = uploadedMedias.first { it.fileName.isValidSyncImageFor(product, variant) }
@@ -60,6 +69,7 @@ class ShopifyImageTools(
             media.altText = generateAltText(product, variant)
         }
         mediaClient.update(uploadedMedias, referencesToAdd = listOf(product.id))
+        // TODO: Add medias to product
     }
 
     suspend fun generateColorSwatches(
@@ -284,7 +294,7 @@ class ShopifyImageTools(
             .replace(" ", "-")
             .lowercase()
 
-    private fun generateAltText(product: ShopifyProduct, variant: ShopifyProductVariant?) =
+    private fun generateAltText(product: ShopifyProduct, variant: ShopifyProductVariant? = null) =
         "${product.title} ${variant?.let { "in ${product.options[0].name} ${it.options[0].value}" } ?: "Produktbild"}"
 
     private fun generateAltText(product: ShopifyProduct, variant: UnsavedShopifyProductVariant?) =

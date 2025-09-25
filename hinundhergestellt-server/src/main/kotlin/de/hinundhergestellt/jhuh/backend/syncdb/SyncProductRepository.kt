@@ -17,3 +17,7 @@ interface SyncProductRepository : JpaRepository<SyncProduct, UUID> {
 
     fun existsByVendor(vendor: SyncVendor): Boolean
 }
+
+// TODO: move to separate file
+fun <T: Any, ID: Any> JpaRepository<T, ID>.update(id: ID, block: T.() -> Unit) =
+    save(findById(id).orElseThrow().apply(block))

@@ -77,7 +77,7 @@ class ShopifyDataStore(
         }
 
         val created = variantClient.create(product, variants)
-        product.variants.addAll(created)
+        product.variants += created
         return created
     }
 

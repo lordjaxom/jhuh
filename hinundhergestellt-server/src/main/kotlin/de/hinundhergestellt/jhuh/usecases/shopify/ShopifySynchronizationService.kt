@@ -10,6 +10,7 @@ import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProductRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariant
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariantRepository
+import de.hinundhergestellt.jhuh.backend.syncdb.update
 import de.hinundhergestellt.jhuh.tools.RectPct
 import de.hinundhergestellt.jhuh.tools.ShopifyImageTools
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
@@ -20,7 +21,6 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyWeight
 import de.hinundhergestellt.jhuh.vendors.shopify.client.findById
-import de.hinundhergestellt.jhuh.vendors.shopify.client.isDryRun
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.coroutineScope
@@ -38,8 +38,7 @@ class ShopifySynchronizationService(
     private val artooDataStore: ArtooDataStore,
     private val shopifyDataStore: ShopifyDataStore,
     private val shopifyImageTools: ShopifyImageTools,
-    private val shopifyProductMapper: ShopifyProductMapper,
-    private val shopifyVariantMapper: ShopifyVariantMapper,
+    private val shopifyMapper: ShopifyMapper,
     private val syncProductRepository: SyncProductRepository,
     private val syncVariantRepository: SyncVariantRepository,
     private val shopTexterService: ShopTexterService,
@@ -75,6 +74,7 @@ class ShopifySynchronizationService(
     suspend fun apply(items: Set<Item>, report: suspend (String) -> Unit) {
         report("Übernehme markierte Änderungen nach Shopify...")
 
+        val createdProducts = mutableSetOf<ShopifyProduct>()
         val productsToChange = mutableSetOf<ShopifyProduct>()
         val variantsToDelete = mutableMapOf<ShopifyProduct, MutableMap<UUID, ShopifyProductVariant>>()
         val variantsToCreate = mutableMapOf<ShopifyProduct, MutableSet<CreateVariantItem>>()
@@ -82,6 +82,7 @@ class ShopifySynchronizationService(
         items.forEach { item ->
             when (item) {
                 is ImmediateItem -> item.block()
+                is CreateProductItem -> createdProducts += applyCreateProduct(item)
                 is UpdateProductItem -> productsToChange.add(item.apply { block() }.product)
                 is DeleteVariantItem -> variantsToDelete.getOrPut(item.product) { mutableMapOf() }.put(item.id, item.variant)
                 is CreateVariantItem -> variantsToCreate.getOrPut(item.product) { mutableSetOf() }.add(item)
@@ -91,10 +92,13 @@ class ShopifySynchronizationService(
         }
 
         // TODO: Update all changed products together in shopTexter, and remove deleted products
-        productsToChange.forEach { shopifyDataStore.update(it); shopTexterService.updateProduct(it) }
+        productsToChange.forEach { shopifyDataStore.update(it) }
         variantsToDelete.forEach { (product, variants) -> applyDeleteVariants(product, variants) }
         variantsToCreate.forEach { (product, variants) -> applyCreateVariants(product, variants) }
         variantsToUpdate.forEach { (product, variants) -> shopifyDataStore.update(product, variants) }
+
+        val newOrChangedProducts = createdProducts + productsToChange + variantsToCreate.keys + variantsToUpdate.keys
+        shopTexterService.updateProducts(newOrChangedProducts)
     }
 
     private fun synchronize(syncProduct: SyncProduct) {
@@ -113,7 +117,7 @@ class ShopifySynchronizationService(
         }
 
         if (shopifyProduct == null) {
-            prepareCreateProduct(syncProduct, artooProduct)
+            items += CreateProductItem(syncProduct, artooProduct)
             return
         }
 
@@ -162,7 +166,7 @@ class ShopifySynchronizationService(
         }
 
         if (shopifyVariant == null) {
-            return listOf(CreateVariantItem(shopifyProduct, syncVariant, artooVariation, syncVariant.id))
+            return listOf(CreateVariantItem(shopifyProduct, syncVariant, artooVariation))
         }
 
         return listOfNotNull(
@@ -179,27 +183,6 @@ class ShopifySynchronizationService(
             shopifyDataStore.delete(shopifyProduct)
             shopTexterService.removeProduct(shopifyProduct.id)
             transactionOperations.execute { syncProductRepository.delete(syncProduct) }
-        }
-    }
-
-    private fun prepareCreateProduct(syncProduct: SyncProduct, artooProduct: ArtooMappedProduct) {
-        val unsavedShopifyProduct = shopifyProductMapper.mapToProduct(syncProduct, artooProduct)
-        val unsavedVariants = syncProduct.variants
-            .mapNotNull { variant -> variant.artooId?.let { artooProduct.findVariationById(it) }?.let { variant to it } }
-            .map { (sync, artoo) -> sync to shopifyVariantMapper.mapToVariant(syncProduct, artooProduct, sync, artoo) }
-        val variantsText = if (!artooProduct.hasOnlyDefaultVariant) " mit ${unsavedVariants.size} Varianten" else ""
-
-        items += ImmediateItem(unsavedShopifyProduct.title, "Produkt$variantsText hinzugefügt") {
-            val savedShopifyProduct = shopifyDataStore.create(unsavedShopifyProduct)
-            if (!savedShopifyProduct.isDryRun) syncProduct.shopifyId = savedShopifyProduct.id
-            shopifyDataStore.create(savedShopifyProduct, unsavedVariants.map { it.second })
-            if (!savedShopifyProduct.isDryRun)
-                unsavedVariants.forEachIndexed { index, (sync, _) -> sync.shopifyId = savedShopifyProduct.variants[index].id }
-            shopTexterService.updateProduct(savedShopifyProduct)
-            transactionOperations.execute {
-                syncProduct.descriptionHtml = savedShopifyProduct.descriptionHtml
-                syncProductRepository.save(syncProduct)
-            }
         }
     }
 
@@ -252,29 +235,40 @@ class ShopifySynchronizationService(
 //            ?.let { UpdateVariantItem(product, variant, it.message, it.action) }
 //    }
 
-    private suspend fun applyDeleteVariants(
-        product: ShopifyProduct,
-        variants: MutableMap<UUID, ShopifyProductVariant>
-    ) {
+    private suspend fun applyCreateProduct(item: CreateProductItem): ShopifyProduct {
+        val product = shopifyDataStore.create(shopifyMapper.map(item.sync, item.artoo))
+        shopifyImageTools.uploadProductImages(product)
+
+        // TODO: readonly
+        transactionOperations.execute {
+            syncProductRepository.update(item.sync.id) { shopifyId = product.id; descriptionHtml = product.descriptionHtml }
+        }
+
+        val variantItems = item.sync.variants.mapNotNull { variant ->
+            variant.artooId
+                ?.let { item.artoo.findVariationById(it) }
+                ?.let { CreateVariantItem(product, variant, it) }
+        }
+        applyCreateVariants(product, variantItems)
+
+        return product
+    }
+
+    private suspend fun applyDeleteVariants(product: ShopifyProduct, variants: MutableMap<UUID, ShopifyProductVariant>) {
         shopifyDataStore.delete(product, variants.values)
         transactionOperations.execute { syncVariantRepository.deleteAllById(variants.keys) }
     }
 
-    private suspend fun applyCreateVariants(
-        product: ShopifyProduct,
-        items: Set<CreateVariantItem>
-    ) {
-        TODO("swatch handle and rect!!!")
-        val variants = items.map { shopifyVariantMapper.mapToVariant(it.sync, it.artoo) }
+    private suspend fun applyCreateVariants(product: ShopifyProduct, items: Collection<CreateVariantItem>) {
+        val variants = items.map { shopifyMapper.map(it.sync, it.artoo) }
         shopifyImageTools.uploadVariantImages(product, variants)
-        shopifyImageTools.generateColorSwatches(product, variants, "poli-tubitherm", RectPct.CENTER_20)
+        shopifyImageTools.generateColorSwatches(product, variants, RectPct.CENTER_20)
 
         val created = shopifyDataStore.create(product, variants)
+        // TODO: readonly
         transactionOperations.execute {
-            created.map { it.id }.zip(items).forEach { (shopifyId, item) ->
-                val syncVariant = syncVariantRepository.findById(item.sync.id).orElseThrow()
-                syncVariant.shopifyId = shopifyId
-                syncVariantRepository.save(syncVariant)
+            created.asSequence().zip(items.asSequence()).forEach { (variant, item) ->
+                syncVariantRepository.update(item.sync.id) { shopifyId = variant.id }
             }
         }
     }
@@ -294,6 +288,15 @@ class ShopifySynchronizationService(
         override val message: String,
         val block: suspend () -> Unit
     ) : ProductItem()
+
+    private inner class CreateProductItem(
+        val sync: SyncProduct,
+        val artoo: ArtooMappedProduct
+    ) : ProductItem() {
+        override val title = artoo.description
+        override val message =
+            "Produkt${if (!artoo.hasOnlyDefaultVariant) " mit bis zu ${artoo.variations.size} Varianten" else ""} hinzugefügt"
+    }
 
     private inner class UpdateProductItem(
         val product: ShopifyProduct,
@@ -327,8 +330,7 @@ class ShopifySynchronizationService(
     private inner class CreateVariantItem(
         val product: ShopifyProduct,
         val sync: SyncVariant,
-        val artoo: ArtooMappedVariation,
-        val id: UUID
+        val artoo: ArtooMappedVariation
     ) : VariantItem() {
         override val title = "${sync.product.optionName} ${artoo.name}"
         override val message = "$title hinzugefügt"

@@ -9,8 +9,9 @@ import org.springframework.web.reactive.function.client.WebClient
 import java.nio.file.Path
 import java.util.UUID
 
-@Configuration
-@ConditionalOnProperty("shopify.read-only", havingValue = "true")
+// TODO: Remove or check all "TODO: readonly" items
+//@Configuration
+//@ConditionalOnProperty("shopify.read-only", havingValue = "true")
 class ReadOnlyShopifyClients(
     private val shopifyGraphQLClient: WebClientGraphQLClient,
     private val genericWebClient: WebClient,
