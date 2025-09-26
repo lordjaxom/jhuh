@@ -86,7 +86,7 @@ class ShopifySynchronizationView(
         vaadinScope.launchWithReporting {
             application {
                 service.apply(itemsGrid.selectedItems, ::report)
-                service.rebuild(::report)
+                service.synchronize(::report)
             }
             itemsGrid.setItems(service.items, Item::children)
             itemsGrid.recalculateColumnWidths()

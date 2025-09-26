@@ -1,7 +1,11 @@
+@file:OptIn(ExperimentalContracts::class)
+
 package de.hinundhergestellt.jhuh.backend.mapping
 
 import java.math.BigDecimal
-import kotlin.reflect.KMutableProperty0
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 internal enum class ChangeField(
     val displayName: String,
@@ -28,32 +32,23 @@ internal enum class ChangeField(
     }
 }
 
-internal class Change<T>(
-    val message: String,
-    val action: T.() -> Unit
-)
+internal fun <T, R> ifChanged(oldValue: T, newValue: T, field: ChangeField, vararg args: Any, block: (String) -> R): R? {
+    contract { callsInPlace(block, InvocationKind.AT_MOST_ONCE) }
+    return if (!oldValue.isEqualTo(newValue)) block(changeMessage(field, oldValue, newValue, *args)) else null
+}
 
-internal fun <T> change(property: KMutableProperty0<T>, newValue: T, field: ChangeField? = null, vararg args: Any) =
-    property.get().takeIf { it != newValue }
-        ?.let { changeMessage(field ?: ChangeField.fromFieldName(property.name), it, newValue, *args) }
-        ?.let { Change<Any?>(it) { property.set(newValue) } }
+internal fun <T, R> ifChanged(oldValue: T, newValue: T, fieldName: String, vararg args: Any, block: (String) -> R) =
+    ifChanged(oldValue, newValue, ChangeField.fromFieldName(fieldName), *args) { block(it) }
 
-internal fun <T> change(getter: () -> T, setter: (T) -> Unit, newValue: T, field: ChangeField, vararg args: Any) =
-    getter().takeIf { it != newValue }
-        ?.let { changeMessage(field, it, newValue, *args) }
-        ?.let { Change<Any?>(it) { setter(newValue) } }
-
-internal fun <T> changeMessage(oldValue: T, newValue: T, field: ChangeField, vararg args: Any) =
-    if (!oldValue.isEqualTo(newValue)) changeMessage(field, oldValue, newValue, *args) else null
-
-internal fun <T> changeMessage(oldValue: T, newValue: T, fieldName: String, vararg args: Any) =
-    changeMessage(oldValue, newValue, ChangeField.fromFieldName(fieldName), *args)
-
-private fun <T> changeMessage(field: ChangeField, oldValue: T, newValue: T, vararg args: Any) =
-    field.displayName.format(*args) +
-            (if (field.showChange && !oldValue.isNullOrEmpty()) " von ${oldValue.toQuotedString()}" else "") +
-            (if (field.showChange) " zu ${newValue.toQuotedString()}" else "") +
-            " geändert"
+private fun <T> changeMessage(field: ChangeField, oldValue: T, newValue: T, vararg args: Any) = buildString {
+    append(field.displayName.format(*args))
+    if (field.showChange) {
+        if (oldValue.isNullOrEmpty()) append(" ${newValue.toQuotedString()}")
+        else append(" von ${oldValue.toQuotedString()} zu ${newValue.toQuotedString()}")
+    }
+    if (oldValue.isNullOrEmpty()) append(" hinzugefügt")
+    else append(" geändert")
+}
 
 internal fun Any?.toQuotedString() = when {
     this is Collection<*> -> joinToString(", ", prefix = "\"", postfix = "\"")

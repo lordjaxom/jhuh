@@ -6,11 +6,9 @@ import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductVariantsBu
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductVariantsBulkCreateStrategy
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductVariantsBulkDeletePayload
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductVariantsBulkUpdatePayload
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 
 @Component
-@ConditionalOnProperty("shopify.read-only", havingValue = "false", matchIfMissing = true)
 class ShopifyProductVariantClient(
     private val shopifyGraphQLClient: WebClientGraphQLClient
 ) {

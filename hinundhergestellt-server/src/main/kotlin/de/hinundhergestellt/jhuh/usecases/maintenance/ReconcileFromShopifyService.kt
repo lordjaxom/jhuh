@@ -2,7 +2,7 @@ package de.hinundhergestellt.jhuh.usecases.maintenance
 
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.backend.mapping.MappingService
-import de.hinundhergestellt.jhuh.backend.mapping.changeMessage
+import de.hinundhergestellt.jhuh.backend.mapping.ifChanged
 import de.hinundhergestellt.jhuh.backend.mapping.toQuotedString
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategory
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategoryRepository
@@ -20,7 +20,6 @@ import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedCatego
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
-import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightUnit
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionOperations
@@ -151,8 +150,8 @@ class ReconcileFromShopifyService(
     }
 
     private fun <T> checkReconcileProductProperty(product: SyncProduct, title: String, property: ProductProperty<T>, newValue: T) =
-        changeMessage(property.get(product), newValue, property.name)?.let { message ->
-            UpdateSyncProductItem(product, title, message) { property.set(this, newValue) }
+        ifChanged(property.get(product), newValue, property.name) {
+            UpdateSyncProductItem(product, title, it) { property.set(this, newValue) }
         }
 
     private fun checkReconcileProductTags(

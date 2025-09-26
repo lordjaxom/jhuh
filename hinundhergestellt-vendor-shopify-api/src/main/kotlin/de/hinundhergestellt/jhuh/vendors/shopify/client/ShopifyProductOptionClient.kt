@@ -5,11 +5,9 @@ import de.hinundhergestellt.jhuh.vendors.shopify.graphql.DgsClient.buildMutation
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.OptionUpdateInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductOptionUpdatePayload
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductOptionsDeletePayload
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 
 @Component
-@ConditionalOnProperty("shopify.read-only", havingValue = "false", matchIfMissing = true)
 class ShopifyProductOptionClient(
     private val shopifyGraphQLClient: WebClientGraphQLClient
 ) {
