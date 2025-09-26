@@ -40,6 +40,7 @@ class SyncImage(
 
 val String.syncImageProductName get() = substringBefore(",")
 val String.syncImageSuffix get() = replace(" ", "-").lowercase() // TODO: remove unwanted characters
+
 val URI.extension get() = path.substringAfterLast(".", "")
 
 val Path.syncImageSortSelector

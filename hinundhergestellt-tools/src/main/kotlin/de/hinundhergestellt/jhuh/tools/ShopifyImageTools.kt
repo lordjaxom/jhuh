@@ -11,7 +11,6 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMediaClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetaobject
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetaobjectClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
-import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOptionClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantClient
@@ -36,7 +35,6 @@ private val logger = KotlinLogging.logger { }
 
 @Component
 class ShopifyImageTools(
-    private val productClient: ShopifyProductClient,
     private val variantClient: ShopifyProductVariantClient,
     private val optionClient: ShopifyProductOptionClient,
     private val mediaClient: ShopifyMediaClient,
@@ -114,25 +112,29 @@ class ShopifyImageTools(
         }
     }
 
-    suspend fun reorganizeProductImages(product: ShopifyProduct) { // TODO: Move to SyncImageTools
+    suspend fun reorganizeProductImages(product: ShopifyProduct) {
         require(product.variants.all { it.sku.isNotEmpty() }) { "All product variants must have SKU" }
 
         // save old media ids before attaching the new ones
         val mediaToDetach = product.media.toList()
 
-        val images = normalizeMediaImages(product)
-        TODO("Result of mediaClient.upload has different sort order than images!!!")
-        val media = mediaClient.upload(images.map { it.imagePath })
-            .asSequence()
-            .zip(images.asSequence())
-            .map { (media, image) -> media.apply { altText = image.altText; image.variant?.mediaId = id } }
+        val images = normalizeProductImages(product)
+        val medias = mediaClient.upload(images.map { it.path })
+        val variants = images.asSequence().zip(medias.asSequence())
+            .mapNotNull { (image, media) ->
+                val variant = image.variantSku?.let { product.findVariantBySku(it) }
+                media.altText = generateAltText(product, variant)
+                variant?.mediaId = media.id
+                variant
+            }
             .toList()
-
-        mediaClient.update(media, referencesToAdd = listOf(product.id))
-        variantClient.update(product, images.mapNotNull { it.variant })
+        return
+        mediaClient.update(medias, referencesToAdd = listOf(product.id))
+        variantClient.update(product, variants)
         mediaClient.update(mediaToDetach, referencesToRemove = listOf(product.id))
     }
 
+    @Deprecated("Use uploadProductImages instead")
     suspend fun replaceProductImages(product: ShopifyProduct) {
         val productName = product.syncImageProductName
         val images = syncImageTools.findProductImages(productName).map { it.path }
@@ -151,6 +153,7 @@ class ShopifyImageTools(
         mediaClient.update(media, referencesToAdd = listOf(product.id))
     }
 
+    @Deprecated("Use uploadVariantImages instead")
     suspend fun replaceProductVariantImages(product: ShopifyProduct) {
         val variantSkus = product.variants.map { it.sku }
         require(variantSkus.all { it.isNotEmpty() }) { "All product variants must have SKU" }
@@ -172,6 +175,7 @@ class ShopifyImageTools(
         variantClient.update(product, mediaVariants.map { it.second })
     }
 
+    @Deprecated("Use generateColorSwatches instead")
     suspend fun generateVariantColorSwatches(
         product: ShopifyProduct,
         swatchHandle: String,
@@ -209,6 +213,35 @@ class ShopifyImageTools(
         optionClient.update(product, productOption)
     }
 
+    private suspend fun normalizeProductImages(product: ShopifyProduct): List<SyncImage> {
+        val indexOfNonVariantImage = AtomicInt(1)
+        return product.media.mapIndexedParallel(properties.processingThreads) { index, media ->
+            logger.info { "Normalizing image ${index + 1} of ${product.media.size}" }
+            normalizeProductImage(product, media, indexOfNonVariantImage)
+        }
+    }
+
+    private suspend fun normalizeProductImage(product: ShopifyProduct, media: ShopifyMedia, indexOfNonVariantImage: AtomicInt): SyncImage {
+        val variant = product.variants.firstOrNull { it.mediaId == media.id }
+        val suffix = variant?.syncImageSuffix ?: "produktbild-${indexOfNonVariantImage.andIncrement}"
+        val fileName = generateImageFileName(product.syncImageProductName, suffix, URI(media.src).extension)
+        var path = properties.imageDirectory.resolve(product.syncImageProductName).resolve(fileName)
+
+        path.parent.createDirectories()
+        genericWebClient.downloadFileTo(media.src, path)
+
+        if (URI(media.src).extension == "webp") {
+            val newFileName = generateImageFileName(product.syncImageProductName, suffix, "png")
+            val newPath = properties.imageDirectory.resolve(product.syncImageProductName).resolve(newFileName)
+            val result = Runtime.getRuntime().exec(arrayOf("convert", path.toString(), newPath.toString())).waitFor()
+            require(result == 0) { "Conversion of webp to png failed" }
+            path.deleteExisting()
+            path = newPath
+        }
+        return SyncImage(path, variant?.sku)
+    }
+
+    @Deprecated("Use normalizeProductImages instead")
     private suspend fun normalizeMediaImages(product: ShopifyProduct) = coroutineScope {
         val productName = product.syncImageProductName
         val indexOfNonVariantImage = AtomicInt(1)
@@ -218,6 +251,7 @@ class ShopifyImageTools(
         }
     }
 
+    @Deprecated("Use normalizeProductImage instead")
     private suspend fun normalizeMediaImage(
         productName: String,
         product: ShopifyProduct,
@@ -312,6 +346,7 @@ class ShopifyImageTools(
 }
 
 val ShopifyProduct.syncImageProductName get() = title.syncImageProductName
+val ShopifyProductVariant.syncImageSuffix get() = sku.syncImageSuffix
 
 fun String.isValidSyncImageFor(product: ShopifyProduct) =
     isValidSyncImageFor(product.syncImageProductName, product.variantSkus)

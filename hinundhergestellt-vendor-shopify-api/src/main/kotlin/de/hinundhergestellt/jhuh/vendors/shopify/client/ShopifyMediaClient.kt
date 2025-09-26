@@ -22,7 +22,6 @@ import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.StagedUploadInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.StagedUploadTargetGenerateUploadResource
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.StagedUploadsCreatePayload
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.awaitFirstOrNull
@@ -47,14 +46,14 @@ class ShopifyMediaClient(
 ) {
     fun fetchAll(query: String? = null) = pageAll { fetchNextPage(it, query) }.map { it.toShopifyMedia() }
 
-    suspend fun upload(files: List<Path>) = coroutineScope {
+    suspend fun upload(files: List<Path>): List<ShopifyMedia> {
         val stagedTargets = createStagedUploads(files)
 
         files.zip(stagedTargets).mapParallel(properties.processingThreads) { (file, staged) -> uploadToStaging(file, staged) }
 
-        val createdFiles = createFiles(stagedTargets)
-        val processedFiles = waitForFiles(createdFiles)
-        processedFiles.map { ShopifyMedia(it) }
+        val createdIds = createFiles(stagedTargets)
+        val processedFiles = waitForFiles(createdIds)
+        return processedFiles.map { ShopifyMedia(it) }
     }
 
     suspend fun update(medias: List<ShopifyMedia>, referencesToAdd: List<String>? = null, referencesToRemove: List<String>? = null) {
@@ -112,40 +111,36 @@ class ShopifyMediaClient(
         return payload.stagedTargets!!
     }
 
-    private suspend fun createFiles(stagedTargets: List<StagedMediaUploadTarget>): List<File> {
+    private suspend fun createFiles(stagedTargets: List<StagedMediaUploadTarget>): List<String> {
         val request = buildMutation {
             fileCreate(stagedTargets.map { it.toFileCreateInput() }) {
                 files {
-                    fileStatus
-                    onMediaImage {
-                        id
-                        image { id; src; altText }
-                    }
+                    id; fileStatus
                 }
                 userErrors { message; field }
             }
         }
 
         val payload = shopifyGraphQLClient.executeMutation(request, FileCreatePayload::userErrors)
-        return payload.files!!
+        return payload.files!!.map { it.id }
     }
 
-    private suspend fun waitForFiles(files: List<File>) = buildList {
-        val unprocessed = files.asSequence().associateBy { it.id }.toMutableMap()
+    private suspend fun waitForFiles(fileIds: List<String>): List<File> {
+        val unprocessed = fileIds.toMutableSet()
+        val processed = mutableMapOf<String, File>()
         while (unprocessed.isNotEmpty()) {
             logger.info { "Still ${unprocessed.size} files unprocessed, delaying..." }
 
             delay(1_000)
 
-            val query = unprocessed.keys.joinToString(" OR ") { "(id:${it.substringAfterLast("/")})" }
+            val query = unprocessed.joinToString(" OR ") { "(id:${it.substringAfterLast("/")})" }
             val request = buildQuery {
                 files(first = unprocessed.size, query = query) {
                     edges {
                         node {
-                            fileStatus
+                            id; fileStatus
                             onMediaImage {
-                                id
-                                image { id; src; altText }
+                                image { src; altText }
                             }
                         }
                     }
@@ -153,11 +148,11 @@ class ShopifyMediaClient(
             }
 
             val payload = shopifyGraphQLClient.executeQuery<FileConnection>(request)
-            payload.edges.asSequence()
-                .map { it.node }
-                .filter { it.fileStatus in arrayOf(FileStatus.READY, FileStatus.FAILED) }
-                .forEach { unprocessed.remove(it.id); add(it) }
+            val nextProcessed = payload.edges.filter { it.node.fileStatus in arrayOf(FileStatus.READY, FileStatus.FAILED) }
+            unprocessed -= nextProcessed.map { it.node.id }
+            processed += nextProcessed.map { it.node.id to it.node }
         }
+        return fileIds.map { processed[it]!! }
     }
 
     private suspend fun uploadToStaging(file: Path, stagedTarget: StagedMediaUploadTarget) {

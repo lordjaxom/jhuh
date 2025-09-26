@@ -1,6 +1,7 @@
 package de.hinundhergestellt.jhuh.usecases.maintenance
 
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
+import de.hinundhergestellt.jhuh.backend.mapping.ChangeField
 import de.hinundhergestellt.jhuh.backend.mapping.MappingService
 import de.hinundhergestellt.jhuh.backend.mapping.ifChanged
 import de.hinundhergestellt.jhuh.backend.mapping.toQuotedString
@@ -137,15 +138,8 @@ class ReconcileFromShopifyService(
         }
         require(syncVariant.product.id == syncProduct.id) { "SyncVariant.product does not match ShopifyVariant.product" }
 
-        val loadedWeight = variant.weight
-        if (syncVariant.weight?.let { it.compareTo(loadedWeight) == 0 } != false) {
-            add(
-                UpdateSyncVariantItem(
-                    syncVariant, "${product.title} (${variant.title})",
-                    "Gewicht von ${syncVariant.weight ?: "leer"} auf $loadedWeight geändert",
-                    { weight = loadedWeight }
-                )
-            )
+        ifChanged(variant.weight, syncVariant.weight, ChangeField.VARIANT_WEIGHT) {
+            add(UpdateSyncVariantItem(syncVariant, "${product.title} (${variant.title})", it) { weight = variant.weight })
         }
     }
 
