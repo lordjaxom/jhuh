@@ -45,7 +45,7 @@ class ShopifySynchronizationService(
 
     init {
         // TODO: Refresh when other service refreshes data stores
-        syncProductRepository.findAllBySyncedIsTrue().forEach { synchronize(it) }
+        items += syncProductRepository.findAllBySyncedIsTrue().mapNotNull { synchronize(it) }
     }
 
     suspend fun refresh(report: suspend (String) -> Unit) {
@@ -64,7 +64,7 @@ class ShopifySynchronizationService(
     suspend fun synchronize(report: suspend (String) -> Unit) {
         report("Gleiche synchronisierte Produkte mit Shopify ab...")
         items.clear()
-        syncProductRepository.findAllBySyncedIsTrue().forEach { synchronize(it) }
+        items += syncProductRepository.findAllBySyncedIsTrue().mapNotNull { synchronize(it) }
     }
 
     suspend fun apply(items: Set<Item>, report: suspend (String) -> Unit) {
@@ -77,13 +77,14 @@ class ShopifySynchronizationService(
         val variantsToUpdate = mutableMapOf<ShopifyProduct, MutableSet<UpdateVariantItem>>()
         items.forEach { item ->
             when (item) {
+                is ProductHeaderItem -> {}
+                is VariantHeaderItem -> {}
                 is DeleteProductItem -> apply(item)
                 is CreateProductItem -> createdProducts += apply(item)
                 is UpdateProductItem -> productsToChange.add(item.apply { block() }.product)
                 is DeleteVariantItem -> variantsToDelete.getOrPut(item.product) { mutableSetOf() }.add(item)
                 is CreateVariantItem -> variantsToCreate.getOrPut(item.product) { mutableSetOf() }.add(item)
                 is UpdateVariantItem -> variantsToUpdate.getOrPut(item.product) { mutableSetOf() }.add(item.apply { block() })
-                is VariantProductItem -> {}
             }
         }
 
@@ -97,28 +98,27 @@ class ShopifySynchronizationService(
         shopTexterService.updateProducts(newOrChangedProducts)
     }
 
-    private fun synchronize(syncProduct: SyncProduct) {
+    private fun synchronize(syncProduct: SyncProduct): ProductHeaderItem? {
         val artooProduct = syncProduct.artooId?.let { artooDataStore.findProductById(it) }
         val shopifyProduct = syncProduct.shopifyId?.let { shopifyDataStore.findProductById(it) }
 
         if (artooProduct != null && mappingService.checkForProblems(artooProduct, syncProduct).isNotEmpty()) {
             logger.warn { "Product ${artooProduct.name} has problems, skip synchronization" }
-            return
+            return null
         }
 
         if (artooProduct == null) {
             require(shopifyProduct != null) { "SyncProduct vanished from both ready2order and Shopify" }
-            items += DeleteProductItem(syncProduct, shopifyProduct)
-            return
+            return ProductHeaderItem(shopifyProduct.title, listOf(DeleteProductItem(syncProduct, shopifyProduct)))
         }
 
         if (shopifyProduct == null) {
-            items += CreateProductItem(syncProduct, artooProduct)
-            return
+            return ProductHeaderItem(artooProduct.description, listOf(CreateProductItem(syncProduct, artooProduct)))
         }
 
         require(shopifyProduct.hasOnlyDefaultVariant == artooProduct.hasOnlyDefaultVariant) { "Switching variants and standalone not supported yet" }
 
+        val items = mutableListOf<Item>()
         items += listOfNotNull(
             synchronize(shopifyProduct, shopifyProduct::title, artooProduct.description),
             synchronize(shopifyProduct, shopifyProduct::vendor, syncProduct.vendor!!.name),
@@ -128,17 +128,18 @@ class ShopifySynchronizationService(
         )
         items += mappingService.customMetafields(syncProduct).mapNotNull { synchronize(shopifyProduct, it) }
 
-        syncProduct.variants
-            .flatMap { synchronize(it, artooProduct, shopifyProduct) }
-            .takeIf { it.isNotEmpty() }
-            ?.also { items += VariantProductItem(shopifyProduct, it) }
+        items += syncProduct.variants
+            .mapNotNull { synchronize(it, artooProduct, shopifyProduct) }
+            .run { if (artooProduct.hasOnlyDefaultVariant) flatMap { it.children } else this } // collapse default variant into product
+
+        return if (items.isNotEmpty()) ProductHeaderItem(artooProduct.description, items) else null
     }
 
     private fun synchronize(
         syncVariant: SyncVariant,
         artooProduct: ArtooMappedProduct,
         shopifyProduct: ShopifyProduct
-    ): List<VariantItem> {
+    ): VariantHeaderItem? {
         val artooVariation = artooProduct.findVariationByBarcode(syncVariant.barcode)
         val shopifyVariant = shopifyProduct.findVariantByBarcode(syncVariant.barcode)
 
@@ -147,7 +148,7 @@ class ShopifySynchronizationService(
             mappingService.checkForProblems(artooVariation, syncVariant).any { it.error }
         ) {
             logger.warn { "Variant ${artooProduct.name} (${artooVariation.name}) has problems, skip synchronization" }
-            return listOf()
+            return null
         }
 
 //        if (artooVariation == null && shopifyVariant == null) {
@@ -158,20 +159,24 @@ class ShopifySynchronizationService(
 
         if (artooVariation == null) {
             require(shopifyVariant != null) { "SyncVariant vanished from both ready2order and Shopify" }
-            return listOf(DeleteVariantItem(shopifyProduct, syncVariant, shopifyVariant))
+            val title = "${syncVariant.product.optionName} ${shopifyVariant.options[0].value}"
+            return VariantHeaderItem(title, listOf(DeleteVariantItem(shopifyProduct, syncVariant, shopifyVariant)))
         }
 
+        val title = "${syncVariant.product.optionName} ${artooVariation.name}"
         if (shopifyVariant == null) {
-            return listOf(CreateVariantItem(shopifyProduct, syncVariant, artooVariation))
+            return VariantHeaderItem(title, listOf(CreateVariantItem(shopifyProduct, syncVariant, artooVariation)))
         }
 
-        return listOfNotNull(
+        val items = listOfNotNull(
             synchronize(shopifyProduct, shopifyVariant, shopifyVariant::barcode, artooVariation.barcode!!),
             synchronize(shopifyProduct, shopifyVariant, shopifyVariant::sku, artooVariation.itemNumber ?: ""),
             synchronize(shopifyProduct, shopifyVariant, shopifyVariant::price, artooVariation.price),
             synchronize(shopifyProduct, shopifyVariant, shopifyVariant::weight, syncVariant.weight!!),
 //            prepareUpdateVariantOptionValue(shopifyProduct, shopifyVariant, artooVariation)
         )
+
+        return if (items.isNotEmpty()) VariantHeaderItem(title, items) else null
     }
 
     private fun <T> synchronize(product: ShopifyProduct, property: KMutableProperty0<T>, newValue: T) =
@@ -244,76 +249,56 @@ class ShopifySynchronizationService(
     }
 
     sealed interface Item {
-        val title: String
         val message: String
         val children: List<Item>
     }
 
-    sealed class ProductItem : Item {
+    sealed class HeaderItem(
+        override val message: String,
+        override val children: List<Item>
+    ) : Item
+
+    class ProductHeaderItem(title: String, children: List<Item>) : HeaderItem(title, children)
+    class VariantHeaderItem(title: String, children: List<Item>) : HeaderItem(title, children)
+
+    sealed class ChangeItem(
+        override val message: String
+    ) : Item {
         override val children = listOf<Item>()
     }
 
-    private inner class DeleteProductItem(
+    private class DeleteProductItem(
         val sync: SyncProduct,
         val shopify: ShopifyProduct
-    ) : ProductItem() {
-        override val title by shopify::title
-        override val message = "Produkt entfernt"
-    }
+    ) : ChangeItem("Produkt entfernt")
 
-    private inner class CreateProductItem(
+    private class CreateProductItem(
         val sync: SyncProduct,
         val artoo: ArtooMappedProduct
-    ) : ProductItem() {
-        override val title = artoo.description
-        override val message =
-            "Produkt${if (!artoo.hasOnlyDefaultVariant) " mit bis zu ${artoo.variations.size} Varianten" else ""} hinzugefügt"
-    }
+    ) : ChangeItem("Produkt${if (!artoo.hasOnlyDefaultVariant) " mit bis zu ${artoo.variations.size} Varianten" else ""} hinzugefügt")
 
-    private inner class UpdateProductItem(
+    private class UpdateProductItem(
         val product: ShopifyProduct,
-        override val message: String,
+        message: String,
         val block: () -> Unit,
-    ) : ProductItem() {
-        override val title by product::title
-    }
+    ) : ChangeItem(message)
 
-    private inner class VariantProductItem(
-        product: ShopifyProduct,
-        override val children: List<VariantItem>
-    ) : ProductItem() {
-        override val title by product::title
-        override val message = "Insg. ${children.size} Änderungen in Varianten"
-    }
-
-    sealed class VariantItem : Item {
-        override val children = listOf<Item>()
-    }
-
-    private inner class DeleteVariantItem(
+    private class DeleteVariantItem(
         val product: ShopifyProduct,
         val sync: SyncVariant,
         val shopify: ShopifyProductVariant
-    ) : VariantItem() {
-        override val title = "${shopify.options[0].name} ${shopify.options[0].value}"
-        override val message = "$title entfernt"
-    }
+    ) : ChangeItem("Variante entfernt")
 
     private inner class CreateVariantItem(
         val product: ShopifyProduct,
         val sync: SyncVariant,
         val artoo: ArtooMappedVariation
-    ) : VariantItem() {
-        override val title = "${sync.product.optionName} ${artoo.name}"
-        override val message = "$title hinzugefügt"
-    }
+    ) : ChangeItem("Variante hinzugefügt")
 
     private inner class UpdateVariantItem(
         val product: ShopifyProduct,
         val variant: ShopifyProductVariant,
-        override val message: String,
+        message: String,
         val block: () -> Unit
-    ) : VariantItem() {
-        override val title = "${variant.options[0].name} ${variant.options[0].value}"
-    }
+    ) : ChangeItem(message)
 }

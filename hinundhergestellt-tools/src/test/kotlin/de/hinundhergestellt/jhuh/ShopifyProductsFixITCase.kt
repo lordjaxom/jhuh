@@ -259,12 +259,9 @@ class ShopifyProductsFixITCase {
     }
 
     @Test
-    fun updateOptionValueWithLinkedMetafield() = runBlocking {
-        val product = productClient.fetchAll("'Testprodukt'").first()
-        val option = product.options[0]
-        val index = option.optionValues.indexOfFirst { it.name == "Sky Blue" }
-//        option.optionValues[index] = option.optionValues[index].update { withName("Sky blue") }
-        optionClient.update(product, product.options[0])
+    fun checkSomeProduct() = runBlocking {
+        val product = productClient.fetchAll("'Silikon Gießform Mini-Häuschen I'").first()
+        println(product)
     }
 }
 

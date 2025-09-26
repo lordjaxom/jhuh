@@ -157,8 +157,8 @@ class ShopifyProduct private constructor(
         media
     )
 
-    fun findVariantByBarcode(barcode: String) =
-        variants.firstOrNull { it.barcode == barcode }
+    fun findVariantByBarcode(barcode: String) = variants.firstOrNull { it.barcode == barcode }
+    fun findVariantBySku(sku: String) = variants.firstOrNull { it.sku == sku }
 
     override fun toString() =
         "ShopifyProduct(id='$id', title='$title', vendor='$vendor', productType='$productType', status=$status)"

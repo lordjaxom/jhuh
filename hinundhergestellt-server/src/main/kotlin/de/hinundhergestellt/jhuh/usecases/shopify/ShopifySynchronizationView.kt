@@ -3,6 +3,7 @@ package de.hinundhergestellt.jhuh.usecases.shopify
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.grid.Grid
 import com.vaadin.flow.component.grid.GridVariant
+import com.vaadin.flow.component.icon.VaadinIcon
 import com.vaadin.flow.component.orderedlayout.FlexComponent
 import com.vaadin.flow.component.orderedlayout.VerticalLayout
 import com.vaadin.flow.component.treegrid.TreeGrid
@@ -13,6 +14,7 @@ import de.hinundhergestellt.jhuh.components.VaadinCoroutineScope
 import de.hinundhergestellt.jhuh.components.button
 import de.hinundhergestellt.jhuh.components.ellipsisColumn
 import de.hinundhergestellt.jhuh.components.horizontalLayout
+import de.hinundhergestellt.jhuh.components.html.ellipsisSpan
 import de.hinundhergestellt.jhuh.components.progressOverlay
 import de.hinundhergestellt.jhuh.components.root
 import de.hinundhergestellt.jhuh.components.span
@@ -20,8 +22,8 @@ import de.hinundhergestellt.jhuh.components.text
 import de.hinundhergestellt.jhuh.components.treegrid.hierarchyComponentColumn
 import de.hinundhergestellt.jhuh.components.treegrid.recursiveSelectTreeGrid
 import de.hinundhergestellt.jhuh.usecases.shopify.ShopifySynchronizationService.Item
-import de.hinundhergestellt.jhuh.usecases.shopify.ShopifySynchronizationService.ProductItem
-import de.hinundhergestellt.jhuh.usecases.shopify.ShopifySynchronizationService.VariantItem
+import de.hinundhergestellt.jhuh.usecases.shopify.ShopifySynchronizationService.ProductHeaderItem
+import de.hinundhergestellt.jhuh.usecases.shopify.ShopifySynchronizationService.VariantHeaderItem
 import kotlinx.coroutines.CoroutineScope
 
 @Route
@@ -57,14 +59,7 @@ class ShopifySynchronizationView(
         }
         itemsGrid = recursiveSelectTreeGrid<Item> {
             emptyStateText = "Keine abweichenden Einträge gefunden"
-            hierarchyComponentColumn({ treeItemLabel(it) }) {
-                setHeader("Bezeichnung")
-                flexGrow = 1
-            }
-            ellipsisColumn({ it.message }) {
-                setHeader("Sachverhalt")
-                flexGrow = 2
-            }
+            hierarchyComponentColumn({ treeItemLabel(it) }) {}
             selectionMode = Grid.SelectionMode.MULTI
             setSizeFull()
             addThemeVariants(GridVariant.LUMO_ROW_STRIPES)
@@ -101,14 +96,15 @@ class ShopifySynchronizationView(
         root {
             horizontalLayout {
                 alignItems = FlexComponent.Alignment.CENTER
-                style["gap"] = "var(--lumo-space-xs)"
+                style["gap"] = "var(--lumo-space-s)"
 
                 val icon = when (item) {
-                    is ProductItem -> CustomIcon.PRODUCT
-                    is VariantItem -> CustomIcon.VARIATION
+                    is ProductHeaderItem -> CustomIcon.PRODUCT.create()
+                    is VariantHeaderItem -> CustomIcon.VARIATION.create()
+                    else -> VaadinIcon.REFRESH.create()
                 }
-                span { add(icon.create().apply { setSize("var(--lumo-icon-size-s)"); color = "var(--lumo-secondary-text-color)" }) }
-                text(item.title)
+                span { add(icon.apply { setSize("var(--lumo-icon-size-s)"); color = "var(--lumo-secondary-text-color)" }) }
+                ellipsisSpan(item.message) {}
             }
         }
 }
