@@ -22,7 +22,7 @@ class SyncImageTools(
     }
 
     fun findVariantImages(productName: String, variantSkus: List<String>): List<SyncImage> {
-        require(variantSkus.isNotEmpty()) { "variantSkus must not be empty" }
+        if (variantSkus.isEmpty()) return listOf()
         return imageDirectoryService.listDirectoryEntries(Path(productName))
             .asSequence()
             .mapNotNull { entry -> variantSkus.firstOrNull { entry.isValidSyncImageFor(productName, it) }?.let { SyncImage(entry, it) } }
@@ -40,6 +40,7 @@ class SyncImage(
 
 val String.syncImageProductName get() = substringBefore(",")
 val String.syncImageSuffix get() = replace(" ", "-").lowercase() // TODO: remove unwanted characters
+
 val URI.extension get() = path.substringAfterLast(".", "")
 
 val Path.syncImageSortSelector

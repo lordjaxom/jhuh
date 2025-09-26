@@ -22,6 +22,7 @@ STIL-REGELN (Natürlichkeit & Überschriften):
 - Natürlich, dialogisch, nahbar. Vermeide wörtliche Wiederholung des Produktnamens.
 - Produktname nur im SEO-Titel und genau 1× im Intro verwenden; danach Synonyme/Kategoriebegriffe (z.B. „Seife gießen Set“, „Melt & Pour“).
 - Verwende Absätze mit max. 150 Wörtern.
+- Erwähne keine EAN-Nummern oder Artikelnummern (SKUs) im Text.
 
 ERSTELLE:
 1. SEO-Titel: Max. 70 Zeichen, enthält den Produktnamen + 1–2 Synonyme (z.B. „Flexfolien (HTV), Bügelfolien“).

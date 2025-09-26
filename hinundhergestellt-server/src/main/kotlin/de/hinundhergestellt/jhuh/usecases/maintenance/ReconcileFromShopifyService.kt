@@ -1,6 +1,7 @@
 package de.hinundhergestellt.jhuh.usecases.maintenance
 
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
+import de.hinundhergestellt.jhuh.backend.mapping.ChangeField
 import de.hinundhergestellt.jhuh.backend.mapping.MappingService
 import de.hinundhergestellt.jhuh.backend.mapping.ifChanged
 import de.hinundhergestellt.jhuh.backend.mapping.toQuotedString
@@ -14,7 +15,6 @@ import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariantRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendor
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendorRepository
 import de.hinundhergestellt.jhuh.tools.ShopifyImageTools
-import de.hinundhergestellt.jhuh.tools.isValidSyncImageFor
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedCategory
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
@@ -23,6 +23,7 @@ import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionOperations
+import java.nio.file.Path
 import kotlin.reflect.KMutableProperty1
 import kotlin.streams.asSequence
 
@@ -137,15 +138,8 @@ class ReconcileFromShopifyService(
         }
         require(syncVariant.product.id == syncProduct.id) { "SyncVariant.product does not match ShopifyVariant.product" }
 
-        val loadedWeight = variant.weight
-        if (syncVariant.weight?.let { it.compareTo(loadedWeight) == 0 } != false) {
-            add(
-                UpdateSyncVariantItem(
-                    syncVariant, "${product.title} (${variant.title})",
-                    "Gewicht von ${syncVariant.weight ?: "leer"} auf $loadedWeight geändert",
-                    { weight = loadedWeight }
-                )
-            )
+        ifChanged(variant.weight, syncVariant.weight, ChangeField.VARIANT_WEIGHT) {
+            add(UpdateSyncVariantItem(syncVariant, "${product.title} (${variant.title})", it) { weight = variant.weight })
         }
     }
 
@@ -185,25 +179,17 @@ class ReconcileFromShopifyService(
     }
 
     private fun checkReconcileProductImages(product: ShopifyProduct) = buildList {
-        if (product.media.any { !it.fileName.isValidSyncImageFor(product) }) {
-            add(ImmediateProductItem(product.title, "Produktbilder in Shopify nicht normalisiert") {
-                shopifyImageTools.reorganizeProductImages(product)
-            })
-            return@buildList
-        }
-
-        val syncImages = shopifyImageTools.findAllImages(product)
-
-        val imagesNotKnownLocally = product.media.filter { media -> syncImages.none { it.path.fileName.toString() == media.fileName } }
-        if (imagesNotKnownLocally.isNotEmpty()) {
-            add(ImmediateProductItem(product.title, "${imagesNotKnownLocally.size} Bilder lokal nicht vorhanden") {
-
+        shopifyImageTools.unorganizedProductImages(product).takeIf { it.isNotEmpty() }?.let {
+            add(ImmediateProductItem(product.title, "${it.size} Produktbilder nicht normalisiert") {
+                shopifyImageTools.reorganizeProductImages(product, it)
             })
         }
-        val imagesNotKnownShopify = syncImages.filter { image -> product.media.none { it.fileName == image.path.fileName.toString() } }
-        if (imagesNotKnownLocally.isNotEmpty() || imagesNotKnownShopify.isNotEmpty()) {
-            logger.info { "${product.title}: ${imagesNotKnownLocally.size} images only in Shopify, ${imagesNotKnownShopify.size} images only local" }
-        }
+
+         shopifyImageTools.locallyMissingProductImages(product).takeIf { it.isNotEmpty() }?.let {
+            add(ImmediateProductItem(product.title, "${it.size} Produktbilder lokal nicht vorhanden") {
+                shopifyImageTools.downloadLocallyMissingProductImages(product, it)
+            })
+         }
     }
 
     private fun reconcileCategories(artooCategory: ArtooMappedCategory) {
