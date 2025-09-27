@@ -74,6 +74,8 @@ private class EditProductDialog(
     init {
         width = "1000px"
         headerTitle = "Produkt bearbeiten"
+        isCloseOnEsc = false
+        isCloseOnOutsideClick = false
 
         header {
             button(VaadinIcon.CLOSE) {

@@ -90,7 +90,7 @@ class ShopifyProduct private constructor(
     options: MutableList<ShopifyProductOption>,
     metafields: MutableList<ShopifyMetafield>,
     val variants: MutableList<ShopifyProductVariant>, // not dirty tracked, separate update workflow
-    val media: List<ShopifyMedia>,
+    val media: MutableList<ShopifyMedia>,
 ) : ShopifyProductCommonFields, HasDirtyTracker {
 
     override val dirtyTracker = DirtyTracker()
@@ -112,7 +112,7 @@ class ShopifyProduct private constructor(
         CopyOnWriteArrayList(product.options.map { ShopifyProductOption(it) }),
         CopyOnWriteArrayList(product.metafields.edges.map { ShopifyMetafield(it.node) }).asRemoveProtectedMutableList(),
         CopyOnWriteArrayList(variants),
-        media
+        media.toMutableList()
     ) {
         require(!product.metafields.pageInfo.hasNextPage) { "Product has more metafields than were loaded" }
     }
@@ -124,7 +124,7 @@ class ShopifyProduct private constructor(
         CopyOnWriteArrayList(unsaved.options),
         CopyOnWriteArrayList(unsaved.metafields).asRemoveProtectedMutableList(),
         CopyOnWriteArrayList(),
-        listOf()
+        mutableListOf()
     )
 
     internal constructor(
@@ -154,7 +154,7 @@ class ShopifyProduct private constructor(
         options,
         metafields,
         variants,
-        media
+        media.toMutableList()
     )
 
     fun findVariantByBarcode(barcode: String) = variants.firstOrNull { it.barcode == barcode }

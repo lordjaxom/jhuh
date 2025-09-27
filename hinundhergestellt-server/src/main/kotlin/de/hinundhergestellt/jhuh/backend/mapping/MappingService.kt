@@ -71,10 +71,12 @@ class MappingService(
         else if (artoo.barcodes.size < artoo.variations.size)
             add(MappingProblem("Nicht alle Variationen haben einen Barcode", false))
 
-        if (artoo.itemNumbers.isEmpty())
-            add(MappingProblem("Produkt hat keine Artikelnummer(n)", true))
-        else if (artoo.itemNumbers.size < artoo.variations.size)
-            add(MappingProblem("Nicht alle Variationen haben eine Artikelnummer", false))
+        if (!artoo.hasOnlyDefaultVariant) {
+            if (artoo.itemNumbers.isEmpty())
+                add(MappingProblem("Produkt hat keine Artikelnummer(n)", true))
+            else if (artoo.itemNumbers.size < artoo.variations.size)
+                add(MappingProblem("Nicht alle Variationen haben eine Artikelnummer", false))
+        }
 
         if (artoo.variations.groupingBy { it.name }.eachCount().any { (_, count) -> count > 1 })
             add(MappingProblem("Produkt hat Variationen mit gleichem Namen", true))
@@ -95,8 +97,10 @@ class MappingService(
 
         if (!artoo.hasOnlyDefaultVariant && sync.optionName == null) add(MappingProblem("Optionsname für Varianten fehlt", true))
 
-        if (artooImageTools.findProductImages(artoo).isEmpty())
+        if (artooImageTools.findProductImages(artoo).isEmpty() &&
+            (artoo.hasOnlyDefaultVariant || artooImageTools.findVariantImages(artoo).isEmpty())) {
             add(MappingProblem("Keine Produktbilder vorhanden", true))
+        }
     }
 
     fun checkForProblems(artoo: ArtooMappedVariation, sync: SyncVariant) = buildList {

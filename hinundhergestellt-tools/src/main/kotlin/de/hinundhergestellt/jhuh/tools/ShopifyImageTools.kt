@@ -35,18 +35,21 @@ class ShopifyImageTools(
     private val colorTaxonomy: ShopifyColorTaxonomy,
     private val syncImageTools: SyncImageTools,
     private val genericWebClient: WebClient,
-    private val properties: HuhProperties,
-    private val imageDirectoryService: ImageDirectoryService
+    private val properties: HuhProperties
 ) {
     fun findAllImages(product: ShopifyProduct) =
         syncImageTools.findAllImages(product.syncImageProductName, product.variantSkus)
 
-    suspend fun uploadProductImages(product: ShopifyProduct) {
-        val imagesToUpload = syncImageTools.findProductImages(product.syncImageProductName)
+    suspend fun uploadProductImages(product: ShopifyProduct, images: List<SyncImage>? = null) {
+        val imagesToUpload = images ?: syncImageTools.findProductImages(product.syncImageProductName)
+        if (imagesToUpload.isEmpty()) return
+
+        require(imagesToUpload.all { it.variantSku == null }) { "Variant images not supported yet" }
+
         val uploadedMedias = mediaClient.upload(imagesToUpload.map { it.path })
         uploadedMedias.forEach { media -> media.altText = generateAltText(product) }
         mediaClient.update(uploadedMedias, referencesToAdd = listOf(product.id))
-        // TODO: Add medias to product
+        product.media += uploadedMedias
     }
 
     suspend fun uploadVariantImages(product: ShopifyProduct, variants: Collection<ShopifyProductVariant>) {
@@ -60,7 +63,7 @@ class ShopifyImageTools(
             media.altText = generateAltText(product, variant)
         }
         mediaClient.update(uploadedMedias, referencesToAdd = listOf(product.id))
-        // TODO: Add medias to product
+        product.media += uploadedMedias
     }
 
     suspend fun generateColorSwatches(
@@ -142,6 +145,11 @@ class ShopifyImageTools(
             val path = directory.resolve(media.fileName)
             genericWebClient.downloadFileTo(media.src, path)
         }
+    }
+
+    fun remotelyMissingProductImages(product: ShopifyProduct): List<SyncImage> {
+        val images = findAllImages(product)
+        return images.filter { image -> product.media.none { it.fileName == image.path.fileName.toString() } }
     }
 
     private suspend fun normalizeProductImages(product: ShopifyProduct, medias: List<ShopifyMedia>): List<SyncImage> {
