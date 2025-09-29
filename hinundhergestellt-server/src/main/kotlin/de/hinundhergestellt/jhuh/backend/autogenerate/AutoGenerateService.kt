@@ -41,9 +41,11 @@ class AutoGenerateService(
 
         val updates = mutableListOf<SyncProduct.() -> Unit>()
 
-        if (sync.descriptionHtml.isNullOrEmpty()) {
+        if (sync.descriptionHtml.isNullOrEmpty() || sync.seoTitle.isNullOrEmpty() || sync.metaDescription.isNullOrEmpty()) {
             val texts = shopTexterService.generateProductTexts(artoo, sync, null)
-            updates += { descriptionHtml = texts.descriptionHtml }
+            if (sync.descriptionHtml.isNullOrEmpty()) updates += { descriptionHtml = texts.descriptionHtml }
+            if (sync.seoTitle.isNullOrEmpty()) updates += { seoTitle = texts.seoTitle }
+            if (sync.metaDescription.isNullOrEmpty()) updates += { metaDescription = texts.metaDescription }
         }
         if (sync.tags.isEmpty() || sync.technicalDetails.isEmpty()) {
             val details = shopTexterService.generateProductDetails(artoo, sync, null)

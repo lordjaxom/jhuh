@@ -20,6 +20,8 @@ class ShopifyMapper(
             vendor = sync.vendor!!.name,
             productType = sync.type!!,
             descriptionHtml = sync.descriptionHtml ?: "",
+            seoTitle = sync.seoTitle,
+            seoDescription = sync.metaDescription,
             hasOnlyDefaultVariant = artoo.hasOnlyDefaultVariant,
             tags = mappingService.allTags(sync, artoo),
             metafields = mappingService.customMetafields(sync),

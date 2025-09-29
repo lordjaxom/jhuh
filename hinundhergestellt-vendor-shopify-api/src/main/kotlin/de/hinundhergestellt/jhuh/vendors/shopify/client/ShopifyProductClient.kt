@@ -77,6 +77,7 @@ class ShopifyProductClient(
                 edges {
                     node {
                         handle; id; title; vendor; productType; status; tags; hasOnlyDefaultVariant; descriptionHtml
+                        seo { title; description }
                         variants()
                         optionsForWrapper()
                         metafields(first = 50) {

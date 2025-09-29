@@ -126,6 +126,8 @@ class ShopifySynchronizationService(
             synchronize(syncProduct, shopifyProduct, shopifyProduct::vendor, syncProduct.vendor!!.name),
             synchronize(syncProduct, shopifyProduct, shopifyProduct::productType, syncProduct.type!!),
             synchronize(syncProduct, shopifyProduct, shopifyProduct::descriptionHtml, syncProduct.descriptionHtml ?: ""),
+            synchronize(syncProduct, shopifyProduct, shopifyProduct::seoTitle, syncProduct.seoTitle ?: ""),
+            synchronize(syncProduct, shopifyProduct, shopifyProduct::seoDescription, syncProduct.metaDescription ?: ""),
             synchronize(syncProduct, shopifyProduct, shopifyProduct::tags, mappingService.allTags(syncProduct, artooProduct))
         )
         items += mappingService.customMetafields(syncProduct).mapNotNull { synchronize(syncProduct, shopifyProduct, it) }

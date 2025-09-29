@@ -54,6 +54,12 @@ class SyncProduct(
     @Column
     var optionName: String? = null,
 
+    @Column
+    var seoTitle: String? = null,
+
+    @Column
+    var metaDescription: String? = null,
+
     @Id
     val id: UUID = UUID.randomUUID()
 )

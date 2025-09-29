@@ -1,9 +1,7 @@
 package de.hinundhergestellt.jhuh.backend.shoptexter
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.json.JsonMapper
 import de.hinundhergestellt.jhuh.backend.shoptexter.model.Product
-import de.hinundhergestellt.jhuh.backend.shoptexter.model.ProductMapper
 import de.hinundhergestellt.jhuh.core.loadTextResource
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.ai.chat.client.ChatClient
@@ -17,7 +15,6 @@ private val logger = KotlinLogging.logger {}
 @Service
 class ProductTexterService(
     private val shopTexterChatClient: ChatClient,
-    private val productMapper: ProductMapper,
     @param:Qualifier("shopTexterJsonMapper")
     private val jsonMapper: JsonMapper
 ) {
@@ -27,7 +24,7 @@ class ProductTexterService(
     private val detailsConverter = BeanOutputConverter(ProductDetails::class.java)
 
     fun generateProductKeywords(product: Product): ProductKeywordClusters {
-        logger.info { "Generating product keywords for $product" }
+        logger.info { "Generating product keywords for ${product.title}" }
 
         val callResponse = shopTexterChatClient.prompt()
             .system(loadTextResource { "product-keywords-system-prompt.txt" })
@@ -46,7 +43,7 @@ class ProductTexterService(
     }
 
     fun generateProductTexts(product: Product, keywords: ProductKeywordClusters): ProductRawTexts {
-        logger.info { "Generating product description for $product with keyword cluster" }
+        logger.info { "Generating product description for ${product.title} with keyword cluster" }
 
         val callResponse = shopTexterChatClient.prompt()
             .system(loadTextResource { "product-texts-system-prompt.txt" })
@@ -66,7 +63,7 @@ class ProductTexterService(
     }
 
     fun optimizeProductTexts(product: Product, texts: ProductRawTexts): ProductDescription {
-        logger.info { "Optimizing product description for $product from previous prompt" }
+        logger.info { "Optimizing product description for ${product.title} from previous prompt" }
 
         val callResponse = shopTexterChatClient.prompt()
             .system(loadTextResource { "product-optimize-system-prompt.txt" })
@@ -86,7 +83,7 @@ class ProductTexterService(
     }
 
     fun generateProductDetails(product: Product): ProductDetails {
-        logger.info { "Generating product details for $product" }
+        logger.info { "Generating product details for ${product.title}" }
 
         val callResponse = shopTexterChatClient.prompt()
             .system(loadTextResource { "product-details-system-prompt.txt" })

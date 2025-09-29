@@ -4,6 +4,7 @@ import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.Product
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductCreateInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductStatus
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductUpdateInput
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.SEOInput
 
 class ShopifyProduct private constructor(
     internal var internalId: String?,
@@ -12,6 +13,8 @@ class ShopifyProduct private constructor(
     var productType: String,
     var status: ProductStatus,
     var descriptionHtml: String,
+    var seoTitle: String?,
+    var seoDescription: String?,
     val hasOnlyDefaultVariant: Boolean,
     var tags: Set<String>, // TODO: val
     val options: List<ShopifyProductOption>,
@@ -26,6 +29,8 @@ class ShopifyProduct private constructor(
         vendor: String,
         productType: String,
         descriptionHtml: String,
+        seoTitle: String?,
+        seoDescription: String?,
         hasOnlyDefaultVariant: Boolean,
         tags: Set<String>,
         metafields: List<ShopifyMetafield>
@@ -36,6 +41,8 @@ class ShopifyProduct private constructor(
         productType = productType,
         status = ProductStatus.DRAFT,
         descriptionHtml = descriptionHtml,
+        seoTitle = seoTitle,
+        seoDescription = seoDescription,
         hasOnlyDefaultVariant = hasOnlyDefaultVariant,
         tags = tags,
         options = listOf(),
@@ -51,6 +58,8 @@ class ShopifyProduct private constructor(
         product.productType,
         product.status,
         product.descriptionHtml,
+        product.seo.title,
+        product.seo.description,
         product.hasOnlyDefaultVariant,
         product.tags.toSet(),
         product.options.map { ShopifyProductOption(it) },
@@ -77,7 +86,8 @@ class ShopifyProduct private constructor(
             tags = tags.toList(),
             productOptions = options.map { it.toOptionCreateInput() },
             metafields = metafields.map { it.toMetafieldInput() },
-            descriptionHtml = descriptionHtml
+            descriptionHtml = descriptionHtml,
+            seo = toSEOInput()
         )
     }
 
@@ -90,7 +100,14 @@ class ShopifyProduct private constructor(
             status = status,
             tags = tags.toList(),
             metafields = metafields.map { it.toMetafieldInput() },
-            descriptionHtml = descriptionHtml
+            descriptionHtml = descriptionHtml,
+            seo = toSEOInput()
+        )
+
+    private fun toSEOInput() =
+        SEOInput(
+            title = seoTitle,
+            description = seoDescription
         )
 }
 

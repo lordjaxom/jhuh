@@ -16,6 +16,8 @@ internal enum class ChangeField(
     PRODUCT_VENDOR("Hersteller", true, "vendor"),
     PRODUCT_TYPE("Produktart", true, "productType", "type"),
     PRODUCT_DESCRIPTION("Produktbeschreibung", false, "descriptionHtml"),
+    PRODUCT_SEO_TITLE("SEO-Titel", true, "seoTitle"),
+    PRODUCT_META_DESCRIPTION("Metabeschreibung", true, "seoDescription"),
     PRODUCT_TAGS("Tags", true, "tags"),
     PRODUCT_TECHNICAL_DETAILS("Technische Daten", false, "technical_details"),
     PRODUCT_VENDOR_ADDRESS("Herstelleradresse", false, "vendor_address"),
@@ -63,7 +65,8 @@ private fun Any?.isNullOrEmpty() = when {
 }
 
 private fun <T> T.isEqualTo(other: T) = when {
-    other == null -> this == null
+    this == null -> other.isNullOrEmpty()
+    other == null -> isNullOrEmpty()
     this is BigDecimal -> compareTo(other as BigDecimal) == 0
     else -> this == other
 }

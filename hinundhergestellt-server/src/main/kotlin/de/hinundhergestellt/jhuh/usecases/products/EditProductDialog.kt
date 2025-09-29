@@ -24,12 +24,13 @@ import de.hinundhergestellt.jhuh.components.bind
 import de.hinundhergestellt.jhuh.components.binder
 import de.hinundhergestellt.jhuh.components.button
 import de.hinundhergestellt.jhuh.components.checkbox
+import de.hinundhergestellt.jhuh.components.ckeditor.hasContent
+import de.hinundhergestellt.jhuh.components.ckeditor.htmlEditor
 import de.hinundhergestellt.jhuh.components.comboBox
 import de.hinundhergestellt.jhuh.components.div
 import de.hinundhergestellt.jhuh.components.footer
 import de.hinundhergestellt.jhuh.components.formLayout
 import de.hinundhergestellt.jhuh.components.header
-import de.hinundhergestellt.jhuh.components.htmlEditor
 import de.hinundhergestellt.jhuh.components.itemLabelGenerator
 import de.hinundhergestellt.jhuh.components.lightHeaderSpan
 import de.hinundhergestellt.jhuh.components.reorderableGridField
@@ -128,6 +129,14 @@ private class EditProductDialog(
                 descriptionHtmlEditor = htmlEditor("Produktbeschreibung") {
                     height = "10em"
                     bind(syncBinder).toProperty(SyncProduct::descriptionHtml)
+                }
+                textField("SEO-Titel") {
+                    setWidthFull()
+                    bind(syncBinder).toProperty(SyncProduct::seoTitle)
+                }
+                textField("Meta-Beschreibung") {
+                    setWidthFull()
+                    bind(syncBinder).toProperty(SyncProduct::metaDescription)
                 }
                 technicalDetailsGridField = reorderableGridField("Technische Daten") {
                     height = "10em"
@@ -266,7 +275,7 @@ private class EditProductDialog(
 
     private fun generateTexts() {
         vaadinScope.launchWithReporting {
-            if (descriptionHtmlEditor.value.isNullOrEmpty()) {
+            if (!descriptionHtmlEditor.hasContent) {
                 report("Generiere Produkttexte mit AI...")
                 val generated = application {
                     async { service.generateProductTexts(artooProduct, syncProduct, descriptionTextField.value) }.await()
@@ -304,6 +313,10 @@ private class EditProductDialog(
                 artooProduct.takeIf { artooBinder.hasChanges() }?.also { artooBinder.writeBean(it) },
                 syncProduct.takeIf { syncBinder.hasChanges() }?.also { syncBinder.writeBean(it) }
             )
+            if (result.sync != null && !descriptionHtmlEditor.hasContent) {
+                // fix for CKEditor having empty paragraph instead of empty string
+                result.sync.descriptionHtml = null
+            }
             callback(result)
             close()
         } catch (_: ValidationException) {
