@@ -15,3 +15,5 @@ REGELN:
   "100% Polyester (Chenille)", "6 - 7 mm", "Maschinenwaschbar bis 30°C (Schonwaschgang)")
 - verfügbare Varianten, die bereits Bestandteil des Produkts sind (z.B. "Farbe") sollen nicht in den technischen Daten aufgeführt werden
 - der Hersteller soll nicht in den technischen Daten aufgeführt werden
+- die EAN soll nicht in den technischen Daten aufgeführt werden
+- die Artikelnummer (SKU) soll nicht in den technischen Daten aufgeführt werden
