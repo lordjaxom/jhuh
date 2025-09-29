@@ -5,24 +5,24 @@ import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariant
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedVariation
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOptionValue
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
-import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProduct
 import org.springframework.stereotype.Component
 
 @Component
 class ShopifyMapper(
     private val mappingService: MappingService
 ) {
-    fun map(syncProduct: SyncProduct, artooProduct: ArtooMappedProduct) =
-        UnsavedShopifyProduct(
-            title = artooProduct.description,
-            vendor = syncProduct.vendor!!.name,
-            productType = syncProduct.type!!,
-            descriptionHtml = syncProduct.descriptionHtml ?: "",
-            tags = mappingService.allTags(syncProduct, artooProduct),
-            options = listOf(), // options are added after saving
-            metafields = mappingService.customMetafields(syncProduct),
+    fun map(sync: SyncProduct, artoo: ArtooMappedProduct) =
+        ShopifyProduct(
+            title = artoo.description,
+            vendor = sync.vendor!!.name,
+            productType = sync.type!!,
+            descriptionHtml = sync.descriptionHtml ?: "",
+            hasOnlyDefaultVariant = artoo.hasOnlyDefaultVariant,
+            tags = mappingService.allTags(sync, artoo),
+            metafields = mappingService.customMetafields(sync),
         )
 
     fun map(sync: SyncVariant, artoo: ArtooMappedVariation) =

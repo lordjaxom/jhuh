@@ -186,9 +186,7 @@ class ShopifySynchronizationService(
     }
 
     private fun <T> synchronize(sync: SyncProduct, shopify: ShopifyProduct, property: KMutableProperty0<T>, newValue: T) =
-        ifChanged(property.get(), newValue, property.name) {
-            UpdateProductItem(sync, shopify, it) { property.set(newValue) }
-        }
+        ifChanged(property.get(), newValue, property.name) { UpdateProductItem(sync, shopify, it) { property.set(newValue) } }
 
     private fun synchronize(sync: SyncProduct, shopify: ShopifyProduct, newField: ShopifyMetafield) =
         shopify.metafields.findById(newField).let { oldField ->
@@ -220,7 +218,10 @@ class ShopifySynchronizationService(
     }
 
     private suspend fun apply(item: CreateProductItem): ShopifyProduct {
-        val product = shopifyDataStore.create(shopifyMapper.map(item.sync, item.artoo))
+        require(item.artoo.hasOnlyDefaultVariant) { "TODO: Create appropriate product options when creating a new product with variants" }
+
+        val product = shopifyMapper.map(item.sync, item.artoo)
+        shopifyDataStore.create(product)
         shopifyImageTools.uploadProductImages(product)
 
         transactionOperations.execute {

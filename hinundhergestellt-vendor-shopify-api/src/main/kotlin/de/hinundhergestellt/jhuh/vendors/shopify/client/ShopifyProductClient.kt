@@ -11,6 +11,7 @@ import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.PageInfo
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.Product
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductConnection
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductCreatePayload
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductDeleteInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductDeletePayload
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductEdge
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductUpdatePayload
@@ -29,7 +30,7 @@ class ShopifyProductClient(
 ) {
     fun fetchAll(query: String? = null) = pageAll { fetchNextPage(it, query) }.map { it.toShopifyProduct() }
 
-    suspend fun create(product: UnsavedShopifyProduct): ShopifyProduct {
+    suspend fun create(product: ShopifyProduct) {
         val request = buildMutation {
             productCreate(product.toProductCreateInput()) {
                 product {
@@ -44,8 +45,8 @@ class ShopifyProductClient(
         product.options.asSequence()
             .zip(payload.product!!.options.asSequence())
             .forEach { (option, created) -> option.internalId = created.id }
+        product.internalId = payload.product!!.id
         product.descriptionHtml = payload.product!!.descriptionHtml
-        return ShopifyProduct(product, payload.product!!.id)
     }
 
     suspend fun update(product: ShopifyProduct) {
@@ -62,7 +63,7 @@ class ShopifyProductClient(
 
     suspend fun delete(product: ShopifyProduct) {
         val request = buildMutation {
-            productDelete(product.toProductDeleteInput()) {
+            productDelete(ProductDeleteInput(product.id)) {
                 userErrors { message; field }
             }
         }

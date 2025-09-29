@@ -7,7 +7,6 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOptionClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantClient
-import de.hinundhergestellt.jhuh.vendors.shopify.client.UnsavedShopifyProduct
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.sync.Mutex
@@ -48,11 +47,10 @@ class ShopifyDataStore(
         }
     }
 
-    suspend fun create(product: UnsavedShopifyProduct): ShopifyProduct {
+    suspend fun create(product: ShopifyProduct) {
         requireLock()
-        val created = productClient.create(product)
-        products.add(created)
-        return created
+        productClient.create(product)
+        products.add(product)
     }
 
     suspend fun update(product: ShopifyProduct) {

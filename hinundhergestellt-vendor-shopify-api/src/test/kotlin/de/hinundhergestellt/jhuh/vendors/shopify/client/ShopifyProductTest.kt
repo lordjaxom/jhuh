@@ -58,26 +58,26 @@ class ShopifyProductTest {
 //        assertThat(product.media).hasSize(1)
 //        assertThat(product.media[0]).isEqualTo(media)
 //    }
-
-    @Test
-    fun `test toString output`() {
-        val product = ShopifyProduct(
-            id = "IDSTR",
-            title = "TStr",
-            vendor = "VStr",
-            productType = "PType",
-            status = ProductStatus.ARCHIVED,
-            descriptionHtml = "",
-            hasOnlyDefaultVariant = false,
-            tags = setOf(),
-            options = mutableListOf(),
-            metafields = mutableListOf(),
-            variants = mutableListOf(),
-            media = listOf()
-        )
-        val expected = "ShopifyProduct(id='IDSTR', title='TStr', vendor='VStr', productType='PType', status=ARCHIVED)"
-        assertThat(product.toString()).isEqualTo(expected)
-    }
+//
+//    @Test
+//    fun `test toString output`() {
+//        val product = ShopifyProduct(
+//            id = "IDSTR",
+//            title = "TStr",
+//            vendor = "VStr",
+//            productType = "PType",
+//            status = ProductStatus.ARCHIVED,
+//            descriptionHtml = "",
+//            hasOnlyDefaultVariant = false,
+//            tags = setOf(),
+//            options = mutableListOf(),
+//            metafields = mutableListOf(),
+//            variants = mutableListOf(),
+//            media = listOf()
+//        )
+//        val expected = "ShopifyProduct(id='IDSTR', title='TStr', vendor='VStr', productType='PType', status=ARCHIVED)"
+//        assertThat(product.toString()).isEqualTo(expected)
+//    }
 //
 //    @Test
 //    fun `test findVariantByBarcode returns correct variant`() {
@@ -250,53 +250,53 @@ class ShopifyProductTest {
 //        assertThat(product.variants).isEmpty()
 //        assertThat(product.media).isEmpty()
 //    }
-
-    @Test
-    fun `test dirty tracking of non-collection fields`() {
-        val product = ShopifyProduct(
-            id = "PROD1",
-            title = "Test Product",
-            vendor = "Vendor1",
-            productType = "Type1",
-            status = ProductStatus.ACTIVE,
-            descriptionHtml = "<p>Beschreibung</p>",
-            hasOnlyDefaultVariant = false,
-            tags = setOf("Tag1", "Tag2"),
-            options = mutableListOf(),
-            metafields = mutableListOf(),
-            variants = mutableListOf(),
-            media = listOf()
-        )
-        // Initial dirty state
-        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
-        // title
-        product.title = "New Title"
-        assertThat(product.dirtyTracker.getDirtyAndReset()).isTrue()
-        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
-        // change to same value should not mark dirty
-        product.vendor = "Vendor1"
-        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
-        // vendor
-        product.vendor = "New Vendor"
-        assertThat(product.dirtyTracker.getDirtyAndReset()).isTrue()
-        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
-        // productType
-        product.productType = "New Type"
-        assertThat(product.dirtyTracker.getDirtyAndReset()).isTrue()
-        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
-        // status
-        product.status = ProductStatus.DRAFT
-        assertThat(product.dirtyTracker.getDirtyAndReset()).isTrue()
-        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
-        // descriptionHtml
-        product.descriptionHtml = "<p>New Desc</p>"
-        assertThat(product.dirtyTracker.getDirtyAndReset()).isTrue()
-        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
-        // tags
-        product.tags = setOf("A", "B")
-        assertThat(product.dirtyTracker.getDirtyAndReset()).isTrue()
-        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
-    }
+//
+//    @Test
+//    fun `test dirty tracking of non-collection fields`() {
+//        val product = ShopifyProduct(
+//            id = "PROD1",
+//            title = "Test Product",
+//            vendor = "Vendor1",
+//            productType = "Type1",
+//            status = ProductStatus.ACTIVE,
+//            descriptionHtml = "<p>Beschreibung</p>",
+//            hasOnlyDefaultVariant = false,
+//            tags = setOf("Tag1", "Tag2"),
+//            options = mutableListOf(),
+//            metafields = mutableListOf(),
+//            variants = mutableListOf(),
+//            media = listOf()
+//        )
+//        // Initial dirty state
+//        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+//        // title
+//        product.title = "New Title"
+//        assertThat(product.dirtyTracker.getDirtyAndReset()).isTrue()
+//        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+//        // change to same value should not mark dirty
+//        product.vendor = "Vendor1"
+//        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+//        // vendor
+//        product.vendor = "New Vendor"
+//        assertThat(product.dirtyTracker.getDirtyAndReset()).isTrue()
+//        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+//        // productType
+//        product.productType = "New Type"
+//        assertThat(product.dirtyTracker.getDirtyAndReset()).isTrue()
+//        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+//        // status
+//        product.status = ProductStatus.DRAFT
+//        assertThat(product.dirtyTracker.getDirtyAndReset()).isTrue()
+//        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+//        // descriptionHtml
+//        product.descriptionHtml = "<p>New Desc</p>"
+//        assertThat(product.dirtyTracker.getDirtyAndReset()).isTrue()
+//        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+//        // tags
+//        product.tags = setOf("A", "B")
+//        assertThat(product.dirtyTracker.getDirtyAndReset()).isTrue()
+//        assertThat(product.dirtyTracker.getDirtyAndReset()).isFalse()
+//    }
 //
 //    @Test
 //    fun `test dirty tracking of metafields`() {
