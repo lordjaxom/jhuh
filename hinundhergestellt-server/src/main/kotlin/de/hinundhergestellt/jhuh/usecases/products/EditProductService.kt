@@ -89,6 +89,8 @@ class EditProductService(
                         findHobbyFunProduct(artooProduct)?.imageUrl?.isNotEmpty() == true)
 
     suspend fun downloadImages(artooProduct: ArtooMappedProduct, description: String?, report: suspend (String) -> Unit) {
+        report("Suche Produkt in Katalogen...")
+
         val rayherProduct = findRayherProduct(artooProduct)
         if (rayherProduct != null) {
             downloadProductImages(artooProduct, description, rayherProduct.imageUrls, report)

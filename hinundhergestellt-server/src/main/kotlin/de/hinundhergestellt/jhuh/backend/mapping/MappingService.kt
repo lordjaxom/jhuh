@@ -93,9 +93,9 @@ class MappingService(
             else if (it.email == null || it.address == null) add(MappingProblem("Herstellerangaben unvollständig", true))
         }
 
-        if (sync.type == null) add(MappingProblem("Produkt hat keine Produktart", true))
+        if (sync.type.isNullOrEmpty()) add(MappingProblem("Produkt hat keine Produktart", true))
 
-        if (!artoo.hasOnlyDefaultVariant && sync.optionName == null) add(MappingProblem("Optionsname für Varianten fehlt", true))
+        if (!artoo.hasOnlyDefaultVariant && sync.optionName.isNullOrEmpty()) add(MappingProblem("Optionsname für Varianten fehlt", true))
 
         if (artooImageTools.findProductImages(artoo).isEmpty() &&
             (artoo.hasOnlyDefaultVariant || artooImageTools.findVariantImages(artoo).isEmpty())) {

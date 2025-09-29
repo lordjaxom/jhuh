@@ -9,6 +9,8 @@ interface SyncProductRepository : JpaRepository<SyncProduct, UUID> {
 
     fun findAllBySyncedIsTrue(): List<SyncProduct>
 
+    fun findAllBySyncedIsFalseAndArtooIdIsNotNull(): List<SyncProduct>
+
     fun findByShopifyId(shopifyId: String): SyncProduct?
 
     fun findByArtooId(artooId: String): SyncProduct?
