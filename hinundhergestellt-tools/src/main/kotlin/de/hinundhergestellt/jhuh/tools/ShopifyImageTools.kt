@@ -38,10 +38,10 @@ class ShopifyImageTools(
     private val properties: HuhProperties
 ) {
     fun findAllImages(product: ShopifyProduct) =
-        syncImageTools.findAllImages(product.syncImageProductName, product.variantSkus)
+        syncImageTools.findAllImages(product.vendor, product.syncImageProductName, product.variantSkus)
 
     suspend fun uploadProductImages(product: ShopifyProduct, images: List<SyncImage>? = null) {
-        val imagesToUpload = images ?: syncImageTools.findProductImages(product.syncImageProductName)
+        val imagesToUpload = images ?: syncImageTools.findProductImages(product.vendor, product.syncImageProductName)
         if (imagesToUpload.isEmpty()) return
 
         require(imagesToUpload.all { it.variantSku == null }) { "Variant images not supported yet" }
@@ -53,7 +53,7 @@ class ShopifyImageTools(
     }
 
     suspend fun uploadVariantImages(product: ShopifyProduct, variants: Collection<ShopifyProductVariant>) {
-        val imagesToUpload = syncImageTools.findVariantImages(product.syncImageProductName, variants.map { it.sku })
+        val imagesToUpload = syncImageTools.findVariantImages(product.vendor, product.syncImageProductName, variants.map { it.sku })
         if (imagesToUpload.isEmpty()) return
 
         val uploadedMedias = mediaClient.upload(imagesToUpload.map { it.path })
@@ -87,7 +87,7 @@ class ShopifyImageTools(
             ?.takeIf { it.isNotEmpty() }
             ?: "${generateColorSwatchHandle(product.syncImageProductName)}-"
 
-        val imagesWithColor = syncImageTools.findVariantImages(product.syncImageProductName, variants.map { it.sku })
+        val imagesWithColor = syncImageTools.findVariantImages(product.vendor, product.syncImageProductName, variants.map { it.sku })
             .mapParallel(properties.processingThreads) { it to MediaImageTools.averageColorPercent(it.path, colorRect, ignoreWhite) }
 
         imagesWithColor.forEach { (image, color) ->
@@ -132,13 +132,13 @@ class ShopifyImageTools(
 
     fun locallyMissingProductImages(product: ShopifyProduct): List<ShopifyMedia> {
         val images = findAllImages(product)
-        return product.media.filter {
-            media -> media.fileName.isValidSyncImageFor(product) &&!images.any { it.path.fileName.toString() == media.fileName }
+        return product.media.filter { media ->
+            media.fileName.isValidSyncImageFor(product) && !images.any { it.path.fileName.toString() == media.fileName }
         }
     }
 
     suspend fun downloadLocallyMissingProductImages(product: ShopifyProduct, mediaToDownload: List<ShopifyMedia>) {
-        val directory = properties.imageDirectory.resolve(product.syncImageProductName)
+        val directory = properties.imageDirectory.resolve(product.vendor).resolve(product.syncImageProductName)
         directory.createDirectories()
         mediaToDownload.forEachParallel(properties.processingThreads) { media ->
             logger.info { "Downloading image ${media.fileName}" }
@@ -164,7 +164,7 @@ class ShopifyImageTools(
         val variant = product.variants.firstOrNull { it.mediaId == media.id }
         val suffix = variant?.syncImageSuffix ?: findNextAvailableProductFileName(product, indexOfNonVariantImage)
         val fileName = generateImageFileName(product.syncImageProductName, suffix, URI(media.src).extension)
-        var path = properties.imageDirectory.resolve(product.syncImageProductName).resolve(fileName)
+        var path = properties.imageDirectory.resolve(product.vendor).resolve(product.syncImageProductName).resolve(fileName)
 
         path.parent.createDirectories()
         genericWebClient.downloadFileTo(media.src, path)

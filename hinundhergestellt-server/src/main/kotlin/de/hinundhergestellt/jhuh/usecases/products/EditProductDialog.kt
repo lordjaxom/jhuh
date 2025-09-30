@@ -244,7 +244,8 @@ private class EditProductDialog(
     }
 
     private fun updateImageTexts() {
-        val syncImages = service.findSyncImages(artooProduct, descriptionTextField.value)
+        val vendorName = vendorComboBox.value?.name ?: return
+        val syncImages = service.findAllImages(vendorName, artooProduct, descriptionTextField.value)
         productImagesText.text = "${syncImages.count { it.variantSku == null }} Produktbilder"
         variantImagesText?.text = "${syncImages.count { it.variantSku != null }} Variantenbilder"
     }
@@ -255,7 +256,10 @@ private class EditProductDialog(
                 descriptionTextField.value.isNullOrEmpty() ||
                 (weightBigDecimalField != null && weightBigDecimalField.value.isNullOrZero())
         autoFillButton.isEnabled = canFillInValues && needsFillInValues
-        downloadImagesButton.isEnabled = service.canDownloadImages(artooProduct, descriptionTextField.value)
+
+        val vendorName = vendorComboBox.value?.name
+        downloadImagesButton.isEnabled =
+            vendorName != null && service.canDownloadImages(vendorName, artooProduct, descriptionTextField.value)
     }
 
     private fun autoFillInValues() {
@@ -268,7 +272,8 @@ private class EditProductDialog(
 
     private fun downloadImages() {
         vaadinScope.launchWithReporting {
-            application { service.downloadImages(artooProduct, descriptionTextField.value, ::report) }
+            val vendorName = vendorComboBox.value?.name
+            application { service.downloadImages(vendorName!!, artooProduct, descriptionTextField.value, ::report) }
             updateImageTexts()
         }
     }

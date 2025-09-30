@@ -11,9 +11,9 @@ import kotlin.text.Regex.Companion.escape
 class SyncImageTools(
     private val imageDirectoryService: ImageDirectoryService
 ) {
-    fun findProductImages(productName: String): List<SyncImage> {
+    fun findProductImages(vendorName: String, productName: String): List<SyncImage> {
         require(productName.isNotEmpty()) { "productName must not be empty" }
-        return imageDirectoryService.listDirectoryEntries(Path(productName))
+        return imageDirectoryService.listDirectoryEntries(Path(vendorName, productName))
             .asSequence()
             .filter { it.isValidSyncImageFor(productName) }
             .sortedBy { it.syncImageSortSelector }
@@ -21,16 +21,16 @@ class SyncImageTools(
             .toList()
     }
 
-    fun findVariantImages(productName: String, variantSkus: List<String>): List<SyncImage> {
+    fun findVariantImages(vendorName: String, productName: String, variantSkus: List<String>): List<SyncImage> {
         if (variantSkus.isEmpty()) return listOf()
-        return imageDirectoryService.listDirectoryEntries(Path(productName))
+        return imageDirectoryService.listDirectoryEntries(Path(vendorName, productName))
             .asSequence()
             .mapNotNull { entry -> variantSkus.firstOrNull { entry.isValidSyncImageFor(productName, it) }?.let { SyncImage(entry, it) } }
             .toList()
     }
 
-    fun findAllImages(productName: String, variantSkus: List<String>) =
-        findProductImages(productName) + findVariantImages(productName, variantSkus)
+    fun findAllImages(vendorName: String, productName: String, variantSkus: List<String>) =
+        findProductImages(vendorName, productName) + findVariantImages(vendorName, productName, variantSkus)
 }
 
 class SyncImage(
@@ -38,7 +38,7 @@ class SyncImage(
     val variantSku: String?
 )
 
-val String.syncImageProductName get() = substringBefore(",")
+val String.syncImageProductName get() = substringBefore(",").replace("/", " ")
 val String.syncImageSuffix get() = replace(" ", "-").lowercase() // TODO: remove unwanted characters
 
 val URI.extension get() = path.substringAfterLast(".", "")

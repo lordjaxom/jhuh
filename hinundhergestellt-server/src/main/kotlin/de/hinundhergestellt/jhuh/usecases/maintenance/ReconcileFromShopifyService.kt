@@ -185,11 +185,11 @@ class ReconcileFromShopifyService(
             })
         }
 
-         shopifyImageTools.locallyMissingProductImages(product).takeIf { it.isNotEmpty() }?.let {
+        shopifyImageTools.locallyMissingProductImages(product).takeIf { it.isNotEmpty() }?.let {
             add(ImmediateProductItem(product.title, "${it.size} Produktbilder lokal nicht vorhanden") {
                 shopifyImageTools.downloadLocallyMissingProductImages(product, it)
             })
-         }
+        }
     }
 
     private fun reconcileCategories(artooCategory: ArtooMappedCategory) {

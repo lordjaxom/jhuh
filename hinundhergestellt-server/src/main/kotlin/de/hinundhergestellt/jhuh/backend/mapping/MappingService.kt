@@ -67,7 +67,7 @@ class MappingService(
         if (artoo.description.isEmpty()) add(MappingProblem("Produkt hat keine Beschreibung (Titel in Shopify)", true))
 
         if (artoo.barcodes.isEmpty())
-            add(MappingProblem( "Produkt hat keine Barcode(s)", true))
+            add(MappingProblem("Produkt hat keine Barcode(s)", true))
         else if (artoo.barcodes.size < artoo.variations.size)
             add(MappingProblem("Nicht alle Variationen haben einen Barcode", false))
 
@@ -97,8 +97,11 @@ class MappingService(
 
         if (!artoo.hasOnlyDefaultVariant && sync.optionName.isNullOrEmpty()) add(MappingProblem("Optionsname für Varianten fehlt", true))
 
-        if (artooImageTools.findProductImages(artoo).isEmpty() &&
-            (artoo.hasOnlyDefaultVariant || artooImageTools.findVariantImages(artoo).isEmpty())) {
+        val vendorName = sync.vendor?.name
+        if (vendorName.isNullOrEmpty() ||
+            artooImageTools.findProductImages(vendorName, artoo).isEmpty() &&
+            (artoo.hasOnlyDefaultVariant || artooImageTools.findVariantImages(vendorName, artoo).isEmpty())
+        ) {
             add(MappingProblem("Keine Produktbilder vorhanden", true))
         }
     }
@@ -114,8 +117,13 @@ class MappingService(
         if (!sync.hasWeight()) add(MappingProblem("Variation hat keine Gewichtsangabe", true))
         else if (!sync.hasValidWeight()) add(MappingProblem("Gewichtsangabe ungültig (0,5g oder >= 30g)", true))
 
-        if (artoo.itemNumber == null || artooImageTools.findVariantImages(artoo.parent).none { it.variantSku == artoo.itemNumber })
+        val vendorName = sync.product.vendor?.name
+        if (artoo.itemNumber.isNullOrEmpty() ||
+            vendorName.isNullOrEmpty() ||
+            artooImageTools.findVariantImages(vendorName, artoo.parent).none { it.variantSku == artoo.itemNumber }
+        ) {
             add(MappingProblem("Kein Variantenbild vorhanden", true))
+        }
     }
 
     private fun technicalDetailsJson(syncProduct: SyncProduct) =

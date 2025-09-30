@@ -76,30 +76,30 @@ class EditProductService(
         return FilledInProductValues()
     }
 
-    fun findSyncImages(artooProduct: ArtooMappedProduct, description: String?): List<SyncImage> {
+    fun findAllImages(vendorName: String, product: ArtooMappedProduct, description: String?): List<SyncImage> {
         val productTitle = description?.takeIf { it.isNotEmpty() }
-            ?: artooProduct.description.takeIf { it.isNotEmpty() }
+            ?: product.description.takeIf { it.isNotEmpty() }
             ?: return listOf()
-        return syncImageTools.findAllImages(productTitle.syncImageProductName, artooProduct.variantSkus)
+        return syncImageTools.findAllImages(vendorName, productTitle.syncImageProductName, product.variantSkus)
     }
 
-    fun canDownloadImages(artooProduct: ArtooMappedProduct, description: String?) =
-        (!description.isNullOrEmpty() || artooProduct.description.isNotEmpty()) &&
-                (findRayherProduct(artooProduct)?.imageUrls?.isNotEmpty() == true ||
-                        findHobbyFunProduct(artooProduct)?.imageUrl?.isNotEmpty() == true)
+    fun canDownloadImages(vendorName: String, product: ArtooMappedProduct, description: String?) =
+        (!description.isNullOrEmpty() || product.description.isNotEmpty()) &&
+                (findRayherProduct(product)?.imageUrls?.isNotEmpty() == true ||
+                        findHobbyFunProduct(product)?.imageUrl?.isNotEmpty() == true)
 
-    suspend fun downloadImages(artooProduct: ArtooMappedProduct, description: String?, report: suspend (String) -> Unit) {
+    suspend fun downloadImages(vendorName: String, product: ArtooMappedProduct, description: String?, report: suspend (String) -> Unit) {
         report("Suche Produkt in Katalogen...")
 
-        val rayherProduct = findRayherProduct(artooProduct)
-        if (rayherProduct != null) {
-            downloadProductImages(artooProduct, description, rayherProduct.imageUrls, report)
+        val rayher = findRayherProduct(product)
+        if (rayher != null) {
+            downloadProductImages(vendorName, product, description, rayher.imageUrls, report)
             return
         }
 
-        val hobbyFunProduct = findHobbyFunProduct(artooProduct)
-        if (hobbyFunProduct != null) {
-            downloadProductImages(artooProduct, description, listOf(hobbyFunProduct.imageUrl), report)
+        val hobbyFun = findHobbyFunProduct(product)
+        if (hobbyFun != null) {
+            downloadProductImages(vendorName, product, description, listOf(hobbyFun.imageUrl), report)
         }
     }
 
@@ -112,24 +112,24 @@ class EditProductService(
         else null
 
     private suspend fun downloadProductImages(
-        artooProduct: ArtooMappedProduct,
+        vendorName: String,
+        product: ArtooMappedProduct,
         description: String?,
         imageUrls: List<String>,
         report: suspend (String) -> Unit
     ) {
         val productTitle = description?.takeIf { it.isNotEmpty() }
-            ?: artooProduct.description.takeIf { it.isNotEmpty() }
+            ?: product.description.takeIf { it.isNotEmpty() }
             ?: return
         val productName = productTitle.syncImageProductName
-        val productPath = properties.imageDirectory.resolve(productName)
+        val productPath = properties.imageDirectory.resolve(vendorName).resolve(productName)
         productPath.createDirectories()
 
         report("Lade ${imageUrls.size} Produktbilder herunter...")
-        imageUrls
-            .sortedBy { it.computeImageSortSelector() }
-            .forEachIndexedParallel(properties.processingThreads) { index, imageUrl ->
-                downloadProductImage(productName, productPath, index, imageUrl)
-            }
+        val sortedUrls = imageUrls.sortedBy { it.computeImageSortSelector() }
+        sortedUrls.forEachIndexedParallel(properties.processingThreads) { index, imageUrl ->
+            downloadProductImage(productName, productPath, index, imageUrl)
+        }
     }
 
     private suspend fun downloadProductImage(productName: String, productPath: Path, index: Int, imageUrl: String) {

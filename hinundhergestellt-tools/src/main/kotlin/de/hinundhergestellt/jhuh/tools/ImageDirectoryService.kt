@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
+import kotlin.io.path.isDirectory
 
 private val logger = KotlinLogging.logger {}
 
@@ -180,7 +181,7 @@ class ImageDirectoryService(
             }
             val valid = key.reset()
             if (!valid) {
-                removeDirectoryRecursively(dir)
+                removeRecursively(dir)
             }
             if (rewalkNeeded != null && Files.exists(rewalkNeeded)) {
                 rewalkDirectory(rewalkNeeded)
@@ -191,7 +192,7 @@ class ImageDirectoryService(
     private fun handleCreate(path: Path) {
         logger.debug { "Handling CREATE event for $path" }
         try {
-            if (Files.isDirectory(path)) {
+            if (path.isDirectory()) {
                 registerDirectoryWatcher(path)
                 rewalkDirectory(path)
             } else {
@@ -206,29 +207,29 @@ class ImageDirectoryService(
     private fun handleDelete(path: Path) {
         logger.debug { "Handling DELETE event for $path" }
         try {
-            if (Files.isDirectory(path)) {
-                removeDirectoryRecursively(path)
-            } else {
-                lock.write { dirContent[path.parent]?.remove(path.fileName.toString()) }
-                markDirty()
-            }
+            removeRecursively(path)
         } catch (ex: Exception) {
             logger.error(ex) { "Couldn't handle DELETE event for $path" }
         }
     }
 
-    private fun removeDirectoryRecursively(dir: Path) {
+    private fun removeRecursively(path: Path) {
+        val isDirectory: Boolean
         lock.write {
-            dirContent.keys
-                .filter { it == dir || it.startsWith(dir) }
-                .forEach { toRemove ->
-                    toRemove.parent?.also { dirContent[it]?.remove(toRemove.fileName.toString()) }
-                    dirContent.remove(toRemove)
-                }
+            isDirectory = path in dirContent
+            if (isDirectory) {
+                dirContent.keys
+                    .filter { it == path || it.startsWith(path) }
+                    .forEach { toRemove -> dirContent.remove(toRemove) }
+            } else {
+                dirContent[path.parent]?.remove(path.fileName.toString())
+            }
         }
-        watchKeyToDir.entries
-            .filter { it.value == dir || it.value.startsWith(dir) }
-            .forEach { it.key.cancel(); watchKeyToDir.remove(it.key) }
+        if (isDirectory) {
+            watchKeyToDir.entries
+                .filter { it.value == path || it.value.startsWith(path) }
+                .forEach { it.key.cancel(); watchKeyToDir.remove(it.key) }
+        }
         markDirty()
     }
 

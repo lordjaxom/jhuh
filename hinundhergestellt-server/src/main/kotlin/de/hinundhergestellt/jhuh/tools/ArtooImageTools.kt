@@ -7,11 +7,11 @@ import org.springframework.stereotype.Component
 class ArtooImageTools(
     private val syncImageTools: SyncImageTools
 ) {
-    fun findProductImages(product: ArtooMappedProduct) =
-        product.syncImageProductName?.let { syncImageTools.findProductImages(it) } ?: listOf()
+    fun findProductImages(vendorName: String, product: ArtooMappedProduct) =
+        product.syncImageProductName?.let { syncImageTools.findProductImages(vendorName, it) } ?: listOf()
 
-    fun findVariantImages(product: ArtooMappedProduct) =
-        product.syncImageProductName?.let { syncImageTools.findVariantImages(it, product.variantSkus) } ?: listOf()
+    fun findVariantImages(vendorName: String, product: ArtooMappedProduct) =
+        product.syncImageProductName?.let { syncImageTools.findVariantImages(vendorName, it, product.variantSkus) } ?: listOf()
 }
 
 val ArtooMappedProduct.syncImageProductName get() = description.syncImageProductName.takeIf { it.isNotEmpty() }
