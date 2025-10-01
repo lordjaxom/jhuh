@@ -2,6 +2,7 @@ package de.hinundhergestellt.jhuh.vendors.shopify.client
 
 import com.netflix.graphql.dgs.client.WebClientGraphQLClient
 import de.hinundhergestellt.jhuh.HuhProperties
+import de.hinundhergestellt.jhuh.core.forEachParallel
 import de.hinundhergestellt.jhuh.core.mapParallel
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.DgsClient.buildMutation
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.DgsClient.buildQuery
@@ -46,10 +47,12 @@ class ShopifyMediaClient(
 ) {
     fun fetchAll(query: String? = null) = pageAll { fetchNextPage(it, query) }.map { it.toShopifyMedia() }
 
-    suspend fun upload(files: List<Path>): List<ShopifyMedia> {
+    suspend fun upload(files: Map<Path, String>): List<ShopifyMedia> {
         val stagedTargets = createStagedUploads(files)
 
-        files.zip(stagedTargets).mapParallel(properties.processingThreads) { (file, staged) -> uploadToStaging(file, staged) }
+        files.keys.zip(stagedTargets).forEachParallel(properties.processingThreads) { (path, staged) ->
+            uploadToStaging(path, staged)
+        }
 
         val createdIds = createFiles(stagedTargets)
         val processedFiles = waitForFiles(createdIds)
@@ -67,13 +70,14 @@ class ShopifyMediaClient(
     }
 
     suspend fun delete(medias: List<ShopifyMedia>) {
-        val request = buildMutation {
-            fileDelete(medias.map { it.id }) {
-                userErrors { message; field }
+        medias.chunked(250).forEach { chunk ->
+            val request = buildMutation {
+                fileDelete(chunk.map { it.id }) {
+                    userErrors { message; field }
+                }
             }
+            shopifyGraphQLClient.executeMutation(request, FileDeletePayload::userErrors)
         }
-
-        shopifyGraphQLClient.executeMutation(request, FileDeletePayload::userErrors)
     }
 
     private suspend fun fetchNextPage(after: String?, query: String?): Pair<List<FileEdge>, PageInfo> {
@@ -95,8 +99,7 @@ class ShopifyMediaClient(
         return Pair(payload.edges, payload.pageInfo)
     }
 
-
-    private suspend fun createStagedUploads(files: List<Path>): List<StagedMediaUploadTarget> {
+    private suspend fun createStagedUploads(files: Map<Path, String>): List<StagedMediaUploadTarget> {
         val request = buildMutation {
             stagedUploadsCreate(files.map { it.toStagedUploadInput() }) {
                 stagedTargets {
@@ -175,13 +178,13 @@ class ShopifyMediaClient(
 private fun FileEdge.toShopifyMedia() =
     ShopifyMedia(node)
 
-private fun Path.toStagedUploadInput() =
+private fun Map.Entry<Path, String>.toStagedUploadInput() =
     StagedUploadInput(
         resource = StagedUploadTargetGenerateUploadResource.IMAGE,
-        filename = fileName.toString(),
-        mimeType = toMimeType(),
+        filename = value,
+        mimeType = key.toMimeType(),
         httpMethod = StagedUploadHttpMethodType.POST,
-        fileSize = fileSize().toString(),
+        fileSize = key.fileSize().toString(),
     )
 
 private fun Path.toMimeType() =

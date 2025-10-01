@@ -7,13 +7,14 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToFlux
 import reactor.core.scheduler.Schedulers
 import java.io.OutputStream
+import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.outputStream
 
-suspend fun WebClient.downloadFileTo(url: String, output: OutputStream) {
+suspend fun WebClient.downloadFileTo(uri: URI, output: OutputStream) {
     val body = this.get()
-        .uri(url)
+        .uri(uri)
         .retrieve()
         .bodyToFlux<DataBuffer>()
         .publishOn(Schedulers.boundedElastic())
@@ -23,10 +24,10 @@ suspend fun WebClient.downloadFileTo(url: String, output: OutputStream) {
         .awaitSingleOrNull()
 }
 
-suspend fun WebClient.downloadFileTo(url: String, target: Path) {
+suspend fun WebClient.downloadFileTo(uri: URI, target: Path) {
     var success = false
     try {
-        target.outputStream().use { downloadFileTo(url, it) }
+        target.outputStream().use { downloadFileTo(uri, it) }
         success = true
     } finally {
         if (!success) target.deleteIfExists()

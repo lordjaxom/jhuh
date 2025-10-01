@@ -72,28 +72,6 @@ class RayherProductsFixITCase {
             }
     }
 
-    @Test
-    fun downloadProductImages() = runBlocking {
-        val rayherProducts = readRayherProducts(workDirectory.resolve("var/Rayher0725d_Excel.csv"))
-        artooProductClient.findAll()
-//            .filter { it.itemNumber == "88587000" }
-            .mapNotNull { product -> product.barcode?.let { barcode -> rayherProducts.firstOrNull { it.ean == barcode } } }
-            .collect { rayherProduct ->
-                val imageDirectory = workDirectory.resolve("var/images/Rayher ${rayherProduct.descriptions[0]}")
-                imageDirectory.createDirectories()
-
-                rayherProduct.imageUrls.forEach { imageUrl ->
-                    val imagePath = imageDirectory.resolve(generateImageFileName(rayherProduct, imageUrl))
-                    try {
-                        logger.info { "Downloading ${imagePath.fileName}" }
-                        toolsWebClient.downloadFileTo(imageUrl, imagePath)
-                    } catch (e: WebClientResponseException) {
-                        logger.error { "Error downloading $imageUrl: ${e.message}" }
-                    }
-                }
-            }
-    }
-
     private fun fixItemNumber(itemNumber: String) = itemNumber.replace("-", "")
 
     private fun generateImageFileName(product: RayherProduct, imageUrl: String): String {

@@ -59,7 +59,9 @@ class ShopifySynchronizationView(
         }
         itemsGrid = recursiveSelectTreeGrid<Item> {
             emptyStateText = "Keine abweichenden Einträge gefunden"
-            hierarchyComponentColumn({ treeItemLabel(it) }) {}
+            hierarchyComponentColumn({ treeItemLabel(it) }) {
+                setHeader(" ")
+            }
             selectionMode = Grid.SelectionMode.MULTI
             setSizeFull()
             addThemeVariants(GridVariant.LUMO_ROW_STRIPES)

@@ -8,14 +8,14 @@ import java.net.URI
 
 data class ShopifyMedia(
     val id: String,
-    val src: String,
+    val src: URI,
     var altText: String,
 ) {
-    val fileName = URI(src).path.substringAfterLast("/")
+    val fileName = src.path.substringAfterLast("/")
 
     internal constructor(mediaImage: MediaImage) : this(
         id = mediaImage.id,
-        src = mediaImage.image!!.src,
+        src = URI(mediaImage.image!!.src),
         altText = mediaImage.image!!.altText ?: ""
     )
 

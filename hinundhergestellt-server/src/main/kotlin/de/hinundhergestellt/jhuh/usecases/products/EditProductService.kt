@@ -7,12 +7,12 @@ import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendor
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendorRepository
 import de.hinundhergestellt.jhuh.core.forEachIndexedParallel
+import de.hinundhergestellt.jhuh.tools.PRODUCT_IMAGE_PREFIX
 import de.hinundhergestellt.jhuh.tools.SyncImage
 import de.hinundhergestellt.jhuh.tools.SyncImageTools
 import de.hinundhergestellt.jhuh.tools.downloadFileTo
 import de.hinundhergestellt.jhuh.tools.extension
-import de.hinundhergestellt.jhuh.tools.generateImageFileName
-import de.hinundhergestellt.jhuh.tools.syncImageProductName
+import de.hinundhergestellt.jhuh.tools.productNameForImages
 import de.hinundhergestellt.jhuh.tools.variantSkus
 import de.hinundhergestellt.jhuh.vendors.hobbyfun.datastore.HobbyFunDataStore
 import de.hinundhergestellt.jhuh.vendors.rayher.datastore.RayherDataStore
@@ -80,11 +80,11 @@ class EditProductService(
         val productTitle = description?.takeIf { it.isNotEmpty() }
             ?: product.description.takeIf { it.isNotEmpty() }
             ?: return listOf()
-        return syncImageTools.findAllImages(vendorName, productTitle.syncImageProductName, product.variantSkus)
+        return syncImageTools.findAllImages(vendorName, productTitle.productNameForImages, product.variantSkus)
     }
 
     fun canDownloadImages(vendorName: String, product: ArtooMappedProduct, description: String?) =
-        (!description.isNullOrEmpty() || product.description.isNotEmpty()) &&
+        vendorName.isNotEmpty() && (!description.isNullOrEmpty() || product.description.isNotEmpty()) &&
                 (findRayherProduct(product)?.imageUrls?.isNotEmpty() == true ||
                         findHobbyFunProduct(product)?.imageUrl?.isNotEmpty() == true)
 
@@ -121,21 +121,18 @@ class EditProductService(
         val productTitle = description?.takeIf { it.isNotEmpty() }
             ?: product.description.takeIf { it.isNotEmpty() }
             ?: return
-        val productName = productTitle.syncImageProductName
-        val productPath = properties.imageDirectory.resolve(vendorName).resolve(productName)
+        val productPath = properties.imageDirectory.resolve(vendorName).resolve(productTitle.productNameForImages)
         productPath.createDirectories()
 
         report("Lade ${imageUrls.size} Produktbilder herunter...")
         val sortedUrls = imageUrls.sortedBy { it.computeImageSortSelector() }
         sortedUrls.forEachIndexedParallel(properties.processingThreads) { index, imageUrl ->
-            downloadProductImage(productName, productPath, index, imageUrl)
+            downloadProductImage(productPath, index, URI(imageUrl))
         }
     }
 
-    private suspend fun downloadProductImage(productName: String, productPath: Path, index: Int, imageUrl: String) {
-        val extension = URI(imageUrl).extension
-        val suffix = "produktbild-${index + 1}"
-        val fileName = generateImageFileName(productName, suffix, extension)
+    private suspend fun downloadProductImage(productPath: Path, index: Int, imageUrl: URI) {
+        val fileName = "$PRODUCT_IMAGE_PREFIX-${index + 1}.${imageUrl.extension}"
         val filePath = productPath.resolve(fileName)
 
         try {

@@ -20,9 +20,11 @@ import de.hinundhergestellt.jhuh.vendors.shopify.taxonomy.ShopifyColorTaxonomy
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
-import java.net.URI
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteExisting
+import kotlin.io.path.exists
+import kotlin.io.path.extension
+import kotlin.text.Regex.Companion.escape
 
 private val logger = KotlinLogging.logger { }
 
@@ -38,27 +40,35 @@ class ShopifyImageTools(
     private val properties: HuhProperties
 ) {
     fun findAllImages(product: ShopifyProduct) =
-        syncImageTools.findAllImages(product.vendor, product.syncImageProductName, product.variantSkus)
+        syncImageTools.findAllImages(product.vendor, product.productNameForImages, product.variantSkus)
 
-    suspend fun uploadProductImages(product: ShopifyProduct, images: List<SyncImage>? = null) {
-        val imagesToUpload = images ?: syncImageTools.findProductImages(product.vendor, product.syncImageProductName)
-        if (imagesToUpload.isEmpty()) return
+    suspend fun uploadProductImages(product: ShopifyProduct, imagesToUpload: List<SyncImage>) {
+        require(imagesToUpload.all { it.variantSku == null }) { "Variant images not supported, use uploadVariantImages instead" }
 
-        require(imagesToUpload.all { it.variantSku == null }) { "Variant images not supported yet" }
-
-        val uploadedMedias = mediaClient.upload(imagesToUpload.map { it.path })
+        val imagesWithShopifyName =
+            imagesToUpload.associate { it.path to "${toProductImageNameWithoutExtension(product, it.index)}.${it.path.extension}" }
+        val uploadedMedias = mediaClient.upload(imagesWithShopifyName)
         uploadedMedias.forEach { media -> media.altText = generateAltText(product) }
         mediaClient.update(uploadedMedias, referencesToAdd = listOf(product.id))
         product.media += uploadedMedias
     }
 
-    suspend fun uploadVariantImages(product: ShopifyProduct, variants: Collection<ShopifyProductVariant>) {
-        val imagesToUpload = syncImageTools.findVariantImages(product.vendor, product.syncImageProductName, variants.map { it.sku })
+    suspend fun uploadProductImages(product: ShopifyProduct) {
+        val imagesToUpload = syncImageTools.findProductImages(product.vendor, product.productNameForImages)
         if (imagesToUpload.isEmpty()) return
 
-        val uploadedMedias = mediaClient.upload(imagesToUpload.map { it.path })
+        uploadProductImages(product, imagesToUpload)
+    }
+
+    suspend fun uploadVariantImages(product: ShopifyProduct, variants: Collection<ShopifyProductVariant>) {
+        val imagesToUpload = syncImageTools.findVariantImages(product.vendor, product.productNameForImages, variants.map { it.sku })
+        if (imagesToUpload.isEmpty()) return
+
+        val imagesWithShopifyName =
+            imagesToUpload.associate { it.path to "${toVariantImageNameWithoutExtension(product, it.variantSku!!)}.${it.path.extension}" }
+        val uploadedMedias = mediaClient.upload(imagesWithShopifyName)
         variants.forEach { variant ->
-            val media = uploadedMedias.first { it.fileName.isValidSyncImageFor(product, variant) }
+            val media = uploadedMedias.first { it.fileName.isVariantShopifyImage(product, variant) }
             variant.mediaId = media.id
             media.altText = generateAltText(product, variant)
         }
@@ -85,9 +95,9 @@ class ShopifyImageTools(
             .map { (current, next) -> current.commonPrefixWith(next) }
             .minByOrNull { it.length }
             ?.takeIf { it.isNotEmpty() }
-            ?: "${generateColorSwatchHandle(product.syncImageProductName)}-"
+            ?: "${generateColorSwatchHandle(product.productNameForImages)}-"
 
-        val imagesWithColor = syncImageTools.findVariantImages(product.vendor, product.syncImageProductName, variants.map { it.sku })
+        val imagesWithColor = syncImageTools.findVariantImages(product.vendor, product.productNameForImages, variants.map { it.sku })
             .mapParallel(properties.processingThreads) { it to MediaImageTools.averageColorPercent(it.path, colorRect, ignoreWhite) }
 
         imagesWithColor.forEach { (image, color) ->
@@ -110,35 +120,36 @@ class ShopifyImageTools(
     }
 
     fun unorganizedProductImages(product: ShopifyProduct) =
-        product.media.filter { !it.fileName.isValidSyncImageFor(product) }
+        product.media.filter { !it.fileName.isAnyShopifyImage(product) }
 
     suspend fun reorganizeProductImages(product: ShopifyProduct, mediaToReorganize: List<ShopifyMedia>) {
         require(product.hasOnlyDefaultVariant || product.variants.all { it.sku.isNotEmpty() }) { "All product variants must have SKU" }
 
         val images = normalizeProductImages(product, mediaToReorganize)
-        val medias = mediaClient.upload(images.map { it.path })
-        val variants = images.asSequence().zip(medias.asSequence())
+        val imagesWithShopifyName = images.associate { it.path to it.toShopifyImageFileName(product) }
+        val medias = mediaClient.upload(imagesWithShopifyName)
+        val variants = images.zip(medias)
             .mapNotNull { (image, media) ->
                 val variant = image.variantSku?.let { product.findVariantBySku(it) }
                 media.altText = generateAltText(product, variant)
                 variant.also { it?.mediaId = media.id }
             }
-            .toList()
 
         mediaClient.update(medias, referencesToAdd = listOf(product.id))
         if (variants.isNotEmpty()) variantClient.update(product, variants)
         mediaClient.update(mediaToReorganize, referencesToRemove = listOf(product.id))
+
+        product.media -= mediaToReorganize.toSet()
+        product.media += medias
     }
 
     fun locallyMissingProductImages(product: ShopifyProduct): List<ShopifyMedia> {
-        val images = findAllImages(product)
-        return product.media.filter { media ->
-            media.fileName.isValidSyncImageFor(product) && !images.any { it.path.fileName.toString() == media.fileName }
-        }
+        val knownImages = findAllImages(product).map { it.toShopifyImageFileName(product) }
+        return product.media.filter { media -> media.fileName.isAnyShopifyImage(product) && media.fileName !in knownImages }
     }
 
     suspend fun downloadLocallyMissingProductImages(product: ShopifyProduct, mediaToDownload: List<ShopifyMedia>) {
-        val directory = properties.imageDirectory.resolve(product.vendor).resolve(product.syncImageProductName)
+        val directory = properties.imageDirectory.resolve(product.vendor).resolve(product.productNameForImages)
         directory.createDirectories()
         mediaToDownload.forEachParallel(properties.processingThreads) { media ->
             logger.info { "Downloading image ${media.fileName}" }
@@ -148,8 +159,8 @@ class ShopifyImageTools(
     }
 
     fun remotelyMissingProductImages(product: ShopifyProduct): List<SyncImage> {
-        val images = findAllImages(product)
-        return images.filter { image -> product.media.none { it.fileName == image.path.fileName.toString() } }
+        val knownImages = findAllImages(product)
+        return knownImages.filter { image -> product.media.none { it.fileName == image.toShopifyImageFileName(product) } }
     }
 
     private suspend fun normalizeProductImages(product: ShopifyProduct, medias: List<ShopifyMedia>): List<SyncImage> {
@@ -162,29 +173,31 @@ class ShopifyImageTools(
 
     private suspend fun normalizeProductImage(product: ShopifyProduct, media: ShopifyMedia, indexOfNonVariantImage: AtomicInt): SyncImage {
         val variant = product.variants.firstOrNull { it.mediaId == media.id }
-        val suffix = variant?.syncImageSuffix ?: findNextAvailableProductFileName(product, indexOfNonVariantImage)
-        val fileName = generateImageFileName(product.syncImageProductName, suffix, URI(media.src).extension)
-        var path = properties.imageDirectory.resolve(product.vendor).resolve(product.syncImageProductName).resolve(fileName)
+        val index = if (variant == null) findNextProductImageNumber(product, indexOfNonVariantImage) else -1
+        val fileNameWithoutExtension = variant?.sku?.toFileNamePart() ?: "$PRODUCT_IMAGE_PREFIX-${index}"
+        val fileName = "$fileNameWithoutExtension.${media.src.extension}"
+        var path = properties.imageDirectory.resolve(product.vendor).resolve(product.productNameForImages).resolve(fileName)
+        if (!path.exists()) {
+            path.parent.createDirectories()
+            genericWebClient.downloadFileTo(media.src, path)
+        }
 
-        path.parent.createDirectories()
-        genericWebClient.downloadFileTo(media.src, path)
-
-        if (URI(media.src).extension == "webp") {
-            val newFileName = generateImageFileName(product.syncImageProductName, suffix, "png")
-            val newPath = properties.imageDirectory.resolve(product.syncImageProductName).resolve(newFileName)
+        if (media.src.extension == "webp") {
+            val newFileName = "$fileNameWithoutExtension.png"
+            val newPath = path.parent.resolve(newFileName)
             val result = Runtime.getRuntime().exec(arrayOf("convert", path.toString(), newPath.toString())).waitFor()
             require(result == 0) { "Conversion of webp to png failed" }
             path.deleteExisting()
             path = newPath
         }
-        return SyncImage(path, variant?.sku)
+        return SyncImage(path, index, variant?.sku)
     }
 
-    private fun findNextAvailableProductFileName(product: ShopifyProduct, index: AtomicInt): String {
+    private fun findNextProductImageNumber(product: ShopifyProduct, index: AtomicInt): Int {
         while (true) {
-            val suffix = "produktbild-${index.andIncrement}"
-            val candidate = generateImageFileName(product.syncImageProductName, suffix, "")
-            if (product.media.none { it.fileName.startsWith(candidate) }) return suffix
+            val candidate = index.andIncrement
+            val regex = Regex("${escape(toProductImageNameWithoutExtension(product, candidate))}\\.$EXTENSIONS_PATTERN")
+            if (product.media.none { regex.matches(it.fileName) }) return candidate
         }
     }
 
@@ -198,14 +211,33 @@ class ShopifyImageTools(
         "${product.title} ${variant?.let { "in ${product.options[0].name} ${it.options[0].value}" } ?: "Produktbild"}"
 }
 
-val ShopifyProduct.syncImageProductName get() = title.syncImageProductName
-val ShopifyProductVariant.syncImageSuffix get() = sku.syncImageSuffix
+val ShopifyProduct.productNameForImages get() = title.productNameForImages
 
-fun String.isValidSyncImageFor(product: ShopifyProduct) =
-    isValidSyncImageFor(product.syncImageProductName, product.variantSkus)
+private fun String.isProductShopifyImage(product: ShopifyProduct): Boolean {
+    val prefix = arrayOf(product.vendor, product.productNameForImages).joinToString("-") { it.toFileNamePart() }
+    return Regex("${escape(prefix)}-$PRODUCT_IMAGE_PREFIX-[0-9]+\\.$EXTENSIONS_PATTERN").matches(this)
+}
 
-fun String.isValidSyncImageFor(product: ShopifyProduct, variant: ShopifyProductVariant) =
-    isValidSyncImageFor(product.syncImageProductName, variant.sku)
+private fun String.isVariantShopifyImage(product: ShopifyProduct, variant: ShopifyProductVariant): Boolean {
+    val prefix = arrayOf(product.vendor, product.productNameForImages, variant.sku, variant.title).joinToString("-") { it.toFileNamePart() }
+    return Regex("${escape(prefix)}\\.$EXTENSIONS_PATTERN").matches(this)
+}
+
+private fun String.isAnyShopifyImage(product: ShopifyProduct) =
+    isProductShopifyImage(product) || product.variants.any { isVariantShopifyImage(product, it) }
+
+private fun toProductImageNameWithoutExtension(product: ShopifyProduct, index: Int) =
+    "${product.vendor.toFileNamePart()}-${product.productNameForImages.toFileNamePart()}-$PRODUCT_IMAGE_PREFIX-$index"
+
+private fun toVariantImageNameWithoutExtension(product: ShopifyProduct, variant: ShopifyProductVariant) =
+    arrayOf(product.vendor, product.productNameForImages, variant.sku, variant.title).joinToString("-") { it.toFileNamePart() }
+
+private fun toVariantImageNameWithoutExtension(product: ShopifyProduct, sku: String) =
+    toVariantImageNameWithoutExtension(product, product.findVariantBySku(sku)!!)
+
+private fun SyncImage.toShopifyImageFileName(product: ShopifyProduct) =
+    if (variantSku == null) "${toProductImageNameWithoutExtension(product, index)}.${path.extension}"
+    else "${toVariantImageNameWithoutExtension(product, variantSku)}.${path.extension}"
 
 private val UMLAUT_REPLACEMENTS = listOf(
     """[Ää]+""".toRegex() to "ae",

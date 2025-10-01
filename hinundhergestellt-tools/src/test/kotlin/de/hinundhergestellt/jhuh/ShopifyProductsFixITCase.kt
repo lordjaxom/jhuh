@@ -2,10 +2,7 @@ package de.hinundhergestellt.jhuh
 
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
-import de.hinundhergestellt.jhuh.tools.RectPct
 import de.hinundhergestellt.jhuh.tools.ShopifyImageTools
-import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMedia
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMediaClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafield
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafieldClient
@@ -13,10 +10,8 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafieldType
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetaobjectClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOptionClient
-import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.findById
-import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.WeightUnit
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
@@ -26,10 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import java.math.BigDecimal
 import java.nio.charset.StandardCharsets
-import kotlin.io.path.Path
-import kotlin.io.path.listDirectoryEntries
-import kotlin.io.path.moveTo
-import kotlin.io.path.readText
 import kotlin.io.path.writeText
 import kotlin.test.Test
 
@@ -144,50 +135,8 @@ class ShopifyProductsFixITCase {
     }
 
     @Test
-    fun updateAltTexts() = runBlocking {
-        val fileContent = homeDirectory
-            .resolve("Downloads/alt_texts_from_filenames.json")
-            .readText(StandardCharsets.UTF_8)
-        jacksonObjectMapper()
-            .readValue<List<MediaAltText>>(fileContent)
-            .map { ShopifyMedia(it.id, "", it.altText) }
-            .chunked(250)
-            .forEach { mediaClient.update(it) }
-    }
-
-    @Test
-    fun updateAltTextsFromRayherFilenames() = runBlocking {
-        val products = productClient.fetchAll()
-            .filter { product -> product.title.startsWith("Silikon Gießform") }
-            .toList()
-        products
-            .flatMap { product ->
-                product.media.mapNotNull { media ->
-                    val type = when {
-                        media.src.contains("_DI") -> " - Produktbeispiel"
-                        media.src.contains("_VP") -> " - Verpackung"
-                        media.src.contains("_PF") -> " - Produktfoto"
-                        else -> ""
-                    }
-                    val altText = "${product.title}$type"
-                    if (media.altText != altText) {
-                        media.altText = altText
-                        media
-                    } else null
-                }
-            }
-            .chunked(250)
-            .forEach { mediaClient.update(it) }
-    }
-
-    @Test
     fun checkSomeProduct() = runBlocking {
         val product = productClient.fetchAll("'Silikon Gießform Mini-Häuschen I'").first()
         println(product)
     }
 }
-
-class MediaAltText(
-    val id: String,
-    val altText: String
-)
