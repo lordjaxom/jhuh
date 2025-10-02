@@ -13,6 +13,7 @@
     <file url="file://$PROJECT_DIR$/hinundhergestellt-vendor-rayher-api/src/test/resources/rayher_products.csv" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/hinundhergestellt-vendor-ready2order-api/src/main/kotlin" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/hinundhergestellt-vendor-shopify-api/src/main/kotlin" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/hinundhergestellt-vendor-various/src/main/kotlin" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
   </component>

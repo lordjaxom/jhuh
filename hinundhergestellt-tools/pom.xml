@@ -27,7 +27,7 @@
         </dependency>
         <dependency>
             <groupId>de.akvsoft</groupId>
-            <artifactId>hinundhergestellt-vendor-rayher-api</artifactId>
+            <artifactId>hinundhergestellt-vendor-various</artifactId>
         </dependency>
 
         <dependency>

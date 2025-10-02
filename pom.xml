@@ -29,7 +29,7 @@
         <module>hinundhergestellt-base</module>
         <module>hinundhergestellt-vendor-ready2order-api</module>
         <module>hinundhergestellt-vendor-shopify-api</module>
-        <module>hinundhergestellt-vendor-rayher-api</module>
+        <module>hinundhergestellt-vendor-various</module>
         <module>hinundhergestellt-server</module>
         <module>hinundhergestellt-tools</module>
     </modules>
@@ -58,7 +58,7 @@
             </dependency>
             <dependency>
                 <groupId>de.akvsoft</groupId>
-                <artifactId>hinundhergestellt-vendor-rayher-api</artifactId>
+                <artifactId>hinundhergestellt-vendor-various</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
             </dependency>
             <dependency>
