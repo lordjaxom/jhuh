@@ -8,6 +8,7 @@ import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedVariat
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOptionValue
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
+import de.hinundhergestellt.jhuh.vendors.shopify.taxonomy.ShopifyCategoryTaxonomyProvider
 import org.springframework.stereotype.Component
 
 @Component
@@ -22,7 +23,7 @@ class ShopifyMapper(
             descriptionHtml = sync.descriptionHtml ?: "",
             seoTitle = sync.seoTitle,
             seoDescription = sync.metaDescription,
-            category = null,
+            category = sync.shopifyCategory?.let { ShopifyCategoryTaxonomyProvider.categories[it]!! },
             hasOnlyDefaultVariant = artoo.hasOnlyDefaultVariant,
             tags = mappingService.allTags(sync, artoo),
             metafields = mappingService.productMetafields(sync),

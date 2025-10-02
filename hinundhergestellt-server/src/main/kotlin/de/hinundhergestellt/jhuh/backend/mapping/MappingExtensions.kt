@@ -24,6 +24,7 @@ internal enum class ChangeField(
     PRODUCT_VENDOR_EMAIL("Hersteller-Email", true, "custom:vendor_email"),
     PRODUCT_GOOGLE_CONDITION("Produktzustand (Google)", true, "mm-google-shopping:condition"),
     PRODUCT_OPTION_NAME("Optionsname", true, "optionName"),
+    PRODUCT_CATEGORY("Kategorie", true),
     VARIANT_BARCODE("Barcode", true, "barcode"),
     VARIANT_SKU("Artikelnummer", true, "sku"),
     VARIANT_PRICE("Preis", true, "price"),
@@ -32,7 +33,7 @@ internal enum class ChangeField(
 
     companion object {
         fun fromFieldName(fieldName: String) =
-            entries.firstOrNull() { it.fieldName.contains(fieldName) } ?: throw IllegalArgumentException(fieldName)
+            entries.firstOrNull { it.fieldName.contains(fieldName) } ?: throw IllegalArgumentException(fieldName)
     }
 }
 

@@ -1,6 +1,7 @@
 package de.hinundhergestellt.jhuh.usecases.shopify
 
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
+import de.hinundhergestellt.jhuh.backend.mapping.ChangeField
 import de.hinundhergestellt.jhuh.backend.mapping.MappingService
 import de.hinundhergestellt.jhuh.backend.mapping.ifChanged
 import de.hinundhergestellt.jhuh.backend.shoptexter.ShopTexterService
@@ -20,6 +21,7 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.findById
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
+import de.hinundhergestellt.jhuh.vendors.shopify.taxonomy.ShopifyCategoryTaxonomyProvider
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -128,7 +130,8 @@ class ShopifySynchronizationService(
             synchronize(syncProduct, shopifyProduct, shopifyProduct::descriptionHtml, syncProduct.descriptionHtml ?: ""),
             synchronize(syncProduct, shopifyProduct, shopifyProduct::seoTitle, syncProduct.seoTitle ?: ""),
             synchronize(syncProduct, shopifyProduct, shopifyProduct::seoDescription, syncProduct.metaDescription ?: ""),
-            synchronize(syncProduct, shopifyProduct, shopifyProduct::tags, mappingService.allTags(syncProduct, artooProduct))
+            synchronize(syncProduct, shopifyProduct, shopifyProduct::tags, mappingService.allTags(syncProduct, artooProduct)),
+            synchronizeCategory(syncProduct, shopifyProduct)
         )
         items += mappingService.productMetafields(syncProduct).mapNotNull { synchronize(syncProduct, shopifyProduct, it) }
 
@@ -191,6 +194,14 @@ class ShopifySynchronizationService(
 
     private fun <T> synchronize(sync: SyncProduct, shopify: ShopifyProduct, property: KMutableProperty0<T>, newValue: T) =
         ifChanged(property.get(), newValue, property.name) { UpdateProductItem(sync, shopify, it) { property.set(newValue) } }
+
+    private fun synchronizeCategory(sync: SyncProduct, shopify: ShopifyProduct): UpdateProductItem? {
+        val newCategory = sync.shopifyCategory?.let { ShopifyCategoryTaxonomyProvider.categories[it]!! } ?: return null
+        val oldCategory = shopify.category?.name
+        return ifChanged(oldCategory, newCategory.name, ChangeField.PRODUCT_CATEGORY) {
+            UpdateProductItem(sync, shopify, it) { shopify.category = newCategory }
+        }
+    }
 
     private fun synchronize(sync: SyncProduct, shopify: ShopifyProduct, newField: ShopifyMetafield) =
         shopify.metafields.findById(newField).let { oldField ->

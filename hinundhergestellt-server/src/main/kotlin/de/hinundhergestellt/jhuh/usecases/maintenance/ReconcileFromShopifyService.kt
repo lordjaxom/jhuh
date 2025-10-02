@@ -20,6 +20,7 @@ import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedCatego
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
+import de.hinundhergestellt.jhuh.vendors.shopify.taxonomy.ShopifyCategoryTaxonomyProvider
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionOperations
@@ -109,7 +110,8 @@ class ReconcileFromShopifyService(
                 checkReconcileProductProperty(syncProduct, product.title, SyncProduct::type, product.productType),
                 checkReconcileProductProperty(syncProduct, product.title, SyncProduct::descriptionHtml, product.descriptionHtml),
                 checkReconcileProductTags(syncProduct, product),
-                checkReconcileProductTechnicalDetails(syncProduct, product)
+                checkReconcileProductTechnicalDetails(syncProduct, product),
+                checkReconcileProductCategory(syncProduct, product),
             )
         )
         if (!product.hasOnlyDefaultVariant) {
@@ -175,6 +177,14 @@ class ReconcileFromShopifyService(
             technicalDetails.clear()
             technicalDetails += loadedTechnicalDetails.entries
                 .mapIndexed { index, (name, value) -> SyncTechnicalDetail(name, value, index) }
+        }
+    }
+
+    private fun checkReconcileProductCategory(sync: SyncProduct, shopify: ShopifyProduct): UpdateSyncProductItem? {
+        val newCategory = shopify.category?.name ?: return null
+        val oldCategory = sync.shopifyCategory?.let { ShopifyCategoryTaxonomyProvider.categories[it]!!.name }
+        return ifChanged(oldCategory, newCategory, ChangeField.PRODUCT_CATEGORY) {
+            UpdateSyncProductItem(sync, shopify.title, it) { shopifyCategory = shopify.category?.id }
         }
     }
 

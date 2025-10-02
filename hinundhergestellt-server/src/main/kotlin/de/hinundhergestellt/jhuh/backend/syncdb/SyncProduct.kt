@@ -60,6 +60,9 @@ class SyncProduct(
     @Column
     var metaDescription: String? = null,
 
+    @Column
+    var shopifyCategory: String? = null,
+
     @Id
     val id: UUID = UUID.randomUUID()
 )
