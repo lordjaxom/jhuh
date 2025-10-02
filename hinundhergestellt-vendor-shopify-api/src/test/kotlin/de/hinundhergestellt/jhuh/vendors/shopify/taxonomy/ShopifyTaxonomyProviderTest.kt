@@ -13,7 +13,7 @@ class ShopifyTaxonomyProviderTest {
 
     @Test
     fun `test download taxonomy from Github`() {
-        assertThat(providerUnderTest.values.first { it.id == 7 })
+        assertThat(providerUnderTest.taxonomy.first { it.id == 7 })
             .extracting(ShopifyTaxonomyValue::name, ShopifyTaxonomyValue::handle)
             .containsExactly("Brown", "color__brown")
     }

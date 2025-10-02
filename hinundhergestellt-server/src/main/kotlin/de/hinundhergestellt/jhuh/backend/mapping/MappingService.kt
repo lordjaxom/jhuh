@@ -6,6 +6,7 @@ import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategoryRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariant
 import de.hinundhergestellt.jhuh.tools.ArtooImageTools
+import de.hinundhergestellt.jhuh.tools.googleConditionNew
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedCategory
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
@@ -51,15 +52,16 @@ class MappingService(
 
     fun sanitizeTag(tag: String) = tag.replace(INVALID_TAG_CHARACTERS, "")
 
-    fun customMetafields(syncProduct: SyncProduct) =
+    fun productMetafields(syncProduct: SyncProduct) =
         mutableListOf(
             customMetafield("vendor_address", syncProduct.vendor!!.address!!, ShopifyMetafieldType.MULTI_LINE_TEXT_FIELD),
             customMetafield("vendor_email", syncProduct.vendor!!.email!!, ShopifyMetafieldType.SINGLE_LINE_TEXT_FIELD),
-            customMetafield("technical_details", technicalDetailsJson(syncProduct), ShopifyMetafieldType.JSON)
+            customMetafield("technical_details", technicalDetailsJson(syncProduct), ShopifyMetafieldType.JSON),
+            googleConditionNew()
         )
 
     fun extractTechnicalDetails(shopifyProduct: ShopifyProduct) =
-        shopifyProduct.metafields.findById(METAFIELD_NAMESPACE, "technical_details")
+        shopifyProduct.metafields.findById(CUSTOM_METAFIELD_NAMESPACE, "technical_details")
             ?.let { objectMapper.readValue<Map<String, String>>(it.value) }
             ?: mapOf()
 
@@ -130,11 +132,11 @@ class MappingService(
         objectMapper.writeValueAsString(syncProduct.technicalDetails.associate { it.name to it.value })
 }
 
-private const val METAFIELD_NAMESPACE = "custom"
+private const val CUSTOM_METAFIELD_NAMESPACE = "custom"
 
 private val INVALID_TAG_CHARACTERS = """[^A-ZÄÖÜa-zäöüß0-9\\._ -]""".toRegex()
 
-private fun customMetafield(key: String, value: String, type: String) = ShopifyMetafield(METAFIELD_NAMESPACE, key, value, type)
+private fun customMetafield(key: String, value: String, type: String) = ShopifyMetafield(CUSTOM_METAFIELD_NAMESPACE, key, value, type)
 
 private fun SyncVariant?.hasWeight() =
     this?.weight?.run { compareTo(BigDecimal.ZERO) != 0 } ?: false

@@ -16,7 +16,7 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.findByLinkedMetafield
 import de.hinundhergestellt.jhuh.vendors.shopify.client.variantSkus
-import de.hinundhergestellt.jhuh.vendors.shopify.taxonomy.ShopifyColorTaxonomy
+import de.hinundhergestellt.jhuh.vendors.shopify.taxonomy.ShopifyColorTaxonomyProvider
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
@@ -34,7 +34,6 @@ class ShopifyImageTools(
     private val optionClient: ShopifyProductOptionClient,
     private val mediaClient: ShopifyMediaClient,
     private val metaobjectClient: ShopifyMetaobjectClient,
-    private val colorTaxonomy: ShopifyColorTaxonomy,
     private val syncImageTools: SyncImageTools,
     private val genericWebClient: WebClient,
     private val properties: HuhProperties
@@ -103,7 +102,7 @@ class ShopifyImageTools(
         imagesWithColor.forEach { (image, color) ->
             val variant = variants.first { it.sku == image.variantSku }
             val optionValue = variant.options.first { it.name == option.name }
-            val taxonomy = colorTaxonomy.findByColor(color)
+            val taxonomy = ShopifyColorTaxonomyProvider.findByColor(color)
             val metaobject = ShopifyMetaobject(
                 "shopify--color-pattern",
                 "$swatchHandlePrefix${generateColorSwatchHandle(optionValue.value)}",
@@ -201,9 +200,9 @@ class ShopifyImageTools(
         }
     }
 
-    private fun generateColorSwatchHandle(optionValue: String) =
+    private fun generateColorSwatchHandle(productName: String) =
         UMLAUT_REPLACEMENTS
-            .fold(optionValue) { value, (regex, replacement) -> value.replace(regex, replacement) }
+            .fold(productName) { value, (regex, replacement) -> value.replace(regex, replacement) }
             .replace(" ", "-")
             .lowercase()
 
@@ -211,7 +210,7 @@ class ShopifyImageTools(
         "${product.title} ${variant?.let { "in ${product.options[0].name} ${it.options[0].value}" } ?: "Produktbild"}"
 }
 
-val ShopifyProduct.productNameForImages get() = title.productNameForImages
+private val ShopifyProduct.productNameForImages get() = title.productNameForImages
 
 private fun String.isProductShopifyImage(product: ShopifyProduct): Boolean {
     val prefix = arrayOf(product.vendor, product.productNameForImages).joinToString("-") { it.toFileNamePart() }

@@ -22,19 +22,20 @@ class ShopifyMapper(
             descriptionHtml = sync.descriptionHtml ?: "",
             seoTitle = sync.seoTitle,
             seoDescription = sync.metaDescription,
+            category = null,
             hasOnlyDefaultVariant = artoo.hasOnlyDefaultVariant,
             tags = mappingService.allTags(sync, artoo),
-            metafields = mappingService.customMetafields(sync),
+            metafields = mappingService.productMetafields(sync),
         )
 
     fun map(sync: SyncVariant, artoo: ArtooMappedVariation) =
         ShopifyProductVariant(
-            artoo.itemNumber!!,
-            artoo.barcode!!,
-            artoo.price,
-            sync.weight!!,
-            artoo.stockValue.intValueExact(),
-            listOfNotNull(
+            sku = artoo.itemNumber!!,
+            barcode = artoo.barcode!!,
+            price = artoo.price,
+            weight = sync.weight!!,
+            inventoryQuantity = artoo.stockValue.intValueExact(),
+            options = listOfNotNull(
                 if (artoo.parent.hasOnlyDefaultVariant) null
                 else ShopifyProductOptionValue(sync.product.optionName!!, artoo.name)
             )

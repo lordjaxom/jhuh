@@ -78,6 +78,7 @@ class ShopifyProductClient(
                     node {
                         handle; id; title; vendor; productType; status; tags; hasOnlyDefaultVariant; descriptionHtml
                         seo { title; description }
+                        category { id }
                         variants()
                         optionsForWrapper()
                         metafields(first = 50) {

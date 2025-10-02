@@ -3,16 +3,12 @@ package de.hinundhergestellt.jhuh.vendors.shopify.taxonomy
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import de.hinundhergestellt.jhuh.core.loadTextResource
-import org.springframework.stereotype.Component
 import java.awt.Color
 import kotlin.math.sqrt
 
-@Component
-class ShopifyColorTaxonomy(
-    provider: ShopifyTaxonomyProvider
-) {
-    val values = provider.values
-        .asSequence()
+object ShopifyColorTaxonomyProvider {
+
+    val values = ShopifyTaxonomyProvider.taxonomy.asSequence()
         .filter { it.handle.startsWith("color__") }
         .map { it.toShopifyColorTaxonomyValue() }
         .toList()
@@ -25,17 +21,17 @@ class ShopifyColorTaxonomy(
     }
 }
 
-data class ShopifyColorTaxonomyValue(
+data class ShopifyColorTaxonomy(
     val id: Int,
     val name: String,
     val color: Color?
 )
 
-private fun ShopifyTaxonomyValue.toShopifyColorTaxonomyValue(): ShopifyColorTaxonomyValue {
+private fun ShopifyTaxonomyValue.toShopifyColorTaxonomyValue(): ShopifyColorTaxonomy {
     val colorKey = handle.substringAfter("color__")
     val cssKey = normalizeToCssKeyword(handle)
     val color = cssColorNames[cssKey]?.toColor()
-    return ShopifyColorTaxonomyValue(id, colorKey, color)
+    return ShopifyColorTaxonomy(id, colorKey, color)
 }
 
 private val cssColorNames = jacksonObjectMapper().readValue<Map<String, String>>(loadTextResource { "/css-color-names.json" })

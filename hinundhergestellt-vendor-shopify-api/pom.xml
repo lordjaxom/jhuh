@@ -177,6 +177,40 @@
                     </typeMapping>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>wagon-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>download-taxonomy</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>download-single</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://raw.githubusercontent.com/Shopify/product-taxonomy/refs/heads/main/data/values.yml</url>
+                            <toFile>${project.build.directory}/classes/shopify-taxonomy.yml</toFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>wagon-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>download-categories</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>download-single</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://raw.githubusercontent.com/Shopify/product-taxonomy/refs/heads/main/data/localizations/categories/de.yml</url>
+                            <toFile>${project.build.directory}/classes/shopify-categories.yml</toFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

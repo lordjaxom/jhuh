@@ -19,9 +19,10 @@ internal enum class ChangeField(
     PRODUCT_SEO_TITLE("SEO-Titel", true, "seoTitle"),
     PRODUCT_META_DESCRIPTION("Metabeschreibung", true, "seoDescription"),
     PRODUCT_TAGS("Tags", true, "tags"),
-    PRODUCT_TECHNICAL_DETAILS("Technische Daten", false, "technical_details"),
-    PRODUCT_VENDOR_ADDRESS("Herstelleradresse", false, "vendor_address"),
-    PRODUCT_VENDOR_EMAIL("Hersteller-Email", false, "vendor_email"),
+    PRODUCT_TECHNICAL_DETAILS("Technische Daten", false, "custom:technical_details"),
+    PRODUCT_VENDOR_ADDRESS("Herstelleradresse", false, "custom:vendor_address"),
+    PRODUCT_VENDOR_EMAIL("Hersteller-Email", true, "custom:vendor_email"),
+    PRODUCT_GOOGLE_CONDITION("Produktzustand (Google)", true, "mm-google-shopping:condition"),
     PRODUCT_OPTION_NAME("Optionsname", true, "optionName"),
     VARIANT_BARCODE("Barcode", true, "barcode"),
     VARIANT_SKU("Artikelnummer", true, "sku"),
@@ -30,7 +31,8 @@ internal enum class ChangeField(
     OPTION_VALUE("Option %1\$s", true);
 
     companion object {
-        fun fromFieldName(fieldName: String) = entries.first { it.fieldName.contains(fieldName) }
+        fun fromFieldName(fieldName: String) =
+            entries.firstOrNull() { it.fieldName.contains(fieldName) } ?: throw IllegalArgumentException(fieldName)
     }
 }
 

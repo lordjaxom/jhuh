@@ -130,7 +130,7 @@ class ShopifySynchronizationService(
             synchronize(syncProduct, shopifyProduct, shopifyProduct::seoDescription, syncProduct.metaDescription ?: ""),
             synchronize(syncProduct, shopifyProduct, shopifyProduct::tags, mappingService.allTags(syncProduct, artooProduct))
         )
-        items += mappingService.customMetafields(syncProduct).mapNotNull { synchronize(syncProduct, shopifyProduct, it) }
+        items += mappingService.productMetafields(syncProduct).mapNotNull { synchronize(syncProduct, shopifyProduct, it) }
 
         shopifyImageTools.remotelyMissingProductImages(shopifyProduct)
             .takeIf { it.isNotEmpty() }
@@ -192,7 +192,7 @@ class ShopifySynchronizationService(
 
     private fun synchronize(sync: SyncProduct, shopify: ShopifyProduct, newField: ShopifyMetafield) =
         shopify.metafields.findById(newField).let { oldField ->
-            ifChanged(oldField?.value, newField.value, newField.key) {
+            ifChanged(oldField?.value, newField.value, "${newField.namespace}:${newField.key}") {
                 UpdateProductItem(sync, shopify, it) {
                     if (oldField != null) oldField.value = newField.value
                     else shopify.metafields.add(newField)

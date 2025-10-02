@@ -79,6 +79,14 @@ class ShopifyProductsFixITCase {
     }
 
     @Test
+    fun showCategories() = runBlocking {
+        val products = productClient.fetchAll().toList()
+        products.forEach {
+            println("${it.title} -> ${it.category}")
+        }
+    }
+
+    @Test
     fun updateGoogleAttributes() = runBlocking {
         val metaGoogleConditionNew = ShopifyMetafield("mm-google-shopping", "condition", "new", ShopifyMetafieldType.STRING)
         val metaGoogleCategoryToyCraftKits = ShopifyMetafield("mm-google-shopping", "google_product_category", "4986", ShopifyMetafieldType.STRING)

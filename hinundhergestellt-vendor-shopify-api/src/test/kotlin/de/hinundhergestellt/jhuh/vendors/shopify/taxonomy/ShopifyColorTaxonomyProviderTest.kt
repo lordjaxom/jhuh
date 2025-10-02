@@ -10,12 +10,12 @@ import kotlin.test.Test
 class ShopifyColorTaxonomyProviderTest {
 
     @Autowired
-    private lateinit var providerUnderTest: ShopifyColorTaxonomy
+    private lateinit var providerUnderTest: ShopifyColorTaxonomyProvider
 
     @Test
     fun `test download taxonomy from Github`() {
         assertThat(providerUnderTest.values.first { it.name == "brown" })
-            .extracting(ShopifyColorTaxonomyValue::id, ShopifyColorTaxonomyValue::name, ShopifyColorTaxonomyValue::color)
+            .extracting(ShopifyColorTaxonomy::id, ShopifyColorTaxonomy::name, ShopifyColorTaxonomy::color)
             .containsExactly(7, "brown", Color(165, 42, 42))
     }
 }
