@@ -8,4 +8,4 @@ private const val GOOGLE_METAFIELD_NAMESPACE = "mm-google-shopping"
 private const val GOOGLE_CONDITION_KEY = "condition"
 
 fun googleConditionNew() =
-    ShopifyMetafield(GOOGLE_METAFIELD_NAMESPACE, GOOGLE_CONDITION_KEY, "new", ShopifyMetafieldType.STRING)
+    ShopifyMetafield(GOOGLE_METAFIELD_NAMESPACE, GOOGLE_CONDITION_KEY, "new", ShopifyMetafieldType.SINGLE_LINE_TEXT_FIELD)

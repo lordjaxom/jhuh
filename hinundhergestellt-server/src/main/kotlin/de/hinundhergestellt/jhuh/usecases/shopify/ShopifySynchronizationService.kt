@@ -176,13 +176,15 @@ class ShopifySynchronizationService(
             return VariantHeaderItem(title, listOf(CreateVariantItem(shopifyProduct, syncVariant, artooVariation)))
         }
 
-        val items = listOfNotNull(
+        val items = mutableListOf<UpdateVariantItem>()
+        items += listOfNotNull(
             synchronize(shopifyProduct, shopifyVariant, shopifyVariant::barcode, artooVariation.barcode!!),
             synchronize(shopifyProduct, shopifyVariant, shopifyVariant::sku, artooVariation.itemNumber ?: ""),
             synchronize(shopifyProduct, shopifyVariant, shopifyVariant::price, artooVariation.price),
             synchronize(shopifyProduct, shopifyVariant, shopifyVariant::weight, syncVariant.weight!!),
 //            prepareUpdateVariantOptionValue(shopifyProduct, shopifyVariant, artooVariation)
         )
+        items += mappingService.variantMetafields().mapNotNull { synchronize(shopifyProduct, shopifyVariant, it) }
 
         return if (items.isNotEmpty()) VariantHeaderItem(title, items) else null
     }
@@ -202,6 +204,16 @@ class ShopifySynchronizationService(
 
     private fun <T> synchronize(product: ShopifyProduct, variant: ShopifyProductVariant, property: KMutableProperty0<T>, newValue: T) =
         ifChanged(property.get(), newValue, property.name) { UpdateVariantItem(product, variant, it) { property.set(newValue) } }
+
+    private fun synchronize(product: ShopifyProduct, variant: ShopifyProductVariant, newField: ShopifyMetafield) =
+        variant.metafields.findById(newField).let { oldField ->
+            ifChanged(oldField?.value, newField.value, "${newField.namespace}:${newField.key}") {
+                UpdateVariantItem(product, variant, it) {
+                    if (oldField != null) oldField.value = newField.value
+                    else variant.metafields.add(newField)
+                }
+            }
+        }
 
 //    private fun prepareUpdateVariantOptionValue(
 //        product: ShopifyProduct,

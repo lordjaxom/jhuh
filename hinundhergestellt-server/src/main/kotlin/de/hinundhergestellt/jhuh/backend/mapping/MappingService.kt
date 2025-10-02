@@ -57,6 +57,10 @@ class MappingService(
             customMetafield("vendor_address", syncProduct.vendor!!.address!!, ShopifyMetafieldType.MULTI_LINE_TEXT_FIELD),
             customMetafield("vendor_email", syncProduct.vendor!!.email!!, ShopifyMetafieldType.SINGLE_LINE_TEXT_FIELD),
             customMetafield("technical_details", technicalDetailsJson(syncProduct), ShopifyMetafieldType.JSON),
+        )
+
+    fun variantMetafields() =
+        mutableListOf(
             googleConditionNew()
         )
 

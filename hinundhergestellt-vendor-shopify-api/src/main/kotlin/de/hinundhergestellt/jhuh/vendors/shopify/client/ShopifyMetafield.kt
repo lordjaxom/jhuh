@@ -1,5 +1,9 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.client.MetafieldConnectionProjection
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.client.ProductConnectionProjection
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.client.ProductProjection
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.client.ProductVariantProjection
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.Metafield
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.MetafieldIdentifierInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.MetafieldInput
@@ -47,3 +51,15 @@ object ShopifyMetafieldType {
 fun Iterable<ShopifyMetafield>.findById(namespace: String, key: String) = find { it.namespace == namespace && it.key == key }
 
 fun Iterable<ShopifyMetafield>.findById(metafield: ShopifyMetafield) = findById(metafield.namespace, metafield.key)
+
+internal fun ProductProjection.metafieldsForWrapper() =
+    metafields(first = 25) { metafieldForWrapper() }
+
+internal fun ProductVariantProjection.metafieldsForWrapper() =
+    metafields(first = 25) { metafieldForWrapper() }
+
+private fun MetafieldConnectionProjection.metafieldForWrapper(): MetafieldConnectionProjection {
+    edges { node { id; namespace; key; value; type } }
+    pageInfo { hasNextPage }
+    return this
+}

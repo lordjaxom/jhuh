@@ -38,6 +38,7 @@ class ShopifyMapper(
             options = listOfNotNull(
                 if (artoo.parent.hasOnlyDefaultVariant) null
                 else ShopifyProductOptionValue(sync.product.optionName!!, artoo.name)
-            )
+            ),
+            metafields = mappingService.variantMetafields()
         )
 }

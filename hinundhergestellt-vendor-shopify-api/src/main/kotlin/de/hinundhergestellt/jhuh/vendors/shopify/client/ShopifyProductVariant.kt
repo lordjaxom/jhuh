@@ -1,6 +1,7 @@
 package de.hinundhergestellt.jhuh.vendors.shopify.client
 
 import de.hinundhergestellt.jhuh.core.fixedScale
+import de.hinundhergestellt.jhuh.vendors.shopify.graphql.client.ProductProjection
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.InventoryItemInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.InventoryItemMeasurementInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.InventoryLevelInput
@@ -20,7 +21,8 @@ class ShopifyProductVariant private constructor(
     weight: BigDecimal,
     val inventoryQuantity: Int, // must not be mutated after creation
     var mediaId: String?,
-    val options: List<ShopifyProductOptionValue>
+    val options: List<ShopifyProductOptionValue>,
+    val metafields: MutableList<ShopifyMetafield>
 ) {
     val id get() = internalId!!
     val title get() = internalTitle ?: options.variantTitle
@@ -33,7 +35,8 @@ class ShopifyProductVariant private constructor(
         price: BigDecimal,
         weight: BigDecimal,
         inventoryQuantity: Int,
-        options: List<ShopifyProductOptionValue>
+        options: List<ShopifyProductOptionValue>,
+        metafields: MutableList<ShopifyMetafield>
     ) : this(
         internalId = null,
         internalTitle = null,
@@ -43,7 +46,8 @@ class ShopifyProductVariant private constructor(
         weight = weight,
         inventoryQuantity = inventoryQuantity,
         mediaId = null,
-        options = options
+        options = options,
+        metafields = metafields
     )
 
     internal constructor(variant: ProductVariant) : this(
@@ -55,8 +59,11 @@ class ShopifyProductVariant private constructor(
         variant.inventoryItem.measurement.weight!!.toGrams(),
         variant.inventoryQuantity!!,
         variant.media.edges.firstOrNull()?.node?.id,
-        variant.selectedOptions.map { ShopifyProductOptionValue(it) }
-    )
+        variant.selectedOptions.map { ShopifyProductOptionValue(it) },
+        variant.metafields.edges.asSequence().map { ShopifyMetafield(it.node) }.toMutableList()
+    ) {
+        require(!variant.metafields.pageInfo.hasNextPage) { "Variant has more metafields than were loaded" }
+    }
 
     override fun toString() =
         "ShopifyProductVariant(id='$internalId', title='$title', sku='$sku', barcode='$barcode', price=$price)"
@@ -74,7 +81,8 @@ class ShopifyProductVariant private constructor(
                     availableQuantity = inventoryQuantity
                 )
             ),
-            mediaId = mediaId
+            mediaId = mediaId,
+            metafields = metafields.map { it.toMetafieldInput() }
         )
     }
 
@@ -85,7 +93,8 @@ class ShopifyProductVariant private constructor(
             price = price.toPlainString(),
             optionValues = options.map { it.toVariantOptionValueInput() },
             inventoryItem = toInventoryItemInput(),
-            mediaId = mediaId
+            mediaId = mediaId,
+            metafields = metafields.map { it.toMetafieldInput() }
         )
 
     private fun toInventoryItemInput() =
@@ -97,6 +106,26 @@ class ShopifyProductVariant private constructor(
             )
         )
 }
+
+internal fun ProductProjection.variantsForWrapper(after: String? = null) =
+    variants(first = 50, after = after) {
+        edges {
+            node {
+                id; title; price; sku; barcode; inventoryQuantity
+                inventoryItem { measurement { weight { unit; value } } }
+                selectedOptions {
+                    name; value
+                    optionValue { id; linkedMetafieldValue }
+                }
+                metafieldsForWrapper()
+                media(first = 1) {
+                    edges { node { onMediaImage { id } } }
+                    pageInfo { hasNextPage }
+                }
+            }
+        }
+        pageInfo { hasNextPage; endCursor }
+    }
 
 private fun Weight.toGrams() = when (unit) {
     WeightUnit.KILOGRAMS -> value.multiply(BigDecimal(1000))

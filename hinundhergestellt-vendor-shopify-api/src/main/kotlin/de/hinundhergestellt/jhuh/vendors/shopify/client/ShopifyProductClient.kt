@@ -79,14 +79,9 @@ class ShopifyProductClient(
                         handle; id; title; vendor; productType; status; tags; hasOnlyDefaultVariant; descriptionHtml
                         seo { title; description }
                         category { id }
-                        variants()
+                        variantsForWrapper()
                         optionsForWrapper()
-                        metafields(first = 50) {
-                            edges {
-                                node { id; namespace; key; value; type }
-                            }
-                            pageInfo { hasNextPage }
-                        }
+                        metafieldsForWrapper()
                         media()
                     }
                 }
@@ -99,7 +94,7 @@ class ShopifyProductClient(
     }
 
     private suspend fun fetchNextVariants(productId: String, after: String?): Pair<List<ProductVariantEdge>, PageInfo> {
-        val request = buildQuery { product(id = productId) { variants(after = after) } }
+        val request = buildQuery { product(id = productId) { variantsForWrapper(after = after) } }
         val payload = shopifyGraphQLClient.executeQuery<Product>(request)
         return Pair(payload.variants.edges, payload.variants.pageInfo)
     }
@@ -109,33 +104,6 @@ class ShopifyProductClient(
         val payload = shopifyGraphQLClient.executeQuery<Product>(request)
         return Pair(payload.media.edges, payload.media.pageInfo)
     }
-
-    private fun ProductProjection.variants(after: String? = null) =
-        variants(first = 100, after = after) {
-            edges {
-                node {
-                    id; title; price; sku; barcode; inventoryQuantity
-                    inventoryItem {
-                        measurement {
-                            weight { unit; value }
-                        }
-                    }
-                    selectedOptions {
-                        name; value
-                        optionValue { id; linkedMetafieldValue }
-                    }
-                    media(first = 1) {
-                        edges {
-                            node {
-                                onMediaImage { id }
-                            }
-                        }
-                        pageInfo { hasNextPage }
-                    }
-                }
-            }
-            pageInfo { hasNextPage; endCursor }
-        }
 
     private fun ProductProjection.media(after: String? = null) =
         media(first = 100, after = after) {
