@@ -102,14 +102,14 @@ class ShopifyImageTools(
         imagesWithColor.forEach { (image, color) ->
             val variant = variants.first { it.sku == image.variantSku }
             val optionValue = variant.options.first { it.name == option.name }
-            val taxonomy = ShopifyColorTaxonomyProvider.findByColor(color)
+            val taxonomy = ShopifyColorTaxonomyProvider.findNearestByColor(color)
             val metaobject = ShopifyMetaobject(
                 "shopify--color-pattern",
                 "$swatchHandlePrefix${generateColorSwatchHandle(optionValue.value)}",
                 listOf(
                     MetaobjectField("label", optionValue.value),
                     MetaobjectField("color", color.toHex()),
-                    MetaobjectField("color_taxonomy_reference", "[\"${taxonomy}\"]"),
+                    MetaobjectField("color_taxonomy_reference", "[\"${taxonomy.id}\"]"),
                     MetaobjectField("pattern_taxonomy_reference", "gid://shopify/TaxonomyValue/2874")
                 )
             )

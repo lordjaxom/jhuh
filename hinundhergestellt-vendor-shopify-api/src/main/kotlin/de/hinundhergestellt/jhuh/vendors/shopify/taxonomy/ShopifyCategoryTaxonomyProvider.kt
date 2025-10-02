@@ -8,19 +8,20 @@ import de.hinundhergestellt.jhuh.core.loadTextResource
 
 object ShopifyCategoryTaxonomyProvider {
 
-    val categories: Map<String, ShopifyCategory> =
-        ObjectMapper(YAMLFactory())
-            .registerKotlinModule()
-            .readValue<Map<String, Map<String, Map<String, RawCategory>>>>(loadTextResource { "/shopify-categories.yml" })
-            .values.first()["categories"]!!.asSequence()
-            .map { (key, value) -> "gid://shopify/TaxonomyCategory/$key" to value }
-            .associate { (id, value) -> id to ShopifyCategory(id, value.name, value.context) }
+    val categories = ObjectMapper(YAMLFactory())
+        .registerKotlinModule()
+        .readValue<Map<String, Map<String, Map<String, RawCategory>>>>(loadTextResource { "/shopify-categories.yml" })
+        .values.first()["categories"]!!.asSequence()
+        .map { (key, value) -> value.toShopifyCategory(key) }
+        .associateBy { it.id }
 }
 
 private data class RawCategory(
     val name: String,
     val context: String
-)
+) {
+    fun toShopifyCategory(key: String) = ShopifyCategory("gid://shopify/TaxonomyCategory/$key", name, context)
+}
 
 data class ShopifyCategory(
     val id: String,

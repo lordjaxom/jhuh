@@ -8,30 +8,30 @@ import kotlin.math.sqrt
 
 object ShopifyColorTaxonomyProvider {
 
-    val values = ShopifyTaxonomyProvider.taxonomy.asSequence()
+    val colors = ShopifyTaxonomyProvider.taxonomy.asSequence()
         .filter { it.handle.startsWith("color__") }
-        .map { it.toShopifyColorTaxonomyValue() }
-        .toList()
+        .map { it.toShopifyColorTaxonomy() }
+        .associateBy { it.id }
 
-    fun findByColor(color: Color): String {
-        val value = values.asSequence()
+    fun findNearestByColor(color: Color): ShopifyColorTaxonomy {
+        val value = colors.values.asSequence()
             .filter { it.color != null }
             .minByOrNull { distance(it.color!!, color) }!!
-        return "gid://shopify/TaxonomyValue/${value.id}"
+        return value
     }
 }
 
 data class ShopifyColorTaxonomy(
-    val id: Int,
+    val id: String,
     val name: String,
     val color: Color?
 )
 
-private fun ShopifyTaxonomyValue.toShopifyColorTaxonomyValue(): ShopifyColorTaxonomy {
+private fun RawTaxonomy.toShopifyColorTaxonomy(): ShopifyColorTaxonomy {
     val colorKey = handle.substringAfter("color__")
     val cssKey = normalizeToCssKeyword(handle)
     val color = cssColorNames[cssKey]?.toColor()
-    return ShopifyColorTaxonomy(id, colorKey, color)
+    return ShopifyColorTaxonomy("gid://shopify/TaxonomyValue/$key", colorKey, color)
 }
 
 private val cssColorNames = jacksonObjectMapper().readValue<Map<String, String>>(loadTextResource { "/css-color-names.json" })

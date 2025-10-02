@@ -7,16 +7,17 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import de.hinundhergestellt.jhuh.core.loadTextResource
 
-object ShopifyTaxonomyProvider {
+internal object ShopifyTaxonomyProvider {
 
-    val taxonomy: List<ShopifyTaxonomyValue> =
+    val taxonomy: List<RawTaxonomy> =
         ObjectMapper(YAMLFactory())
             .registerKotlinModule()
             .readValue(loadTextResource { "/shopify-taxonomy.yml" })
 }
 
-data class ShopifyTaxonomyValue(
-    val id: Int,
+internal data class RawTaxonomy(
+    @field:JsonProperty("id")
+    val key: Int,
     val name: String,
     @field:JsonProperty("friendly_id")
     val friendlyId: String,
