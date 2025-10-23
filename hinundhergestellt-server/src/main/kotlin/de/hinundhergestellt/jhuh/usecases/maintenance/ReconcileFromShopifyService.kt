@@ -24,7 +24,6 @@ import de.hinundhergestellt.jhuh.vendors.shopify.taxonomy.ShopifyCategoryTaxonom
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionOperations
-import java.nio.file.Path
 import kotlin.reflect.KMutableProperty1
 import kotlin.streams.asSequence
 
@@ -154,7 +153,7 @@ class ReconcileFromShopifyService(
         syncProduct: SyncProduct,
         shopifyProduct: ShopifyProduct
     ): UpdateSyncProductItem? {
-        val shopifyTags = shopifyProduct.tags - mappingService.inheritedTags(syncProduct)
+        val shopifyTags = shopifyProduct.tags - mappingService.inheritedTags(syncProduct) - "__NEW__"
         if (syncProduct.tags == shopifyTags) return null
 
         val addedTags = shopifyTags - syncProduct.tags

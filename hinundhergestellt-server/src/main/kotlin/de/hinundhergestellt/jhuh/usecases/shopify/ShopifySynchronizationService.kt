@@ -4,6 +4,7 @@ import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.backend.mapping.ChangeField
 import de.hinundhergestellt.jhuh.backend.mapping.MappingService
 import de.hinundhergestellt.jhuh.backend.mapping.ifChanged
+import de.hinundhergestellt.jhuh.backend.mapping.toQuotedString
 import de.hinundhergestellt.jhuh.backend.shoptexter.ShopTexterService
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProductRepository
@@ -27,6 +28,10 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionOperations
+import java.time.Duration
+import java.time.OffsetDateTime
+import java.time.Period
+import java.time.temporal.ChronoUnit
 import kotlin.reflect.KMutableProperty0
 
 private val logger = KotlinLogging.logger {}
@@ -130,7 +135,7 @@ class ShopifySynchronizationService(
             synchronize(syncProduct, shopifyProduct, shopifyProduct::descriptionHtml, syncProduct.descriptionHtml ?: ""),
             synchronize(syncProduct, shopifyProduct, shopifyProduct::seoTitle, syncProduct.seoTitle ?: ""),
             synchronize(syncProduct, shopifyProduct, shopifyProduct::seoDescription, syncProduct.metaDescription ?: ""),
-            synchronize(syncProduct, shopifyProduct, shopifyProduct::tags, mappingService.allTags(syncProduct, artooProduct)),
+            synchronizeTags(syncProduct, shopifyProduct, artooProduct),
             synchronizeCategory(syncProduct, shopifyProduct)
         )
         items += mappingService.productMetafields(syncProduct).mapNotNull { synchronize(syncProduct, shopifyProduct, it) }
@@ -194,6 +199,20 @@ class ShopifySynchronizationService(
 
     private fun <T> synchronize(sync: SyncProduct, shopify: ShopifyProduct, property: KMutableProperty0<T>, newValue: T) =
         ifChanged(property.get(), newValue, property.name) { UpdateProductItem(sync, shopify, it) { property.set(newValue) } }
+
+    private fun synchronizeTags(sync: SyncProduct, shopify: ShopifyProduct, artoo: ArtooMappedProduct): UpdateProductItem? {
+        val isNew = ChronoUnit.MONTHS.between(shopify.createdAt!!, OffsetDateTime.now()) < 2
+        val localTags = mappingService.allTags(sync, artoo) + setOfNotNull(if (isNew) "__NEW__" else null)
+        if (localTags == shopify.tags) return null
+
+        val addedTags = localTags - shopify.tags
+        val removedTags = shopify.tags - localTags
+        val message = "Tags" +
+                (if (addedTags.isNotEmpty()) " ${addedTags.toQuotedString()} hinzugefügt" else "") +
+                (if (addedTags.isNotEmpty() && removedTags.isNotEmpty()) "," else "") +
+                (if (removedTags.isNotEmpty()) " ${removedTags.toQuotedString()} entfernt" else "")
+        return UpdateProductItem(sync, shopify, message) { shopify.tags = localTags }
+    }
 
     private fun synchronizeCategory(sync: SyncProduct, shopify: ShopifyProduct): UpdateProductItem? {
         val newCategory = sync.shopifyCategory?.let { ShopifyCategoryTaxonomyProvider.categories[it]!! } ?: return null

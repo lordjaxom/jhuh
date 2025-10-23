@@ -34,7 +34,7 @@ class ShopifyProductClient(
         val request = buildMutation {
             productCreate(product.toProductCreateInput()) {
                 product {
-                    id; descriptionHtml
+                    id; descriptionHtml; createdAt
                     options { id }
                 }
                 userErrors { message; field }
@@ -47,6 +47,7 @@ class ShopifyProductClient(
             .forEach { (option, created) -> option.internalId = created.id }
         product.internalId = payload.product!!.id
         product.descriptionHtml = payload.product!!.descriptionHtml
+        product.createdAt = payload.product!!.createdAt
     }
 
     suspend fun update(product: ShopifyProduct) {
@@ -76,7 +77,7 @@ class ShopifyProductClient(
             products(first = 50, after = after, query = query) {
                 edges {
                     node {
-                        handle; id; title; vendor; productType; status; tags; hasOnlyDefaultVariant; descriptionHtml
+                        handle; id; title; vendor; productType; status; tags; hasOnlyDefaultVariant; descriptionHtml; createdAt
                         seo { title; description }
                         category { id }
                         variantsForWrapper()

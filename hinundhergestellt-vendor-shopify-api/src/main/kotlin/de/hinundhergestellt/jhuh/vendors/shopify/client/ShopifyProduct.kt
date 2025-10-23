@@ -7,6 +7,7 @@ import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.ProductUpdateInpu
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.SEOInput
 import de.hinundhergestellt.jhuh.vendors.shopify.taxonomy.ShopifyCategory
 import de.hinundhergestellt.jhuh.vendors.shopify.taxonomy.ShopifyCategoryTaxonomyProvider
+import java.time.OffsetDateTime
 
 class ShopifyProduct private constructor(
     internal var internalId: String?,
@@ -17,13 +18,14 @@ class ShopifyProduct private constructor(
     var descriptionHtml: String,
     var seoTitle: String?,
     var seoDescription: String?,
+    var createdAt: OffsetDateTime?,
     var category: ShopifyCategory?,
     val hasOnlyDefaultVariant: Boolean,
     var tags: Set<String>, // TODO: val
     val options: List<ShopifyProductOption>,
     val metafields: MutableList<ShopifyMetafield>,
     val variants: MutableList<ShopifyProductVariant>,
-    val media: MutableList<ShopifyMedia>,
+    val media: MutableList<ShopifyMedia>
 ) {
     val id get() = internalId!!
 
@@ -47,6 +49,7 @@ class ShopifyProduct private constructor(
         descriptionHtml = descriptionHtml,
         seoTitle = seoTitle,
         seoDescription = seoDescription,
+        createdAt = null,
         category = category,
         hasOnlyDefaultVariant = hasOnlyDefaultVariant,
         tags = tags,
@@ -65,6 +68,7 @@ class ShopifyProduct private constructor(
         product.descriptionHtml,
         product.seo.title,
         product.seo.description,
+        product.createdAt,
         product.category?.let { ShopifyCategoryTaxonomyProvider.categories[it.id]!! },
         product.hasOnlyDefaultVariant,
         product.tags.toSet(),
