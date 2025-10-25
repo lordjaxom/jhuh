@@ -39,7 +39,6 @@ class VendorItem(
     @get:NotBlank(message = "Bezeichnung darf nicht leer sein")
     var name by fieldIfNull(syncVendor, SyncVendor::name, "")
 
-    @get:NotBlank(message = "E-Mail darf nicht leer sein")
     @get:Email(message = "Diese E-Mail Adresse ist ungültig")
     var email by fieldIfNull(syncVendor, SyncVendor::email, "")
 

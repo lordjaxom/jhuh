@@ -46,7 +46,6 @@ private class EditVendorDialog(
                 focus()
             }
             textField("E-Mail") {
-                isRequired = true
                 setWidthFull()
                 bind(binder).toProperty(VendorItem::email)
             }
