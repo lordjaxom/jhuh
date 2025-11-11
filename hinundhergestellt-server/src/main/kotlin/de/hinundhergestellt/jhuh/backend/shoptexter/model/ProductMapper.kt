@@ -19,6 +19,9 @@ class ProductMapper(
             vendor = sync.vendor?.name ?: "",
             tags = sync.tags,
             technicalDetails = sync.technicalDetails.associate { it.name to it.value },
+            handle = "",
+            seoTitle = "",
+            seoDescription = "",
             hasOnlyDefaultVariant = artoo.hasOnlyDefaultVariant,
             variants = artoo.variations.map {
                 Variant(
@@ -38,6 +41,9 @@ class ProductMapper(
             vendor = shopify.vendor,
             tags = shopify.tags,
             technicalDetails = mappingService.extractTechnicalDetails(shopify),
+            handle = shopify.handle ?: "",
+            seoTitle = shopify.seoTitle ?: "",
+            seoDescription = shopify.seoDescription ?: "",
             hasOnlyDefaultVariant = shopify.hasOnlyDefaultVariant,
             variants = shopify.variants.map {
                 Variant(

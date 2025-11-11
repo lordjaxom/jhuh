@@ -90,6 +90,9 @@ class ShopTexterService(
 
     private fun generateProductDetails(product: Product) =
         productTexterService.generateProductDetails(product)
+
+    fun reworkProductTexts(product: ShopifyProduct) =
+        productTexterService.reworkProductTexts(productMapper.map(product))
 }
 
 class CategoryTexts(

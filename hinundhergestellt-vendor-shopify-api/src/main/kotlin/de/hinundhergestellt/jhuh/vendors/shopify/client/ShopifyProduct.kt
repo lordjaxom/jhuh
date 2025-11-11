@@ -11,6 +11,7 @@ import java.time.OffsetDateTime
 
 class ShopifyProduct private constructor(
     internal var internalId: String?,
+    var handle: String?,
     var title: String,
     var vendor: String,
     var productType: String,
@@ -42,6 +43,7 @@ class ShopifyProduct private constructor(
         metafields: List<ShopifyMetafield>
     ) : this(
         internalId = null,
+        handle = null,
         title = title,
         vendor = vendor,
         productType = productType,
@@ -61,6 +63,7 @@ class ShopifyProduct private constructor(
 
     internal constructor(product: Product, variants: List<ShopifyProductVariant>, media: List<ShopifyMedia>) : this(
         product.id,
+        product.handle,
         product.title,
         product.vendor,
         product.productType,
@@ -105,6 +108,8 @@ class ShopifyProduct private constructor(
     internal fun toProductUpdateInput() =
         ProductUpdateInput(
             id = id,
+            handle = handle,
+            redirectNewHandle = true,
             title = title,
             vendor = vendor,
             productType = productType,

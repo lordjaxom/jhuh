@@ -32,6 +32,7 @@ data class ShopifyMedia(
         FileUpdateInput(
             id = id,
             alt = altText,
+            filename = fileName,
             referencesToAdd = referencesToAdd,
             referencesToRemove = referencesToRemove
         )

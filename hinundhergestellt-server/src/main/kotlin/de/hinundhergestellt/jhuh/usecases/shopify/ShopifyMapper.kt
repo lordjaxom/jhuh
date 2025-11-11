@@ -31,7 +31,7 @@ class ShopifyMapper(
 
     fun map(sync: SyncVariant, artoo: ArtooMappedVariation) =
         ShopifyProductVariant(
-            sku = artoo.itemNumber!!,
+            sku = artoo.itemNumber ?: "",
             barcode = artoo.barcode!!,
             price = artoo.price,
             weight = sync.weight!!,

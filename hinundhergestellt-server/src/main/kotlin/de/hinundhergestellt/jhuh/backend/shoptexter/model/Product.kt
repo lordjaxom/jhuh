@@ -8,6 +8,9 @@ class Product(
     val vendor: String,
     val tags: Set<String>,
     val technicalDetails: Map<String, String>,
+    val handle: String,
+    val seoTitle: String,
+    val seoDescription: String,
     val hasOnlyDefaultVariant: Boolean,
     val variants: List<Variant>
 )

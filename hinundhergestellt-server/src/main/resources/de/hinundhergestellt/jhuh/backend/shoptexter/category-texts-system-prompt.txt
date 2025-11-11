@@ -16,7 +16,8 @@ ZIELGRUPPE:
 
 AUFGABE:
 - Schreibe eine Kategoriebeschreibung für die angegebene Kategorie, welche Produkte mit den angegebenen Tags enthält. Die Produkte, welche
-  dieser Kategorie zugeordnet sind, werden als Referenz übergeben.
+  bisher dieser Kategorie zugeordnet sind, werden als Referenz übergeben.
+- Halte Die Kategoriebeschreibung offen genug, dass auch zukünftige ähnliche Produkte in diese Kategorie passen.
 - Nutze die Ergebnisse aus den Keyword-Clustern (Schritt 1).
 
 ERSTELLE:

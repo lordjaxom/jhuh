@@ -22,6 +22,7 @@ class ProductTexterService(
     private val rawTextsConverter = BeanOutputConverter(ProductRawTexts::class.java)
     private val descriptionConverter = BeanOutputConverter(ProductDescription::class.java)
     private val detailsConverter = BeanOutputConverter(ProductDetails::class.java)
+    private val reworkConverter = BeanOutputConverter(ProductRework::class.java)
 
     fun generateProductKeywords(product: Product): ProductKeywordClusters {
         logger.info { "Generating product keywords for ${product.title}" }
@@ -100,6 +101,25 @@ class ProductTexterService(
 
         return detailsConverter.convert(responseContent)!!
     }
+
+    fun reworkProductTexts(product: Product): ProductRework {
+        logger.info { "Reworking product texts for ${product.title}" }
+
+        val callResponse = shopTexterChatClient.prompt()
+            .system(loadTextResource { "product-rework-system-prompt.txt" })
+            .user {
+                it.text(loadTextResource { "product-rework-user-prompt.txt" })
+                    .param("product", jsonMapper.writeValueAsString(product))
+                    .param("format", reworkConverter.format)
+            }
+            .advisors { it.param(ChatMemory.CONVERSATION_ID, "reworkProductTexts") }
+            .call()
+        val responseContent = callResponse.content()!!
+
+        logger.info { "Reworked product texts: $responseContent" }
+
+        return reworkConverter.convert(responseContent)!!
+    }
 }
 
 class ProductKeywordClusters(
@@ -126,4 +146,12 @@ class ProductDetails(
     val productType: String,
     val tags: List<String>,
     val technicalDetails: Map<String, String>
+)
+
+class ProductRework(
+    val handle: String,
+    val title: String,
+    val seoTitle: String,
+    val seoDescription: String,
+    val descriptionHtml: String
 )

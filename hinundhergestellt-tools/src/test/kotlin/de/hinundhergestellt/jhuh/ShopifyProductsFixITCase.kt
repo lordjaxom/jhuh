@@ -2,7 +2,9 @@ package de.hinundhergestellt.jhuh
 
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import de.hinundhergestellt.jhuh.tools.ShopifyImageTools
+import de.hinundhergestellt.jhuh.tools.productNameForImages
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMediaClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafield
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafieldClient
@@ -21,7 +23,11 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import java.math.BigDecimal
 import java.nio.charset.StandardCharsets
+import kotlin.io.path.Path
+import kotlin.io.path.exists
+import kotlin.io.path.moveTo
 import kotlin.io.path.writeText
+import kotlin.reflect.KProperty1
 import kotlin.test.Test
 
 @SpringBootTest
@@ -81,8 +87,9 @@ class ShopifyProductsFixITCase {
     @Test
     fun showCategories() = runBlocking {
         val products = productClient.fetchAll().toList()
-        products.forEach {
-            println("${it.title} -> ${it.category}")
+        products.forEach { product ->
+            val googleCategory = product.metafields.findById("mm-google-shopping", "google_product_category")
+            println("${product.title} -> ${product.category} / ${googleCategory}")
         }
     }
 
@@ -96,14 +103,15 @@ class ShopifyProductsFixITCase {
         products.forEach { product ->
             var dirty = false
 
-            val googleCondition = product.metafields.findById(metaGoogleConditionNew)
-            if (googleCondition == null) {
-                product.metafields.add(metaGoogleConditionNew)
-                dirty = true
-            } else if (googleCondition.value != metaGoogleConditionNew.value) {
-                googleCondition.value = metaGoogleConditionNew.value
-                dirty = true
-            }
+            // TODO: Condition is variant metafield
+//            val googleCondition = product.metafields.findById(metaGoogleConditionNew)
+//            if (googleCondition == null) {
+//                product.metafields.add(metaGoogleConditionNew)
+//                dirty = true
+//            } else if (googleCondition.value != metaGoogleConditionNew.value) {
+//                googleCondition.value = metaGoogleConditionNew.value
+//                dirty = true
+//            }
 
             val googleCategory = product.metafields.findById(metaGoogleCategoryToyCraftKits)
             if (googleCategory != null && googleCategory.value == metaGoogleCategoryToyCraftKits.value) {
@@ -147,4 +155,5 @@ class ShopifyProductsFixITCase {
         val product = productClient.fetchAll("'Silikon Gießform Mini-Häuschen I'").first()
         println(product)
     }
+
 }
