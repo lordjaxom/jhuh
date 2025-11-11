@@ -12,13 +12,11 @@ import com.vaadin.flow.router.Route
 import de.hinundhergestellt.jhuh.components.CustomIcon
 import de.hinundhergestellt.jhuh.components.VaadinCoroutineScope
 import de.hinundhergestellt.jhuh.components.button
-import de.hinundhergestellt.jhuh.components.ellipsisColumn
 import de.hinundhergestellt.jhuh.components.horizontalLayout
 import de.hinundhergestellt.jhuh.components.html.ellipsisSpan
 import de.hinundhergestellt.jhuh.components.progressOverlay
 import de.hinundhergestellt.jhuh.components.root
 import de.hinundhergestellt.jhuh.components.span
-import de.hinundhergestellt.jhuh.components.text
 import de.hinundhergestellt.jhuh.components.treegrid.hierarchyComponentColumn
 import de.hinundhergestellt.jhuh.components.treegrid.recursiveSelectTreeGrid
 import de.hinundhergestellt.jhuh.usecases.shopify.ShopifySynchronizationService.Item
@@ -68,6 +66,7 @@ class ShopifySynchronizationView(
             addSelectionListener { validateActions() }
 
             setItems(service.items, Item::children)
+            expandRecursively(service.items, Int.MAX_VALUE)
         }
     }
 

@@ -94,6 +94,10 @@ class MappingService(
             else if (!sync.variants.firstOrNull().hasValidWeight()) add(MappingProblem("Gewichtsangabe ungültig (0,5g oder >= 30g)", true))
         }
 
+        sync.urlHandle.also {
+            if (it.isNullOrEmpty()) add(MappingProblem("Produkt hat kein URL-Handle", true))
+        }
+
         sync.vendor.also {
             if (it == null) add(MappingProblem("Produkt hat keinen Hersteller", true))
             else if (it.email == null || it.address == null) add(MappingProblem("Herstellerangaben unvollständig", true))

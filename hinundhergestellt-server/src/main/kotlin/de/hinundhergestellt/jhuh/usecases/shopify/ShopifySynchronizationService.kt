@@ -28,9 +28,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionOperations
-import java.time.Duration
 import java.time.OffsetDateTime
-import java.time.Period
 import java.time.temporal.ChronoUnit
 import kotlin.reflect.KMutableProperty0
 
@@ -129,6 +127,7 @@ class ShopifySynchronizationService(
 
         val items = mutableListOf<Item>()
         items += listOfNotNull(
+            synchronize(syncProduct, shopifyProduct, shopifyProduct::handle, syncProduct.urlHandle!!),
             synchronize(syncProduct, shopifyProduct, shopifyProduct::title, artooProduct.description),
             synchronize(syncProduct, shopifyProduct, shopifyProduct::vendor, syncProduct.vendor!!.name),
             synchronize(syncProduct, shopifyProduct, shopifyProduct::productType, syncProduct.type!!),

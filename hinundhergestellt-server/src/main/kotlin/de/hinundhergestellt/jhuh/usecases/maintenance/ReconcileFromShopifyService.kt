@@ -106,6 +106,7 @@ class ReconcileFromShopifyService(
 
         addAll(
             listOfNotNull(
+                checkReconcileProductProperty(syncProduct, product.title, SyncProduct::urlHandle, product.handle),
                 checkReconcileProductProperty(syncProduct, product.title, SyncProduct::type, product.productType),
                 checkReconcileProductProperty(syncProduct, product.title, SyncProduct::descriptionHtml, product.descriptionHtml),
                 checkReconcileProductProperty(syncProduct, product.title, SyncProduct::seoTitle, product.seoTitle),

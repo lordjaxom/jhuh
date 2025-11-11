@@ -14,6 +14,7 @@ internal enum class ChangeField(
 ) {
     PRODUCT_TITLE("Titel", true, "title"),
     PRODUCT_VENDOR("Hersteller", true, "vendor"),
+    PRODUCT_URL_HANDLE("URL-Handle", true, "handle", "urlHandle"),
     PRODUCT_TYPE("Produktart", true, "productType", "type"),
     PRODUCT_DESCRIPTION("Produktbeschreibung", false, "descriptionHtml"),
     PRODUCT_SEO_TITLE("SEO-Titel", true, "seoTitle"),

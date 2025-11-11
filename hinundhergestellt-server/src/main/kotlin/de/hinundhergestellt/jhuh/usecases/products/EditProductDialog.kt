@@ -63,6 +63,7 @@ private class EditProductDialog(
     private val technicalDetailsGridField: ReorderableGridField
     private val productImagesText: Text
     private val variantImagesText: Text?
+    private val urlHandleTextField: TextField
     private val vendorComboBox: ComboBox<SyncVendor>
     private val productTypeTextField: TextField
     private val inheritedTagsTextField: TagsTextField
@@ -168,6 +169,12 @@ private class EditProductDialog(
 
                 checkbox("Synchronisieren?") {
                     bind(syncBinder).toProperty(SyncProduct::synced)
+                }
+                urlHandleTextField = textField("URL-Handle") {
+                    setWidthFull()
+                    bind(syncBinder)
+                        .asRequired("URL-Handle darf nicht leer sein.")
+                        .toProperty(SyncProduct::urlHandle)
                 }
                 vendorComboBox = comboBox<SyncVendor>("Hersteller") {
                     isClearButtonVisible = true

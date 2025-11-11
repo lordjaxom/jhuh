@@ -63,6 +63,9 @@ class SyncProduct(
     @Column
     var shopifyCategory: String? = null,
 
+    @Column
+    var urlHandle: String? = null,
+
     @Id
     val id: UUID = UUID.randomUUID()
 )
