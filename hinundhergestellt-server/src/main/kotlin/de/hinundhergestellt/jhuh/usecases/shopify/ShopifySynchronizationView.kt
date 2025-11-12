@@ -75,6 +75,7 @@ class ShopifySynchronizationView(
             application { service.refresh(::report) }
             itemsGrid.setItems(service.items, Item::children)
             itemsGrid.recalculateColumnWidths()
+            itemsGrid.expandRecursively(service.items, Int.MAX_VALUE)
         }
     }
 
