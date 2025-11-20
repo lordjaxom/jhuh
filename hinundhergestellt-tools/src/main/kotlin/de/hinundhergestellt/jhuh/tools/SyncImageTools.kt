@@ -44,7 +44,7 @@ data class SyncImage(
 const val PRODUCT_IMAGE_PREFIX = "produktbild"
 const val EXTENSIONS_PATTERN = "(png|jpg)"
 
-val String.productNameForImages get() = substringBefore(",").replace("/", " ")
+val String.productNameForImages get() = replace("/", " ")
 val URI.extension get() = path.substringAfterLast(".", "")
 
 private fun Path.isProductSyncImage() = Regex("${escape(PRODUCT_IMAGE_PREFIX)}-[0-9]+\\.$EXTENSIONS_PATTERN").matches(name)

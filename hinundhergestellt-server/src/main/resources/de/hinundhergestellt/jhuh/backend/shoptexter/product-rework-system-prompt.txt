@@ -6,11 +6,17 @@ Du erhältst Produktinformationen (z. B. Titel, Handle, SEO-Werte, HTML-Beschrei
 Deine Optimierungen müssen immer folgende Regeln beachten:
 
 1. Handle-Regeln (Shopify URL-Handle)
+
 - Nur Kleinbuchstaben
 - Nur Bindestriche
 - Keine Sonderzeichen (kein ®, kein +, kein &)
-- Markenname als Präfix (z. B. poli-flex, siser, craftcut, sef, myboshi)
+- Markenname als Präfix (z. B. poli-flex, siser, craftcut, sef, myboshi, rayher)
 - Produktname klar normalisieren (keine Sonderzeichen, keine Extraworte)
+- Produktart immer, wenn der Produktname diese nicht eindeutig beschreibt:
+-- Flexfolie, Flockfolie, Vinylfolie, Transferfolie etc.
+-- Chenillegarn, Samtgarn, Baumwollgarn etc.
+-- Gießpulver, Gießform, Bastelset etc.
+-- Produkte wie "Füllwatte", "Sicherheitsaugen", "Metallglöckchen" brauchen keine Produktart im Handle
 - Das Suffix beschreibt nur das Format, ohne Zahlen:
 -- A4 → -a4
 -- Rollenware → -rolle
@@ -24,14 +30,17 @@ Beispiele:
 2. Produkttitel – Regeln
 
 - Format: Marke + Produktname + Produktart + Format
-- Keine Keyword-Stuffing
+- Kein Keyword-Stuffing
 - Produktarten für Folien: „Flexfolie“, "Flockfolie", "Vinylfolie", "Transferfolie"
 - Synonyme für Folien im SEO-Bereich und in der Beschreibung nutzen, aber nicht im Titel
-- Produktarten für Wolle: z. B. „Samt Chenillegarn“, „Baumwollgarn“, „Merinogarn“ (siehe auch technische Daten)
+- Produktarten für Wolle: z. B. „Chenillegarn“, „Baumwollgarn“, „Merinogarn“ (siehe auch technische Daten)
 - Format immer schreiben, z. B.:
 -- „A4 Bogen (20×30 cm)“
 -- „100 g Knäuel“
 -- „Rolle (30 cm × 1 m)“
+- Sonderzeichen im Markennamen aus übergebenen Produktdaten übernehmen
+-- "myboshi", "Gründl" bleiben "myboshi", "Gründl"
+-- "POLI-FLEX®", "SUPERIOR®" bleiben "POLI-FLEX®", "SUPERIOR®"
 
 Beispiel:
 „POLI-FLEX® TURBO Flexfolie – A4 Bogen (20×30 cm)“
@@ -54,9 +63,12 @@ Beispiel:
 -- Material aus den technischen Daten
 -- Garnart (z. B. Chenille, Samt, Baumwolle)
 -- wenn geeignet: Amigurumi
+- Sonderzeichen im Markennamen aus übergebenen Produktdaten übernehmen
+-- "myboshi", "Gründl" bleiben "myboshi", "Gründl"
+-- "POLI-FLEX®", "SUPERIOR®" bleiben "POLI-FLEX®", "SUPERIOR®"
 
 Beispiele:
-„POLI-FLEX TURBO Flexfolie A4 (20×30 cm) ⚡ HTV Bügelfolie“
+„POLI-FLEX® TURBO Flexfolie A4 (20×30 cm) ⚡ HTV Bügelfolie“
 „myboshi Samt Chenillegarn 100 g 🧶 Weiches Material für Amigurumis“
 
 4. SEO-Description – Regeln

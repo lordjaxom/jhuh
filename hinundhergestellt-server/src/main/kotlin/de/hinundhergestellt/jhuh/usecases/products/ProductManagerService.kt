@@ -92,27 +92,23 @@ class ProductManagerService(
     }
 
     suspend fun generateNewBarcodes(product: ProductItem, report: suspend (String) -> Unit) {
-        report("Shopify-Produktkatalog aktualisieren...")
-        shopifyDataStore.withLockAndRefresh {
+        report("Barcodes für ${product.name} generieren...")
 
-            report("Barcodes für ${product.name} generieren...")
+        val shopifyProduct = product.syncProduct.shopifyId?.let { shopifyDataStore.findProductById(it) }
 
-            val shopifyProduct = product.syncProduct.shopifyId?.let { shopifyDataStore.findProductById(it) }
+        val syncVariantsToUpdate = mutableListOf<SyncVariant>()
+        val shopifyVariantsToUpdate = mutableListOf<ShopifyProductVariant>()
+        product.value.variations.forEach {
+            generateNewBarcode(it, shopifyProduct, syncVariantsToUpdate, shopifyVariantsToUpdate)
+            labelGeneratorService.createLabel(Article(product.value, it), it.stockValue.toInt())
+        }
 
-            val syncVariantsToUpdate = mutableListOf<SyncVariant>()
-            val shopifyVariantsToUpdate = mutableListOf<ShopifyProductVariant>()
-            product.value.variations.forEach {
-                generateNewBarcode(it, shopifyProduct, syncVariantsToUpdate, shopifyVariantsToUpdate)
-                labelGeneratorService.createLabel(Article(product.value, it), it.stockValue.toInt())
-            }
-
-            artooDataStore.update(product.value)
-            if (shopifyProduct != null && shopifyVariantsToUpdate.isNotEmpty()) {
-                shopifyDataStore.update(shopifyProduct, shopifyVariantsToUpdate)
-            }
-            if (syncVariantsToUpdate.isNotEmpty()) {
-                transactionOperations.execute { syncVariantRepository.saveAll(syncVariantsToUpdate) }
-            }
+        artooDataStore.update(product.value)
+        if (shopifyProduct != null && shopifyVariantsToUpdate.isNotEmpty()) {
+            shopifyDataStore.update(shopifyProduct, shopifyVariantsToUpdate)
+        }
+        if (syncVariantsToUpdate.isNotEmpty()) {
+            transactionOperations.execute { syncVariantRepository.saveAll(syncVariantsToUpdate) }
         }
     }
 

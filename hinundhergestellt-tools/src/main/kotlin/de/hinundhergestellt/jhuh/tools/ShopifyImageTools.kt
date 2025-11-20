@@ -206,30 +206,31 @@ class ShopifyImageTools(
             .replace(" ", "-")
             .lowercase()
 
-    private fun generateAltText(product: ShopifyProduct, variant: ShopifyProductVariant? = null) =
-        "${product.title} ${variant?.let { "in ${product.options[0].name} ${it.options[0].value}" } ?: "Produktbild"}"
+    fun generateAltText(product: ShopifyProduct, variant: ShopifyProductVariant? = null): String {
+        val shortTitle = ALT_TEXT_REPLACEMENTS
+            .fold(product.title) { value, (regex, replacement) -> regex.replace(value, replacement) }
+        return "$shortTitle - ${variant?.let { "Variante: ${variant.title}" } ?: "Produktbild"}"
+    }
 }
 
 private val ShopifyProduct.productNameForImages get() = title.productNameForImages
 
 private fun String.isProductShopifyImage(product: ShopifyProduct): Boolean {
-    val prefix = arrayOf(product.vendor, product.productNameForImages).joinToString("-") { it.toFileNamePart() }
-    return Regex("${escape(prefix)}-$PRODUCT_IMAGE_PREFIX-[0-9]+\\.$EXTENSIONS_PATTERN").matches(this)
+    return Regex("${escape(product.handle)}-$PRODUCT_IMAGE_PREFIX-[0-9]+\\.$EXTENSIONS_PATTERN").matches(this)
 }
 
 private fun String.isVariantShopifyImage(product: ShopifyProduct, variant: ShopifyProductVariant): Boolean {
-    val prefix = arrayOf(product.vendor, product.productNameForImages, variant.sku, variant.title).joinToString("-") { it.toFileNamePart() }
-    return Regex("${escape(prefix)}\\.$EXTENSIONS_PATTERN").matches(this)
+    return Regex("${escape("${product.handle}-${variant.title.toFileNamePart()}")}\\.$EXTENSIONS_PATTERN").matches(this)
 }
 
 private fun String.isAnyShopifyImage(product: ShopifyProduct) =
     isProductShopifyImage(product) || product.variants.any { isVariantShopifyImage(product, it) }
 
 private fun toProductImageNameWithoutExtension(product: ShopifyProduct, index: Int) =
-    "${product.vendor.toFileNamePart()}-${product.productNameForImages.toFileNamePart()}-$PRODUCT_IMAGE_PREFIX-$index"
+    "${product.handle}-$PRODUCT_IMAGE_PREFIX-$index"
 
 private fun toVariantImageNameWithoutExtension(product: ShopifyProduct, variant: ShopifyProductVariant) =
-    arrayOf(product.vendor, product.productNameForImages, variant.sku, variant.title).joinToString("-") { it.toFileNamePart() }
+    "${product.handle}-${variant.title.toFileNamePart()}"
 
 private fun toVariantImageNameWithoutExtension(product: ShopifyProduct, sku: String) =
     toVariantImageNameWithoutExtension(product, product.findVariantBySku(sku)!!)
@@ -243,4 +244,10 @@ private val UMLAUT_REPLACEMENTS = listOf(
     """[Öö]+""".toRegex() to "oe",
     """[Üü]+""".toRegex() to "ue",
     """ß+""".toRegex() to "ss"
+)
+
+private val ALT_TEXT_REPLACEMENTS = listOf<Pair<Regex, (MatchResult) -> String>>(
+    """– A4 Bogen \(20×30 cm\)$""".toRegex() to { "A4" },
+    """– (\d+ g) Knäuel$""".toRegex() to { m -> m.groupValues[1] },
+    """ \(2,5–10 mm\)""".toRegex() to { "" }
 )

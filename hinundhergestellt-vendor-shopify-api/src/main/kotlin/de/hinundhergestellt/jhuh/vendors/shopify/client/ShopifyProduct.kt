@@ -11,7 +11,7 @@ import java.time.OffsetDateTime
 
 class ShopifyProduct private constructor(
     internal var internalId: String?,
-    var handle: String?,
+    internal var internalHandle: String?,
     var title: String,
     var vendor: String,
     var productType: String,
@@ -29,6 +29,11 @@ class ShopifyProduct private constructor(
     val media: MutableList<ShopifyMedia>
 ) {
     val id get() = internalId!!
+    var handle
+        get() = internalHandle!!
+        set(value) {
+            internalHandle = value
+        }
 
     constructor(
         title: String,
@@ -43,7 +48,7 @@ class ShopifyProduct private constructor(
         metafields: List<ShopifyMetafield>
     ) : this(
         internalId = null,
-        handle = null,
+        internalHandle = null,
         title = title,
         vendor = vendor,
         productType = productType,

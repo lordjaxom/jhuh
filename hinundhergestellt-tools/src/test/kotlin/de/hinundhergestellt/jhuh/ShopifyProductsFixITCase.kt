@@ -2,9 +2,9 @@ package de.hinundhergestellt.jhuh
 
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import de.hinundhergestellt.jhuh.tools.ShopifyImageTools
-import de.hinundhergestellt.jhuh.tools.productNameForImages
+import de.hinundhergestellt.jhuh.tools.toFileNamePart
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMedia
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMediaClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafield
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyMetafieldClient
@@ -16,6 +16,7 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantCli
 import de.hinundhergestellt.jhuh.vendors.shopify.client.findById
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.fold
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Disabled
@@ -23,11 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import java.math.BigDecimal
 import java.nio.charset.StandardCharsets
-import kotlin.io.path.Path
-import kotlin.io.path.exists
-import kotlin.io.path.moveTo
 import kotlin.io.path.writeText
-import kotlin.reflect.KProperty1
 import kotlin.test.Test
 
 @SpringBootTest
@@ -96,8 +93,10 @@ class ShopifyProductsFixITCase {
     @Test
     fun updateGoogleAttributes() = runBlocking {
         val metaGoogleConditionNew = ShopifyMetafield("mm-google-shopping", "condition", "new", ShopifyMetafieldType.STRING)
-        val metaGoogleCategoryToyCraftKits = ShopifyMetafield("mm-google-shopping", "google_product_category", "4986", ShopifyMetafieldType.STRING)
-        val metaGoogleCategoryArtCraftKits = ShopifyMetafield("mm-google-shopping", "google_product_category", "505370", ShopifyMetafieldType.STRING)
+        val metaGoogleCategoryToyCraftKits =
+            ShopifyMetafield("mm-google-shopping", "google_product_category", "4986", ShopifyMetafieldType.STRING)
+        val metaGoogleCategoryArtCraftKits =
+            ShopifyMetafield("mm-google-shopping", "google_product_category", "505370", ShopifyMetafieldType.STRING)
 
         val products = productClient.fetchAll().toList()
         products.forEach { product ->
@@ -152,8 +151,9 @@ class ShopifyProductsFixITCase {
 
     @Test
     fun checkSomeProduct() = runBlocking {
-        val product = productClient.fetchAll("'Silikon Gießform Mini-Häuschen I'").first()
-        println(product)
+        val count = productClient.fetchAll()
+            .filter { it.tags.any { tag -> tag == "Flexfolie" || tag == "Flockfolie" || tag == "Vinylfolie" || tag == "Transferfolie" } }
+            .fold(0) { count, product -> count + product.variants.size }
+        println(count)
     }
-
 }

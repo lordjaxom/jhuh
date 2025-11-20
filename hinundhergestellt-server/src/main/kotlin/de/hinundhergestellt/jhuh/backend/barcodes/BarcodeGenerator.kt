@@ -8,7 +8,7 @@ import kotlin.random.Random
 class BarcodeGenerator {
 
     fun generate(): String {
-        val generated = "${Random.nextLong(160_000_000_000, 199_999_999_999)}"
+        val generated = "${Random.nextLong(200_000_000_000, 299_999_999_999)}"
         val checksum = calcChecksum(generated)
         return generated + checksum
     }

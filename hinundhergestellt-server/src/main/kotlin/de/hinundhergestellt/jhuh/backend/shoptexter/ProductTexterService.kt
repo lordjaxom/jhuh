@@ -149,9 +149,9 @@ class ProductDetails(
 )
 
 class ProductRework(
-    val handle: String,
-    val title: String,
-    val seoTitle: String,
-    val seoDescription: String,
-    val descriptionHtml: String
+    var handle: String,
+    var title: String,
+    var seoTitle: String,
+    var seoDescription: String,
+    var descriptionHtml: String
 )

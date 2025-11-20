@@ -125,62 +125,6 @@ class ShopTexterITCase {
         Files.write(Path("/home/lordjaxom/Downloads/collections.json"), json.toByteArray(StandardCharsets.UTF_8))
         Unit
     }
-
-    @Test
-    fun reworkProductTexts() {
-        shopifyDataStore.products
-            .filter { it.seoTitle.isNullOrEmpty() }
-            .forEach { reworkProductTexts(it) }
-    }
-
-    private fun reworkProductTexts(product: ShopifyProduct) = runBlocking {
-        val reworked = shopTexterService.reworkProductTexts(product)
-
-        val handle = reworked.handle
-        if (handle.isNotEmpty() && handle != product.handle) {
-            println("Handle: ${product.handle} to $handle")
-            product.handle = handle
-        }
-        val title = reworked.title
-        if (title.isNotEmpty() && title != product.title) {
-            val oldFolder = Path("/media/lordjaxom/akv-soft.de/sascha/Hin- und Hergestellt/Shopify")
-                .resolve(product.vendor)
-                .resolve(product.title.productNameForImages)
-            if (oldFolder.exists()) {
-                val newFolder = Path("/media/lordjaxom/akv-soft.de/sascha/Hin- und Hergestellt/Shopify")
-                    .resolve(product.vendor)
-                    .resolve(title.productNameForImages)
-                println("Renaming image folder: $oldFolder to $newFolder")
-                oldFolder.moveTo(newFolder)
-            }
-
-            val artoo =
-                artooDataStore.findAllProducts().first { it.barcodes.any { barcode -> product.findVariantByBarcode(barcode) != null } }
-            println("Updating Artoo product name: ${artoo.description} to $title")
-            artoo.description = title
-            artooDataStore.update(artoo)
-
-            println("Title: ${product.title} to $title")
-            product.title = title
-        }
-        val seoTitle = reworked.seoTitle
-        if (seoTitle.isNotEmpty() && seoTitle != product.seoTitle) {
-            println("SEO Title: ${product.seoTitle} to $seoTitle")
-            product.seoTitle = seoTitle
-        }
-        val seoDescription = reworked.seoDescription
-        if (seoDescription.isNotEmpty() && seoDescription != product.seoDescription) {
-            println("SEO Description: ${product.seoDescription} to $seoDescription")
-            product.seoDescription = seoDescription
-        }
-
-        val descriptionHtml = reworked.descriptionHtml
-        if (descriptionHtml.isNotEmpty() && descriptionHtml != product.descriptionHtml) {
-            product.descriptionHtml = descriptionHtml
-        }
-
-        productClient.update(product)
-    }
 }
 
 class Category(
