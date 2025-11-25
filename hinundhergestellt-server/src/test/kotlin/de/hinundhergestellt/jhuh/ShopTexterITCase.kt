@@ -3,6 +3,7 @@ package de.hinundhergestellt.jhuh
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import de.hinundhergestellt.jhuh.backend.shoptexter.ShopTexterService
+import de.hinundhergestellt.jhuh.backend.shoptexter.model.Product
 import de.hinundhergestellt.jhuh.backend.shoptexter.model.ProductMapper
 import de.hinundhergestellt.jhuh.tools.productNameForImages
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
@@ -106,7 +107,16 @@ class ShopTexterITCase {
     @Test
     fun exportProducts() {
         val products = shopifyDataStore.products
-            .filter { it.tags.contains("Flexfolie") }
+            .filter {
+                it.title.contains("Kunststoff Sicherheitsaugen 16mm, schwarz, ca. 10 Stück") ||
+                        it.title.contains("LDPE Gießform") ||
+                        it.title.contains("Gießpulver Raysin") ||
+                        it.title.contains("Mini-LED Lichterkette") ||
+                        it.title.contains("Furnierholz") ||
+                        it.title.contains("Leuchtkugeln") ||
+                        it.title.contains("Silikon Gießformen Anhänger") ||
+                        it.title.contains("Silikon Gießform Schale Häuserrand")
+            }
             .map { productMapper.map(it) }
         val json = jacksonObjectMapper()
             .enable(SerializationFeature.INDENT_OUTPUT)
@@ -117,7 +127,7 @@ class ShopTexterITCase {
     @Test
     fun exportCollections() = runBlocking {
         val collections = productClient.findCollections()
-            .map { Category(it.handle, it.title, it.descriptionHtml, it.seo.title, it.seo.description) }
+            .map { Category(it.handle, it.title, it.descriptionHtml, it.seo.title, it.seo.description, listOf()) }
             .toList()
         val json = jacksonObjectMapper()
             .enable(SerializationFeature.INDENT_OUTPUT)
@@ -132,5 +142,6 @@ class Category(
     val title: String,
     val descriptionHtml: String,
     val seoTitle: String?,
-    val seoDescription: String?
+    val seoDescription: String?,
+    val products: List<Product>
 )

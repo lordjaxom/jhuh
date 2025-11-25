@@ -115,6 +115,10 @@ class ProductManagerView(
                 setHeader("Produktart")
                 flexGrow = 1
             }
+            textColumn({ it.count }) {
+                setHeader("#")
+                width = "3em"
+            }
             componentColumn({ treeItemStatus(it) }) {
                 isAutoWidth = true
                 flexGrow = 0
@@ -162,9 +166,11 @@ class ProductManagerView(
 
     private fun editProductItem(product: ProductItem) {
         vaadinScope.launch {
+            val oldVendor = product.syncProduct.vendor
+            val oldDescription = product.value.description
             val result = editProductDialogFactory(product.value, product.syncProduct, vaadinScope)
             if (result != null) {
-                application { service.update(result.artoo, result.sync) }
+                application { service.update(result.artoo, result.sync, oldVendor, oldDescription) }
                 treeDataProvider.refreshItem(product, true)
             }
         }
@@ -182,6 +188,11 @@ class ProductManagerView(
 
     private fun markForSync(product: ProductItem) {
         service.markForSync(product.syncProduct)
+        treeDataProvider.refreshItem(product)
+    }
+
+    private fun generateTexts(product: ProductItem) {
+        service.generateTexts(product.syncProduct)
         treeDataProvider.refreshItem(product)
     }
 
@@ -261,6 +272,7 @@ class ProductManagerView(
                         isOpenOnClick = true
                         if (item is ProductItem) {
                             addItem("Synchronisieren") { markForSync(item) }.apply { isEnabled = !item.isMarkedForSync }
+                            addItem("Texte generieren") { generateTexts(item) }
                             addComponent(Hr())
                             addItem("Barcodes neu generieren") { generateNewBarcodes(item) }
                             addComponent(Hr())

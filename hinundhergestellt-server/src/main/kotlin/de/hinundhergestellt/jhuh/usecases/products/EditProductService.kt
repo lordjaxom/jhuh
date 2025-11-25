@@ -46,12 +46,6 @@ class EditProductService(
 
     fun sanitizeTag(tag: String) = mappingService.sanitizeTag(tag)
 
-    fun generateProductTexts(artoo: ArtooMappedProduct, sync: SyncProduct, description: String?) =
-        shopTexterService.generateProductTexts(artoo, sync, description)
-
-    fun generateProductDetails(artoo: ArtooMappedProduct, sync: SyncProduct, description: String?) =
-        shopTexterService.generateProductDetails(artoo, sync, description)
-
     fun canFillInValues(artooProduct: ArtooMappedProduct) =
         findRayherProduct(artooProduct) != null || findHobbyFunProduct(artooProduct) != null
 

@@ -7,6 +7,8 @@ import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOptionClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariantClient
+import de.hinundhergestellt.jhuh.vendors.shopify.client.containsValue
+import de.hinundhergestellt.jhuh.vendors.shopify.client.findByOption
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.sync.Mutex
@@ -68,7 +70,9 @@ class ShopifyDataStore(
         requireLock()
 
         product.options.forEach { option ->
-            val valuesToAdd = variants.mapNotNull { variant -> variant.options.firstOrNull { it.name == option.name && it.isNew } }
+            val valuesToAdd = variants
+                .mapNotNull { it.options.findByOption(option) }
+                .filter { !option.containsValue(it) }
             optionClient.createValues(product, option, valuesToAdd)
             option.optionValues += valuesToAdd
         }

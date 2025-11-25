@@ -6,6 +6,7 @@ import de.hinundhergestellt.jhuh.backend.syncdb.SyncVariant
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedVariation
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOption
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductOptionValue
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductVariant
 import de.hinundhergestellt.jhuh.vendors.shopify.taxonomy.ShopifyCategoryTaxonomyProvider
@@ -17,6 +18,7 @@ class ShopifyMapper(
 ) {
     fun map(sync: SyncProduct, artoo: ArtooMappedProduct) =
         ShopifyProduct(
+            handle = sync.urlHandle!!,
             title = artoo.description,
             vendor = sync.vendor!!.name,
             productType = sync.type!!,
@@ -27,6 +29,10 @@ class ShopifyMapper(
             hasOnlyDefaultVariant = artoo.hasOnlyDefaultVariant,
             tags = mappingService.allTags(sync, artoo) + "__NEW__",
             metafields = mappingService.productMetafields(sync),
+            options = listOfNotNull(
+                if (artoo.hasOnlyDefaultVariant) null
+                else ShopifyProductOption(sync.optionName!!, artoo.variations.map { it.name })
+            )
         )
 
     fun map(sync: SyncVariant, artoo: ArtooMappedVariation) =

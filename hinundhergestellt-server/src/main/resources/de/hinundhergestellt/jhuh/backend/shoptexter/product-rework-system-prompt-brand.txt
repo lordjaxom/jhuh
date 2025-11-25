@@ -37,7 +37,7 @@ Beispiele:
 - Format immer schreiben, z. B.:
 -- „A4 Bogen (20×30 cm)“
 -- „100 g Knäuel“
--- „Rolle (30 cm × 1 m)“
+-- „Rolle (30 cm × 1 m)“2
 - Sonderzeichen im Markennamen aus übergebenen Produktdaten übernehmen
 -- "myboshi", "Gründl" bleiben "myboshi", "Gründl"
 -- "POLI-FLEX®", "SUPERIOR®" bleiben "POLI-FLEX®", "SUPERIOR®"

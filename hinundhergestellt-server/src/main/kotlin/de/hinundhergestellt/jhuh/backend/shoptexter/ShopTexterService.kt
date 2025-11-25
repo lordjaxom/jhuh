@@ -65,8 +65,8 @@ class ShopTexterService(
         )
     }
 
-    fun generateProductTexts(artoo: ArtooMappedProduct, sync: SyncProduct, description: String?) =
-        generateProductTexts(productMapper.map(artoo, sync, description))
+    fun generateProductTexts(artoo: ArtooMappedProduct, sync: SyncProduct) =
+        generateProductTexts(productMapper.map(artoo, sync))
 
     fun generateProductTexts(product: ShopifyProduct) =
         generateProductTexts(productMapper.map(product))
@@ -82,17 +82,17 @@ class ShopTexterService(
         )
     }
 
-    fun generateProductDetails(artoo: ArtooMappedProduct, sync: SyncProduct, description: String?) =
-        generateProductDetails(productMapper.map(artoo, sync, description))
+    fun generateProductDetails(artoo: ArtooMappedProduct, sync: SyncProduct) =
+        productTexterService.generateProductDetails(productMapper.map(artoo, sync))
 
     fun generateProductDetails(product: ShopifyProduct) =
-        generateProductDetails(productMapper.map(product))
+        productTexterService.generateProductDetails(productMapper.map(product))
 
-    private fun generateProductDetails(product: Product) =
-        productTexterService.generateProductDetails(product)
+    fun reworkProductTexts(artoo: ArtooMappedProduct, sync: SyncProduct, flavor: String) =
+        productTexterService.reworkProductTexts(productMapper.map(artoo, sync), flavor)
 
-    fun reworkProductTexts(product: ShopifyProduct) =
-        productTexterService.reworkProductTexts(productMapper.map(product))
+    fun reworkProductTexts(product: ShopifyProduct, flavor: String) =
+        productTexterService.reworkProductTexts(productMapper.map(product), flavor)
 }
 
 class CategoryTexts(

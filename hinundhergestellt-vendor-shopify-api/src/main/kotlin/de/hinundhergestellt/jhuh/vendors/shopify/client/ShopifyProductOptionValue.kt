@@ -13,7 +13,6 @@ class ShopifyProductOptionValue private constructor(
     var linkedMetafieldValue: String?
 ) {
     val id get() = internalId!!
-    val isNew get() = internalId == null
 
     val isLinkedMetafieldValue get() = linkedMetafieldValue != null
 
@@ -52,7 +51,9 @@ class ShopifyProductOptionValue private constructor(
         else OptionValueUpdateInput(id = id, linkedMetafieldValue = linkedMetafieldValue)
 
     internal fun toVariantOptionValueInput() =
-        VariantOptionValueInput(id = id, optionName = name)
+        VariantOptionValueInput(name = value, optionName = name) // TODO is either create or rename (update)?
 }
+
+fun Iterable<ShopifyProductOptionValue>.findByOption(option: ShopifyProductOption) = firstOrNull { it.name == option.name }
 
 internal val Iterable<ShopifyProductOptionValue>.variantTitle get() = joinToString(" / ") { it.value }.ifEmpty { "Default Title" }

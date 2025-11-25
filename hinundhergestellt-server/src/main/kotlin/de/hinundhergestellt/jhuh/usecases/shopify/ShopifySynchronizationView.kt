@@ -47,6 +47,9 @@ class ShopifySynchronizationView(
             justifyContentMode = FlexComponent.JustifyContentMode.END
             setWidthFull()
 
+            button("Neu laden") {
+                addClickListener { reload() }
+            }
             button("Aktualisieren") {
                 addClickListener { refresh() }
             }
@@ -70,9 +73,18 @@ class ShopifySynchronizationView(
         }
     }
 
+    private fun reload() {
+        vaadinScope.launchWithReporting {
+            application { service.reload(::report) }
+            itemsGrid.setItems(service.items, Item::children)
+            itemsGrid.recalculateColumnWidths()
+            itemsGrid.expandRecursively(service.items, Int.MAX_VALUE)
+        }
+    }
+
     private fun refresh() {
         vaadinScope.launchWithReporting {
-            application { service.refresh(::report) }
+            application { service.synchronize(::report) }
             itemsGrid.setItems(service.items, Item::children)
             itemsGrid.recalculateColumnWidths()
             itemsGrid.expandRecursively(service.items, Int.MAX_VALUE)

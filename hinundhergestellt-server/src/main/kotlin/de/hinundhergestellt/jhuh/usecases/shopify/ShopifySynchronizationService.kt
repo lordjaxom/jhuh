@@ -54,16 +54,13 @@ class ShopifySynchronizationService(
         items += syncProductRepository.findAllBySyncedIsTrue().mapNotNull { synchronize(it) }
     }
 
-    suspend fun refresh(report: suspend (String) -> Unit) {
+    suspend fun reload(report: suspend (String) -> Unit) {
         report("Aktualisiere Shopify- und ready2order-Produktkataloge...")
         coroutineScope {
             val job = launch { shopifyDataStore.refreshAndAwait() }
             artooDataStore.refreshAndAwait()
             job.join()
         }
-
-        // TODO: Missing SyncVariants for variations new in ready2order (would report mapping error anyway, necessary?)
-
         synchronize(report)
     }
 
@@ -261,8 +258,6 @@ class ShopifySynchronizationService(
     }
 
     private suspend fun apply(item: CreateProductItem): ShopifyProduct {
-        require(item.artoo.hasOnlyDefaultVariant) { "TODO: Create appropriate product options when creating a new product with variants" }
-
         val product = shopifyMapper.map(item.sync, item.artoo)
         shopifyDataStore.create(product)
         shopifyImageTools.uploadProductImages(product)

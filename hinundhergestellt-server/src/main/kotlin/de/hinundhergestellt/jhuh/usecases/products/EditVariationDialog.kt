@@ -63,7 +63,7 @@ private class EditVariationDialog(
             style.setMarginTop("var(--lumo-space-m)")
 
             formHeader("Zusätzliche Informationen für Shopify")
-            bigDecimalField("Gewicht") {
+            bigDecimalField("Gewicht (Gramm)") {
                 bind(syncBinder)
                     .asRequired("Gewicht darf nicht leer sein.")
                     .withValidator(BigDecimalRangeValidator("Gewicht muss größer als 0,5 sein.", BigDecimal("0.5"), BigDecimal("99999")))

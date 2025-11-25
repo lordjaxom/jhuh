@@ -56,6 +56,9 @@ class ShopifyProductOption private constructor(
 fun Iterable<ShopifyProductOption>.findByLinkedMetafield(namespace: String, key: String) =
     firstOrNull { option -> option.linkedMetafield?.let { it.namespace == namespace && it.key == key } == true }
 
+fun ShopifyProductOption.containsValue(value: ShopifyProductOptionValue) =
+    optionValues.any { it.value == value.value }
+
 fun LinkedMetafield(namespace: String, key: String) =
     LinkedMetafield.Builder()
         .withNamespace(namespace)

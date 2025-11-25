@@ -36,6 +36,7 @@ class ShopifyProduct private constructor(
         }
 
     constructor(
+        handle: String,
         title: String,
         vendor: String,
         productType: String,
@@ -45,10 +46,11 @@ class ShopifyProduct private constructor(
         category: ShopifyCategory?,
         hasOnlyDefaultVariant: Boolean,
         tags: Set<String>,
-        metafields: List<ShopifyMetafield>
+        metafields: List<ShopifyMetafield>,
+        options: List<ShopifyProductOption> = listOf()
     ) : this(
         internalId = null,
-        internalHandle = null,
+        internalHandle = handle,
         title = title,
         vendor = vendor,
         productType = productType,
@@ -60,7 +62,7 @@ class ShopifyProduct private constructor(
         category = category,
         hasOnlyDefaultVariant = hasOnlyDefaultVariant,
         tags = tags,
-        options = listOf(),
+        options = options,
         metafields = metafields.toMutableList(),
         variants = mutableListOf(),
         media = mutableListOf()
@@ -97,6 +99,7 @@ class ShopifyProduct private constructor(
     internal fun toProductCreateInput(): ProductCreateInput {
         require(internalId == null) { "Cannot recreate existing product" }
         return ProductCreateInput(
+            handle = handle,
             title = title,
             vendor = vendor,
             productType = productType,

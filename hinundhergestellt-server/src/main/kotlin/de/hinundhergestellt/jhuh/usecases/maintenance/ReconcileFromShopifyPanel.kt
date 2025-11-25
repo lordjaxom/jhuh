@@ -46,6 +46,9 @@ private class ReconcileFromShopifyPanel(
             justifyContentMode = FlexComponent.JustifyContentMode.END
             setWidthFull()
 
+            button("Neu laden") {
+                addClickListener { reload() }
+            }
             button("Aktualisieren") {
                 addClickListener { refresh() }
             }
@@ -78,9 +81,17 @@ private class ReconcileFromShopifyPanel(
         }
     }
 
+    private fun reload() {
+        vaadinScope.launchWithReporting {
+            application { service.reload(::report) }
+            itemsGrid.setItems(service.items)
+            itemsGrid.recalculateColumnWidths()
+        }
+    }
+
     private fun refresh() {
         vaadinScope.launchWithReporting {
-            application { service.refresh(::report) }
+            application { service.rebuild(::report) }
             itemsGrid.setItems(service.items)
             itemsGrid.recalculateColumnWidths()
         }

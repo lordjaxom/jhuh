@@ -50,14 +50,11 @@ class ReconcileFromShopifyService(
         items += shopifyDataStore.products.map { reconcile(it) }.flatten()
     }
 
-    suspend fun refresh(report: suspend (String) -> Unit) {
+    suspend fun reload(report: suspend (String) -> Unit) {
         report("Aktualisiere Shopify-Produktkatalog...")
         shopifyDataStore.refreshAndAwait()
 
         rebuild(report)
-
-//        report("Unbekannte Kategorien abgleichen...")
-//        artooDataStore.rootCategories.forEach { reconcileCategories(it) }
     }
 
     suspend fun rebuild(report: suspend (String) -> Unit) {
@@ -193,7 +190,7 @@ class ReconcileFromShopifyService(
     private fun checkReconcileProductImages(product: ShopifyProduct) = buildList {
         shopifyImageTools.unorganizedProductImages(product).takeIf { it.isNotEmpty() }?.let {
             add(ImmediateProductItem(product.title, "${it.size} Produktbilder nicht normalisiert") {
-                shopifyImageTools.reorganizeProductImages(product, it)
+                shopifyImageTools.normalizeImagesToUrlHandle(product)
             })
         }
 

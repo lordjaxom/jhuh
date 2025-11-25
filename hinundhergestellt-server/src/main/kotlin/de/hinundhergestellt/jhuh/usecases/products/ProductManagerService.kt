@@ -1,6 +1,7 @@
 package de.hinundhergestellt.jhuh.usecases.products
 
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
+import de.hinundhergestellt.jhuh.HuhProperties
 import de.hinundhergestellt.jhuh.backend.barcodes.BarcodeGenerator
 import de.hinundhergestellt.jhuh.backend.mapping.MappingService
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategory
@@ -13,6 +14,7 @@ import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendor
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncVendorRepository
 import de.hinundhergestellt.jhuh.components.Article
 import de.hinundhergestellt.jhuh.core.lazyWithReset
+import de.hinundhergestellt.jhuh.tools.productNameForImages
 import de.hinundhergestellt.jhuh.usecases.labels.LabelGeneratorService
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedCategory
@@ -27,6 +29,9 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.support.TransactionOperations
 import kotlin.coroutines.resume
+import kotlin.io.path.exists
+import kotlin.io.path.moveTo
+import kotlin.io.path.relativeTo
 
 private val logger = KotlinLogging.logger {}
 
@@ -43,6 +48,7 @@ class ProductManagerService(
     private val barcodeGenerator: BarcodeGenerator,
     private val labelGeneratorService: LabelGeneratorService,
     private val mappingService: MappingService,
+    private val properties: HuhProperties
 ) : AutoCloseable {
 
     private val rootCategoriesLazy = lazyWithReset { artooDataStore.rootCategories.map { CategoryItem(it) } }
@@ -75,8 +81,28 @@ class ProductManagerService(
         if (syncCategory != null) transactionOperations.execute { syncCategoryRepository.save(syncCategory) }
     }
 
-    suspend fun update(artooProduct: ArtooMappedProduct?, syncProduct: SyncProduct?) {
-        if (artooProduct != null) artooDataStore.update(artooProduct)
+    suspend fun update(artooProduct: ArtooMappedProduct?, syncProduct: SyncProduct?, oldVendor: SyncVendor?, oldDescription: String) {
+        if (artooProduct != null) {
+            // TODO: move to SyncImageTools
+            if (oldVendor != null) {
+                val oldImageDir = properties.imageDirectory
+                    .resolve(oldVendor.name)
+                    .resolve(oldDescription.productNameForImages)
+                val newImageDir = properties.imageDirectory
+                    .resolve(syncProduct?.vendor?.name ?: oldVendor.name)
+                    .resolve(artooProduct.description.productNameForImages)
+                if (oldImageDir != newImageDir && oldImageDir.exists()) {
+                    if (newImageDir.exists()) {
+                        throw IllegalStateException("Bildverzeichnis '${newImageDir.relativeTo(properties.imageDirectory)}' existiert bereits.")
+                    }
+
+                    logger.info { "Renaming image directory ${oldImageDir.relativeTo(properties.imageDirectory)} to ${newImageDir.relativeTo(properties.imageDirectory)}" }
+                    oldImageDir.moveTo(newImageDir)
+                }
+            }
+
+            artooDataStore.update(artooProduct)
+        }
         if (syncProduct != null) transactionOperations.execute { syncProductRepository.save(syncProduct) }
     }
 
@@ -88,6 +114,12 @@ class ProductManagerService(
     @Transactional
     fun markForSync(syncProduct: SyncProduct) {
         syncProduct.synced = true
+        syncProductRepository.save(syncProduct)
+    }
+
+    @Transactional
+    fun generateTexts(syncProduct: SyncProduct) {
+        syncProduct.generateTexts = true
         syncProductRepository.save(syncProduct)
     }
 
@@ -140,8 +172,8 @@ class ProductManagerService(
         val name: String
         val vendor: SyncVendor?
         val type: String?
+        val count: String?
         val tagsAsSet: Set<String>
-        val variations: Int?
         val hasChildren: Boolean
         val children: List<Item>
 
@@ -160,8 +192,8 @@ class ProductManagerService(
         override val name by value::name
         override val vendor = null
         override val type = null
+        override val count = null
         override val tagsAsSet get() = syncCategory.tags.toSet()
-        override val variations = null
         override val hasChildren = true
         override val children = value.run { children.map { CategoryItem(it) } + products.map { ProductItem(it) } }
 
@@ -182,8 +214,8 @@ class ProductManagerService(
         override val name get() = value.description.ifEmpty { value.name }
         override val vendor get() = syncProduct.vendor
         override val type get() = syncProduct.type
+        override val count get() = if (value.hasOnlyDefaultVariant) "${value.variations[0].stockValue.toInt()}" else ""
         override val tagsAsSet get() = syncProduct.tags.toSet()
-        override val variations = if (value.hasOnlyDefaultVariant) 0 else value.variations.size
         override val hasChildren = !value.hasOnlyDefaultVariant
         override val children = value.variations.map { VariationItem(it, this) }
 
@@ -202,11 +234,11 @@ class ProductManagerService(
         fun checkForProblems() = mappingService.checkForProblems(value, syncVariant)
 
         override val itemId = "variation-$id"
-        override val name get() = "${syncVariant.product.optionName} ${value.name}"
+        override val name get() = "${syncVariant.product.optionName ?: "Variante"} ${value.name}"
         override val vendor = null
         override val type = null
+        override val count = "${value.stockValue.toInt()}"
         override val tagsAsSet = setOf<String>()
-        override val variations = null
         override val hasChildren = false
         override val children = listOf<Item>()
 

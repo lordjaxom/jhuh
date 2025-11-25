@@ -43,7 +43,6 @@ import de.hinundhergestellt.jhuh.components.toProperty
 import de.hinundhergestellt.jhuh.components.verticalLayout
 import de.hinundhergestellt.jhuh.core.isNullOrZero
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
-import kotlinx.coroutines.async
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
 
@@ -71,7 +70,6 @@ private class EditProductDialog(
     private val weightBigDecimalField: BigDecimalField?
     private val autoFillButton: Button
     private val downloadImagesButton: Button
-    private val generateTextsButton: Button
 
     init {
         width = "1000px"
@@ -170,10 +168,12 @@ private class EditProductDialog(
                 checkbox("Synchronisieren?") {
                     bind(syncBinder).toProperty(SyncProduct::synced)
                 }
+                checkbox("Texte generieren?") {
+                    bind(syncBinder).toProperty(SyncProduct::generateTexts)
+                }
                 urlHandleTextField = textField("URL-Handle") {
                     setWidthFull()
                     bind(syncBinder)
-                        .asRequired("URL-Handle darf nicht leer sein.")
                         .toProperty(SyncProduct::urlHandle)
                 }
                 vendorComboBox = comboBox<SyncVendor>("Hersteller") {
@@ -234,9 +234,6 @@ private class EditProductDialog(
             downloadImagesButton = button("Bilder herunterladen") {
                 addClickListener { downloadImages() }
             }
-            generateTextsButton = button("Texte generieren") {
-                addClickListener { generateTexts() }
-            }
             button("Speichern") {
                 addThemeVariants(ButtonVariant.LUMO_PRIMARY)
                 addClickListener { save() }
@@ -282,33 +279,6 @@ private class EditProductDialog(
             val vendorName = vendorComboBox.value?.name
             application { service.downloadImages(vendorName!!, artooProduct, descriptionTextField.value, ::report) }
             updateImageTexts()
-        }
-    }
-
-    private fun generateTexts() {
-        vaadinScope.launchWithReporting {
-            if (!descriptionHtmlEditor.hasContent) {
-                report("Generiere Produkttexte mit AI...")
-                val generated = application {
-                    async { service.generateProductTexts(artooProduct, syncProduct, descriptionTextField.value) }.await()
-                }
-                descriptionHtmlEditor.value = generated.descriptionHtml
-            }
-            if (technicalDetailsGridField.value.isNullOrEmpty() ||
-                additionalTagsTextField.value.isEmpty() ||
-                productTypeTextField.value.isNullOrEmpty()
-            ) {
-                report("Generiere Produktdetails mit AI...")
-                val generated = application {
-                    async { service.generateProductDetails(artooProduct, syncProduct, descriptionTextField.value) }.await()
-                }
-                if (technicalDetailsGridField.value.isNullOrEmpty())
-                    technicalDetailsGridField.value = generated.technicalDetails.map { ReorderableGridField.Item(it.key, it.value) }
-                if (additionalTagsTextField.value.isEmpty())
-                    additionalTagsTextField.addTags(generated.tags.toSet() - inheritedTagsTextField.value)
-                if (productTypeTextField.value.isNullOrEmpty())
-                    productTypeTextField.value = generated.productType
-            }
         }
     }
 

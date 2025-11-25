@@ -44,7 +44,7 @@ class SyncProduct(
     @OneToMany(mappedBy = "product", fetch = FetchType.EAGER, cascade = [CascadeType.ALL], orphanRemoval = true)
     val variants: MutableList<SyncVariant> = mutableListOf(),
 
-    @Column(nullable = true, columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     var descriptionHtml: String? = null,
 
     @ElementCollection(fetch = FetchType.EAGER)
@@ -65,6 +65,9 @@ class SyncProduct(
 
     @Column
     var urlHandle: String? = null,
+
+    @Column(nullable = false)
+    var generateTexts: Boolean = false,
 
     @Id
     val id: UUID = UUID.randomUUID()

@@ -94,9 +94,7 @@ class MappingService(
             else if (!sync.variants.firstOrNull().hasValidWeight()) add(MappingProblem("Gewichtsangabe ungültig (0,5g oder >= 30g)", true))
         }
 
-        sync.urlHandle.also {
-            if (it.isNullOrEmpty()) add(MappingProblem("Produkt hat kein URL-Handle", true))
-        }
+        if (sync.urlHandle.isNullOrEmpty()) add(MappingProblem("Produkt hat kein URL-Handle", false))
 
         sync.vendor.also {
             if (it == null) add(MappingProblem("Produkt hat keinen Hersteller", true))
@@ -104,6 +102,9 @@ class MappingService(
         }
 
         if (sync.type.isNullOrEmpty()) add(MappingProblem("Produkt hat keine Produktart", true))
+        if (sync.descriptionHtml.isNullOrEmpty()) add(MappingProblem("Produkt hat keine HTML-Beschreibung", false))
+        if (sync.seoTitle.isNullOrEmpty()) add(MappingProblem("Produkt hat keinen SEO-Titel", false))
+        if (sync.metaDescription.isNullOrEmpty()) add(MappingProblem("Produkt hat keine Meta-Beschreibung", false))
 
         if (!artoo.hasOnlyDefaultVariant && sync.optionName.isNullOrEmpty()) add(MappingProblem("Optionsname für Varianten fehlt", true))
 
@@ -132,7 +133,7 @@ class MappingService(
             vendorName.isNullOrEmpty() ||
             artooImageTools.findVariantImages(vendorName, artoo.parent).none { it.variantSku == artoo.itemNumber }
         ) {
-            add(MappingProblem("Kein Variantenbild vorhanden", true))
+            add(MappingProblem("Kein Variantenbild vorhanden", false))
         }
     }
 

@@ -52,10 +52,11 @@ class ShopifyProductsFixITCase {
     fun reorganizeProducts() = runBlocking {
         shopifyDataStore.products
             .filter {
-                it.seoTitle.isNullOrEmpty() && "Gießform" in it.tags
+//                it.seoTitle.isNullOrEmpty()
+                it.title.contains("Mini-Häuschen")
             }
             .forEach {
-                reorganizeProduct(it)
+                reorganizeProduct(it, "nonbrand")
                 normalizeImagesToUrlHandle(it)
             }
     }
@@ -73,8 +74,32 @@ class ShopifyProductsFixITCase {
             .forEach { normalizeImagesToUrlHandle(it) }
     }
 
-    private suspend fun reorganizeProduct(product: ShopifyProduct) {
-        val reworked = shopTexterService.reworkProductTexts(product)
+    private suspend fun reorganizeProduct(product: ShopifyProduct, flavor: String) {
+        val reworked = shopTexterService.reworkProductTexts(product, flavor)
+
+        val checkFolder = Path("/media/lordjaxom/akv-soft.de/sascha/Hin- und Hergestellt/Shopify")
+            .resolve(product.vendor)
+            .resolve(reworked.title.productNameForImages)
+        if (checkFolder.exists()) {
+            println("WARNING: Target folder '$checkFolder' already exists, change title!")
+            if (checkFolder.exists()) {
+                println("ERROR: Target folder '$checkFolder' already exists!")
+                return
+            }
+        }
+
+        if (shopifyDataStore.products.any { it.handle == reworked.handle && it.id != product.id }) {
+            println("WARNING: Handle '${product.handle}' already exists for another product!")
+            if (shopifyDataStore.products.any { it.handle == reworked.handle && it.id != product.id }) {
+                println("ERROR: Handle '${product.handle}' already exists for another product!")
+                return
+            }
+        }
+
+        if (shopifyDataStore.products.any { it.handle == reworked.handle && it.id != product.id }) {
+            println("ERROR: Handle '${reworked.handle}' already exists for another product!")
+            return
+        }
         if (reworked.handle != product.handle) {
             println("Handle: ${product.handle} to ${reworked.handle}")
             product.handle = reworked.handle
@@ -87,8 +112,10 @@ class ShopifyProductsFixITCase {
                 val newFolder = Path("/media/lordjaxom/akv-soft.de/sascha/Hin- und Hergestellt/Shopify")
                     .resolve(product.vendor)
                     .resolve(reworked.title.productNameForImages)
-                println("Renaming image folder: $oldFolder to $newFolder")
-                oldFolder.moveTo(newFolder)
+                if (oldFolder != newFolder) {
+                    println("Renaming image folder: $oldFolder to $newFolder")
+                    oldFolder.moveTo(newFolder)
+                }
             }
 
             val artoo =
@@ -220,5 +247,23 @@ class ShopifyProductsFixITCase {
         shopifyDataStore.products
             .filter { it.seoTitle.isNullOrEmpty() || it.seoDescription.isNullOrEmpty() }
             .forEach { println(it.title) }
+    }
+
+    @Test
+    fun fixLocalImageFolders() = runBlocking {
+        shopifyDataStore.products.forEach { product ->
+            val oldFolder = Path("/media/lordjaxom/akv-soft.de/sascha/Hin- und Hergestellt/Shopify")
+                .resolve(product.vendor)
+                .resolve(product.title.substringBefore(",").replace("/", " "))
+            if (oldFolder.exists()) {
+                val newFolder = Path("/media/lordjaxom/akv-soft.de/sascha/Hin- und Hergestellt/Shopify")
+                    .resolve(product.vendor)
+                    .resolve(product.title.productNameForImages)
+                if (oldFolder != newFolder) {
+                    println("Renaming image folder: $oldFolder to $newFolder")
+                    oldFolder.moveTo(newFolder)
+                }
+            }
+        }
     }
 }

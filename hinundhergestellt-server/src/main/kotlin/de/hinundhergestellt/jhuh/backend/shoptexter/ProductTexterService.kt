@@ -102,11 +102,11 @@ class ProductTexterService(
         return detailsConverter.convert(responseContent)!!
     }
 
-    fun reworkProductTexts(product: Product): ProductRework {
+    fun reworkProductTexts(product: Product, flavor: String): ProductRework {
         logger.info { "Reworking product texts for ${product.title}" }
 
         val callResponse = shopTexterChatClient.prompt()
-            .system(loadTextResource { "product-rework-system-prompt.txt" })
+            .system(loadTextResource { "product-rework-system-prompt-$flavor.txt" })
             .user {
                 it.text(loadTextResource { "product-rework-user-prompt.txt" })
                     .param("product", jsonMapper.writeValueAsString(product))

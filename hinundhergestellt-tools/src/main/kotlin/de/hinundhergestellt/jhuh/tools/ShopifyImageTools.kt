@@ -142,6 +142,48 @@ class ShopifyImageTools(
         product.media += medias
     }
 
+    suspend fun normalizeImagesToUrlHandle(product: ShopifyProduct) {
+        val changedMedia = mutableSetOf<ShopifyMedia>()
+        product.media.forEach { media ->
+            Regex("-produktbild-[0-9]+\\.(png|jpg)$").find(media.fileName)?.also {
+                val newFileName = "${product.handle}${it.groupValues[0]}"
+                if (media.fileName != newFileName) {
+                    logger.info { "Renaming image file: '${media.fileName}' to '$newFileName'" }
+                    media.fileName = newFileName
+                    changedMedia.add(media)
+                }
+                val newAltText = generateAltText(product)
+                if (media.altText != newAltText) {
+                    println("Updating alt text '${media.altText}' to '$newAltText'")
+                    media.altText = newAltText
+                    changedMedia.add(media)
+                }
+            }
+        }
+        if (!product.hasOnlyDefaultVariant) {
+            product.variants.forEach { variant ->
+                val variantMedia = product.media.first { variant.mediaId == it.id }
+                val newFileName = "${product.handle}-${variant.title.toFileNamePart()}.${variantMedia.fileName.substringAfterLast(".")}"
+                if (variantMedia.fileName != newFileName) {
+                    println("Renaming variant image file: '${variantMedia.fileName}' to '$newFileName'")
+                    variantMedia.fileName = newFileName
+                    changedMedia.add(variantMedia)
+                }
+                val newAltText = generateAltText(product, variant)
+                if (variantMedia.altText != newAltText) {
+                    println("Updating alt text '${variantMedia.altText}' to '$newAltText'")
+                    variantMedia.altText = newAltText
+                    changedMedia.add(variantMedia)
+                }
+            }
+        }
+
+        changedMedia.chunked(10).forEach {
+            println("Updating next chunk of ${it.size} media items")
+            mediaClient.update(it)
+        }
+    }
+
     fun locallyMissingProductImages(product: ShopifyProduct): List<ShopifyMedia> {
         val knownImages = findAllImages(product).map { it.toShopifyImageFileName(product) }
         return product.media.filter { media -> media.fileName.isAnyShopifyImage(product) && media.fileName !in knownImages }

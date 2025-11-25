@@ -10,18 +10,18 @@ import org.springframework.stereotype.Component
 class ProductMapper(
     private val mappingService: MappingService
 ) {
-    fun map(artoo: ArtooMappedProduct, sync: SyncProduct, description: String?) =
+    fun map(artoo: ArtooMappedProduct, sync: SyncProduct) =
         Product(
             name = artoo.name,
-            title = description?.takeIf { it.isNotEmpty() } ?: artoo.description,
+            title = artoo.description,
             description = sync.descriptionHtml ?: "",
             productType = sync.type ?: "",
             vendor = sync.vendor?.name ?: "",
             tags = sync.tags,
             technicalDetails = sync.technicalDetails.associate { it.name to it.value },
-            handle = "",
-            seoTitle = "",
-            seoDescription = "",
+            handle = sync.urlHandle ?: "",
+            seoTitle = sync.seoTitle ?: "",
+            seoDescription = sync.metaDescription ?: "",
             hasOnlyDefaultVariant = artoo.hasOnlyDefaultVariant,
             variants = artoo.variations.map {
                 Variant(
@@ -41,7 +41,7 @@ class ProductMapper(
             vendor = shopify.vendor,
             tags = shopify.tags,
             technicalDetails = mappingService.extractTechnicalDetails(shopify),
-            handle = shopify.handle ?: "",
+            handle = shopify.handle,
             seoTitle = shopify.seoTitle ?: "",
             seoDescription = shopify.seoDescription ?: "",
             hasOnlyDefaultVariant = shopify.hasOnlyDefaultVariant,
