@@ -82,6 +82,7 @@ class ShopifyProductClient(
                     node {
                         handle; title; descriptionHtml
                         seo { title; description }
+                        products(first = 250) { edges { node { id } } }
                     }
                 }
             }

@@ -3,6 +3,7 @@ package de.hinundhergestellt.jhuh.usecases.products
 import com.vaadin.flow.spring.annotation.VaadinSessionScope
 import de.hinundhergestellt.jhuh.HuhProperties
 import de.hinundhergestellt.jhuh.backend.barcodes.BarcodeGenerator
+import de.hinundhergestellt.jhuh.backend.mapping.MappingProblem
 import de.hinundhergestellt.jhuh.backend.mapping.MappingService
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategory
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncCategoryRepository
@@ -179,7 +180,7 @@ class ProductManagerService(
 
         val tags get() = tagsAsSet.sorted().joinToString(", ")
 
-        fun filterBy(markedForSync: Boolean?, hasProblems: Boolean?, text: String): Boolean
+        fun filterBy(markedForSync: Boolean?, problemTypes: Set<ProblemType>, text: String): Boolean
     }
 
     inner class CategoryItem(val value: ArtooMappedCategory) : Item {
@@ -197,8 +198,8 @@ class ProductManagerService(
         override val hasChildren = true
         override val children = value.run { children.map { CategoryItem(it) } + products.map { ProductItem(it) } }
 
-        override fun filterBy(markedForSync: Boolean?, hasProblems: Boolean?, text: String) =
-            children.any { it.filterBy(markedForSync, hasProblems, text) }
+        override fun filterBy(markedForSync: Boolean?, problemTypes: Set<ProblemType>, text: String) =
+            children.any { it.filterBy(markedForSync, problemTypes, text) }
     }
 
     inner class ProductItem(val value: ArtooMappedProduct) : Item {
@@ -219,9 +220,9 @@ class ProductManagerService(
         override val hasChildren = !value.hasOnlyDefaultVariant
         override val children = value.variations.map { VariationItem(it, this) }
 
-        override fun filterBy(markedForSync: Boolean?, hasProblems: Boolean?, text: String) =
+        override fun filterBy(markedForSync: Boolean?, problemTypes: Set<ProblemType>, text: String) =
             (markedForSync == null || markedForSync == isMarkedForSync) &&
-                    (hasProblems == null || hasProblems == checkForProblems().isNotEmpty()) &&
+                    (problemTypes.isEmpty() || checkForProblems().allMatch(problemTypes)) &&
                     (text.isEmpty() || name.contains(text, ignoreCase = true))
     }
 
@@ -242,8 +243,21 @@ class ProductManagerService(
         override val hasChildren = false
         override val children = listOf<Item>()
 
-        override fun filterBy(markedForSync: Boolean?, hasProblems: Boolean?, text: String) = true
+        override fun filterBy(markedForSync: Boolean?, problemTypes: Set<ProblemType>, text: String) = true
     }
+}
+
+enum class ProblemType(val value: String) {
+    NONE("Keine"),
+    WARNING("Warnungen"),
+    ERROR("Fehler")
+}
+
+private fun List<MappingProblem>.allMatch(problemTypes: Set<ProblemType>): Boolean {
+    if (problemTypes.contains(ProblemType.NONE) && isEmpty()) return true
+    if (problemTypes.contains(ProblemType.ERROR) && isNotEmpty() && all { it.error }) return true
+    if (problemTypes.contains(ProblemType.WARNING) && isNotEmpty() && all { !it.error }) return true
+    return false
 }
 
 private fun ArtooMappedCategory.toSyncCategory() =

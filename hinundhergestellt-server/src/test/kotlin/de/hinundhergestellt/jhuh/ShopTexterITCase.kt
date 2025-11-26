@@ -127,7 +127,20 @@ class ShopTexterITCase {
     @Test
     fun exportCollections() = runBlocking {
         val collections = productClient.findCollections()
-            .map { Category(it.handle, it.title, it.descriptionHtml, it.seo.title, it.seo.description, listOf()) }
+            .filter { it.title.contains("Kleber") }
+            .map {
+                Category(
+                    it.handle,
+                    it.title,
+                    it.descriptionHtml,
+                    it.seo.title,
+                    it.seo.description,
+                    it.products.edges.map { edge ->
+                        val shopifyProduct = shopifyDataStore.findProductById(edge.node.id)!!
+                        productMapper.map(shopifyProduct)
+                    }
+                )
+            }
             .toList()
         val json = jacksonObjectMapper()
             .enable(SerializationFeature.INDENT_OUTPUT)

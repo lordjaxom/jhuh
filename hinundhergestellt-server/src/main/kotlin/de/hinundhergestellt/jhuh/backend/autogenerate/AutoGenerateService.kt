@@ -6,6 +6,7 @@ import de.hinundhergestellt.jhuh.backend.shoptexter.ShopTexterService
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProduct
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncProductRepository
 import de.hinundhergestellt.jhuh.backend.syncdb.SyncTechnicalDetail
+import de.hinundhergestellt.jhuh.backend.syncdb.update
 import de.hinundhergestellt.jhuh.tools.productNameForImages
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooMappedProduct
@@ -40,13 +41,22 @@ class AutoGenerateService(
     }
 
     private fun autoGenerateProductAttributes(sync: SyncProduct, artoo: ArtooMappedProduct) {
-        sync.generateTexts = false
-        syncProductRepository.save(sync)
+        syncProductRepository.update(sync.id) { generateTexts = false }
 
         try {
             generateTextsAndDetails(sync, artoo)
             reworkProductTexts(sync, artoo)
-            syncProductRepository.save(sync)
+            syncProductRepository.update(sync.id) {
+                descriptionHtml = sync.descriptionHtml
+                seoTitle = sync.seoTitle
+                metaDescription = sync.metaDescription
+                urlHandle = sync.urlHandle
+                tags = sync.tags
+
+                val newTechnicalDetails = sync.technicalDetails.toList() // create copy just to be sure
+                technicalDetails.clear()
+                technicalDetails += newTechnicalDetails
+            }
         } catch (e: AutoGenerateException) {
             logger.error { "Error generating texts for ${artoo.description}: ${e.message}" }
         }

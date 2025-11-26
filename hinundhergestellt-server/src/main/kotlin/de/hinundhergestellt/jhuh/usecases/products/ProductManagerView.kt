@@ -55,7 +55,7 @@ class ProductManagerView(
 
     private val filterTextField: TextField
     private val markedForSyncFilterChipBox: FilterChipBox<Boolean>
-    private val hasProblemsFilterChipBox: FilterChipBox<Boolean>
+    private val hasProblemsFilterChipBox: FilterChipBox<ProblemType>
     private val itemsGrid: TreeGrid<Item>
     private val progressOverlay = progressOverlay()
 
@@ -97,8 +97,8 @@ class ProductManagerView(
                 addValueChangeListener { treeDataProvider.refreshAll() }
             }
             hasProblemsFilterChipBox = filterChipBox("Fehlerhaft") {
-                setItems(listOf(true, false))
-                itemLabelGenerator { if (it) "Ja" else "Nein" }
+                setItems(ProblemType.entries)
+                itemLabelGenerator { it.value }
                 addValueChangeListener { treeDataProvider.refreshAll() }
             }
         }
@@ -288,10 +288,10 @@ class ProductManagerView(
 
         override fun fetchChildrenFromBackEnd(query: HierarchicalQuery<Item, Unit>): Stream<Item> {
             val markedForSync = markedForSyncFilterChipBox.value.takeIf { it.size == 1 }?.first()
-            val hasProblems = hasProblemsFilterChipBox.value.takeIf { it.size == 1 }?.first()
+            val problemTypes = hasProblemsFilterChipBox.value
             val children = query.parent?.children ?: service.rootCategories
             return children.asSequence()
-                .filter { it.filterBy(markedForSync, hasProblems, filterTextField.value) }
+                .filter { it.filterBy(markedForSync, problemTypes, filterTextField.value) }
                 .drop(query.offset)
                 .take(query.limit)
                 .asStream()
