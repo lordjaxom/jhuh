@@ -87,7 +87,7 @@ class ShopifyMetaobjectClient(
         metaobjects(first = 250, after = after) {
             edges {
                 node {
-                    id; handle; displayName; type
+                    id; handle; displayName; type; updatedAt
                     fields { key; type; value; jsonValue }
                 }
             }

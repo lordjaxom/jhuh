@@ -5,12 +5,14 @@ import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.MetaobjectCreateI
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.MetaobjectField
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.MetaobjectFieldInput
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.MetaobjectUpdateInput
+import java.time.OffsetDateTime
 
 class ShopifyMetaobject private constructor(
     internal var internalId: String?,
     val type: String,
     val handle: String,
-    val fields: List<MetaobjectField>
+    val fields: MutableList<MetaobjectField>,
+    val updatedAt: OffsetDateTime?
 ) {
     val id get() = internalId!!
 
@@ -18,14 +20,16 @@ class ShopifyMetaobject private constructor(
         internalId = null,
         type = type,
         handle = handle,
-        fields = fields
+        fields = fields.toMutableList(),
+        updatedAt = null
     )
 
     internal constructor(metaobject: Metaobject) : this(
         metaobject.id,
         metaobject.type,
         metaobject.handle,
-        metaobject.fields
+        metaobject.fields.toMutableList(),
+        metaobject.updatedAt
     )
 
     override fun toString(): String {
@@ -37,14 +41,18 @@ class ShopifyMetaobject private constructor(
         return MetaobjectCreateInput(
             handle = handle,
             type = type,
-            fields = fields.map { it.toMetaobjectFieldInput() }
+            fields = fields
+                .filter { it.value != null }
+                .map { it.toMetaobjectFieldInput() }
         )
     }
 
     internal fun toMetaobjectUpdateInput() =
         MetaobjectUpdateInput(
             handle = handle,
-            fields = fields.map { it.toMetaobjectFieldInput() }
+            fields = fields
+                .filter { it.value != null }
+                .map { it.toMetaobjectFieldInput() }
         )
 }
 

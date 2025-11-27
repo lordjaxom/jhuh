@@ -5,6 +5,7 @@ import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 fun fixedScale(value: BigDecimal, scale: Int) = FixedScaleBigDecimal(value, scale)
+fun fixedScale(value: BigDecimal?, scale: Int) = NullableFixedScaleBigDecimal(value, scale)
 
 class FixedScaleBigDecimal(
     value: BigDecimal,
@@ -15,6 +16,18 @@ class FixedScaleBigDecimal(
     override fun getValue(thisRef: Any?, property: KProperty<*>): BigDecimal = value
     override fun setValue(thisRef: Any?, property: KProperty<*>, value: BigDecimal) {
         this.value = value.setScale(scale)
+    }
+}
+
+class NullableFixedScaleBigDecimal(
+    value: BigDecimal?,
+    private val scale: Int
+) : ReadWriteProperty<Any?, BigDecimal?> {
+
+    private var value = value?.setScale(scale)
+    override fun getValue(thisRef: Any?, property: KProperty<*>): BigDecimal? = value
+    override fun setValue(thisRef: Any?, property: KProperty<*>, value: BigDecimal?) {
+        this.value = value?.setScale(scale)
     }
 }
 

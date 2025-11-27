@@ -6,8 +6,6 @@ import com.netflix.graphql.dgs.client.WebClientGraphQLClient
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.DgsClient.buildMutation
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.DgsClient.buildQuery
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.client.ProductProjection
-import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.Collection
-import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.CollectionConnection
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.MediaEdge
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.PageInfo
 import de.hinundhergestellt.jhuh.vendors.shopify.graphql.types.Product
@@ -73,23 +71,6 @@ class ShopifyProductClient(
         }
 
         shopifyGraphQLClient.executeMutation(request, ProductDeletePayload::userErrors)
-    }
-
-    suspend fun findCollections(): List<Collection> {
-        val request = buildQuery {
-            collections(first = 50) {
-                edges {
-                    node {
-                        handle; title; descriptionHtml
-                        seo { title; description }
-                        products(first = 250) { edges { node { id } } }
-                    }
-                }
-            }
-        }
-
-        val payload = shopifyGraphQLClient.executeQuery<CollectionConnection>(request)
-        return payload.edges.map { it.node }
     }
 
     private suspend fun fetchNextPage(after: String?, query: String?): Pair<List<ProductEdge>, PageInfo> {

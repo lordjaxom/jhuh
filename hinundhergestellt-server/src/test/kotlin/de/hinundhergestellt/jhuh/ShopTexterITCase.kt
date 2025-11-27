@@ -7,6 +7,7 @@ import de.hinundhergestellt.jhuh.backend.shoptexter.model.Product
 import de.hinundhergestellt.jhuh.backend.shoptexter.model.ProductMapper
 import de.hinundhergestellt.jhuh.tools.productNameForImages
 import de.hinundhergestellt.jhuh.vendors.ready2order.datastore.ArtooDataStore
+import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyCollectionClient
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProduct
 import de.hinundhergestellt.jhuh.vendors.shopify.client.ShopifyProductClient
 import de.hinundhergestellt.jhuh.vendors.shopify.datastore.ShopifyDataStore
@@ -36,7 +37,7 @@ class ShopTexterITCase {
     private lateinit var productClient: ShopifyProductClient
 
     @Autowired
-    private lateinit var artooDataStore: ArtooDataStore
+    private lateinit var collectionClient: ShopifyCollectionClient
 
     @Test
     fun generateCategoryTexts() {
@@ -126,7 +127,7 @@ class ShopTexterITCase {
 
     @Test
     fun exportCollections() = runBlocking {
-        val collections = productClient.findCollections()
+        val collections = collectionClient.fetchAll()
             .filter { it.title.contains("Kleber") }
             .map {
                 Category(

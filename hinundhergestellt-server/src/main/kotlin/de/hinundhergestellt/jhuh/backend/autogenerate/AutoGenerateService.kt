@@ -15,7 +15,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
-import org.springframework.transaction.support.TransactionOperations
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.exists
 import kotlin.io.path.moveTo
@@ -29,8 +28,7 @@ class AutoGenerateService(
     private val artooDataStore: ArtooDataStore,
     private val shopifyDataStore: ShopifyDataStore,
     private val syncProductRepository: SyncProductRepository,
-    private val properties: HuhProperties,
-    private val transactionOperations: TransactionOperations
+    private val properties: HuhProperties
 ) {
     @Scheduled(fixedRate = 15, timeUnit = TimeUnit.SECONDS)
     fun autoGenerateProductAttributes() {
@@ -46,6 +44,7 @@ class AutoGenerateService(
         try {
             generateTextsAndDetails(sync, artoo)
             reworkProductTexts(sync, artoo)
+
             syncProductRepository.update(sync.id) {
                 descriptionHtml = sync.descriptionHtml
                 seoTitle = sync.seoTitle

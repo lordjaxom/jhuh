@@ -22,12 +22,14 @@ class ShopifyProductVariant private constructor(
     val inventoryQuantity: Int, // must not be mutated after creation
     var mediaId: String?,
     val options: List<ShopifyProductOptionValue>,
-    val metafields: MutableList<ShopifyMetafield>
+    val metafields: MutableList<ShopifyMetafield>,
+    compareAtPrice: BigDecimal?
 ) {
     val id get() = internalId!!
     val title get() = internalTitle ?: options.variantTitle
     var price by fixedScale(price, 2)
     var weight by fixedScale(weight, 2)
+    var compareAtPrice by fixedScale(compareAtPrice, 2)
 
     constructor(
         sku: String,
@@ -47,7 +49,8 @@ class ShopifyProductVariant private constructor(
         inventoryQuantity = inventoryQuantity,
         mediaId = null,
         options = options,
-        metafields = metafields
+        metafields = metafields,
+        compareAtPrice = null
     )
 
     internal constructor(variant: ProductVariant) : this(
@@ -60,7 +63,8 @@ class ShopifyProductVariant private constructor(
         variant.inventoryQuantity!!,
         variant.media.edges.firstOrNull()?.node?.id,
         variant.selectedOptions.map { ShopifyProductOptionValue(it) },
-        variant.metafields.edges.asSequence().map { ShopifyMetafield(it.node) }.toMutableList()
+        variant.metafields.edges.asSequence().map { ShopifyMetafield(it.node) }.toMutableList(),
+        variant.compareAtPrice?.let { BigDecimal(it) }
     ) {
         require(!variant.metafields.pageInfo.hasNextPage) { "Variant has more metafields than were loaded" }
     }
@@ -82,7 +86,8 @@ class ShopifyProductVariant private constructor(
                 )
             ),
             mediaId = mediaId,
-            metafields = metafields.map { it.toMetafieldInput() }
+            metafields = metafields.map { it.toMetafieldInput() },
+            compareAtPrice = compareAtPrice?.toPlainString()
         )
     }
 
@@ -94,7 +99,8 @@ class ShopifyProductVariant private constructor(
             optionValues = options.map { it.toVariantOptionValueInput() },
             inventoryItem = toInventoryItemInput(),
             mediaId = mediaId,
-            metafields = metafields.map { it.toMetafieldInput() }
+            metafields = metafields.map { it.toMetafieldInput() },
+            compareAtPrice = compareAtPrice?.toPlainString()
         )
 
     private fun toInventoryItemInput() =
@@ -111,7 +117,7 @@ internal fun ProductProjection.variantsForWrapper(after: String? = null) =
     variants(first = 50, after = after) {
         edges {
             node {
-                id; title; price; sku; barcode; inventoryQuantity
+                id; title; price; sku; barcode; inventoryQuantity; compareAtPrice
                 inventoryItem { measurement { weight { unit; value } } }
                 selectedOptions {
                     name; value
