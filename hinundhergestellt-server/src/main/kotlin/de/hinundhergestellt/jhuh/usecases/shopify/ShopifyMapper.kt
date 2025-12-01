@@ -27,7 +27,7 @@ class ShopifyMapper(
             seoDescription = sync.metaDescription,
             category = sync.shopifyCategory?.let { ShopifyCategoryTaxonomyProvider.categories[it]!! },
             hasOnlyDefaultVariant = artoo.hasOnlyDefaultVariant,
-            tags = mappingService.allTags(sync, artoo) + "__NEW__",
+            tags = mappingService.allTags(sync, artoo),
             metafields = mappingService.productMetafields(sync),
             options = listOfNotNull(
                 if (artoo.hasOnlyDefaultVariant) null

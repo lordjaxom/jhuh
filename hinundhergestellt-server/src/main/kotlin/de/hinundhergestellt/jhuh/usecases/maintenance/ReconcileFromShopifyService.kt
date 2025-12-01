@@ -153,7 +153,7 @@ class ReconcileFromShopifyService(
         syncProduct: SyncProduct,
         shopifyProduct: ShopifyProduct
     ): UpdateSyncProductItem? {
-        val shopifyTags = shopifyProduct.tags - mappingService.inheritedTags(syncProduct) - "__NEW__"
+        val shopifyTags = shopifyProduct.tags - mappingService.inheritedTags(syncProduct)
         if (syncProduct.tags == shopifyTags) return null
 
         val addedTags = shopifyTags - syncProduct.tags

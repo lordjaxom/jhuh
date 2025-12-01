@@ -197,8 +197,7 @@ class ShopifySynchronizationService(
         ifChanged(property.get(), newValue, property.name) { UpdateProductItem(sync, shopify, it) { property.set(newValue) } }
 
     private fun synchronizeTags(sync: SyncProduct, shopify: ShopifyProduct, artoo: ArtooMappedProduct): UpdateProductItem? {
-        val isNew = ChronoUnit.MONTHS.between(shopify.createdAt!!, OffsetDateTime.now()) < 2
-        val localTags = mappingService.allTags(sync, artoo) + setOfNotNull(if (isNew) "__NEW__" else null)
+        val localTags = mappingService.allTags(sync, artoo)
         if (localTags == shopify.tags) return null
 
         val addedTags = localTags - shopify.tags
